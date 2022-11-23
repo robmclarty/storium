@@ -53,7 +53,7 @@ instance reference into it.
 
 ```javascript
 const knex = require('./knex.js')
-const storium = require('@barss/storium')(knex)
+const storium = require('storium')(knex)
 
 module.exports = storium
 ```
