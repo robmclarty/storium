@@ -1,0 +1,38 @@
+{
+  "name": "storium",
+  "version": "0.0.7",
+  "description": "Storage layer abstraction for Knex apps.",
+  "main": "lib/index.js",
+  "author": "Rob McLarty <r@robmclarty.com> (https://robmclarty.com)",
+  "license": "MIT",
+  "homepage": "https://github.com/robmclarty/storium#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/robmclarty/storium.git"
+  },
+  "engines": {
+    "node": ">= 8.3.0"
+  },
+  "files": [
+    "/lib"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "knex",
+    "express",
+    "nodejs",
+    "storage",
+    "database",
+    "orm",
+    "store",
+    "schema"
+  ],
+  "dependencies": {
+    "validator": "^13.7.0"
+  },
+  "peerDependencies": {
+    "knex": "~2.x"
+  }
+}
