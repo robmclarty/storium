@@ -10,7 +10,7 @@ structures should look or behave like a full ORM might do.
 
 With this, you can think less about the low-level database/query problems, and
 more about your app-level storage problems (i.e., not *how* things are stored,
-but *what* gets stored and how should your app *behave*). But you are in control
+but *what* gets stored and how should your app *behave*). You are in control
 of the *how* by defining your own query functions, validations, sanitizations,
 and schemas.
 
@@ -134,6 +134,10 @@ brackets if your table names cannot be defined as JS names (e.g.,
 `['my-custom-column-name']`).
 
 ```javascript
+const my_custom_validation = value => {
+  return value === 'something custom'
+}
+
 const example_schema = storium.schema({
   id: Number,
   user_id: {
@@ -150,8 +154,8 @@ const example_schema = storium.schema({
     required: true,
     sanitize: value => String(value).trim(),
     validate: (value, test) => {
-      test(value, 'not_empty', '`url` must have a non-empty value')
-      test(value, 'is_url', '`url` must be a valid URL')
+      test(value, 'not_empty', 'url must have a non-empty value')
+      test(value, my_custom_validation, 'url must be a valid')
     }
   },
   is_admin: Boolean,
@@ -160,14 +164,14 @@ const example_schema = storium.schema({
 })
 ```
 
-In this example, some properties are given a simple basic JS object type. By
+In this example, some properties are given a simple basic JS type. By
 default, a property will be treated as valid only if the input type matches the
-basic JS object type defined in the schema.
+basic JS type defined in the schema.
 
 More customizations can be made by assigning a custom object to a property
 schema, in which you can define various other settings such as custom
 `sanitize()` logic, custom `validate()` logic, if a property is "mutable" (that
-is, marking it as a field that a user can modify), a basic JS objec type, if
+is, marking it as a field that a user can modify), a basic JS type, if
 the property is a required field, and whether it is selectable (e.g., perhaps
 on a user store you want to explicitly say that the `password` field should not
 be selectable as it is only used during authentication).
