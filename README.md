@@ -89,6 +89,14 @@ const example_store = storium.store('examples', example_schema, {
 module.exports = example_store
 ```
 
+The signature for the `store()` function is as follows:
+
+`storium.store(table_name, schema_dfn, optional_custom_functions)`
+
+- `table_name` is the literal string name of the database table for this store
+- `schema_dfn` is an object containing the schema definition (see below)
+- `optional_custom_functions` is an object containing custom query functions
+
 I'll explain custom query functions below, but out of the box, a store will have
 the following query functions:
 
@@ -102,7 +110,7 @@ the following query functions:
 - `destroy()`
 - `destroy_all()`
 
-Other helper functions and properties are also available in each store:
+...as well as other helper functions and properties:
 
 - `knex`
 - `name`
@@ -119,6 +127,11 @@ Other helper functions and properties are also available in each store:
 A *schema* is a way to define what properties can be seen, what properties can
 be modified, custom transformations to "sanitize" input data, which properties
 are required, as well as various validations and types.
+
+Each property in the schema must correspond exactly to the underlying database
+table columns being referenced when the store is initialized. Use square
+brackets if your table names cannot be defined as JS names (e.g.,
+`['my-custom-column-name']`).
 
 ```javascript
 const example_schema = storium.schema({
