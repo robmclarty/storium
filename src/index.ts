@@ -17,7 +17,9 @@
 
 import { connect, fromDrizzle } from './connect'
 
-export default { connect, fromDrizzle }
+const storium = { connect, fromDrizzle }
+
+export default storium
 export { connect, fromDrizzle }
 
 // -------------------------------------------------------- Core Utilities --

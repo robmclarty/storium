@@ -33,7 +33,7 @@ const products = db.defineStore('products', {
     required: true,
     validate: (v, test) => {
       test(v, 'not_empty', 'Product name cannot be empty')
-      test(v, (v) => String(v).length >= 2, 'Product name must be at least 2 characters')
+      test(v, (val) => String(val).length >= 2, 'Product name must be at least 2 characters')
     },
   },
   slug: {
@@ -52,8 +52,8 @@ const products = db.defineStore('products', {
     mutable: true,
     required: true,
     validate: (v, test) => {
-      test(v, (v) => (v as number) > 0, 'Price must be positive')
-      test(v, (v) => (v as number) <= 999999, 'Price must not exceed 999999')
+      test(v, (val) => (val as number) > 0, 'Price must be positive')
+      test(v, (val) => (val as number) <= 999999, 'Price must not exceed 999999')
     },
   },
   color: {
