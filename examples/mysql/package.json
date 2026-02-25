@@ -1,0 +1,12 @@
+{
+  "name": "storium:examples:mysql",
+  "description": "Using Storium with a MySQL database, including connection setup and MySQL-specific type mappings",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "tsx app.ts"
+  },
+  "devDependencies": {
+    "tsx": "4.21.0"
+  }
+}

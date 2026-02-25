@@ -1,0 +1,12 @@
+{
+  "name": "storium:examples:basic",
+  "description": "Hello world example: connect to an in-memory database, define a store, and perform basic CRUD operations",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "tsx app.ts"
+  },
+  "devDependencies": {
+    "tsx": "4.21.0"
+  }
+}
