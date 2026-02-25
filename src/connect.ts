@@ -11,6 +11,7 @@
  * db-bound `withTransaction`, and a raw `drizzle` escape hatch.
  */
 
+import { createRequire } from 'node:module'
 import type {
   ConnectConfig,
   StoriumInstance,
@@ -21,6 +22,8 @@ import { ConfigError } from './core/errors'
 import { createDefineTable } from './core/defineTable'
 import { createDefineStore } from './core/defineStore'
 import { createAssertionRegistry } from './core/test'
+
+const require = createRequire(import.meta.url)
 
 // --------------------------------------------------- Drizzle Wiring --
 

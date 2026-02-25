@@ -1,3 +1,7 @@
+import { createRequire } from 'node:module'
+
+const require = createRequire(import.meta.url)
+
 /**
  * Storium v1 — Dialect Mapping
  *
@@ -157,7 +161,11 @@ export const buildDslColumn = (
   if (config.default === 'now') {
     col = col.defaultNow()
   } else if (config.default === 'random_uuid') {
-    col = col.defaultRandom()
+    if (typeof col.defaultRandom === 'function') {
+      col = col.defaultRandom()
+    } else {
+      col = col.$defaultFn(() => crypto.randomUUID())
+    }
   } else if (config.default !== undefined) {
     col = col.default(config.default)
   }

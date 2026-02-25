@@ -18,8 +18,11 @@
  * await status(config)     // Show pending migrations
  */
 
+import { createRequire } from 'node:module'
 import type { StoriumConfig } from '../core/types'
 import { ConfigError } from '../core/errors'
+
+const require = createRequire(import.meta.url)
 
 // --------------------------------------------------------------- Types --
 
