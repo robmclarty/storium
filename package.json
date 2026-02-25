@@ -65,6 +65,8 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit",
+    "lint": "node --import tsx/esm $(which oxlint) .",
+    "lint:fix": "node --import tsx/esm $(which oxlint) . --fix",
     "test": "vitest",
     "test:run": "vitest run",
     "prepublishOnly": "npm run build"
@@ -97,6 +99,7 @@
     "@types/pg": "8.16.0",
     "oxlint": "1.50.0",
     "tsup": "8.5.1",
+    "tsx": "4.21.0",
     "typescript": "5.9.3",
     "vitest": "4.0.18"
   },
