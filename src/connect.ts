@@ -8,8 +8,7 @@
  * - An existing Drizzle instance (via fromDrizzle)
  *
  * The returned instance has dialect-bound `defineTable` and `defineStore`,
- * db-bound `createRepository` and `withTransaction`, and a raw `drizzle`
- * escape hatch.
+ * db-bound `withTransaction`, and a raw `drizzle` escape hatch.
  */
 
 import type {
@@ -21,7 +20,6 @@ import type {
 import { ConfigError } from './core/errors'
 import { createDefineTable } from './core/defineTable'
 import { createDefineStore } from './core/defineStore'
-import { createCreateRepository } from './core/createRepository'
 import { createAssertionRegistry } from './core/test'
 
 // --------------------------------------------------- Drizzle Wiring --
@@ -141,7 +139,6 @@ const buildInstance = (
     dialect,
     defineTable: createDefineTable(dialect, registry),
     defineStore: createDefineStore(dialect, db, registry),
-    createRepository: createCreateRepository(db, registry),
     withTransaction: createWithTransaction(db),
     disconnect: teardown,
   }

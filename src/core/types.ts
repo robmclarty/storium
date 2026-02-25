@@ -193,7 +193,7 @@ export type SchemaSet = {
  * A table definition produced by `defineTable()`. Contains the Drizzle table,
  * column metadata, access rules, and auto-generated schemas.
  *
- * Satisfies the interface required by `createRepository()`, `withBelongsTo()`,
+ * Satisfies the interface required by `defineStore()`, `withBelongsTo()`,
  * `withMembers()`, and foreign key references.
  */
 export type TableDef<TColumns extends ColumnsConfig = ColumnsConfig> = {
@@ -319,6 +319,34 @@ export type CacheMethodConfig = {
   key: (...args: any[]) => string
 }
 
+// -------------------------------------------------------- DefineStore Fn --
+
+/**
+ * Overloaded type for the `defineStore` function.
+ *
+ * Accepts either:
+ * - `(name, columns, options?)` — define schema + repository in one step
+ * - `(tableDef, queries?)` — wrap a pre-built TableDef with queries (circular dep pattern)
+ */
+export interface DefineStoreFn {
+  <
+    TColumns extends ColumnsConfig,
+    TQueries extends Record<string, CustomQueryFn> = {}
+  >(
+    name: string,
+    columns: TColumns,
+    options?: StoreOptions & { queries?: TQueries }
+  ): Store<TColumns, TQueries>
+
+  <
+    TTableDef extends TableDef,
+    TQueries extends Record<string, CustomQueryFn> = {}
+  >(
+    tableDef: TTableDef,
+    queries?: TQueries
+  ): Repository<TTableDef, TQueries>
+}
+
 // ----------------------------------------------------------- Connect Config --
 
 /** Configuration for `storium.connect()`. */
@@ -373,16 +401,7 @@ export type StoriumInstance = {
     options?: TableOptions
   ) => TableDef
   /** Create a full store with queries (pre-bound to dialect + db). */
-  defineStore: (
-    name: string,
-    columns: ColumnsConfig,
-    options?: StoreOptions
-  ) => Store
-  /** Create a repository from an existing TableDef (pre-bound to db). */
-  createRepository: (
-    tableDef: TableDef,
-    queries?: Record<string, CustomQueryFn>
-  ) => Repository
+  defineStore: DefineStoreFn
   /** Scoped transaction helper (pre-bound to db). */
   withTransaction: <T>(fn: (tx: any) => Promise<T>) => Promise<T>
   /** Close the database connection pool. */

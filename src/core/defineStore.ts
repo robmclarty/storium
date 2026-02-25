@@ -10,7 +10,8 @@
  * directly on it.
  *
  * For circular dependency cases where schema must be separated from queries,
- * use `defineTable()` + `createRepository()` instead.
+ * use `defineTable()` first, then `defineStore(tableDef, queries)` to add
+ * queries later — pass the pre-built TableDef as the first argument.
  *
  * @example
  * const users = db.defineStore('users', {
@@ -35,10 +36,11 @@
 import type {
   Dialect,
   ColumnsConfig,
+  TableDef,
   StoreOptions,
   CustomQueryFn,
-  Store,
   AssertionRegistry,
+  DefineStoreFn,
 } from './types'
 import { createDefineTable } from './defineTable'
 import { createCreateRepository } from './createRepository'
@@ -62,32 +64,26 @@ export const createDefineStore = (
   /**
    * Define a data store: table schema + indexes + CRUD + custom queries.
    *
-   * @param name - Database table name
-   * @param columns - Flat column definitions
-   * @param options - Indexes, queries, constraints, timestamps, primary key
-   * @returns Store (TableDef + CRUD + custom queries)
+   * Overload 1: `(name, columns, options?)` — define schema + queries in one step.
+   * Overload 2: `(tableDef, queries?)` — wrap a pre-built TableDef with queries.
+   *
+   * @returns Store / Repository (TableDef + CRUD + custom queries)
    */
-  const defineStore = <
-    TColumns extends ColumnsConfig,
-    TQueries extends Record<string, CustomQueryFn> = {}
-  >(
-    name: string,
-    columns: TColumns,
-    options: StoreOptions & { queries?: TQueries } = {}
-  ): Store<TColumns, TQueries> => {
-
-    // Extract queries from options; pass the rest to defineTable
-    const { queries = {} as TQueries, ...tableOptions } = options
-
-    // Step 1: Define the table (schema + indexes + constraints)
-    const tableDef = defineTable(name, columns, tableOptions)
-
-    // Step 2: Create the repository (CRUD + custom queries)
-    const repository = createRepository(tableDef, queries)
-
-    // The repository already includes all TableDef properties,
-    // so it satisfies both TableDef and Store interfaces.
-    return repository as Store<TColumns, TQueries>
+  const defineStore: DefineStoreFn = (
+    nameOrTableDef: string | TableDef,
+    columnsOrQueries?: ColumnsConfig | Record<string, CustomQueryFn>,
+    options: StoreOptions & { queries?: Record<string, CustomQueryFn> } = {}
+  ): any => {
+    if (typeof nameOrTableDef === 'string') {
+      // Overload 1: name + columns
+      const { queries = {}, ...tableOptions } = options
+      const tableDef = defineTable(nameOrTableDef, columnsOrQueries as ColumnsConfig, tableOptions)
+      return createRepository(tableDef, queries)
+    } else {
+      // Overload 2: pre-built TableDef + queries
+      const queries = (columnsOrQueries ?? {}) as Record<string, CustomQueryFn>
+      return createRepository(nameOrTableDef, queries)
+    }
   }
 
   return defineStore

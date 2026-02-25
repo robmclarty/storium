@@ -1,7 +1,6 @@
 
 export { createDefineTable } from './defineTable'
 export { createDefineStore } from './defineStore'
-export { createCreateRepository } from './createRepository'
 export { createPrepFn } from './prep'
 export { createTestFn, createAssertionRegistry, BUILTIN_ASSERTIONS } from './test'
 export { ValidationError, ConfigError, SchemaError } from './errors'
@@ -39,6 +38,7 @@ export type {
   DefaultCRUD,
   Store,
   Repository,
+  DefineStoreFn,
   CacheAdapter,
   CacheMethodConfig,
   ConnectConfig,

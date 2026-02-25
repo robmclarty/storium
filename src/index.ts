@@ -25,7 +25,6 @@ export { connect, fromDrizzle }
 export {
   createDefineTable,
   createDefineStore,
-  createCreateRepository,
   createTestFn,
   createAssertionRegistry,
   BUILTIN_ASSERTIONS,
@@ -71,6 +70,7 @@ export type {
   StoreOptions,
   Store,
   Repository,
+  DefineStoreFn,
   DefaultCRUD,
   RepositoryContext,
   CustomQueryFn,

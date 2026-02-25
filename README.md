@@ -83,13 +83,13 @@ const users = db.defineStore('users', columns, {
 
 ```typescript
 const usersTable = db.defineTable('users', columns, {
-  indexes: { 
-    email: { unique: true } 
+  indexes: {
+    email: { unique: true }
   },
 })
 
-// Later, add queries via createRepository
-const users = db.createRepository(usersTable, {
+// Later, add queries by passing the TableDef to defineStore
+const users = db.defineStore(usersTable, {
   findByEmail: (ctx) => async (email) =>
     ctx.findOne({ email }),
 })
