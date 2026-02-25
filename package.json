@@ -1,6 +1,6 @@
 {
   "name": "storium",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "Lightweight, database-agnostic storage abstraction built on Drizzle ORM",
   "keywords": ["drizzle", "orm", "database", "repository", "schema", "validation"],
   "author": "Rob McLarty <r@robmclarty.com> (https://robmclarty.com)",
@@ -44,7 +44,7 @@
         "types": "./dist/migrate.d.cts",
         "default": "./dist/migrate.cjs"
       }
-    },
+    }
   },
   "bin": {
     "storium": "./dist/bin/storium.js"
