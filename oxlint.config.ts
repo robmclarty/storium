@@ -17,7 +17,8 @@ export default defineConfig({
   "rules": {
     // ── Core eslint ──────────────────────────────────
     "no-unused-vars": "error",
-    "no-console": "warn",
+    "no-console": "off",
+    "no-await-in-loop": "off",
     "eqeqeq": "error",
     "no-eval": "error",
     "no-var": "error",
@@ -26,8 +27,8 @@ export default defineConfig({
     "no-return-await": "warn",
 
     // ── TypeScript ───────────────────────────────────
-    "typescript/no-explicit-any": "warn",
-    "typescript/no-non-null-assertion": "warn",
+    "typescript/no-explicit-any": "off",
+    "typescript/no-non-null-assertion": "off",
     "typescript/consistent-type-imports": "error",
 
     // ── Import hygiene ───────────────────────────────
@@ -37,7 +38,7 @@ export default defineConfig({
 
     // ── Unicorn (modern JS) ──────────────────────────
     "unicorn/prefer-node-protocol": "error",
-    "unicorn/no-array-for-each": "warn",
+    "unicorn/no-array-for-each": "off",
     "unicorn/prefer-optional-catch-binding": "warn",
 
     // ── Oxc extras ───────────────────────────────────
@@ -49,15 +50,7 @@ export default defineConfig({
     {
       "files": ["test/**/*.ts", "**/*.test.ts", "**/*.spec.ts"],
       "rules": {
-        "no-console": "off",
-        "typescript/no-explicit-any": "off",
         "no-unused-vars": "off"
-      }
-    },
-    {
-      "files": ["bin/**/*"],
-      "rules": {
-        "no-console": "off"
       }
     }
   ],

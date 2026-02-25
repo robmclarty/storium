@@ -14,7 +14,7 @@
  * or a path specified via --config.
  */
 
-import path from 'path'
+import path from 'node:path'
 import { generate, migrate, push, status } from '../src/migrate/commands'
 import { runSeeds } from '../src/migrate/seed'
 import { connect } from '../src/connect'

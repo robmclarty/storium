@@ -20,7 +20,7 @@
  * })
  */
 
-import path from 'path'
+import path from 'node:path'
 import { glob } from 'glob'
 import type { StoriumConfig } from '../core/types'
 import { ConfigError } from '../core/errors'
@@ -96,7 +96,7 @@ export const runSeeds = async (
   const files = await glob(pattern, { cwd: process.cwd(), absolute: true })
 
   // Sort alphabetically so naming convention (001_, 002_) controls order
-  const sorted = files.sort((a, b) => path.basename(a).localeCompare(path.basename(b)))
+  const sorted = files.toSorted((a, b) => path.basename(a).localeCompare(path.basename(b)))
 
   if (sorted.length === 0) {
     return { success: true, message: 'No seed files found.', count: 0 }

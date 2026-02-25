@@ -37,8 +37,6 @@ import { createPrepFn } from './prep'
 
 // -------------------------------------------------------------- Types --
 
-type CrudOptions = Pick<PrepOptions, 'force' | 'tx'>
-
 const getDialect = (db: any): Dialect => db.$dialect ?? 'postgresql'
 
 // ------------------------------------------------------- CRUD Builder --

@@ -33,7 +33,7 @@ const dslTypeToZod = (config: DslColumnConfig): ZodType => {
   const base = ZOD_TYPE_MAP[config.type]
   if (!base) return z.any()
 
-  let field = typeof base === 'function' ? base(config) : base
+  const field = typeof base === 'function' ? base(config) : base
 
   return field
 }

@@ -6,3 +6,5 @@
  * - Shared test utilities and custom matchers
  * - Environment configuration
  */
+
+export const setup = { sample: 'keep' }
