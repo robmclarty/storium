@@ -8,5 +8,10 @@
   },
   "devDependencies": {
     "tsx": "4.21.0"
+  },
+  "dependencies": {
+    "storium": "file:../..",
+    "better-sqlite3": "^12.6.2",
+    "drizzle-orm": "^0.45.1"
   }
 }
