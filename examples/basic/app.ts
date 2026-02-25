@@ -77,12 +77,12 @@ try {
 
 // --- Transactions ---
 
-const result = await db.withTransaction(async (tx) => {
+const txResult = await db.withTransaction(async (tx) => {
   const u1 = await users.create({ email: 'carol@example.com', name: 'Carol' }, { tx })
   const u2 = await users.create({ email: 'dave@example.com', name: 'Dave' }, { tx })
   return [u1, u2]
 })
-console.log('Created in transaction:', result)
+console.log('Created in transaction:', txResult)
 
 // --- Runtime schemas ---
 

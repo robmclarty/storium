@@ -108,7 +108,9 @@ const buildDefaultCrud = (
       onlyMutables: false,
     })
 
-    if (getDialect(db) === 'postgresql') {
+    const dialect = getDialect(db)
+
+    if (dialect === 'postgresql' || dialect === 'sqlite') {
       const rows = await getDb(opts)
         .insert(table)
         .values(prepared)
@@ -117,6 +119,7 @@ const buildDefaultCrud = (
       return rows[0]
     }
 
+    // MySQL: no RETURNING support — insert then select back by PK
     await getDb(opts).insert(table).values(prepared)
     const pk = prepared[primaryKey]
     const rows = await getDb(opts)
@@ -139,7 +142,9 @@ const buildDefaultCrud = (
       onlyMutables: true,
     })
 
-    if (getDialect(db) === 'postgresql') {
+    const dialect = getDialect(db)
+
+    if (dialect === 'postgresql' || dialect === 'sqlite') {
       const rows = await getDb(opts)
         .update(table)
         .set(prepared)
@@ -149,6 +154,7 @@ const buildDefaultCrud = (
       return rows[0]
     }
 
+    // MySQL: no RETURNING support — update then select back
     await getDb(opts)
       .update(table)
       .set(prepared)

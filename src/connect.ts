@@ -123,10 +123,34 @@ const buildConnectionUrl = (config: ConnectConfig): string => {
 
 // ------------------------------------------------ Transaction Helper --
 
+import { sql } from 'drizzle-orm'
+
 /**
  * Create a `withTransaction` function bound to a Drizzle db instance.
+ *
+ * For PostgreSQL and MySQL, delegates to Drizzle's built-in transaction
+ * which supports async callbacks natively.
+ *
+ * For SQLite (including memory), better-sqlite3 rejects async callbacks,
+ * so we manually manage BEGIN/COMMIT/ROLLBACK and pass the db instance
+ * as the transaction context. This works because SQLite serializes all
+ * operations on a single connection — the async callback is safe.
  */
-const createWithTransaction = (db: any) => {
+const createWithTransaction = (db: any, dialect: Dialect) => {
+  if (dialect === 'sqlite') {
+    return async <T>(fn: (tx: any) => Promise<T>): Promise<T> => {
+      db.run(sql`BEGIN`)
+      try {
+        const result = await fn(db)
+        db.run(sql`COMMIT`)
+        return result
+      } catch (err) {
+        db.run(sql`ROLLBACK`)
+        throw err
+      }
+    }
+  }
+
   return async <T>(fn: (tx: any) => Promise<T>): Promise<T> => {
     return db.transaction(fn)
   }
@@ -151,7 +175,7 @@ const buildInstance = (
     dialect,
     defineTable: createDefineTable(dialect, registry),
     defineStore: createDefineStore(dialect, db, registry),
-    withTransaction: createWithTransaction(db),
+    withTransaction: createWithTransaction(db, dialect),
     disconnect: teardown,
   }
 }
