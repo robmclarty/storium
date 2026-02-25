@@ -122,9 +122,10 @@ export const getDialectMapping = (dialect: Dialect): DialectMapping => {
   switch (dialect) {
     case 'postgresql': return getPostgresMapping()
     case 'mysql':      return getMysqlMapping()
-    case 'sqlite':     return getSqliteMapping()
+    case 'sqlite':
+    case 'memory':     return getSqliteMapping()
     default:
-      throw new ConfigError(`Unknown dialect: '${dialect}'. Supported: postgresql, mysql, sqlite`)
+      throw new ConfigError(`Unknown dialect: '${dialect}'. Supported: postgresql, mysql, sqlite, memory`)
   }
 }
 

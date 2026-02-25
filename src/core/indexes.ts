@@ -109,7 +109,8 @@ export const buildIndexes = (
         uniqueIndexFn = mysql.uniqueIndex
         break
       }
-      case 'sqlite': {
+      case 'sqlite':
+      case 'memory': {
         const sqlite = require('drizzle-orm/sqlite-core')
         indexFn = sqlite.index
         uniqueIndexFn = sqlite.uniqueIndex

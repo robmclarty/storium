@@ -10,7 +10,7 @@ import type { ZodType } from 'zod'
 
 // ---------------------------------------------------------------- Dialect --
 
-export type Dialect = 'postgresql' | 'mysql' | 'sqlite'
+export type Dialect = 'postgresql' | 'mysql' | 'sqlite' | 'memory'
 
 // ------------------------------------------------------------- Assertions --
 

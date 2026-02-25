@@ -54,6 +54,7 @@ const buildDrizzleKitConfig = (config: StoriumConfig) => {
     postgresql: 'postgresql',
     mysql: 'mysql',
     sqlite: 'sqlite',
+    memory: 'sqlite',
   }
 
   return {

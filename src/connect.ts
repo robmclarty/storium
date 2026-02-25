@@ -28,10 +28,16 @@ import { createAssertionRegistry } from './core/test'
  * Create a Drizzle database instance from a connection config.
  * Lazily loads the appropriate driver based on dialect.
  */
-const createDrizzleInstance = (config: ConnectConfig): { db: any; teardown: () => Promise<void> } => {
-  const url = config.url ?? buildConnectionUrl(config)
+const resolveDialect = (dialect: Dialect): Exclude<Dialect, 'memory'> =>
+  dialect === 'memory' ? 'sqlite' : dialect
 
-  switch (config.dialect) {
+const createDrizzleInstance = (config: ConnectConfig): { db: any; teardown: () => Promise<void> } => {
+  const dialect = resolveDialect(config.dialect)
+  const url = dialect === 'sqlite' && config.dialect === 'memory'
+    ? ':memory:'
+    : config.url ?? buildConnectionUrl(config)
+
+  switch (dialect) {
     case 'postgresql': {
       const { Pool } = require('pg')
       const { drizzle } = require('drizzle-orm/node-postgres')
@@ -41,7 +47,7 @@ const createDrizzleInstance = (config: ConnectConfig): { db: any; teardown: () =
         max: config.pool?.max,
       })
       const db = drizzle(pool)
-      db.$dialect = config.dialect
+      db.$dialect = dialect
       return {
         db,
         teardown: () => pool.end(),
@@ -56,7 +62,7 @@ const createDrizzleInstance = (config: ConnectConfig): { db: any; teardown: () =
         ...(config.pool?.max !== undefined && { connectionLimit: config.pool.max }),
       })
       const db = drizzle(pool)
-      db.$dialect = config.dialect
+      db.$dialect = dialect
       return {
         db,
         teardown: () => pool.end(),
@@ -68,7 +74,7 @@ const createDrizzleInstance = (config: ConnectConfig): { db: any; teardown: () =
       const { drizzle } = require('drizzle-orm/better-sqlite3')
       const sqlite = new Database(url === ':memory:' ? ':memory:' : url)
       const db = drizzle(sqlite)
-      db.$dialect = config.dialect
+      db.$dialect = dialect
       return {
         db,
         teardown: async () => sqlite.close(),
@@ -77,7 +83,7 @@ const createDrizzleInstance = (config: ConnectConfig): { db: any; teardown: () =
 
     default:
       throw new ConfigError(
-        `Unknown dialect: '${config.dialect}'. Supported: postgresql, mysql, sqlite`
+        `Unknown dialect: '${config.dialect}'. Supported: postgresql, mysql, sqlite, memory`
       )
   }
 }
@@ -167,11 +173,12 @@ export const connect = (config: ConnectConfig): StoriumInstance => {
     throw new ConfigError('`dialect` is required in connection config')
   }
 
+  const dialect = resolveDialect(config.dialect)
   const { db, teardown } = createDrizzleInstance(config)
 
   return buildInstance(
     db,
-    config.dialect,
+    dialect,
     config.assertions ?? {},
     teardown
   )
@@ -198,11 +205,12 @@ export const fromDrizzle = (
     throw new ConfigError('`dialect` is required when using fromDrizzle()')
   }
 
-  drizzleDb.$dialect = config.dialect
+  const dialect = resolveDialect(config.dialect)
+  drizzleDb.$dialect = dialect
 
   return buildInstance(
     drizzleDb,
-    config.dialect,
+    dialect,
     config.assertions ?? {},
     async () => {} // No-op teardown — user manages their own connection
   )
