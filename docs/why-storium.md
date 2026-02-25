@@ -1,7 +1,7 @@
 # Why Storium?
 
 Storium is a schema-driven policy layer for data access built on top of
-[Drizzle ORM](https://orm.drizzle.team/) and [Zod](https://zod.dev/). It
+[Drizzle](https://orm.drizzle.team/) and [Zod](https://zod.dev/). It
 doesn't replace either library — it provides a declarative DSL that derives
 tables, validation schemas, and repository operations from a single source of
 truth.

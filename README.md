@@ -1,6 +1,6 @@
 # Storium
 
-A lightweight, database-agnostic storage toolkit built on [Drizzle ORM](https://orm.drizzle.team).
+A lightweight, database-agnostic storage toolkit built on [Drizzle](https://orm.drizzle.team) and [Zod](https://zod.dev/).
 
 I built Storium because I wanted something a bit more than raw SQL, but a bit
 less than a full-blow ORM; something that handles the tedious stuff (validation, sanitization, types, CRUD) without trying to dictate how your data should look or behave. You define your schema once and Storium gives you TypeScript types, JSON Schema, Zod contracts, a repository with full CRUD, and migration tooling. All from a single `defineStore()` call.
