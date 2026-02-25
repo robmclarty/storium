@@ -20,7 +20,6 @@ import { connect, fromDrizzle } from './connect'
 const storium = { connect, fromDrizzle }
 
 export default storium
-export { connect, fromDrizzle }
 
 // -------------------------------------------------------- Core Utilities --
 
