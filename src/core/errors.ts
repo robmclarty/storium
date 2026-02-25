@@ -31,7 +31,7 @@ export class ValidationError extends Error {
   constructor(errors: FieldError[]) {
     const count = errors.length
     const summary = count === 1
-      ? errors[0].message
+      ? errors[0]!.message
       : `${count} validation error(s)`
 
     super(`Validation failed: ${summary}`)

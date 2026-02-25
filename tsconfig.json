@@ -18,7 +18,7 @@
     "isolatedModules": true,
     "noUncheckedIndexedAccess": true,
     "noUnusedLocals": true,
-    "noUnusedParameters": true,
+    "noUnusedParameters": false,
     "exactOptionalPropertyTypes": false,
     "paths": {
       "storium": ["./src/index.ts"],

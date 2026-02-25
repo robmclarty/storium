@@ -50,7 +50,7 @@ const ZOD_TYPE_MAP: Record<DslType, ZodType | ((c: DslColumnConfig) => ZodType)>
   boolean:   z.boolean(),
   timestamp: z.coerce.date(),
   date:      z.coerce.date(),
-  jsonb:     z.record(z.unknown()),
+  jsonb:     z.record(z.string(), z.unknown()),
 }
 
 // -------------------------------------------------------- Field Builder --

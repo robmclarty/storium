@@ -23,7 +23,6 @@
 import type {
   Dialect,
   ColumnsConfig,
-  ColumnConfig,
   TableOptions,
   TableDef,
   TableAccess,
@@ -69,14 +68,14 @@ const injectTimestamps = (columns: ColumnsConfig): ColumnsConfig => {
 const deriveAccess = (columns: ColumnsConfig): TableAccess => {
   const allKeys = Object.keys(columns)
 
-  const hidden = allKeys.filter(k => columns[k].hidden === true)
-  const selectable = allKeys.filter(k => !columns[k].hidden)
-  const mutable = allKeys.filter(k => columns[k].mutable === true && !columns[k].hidden)
+  const hidden = allKeys.filter(k => columns[k]?.hidden === true)
+  const selectable = allKeys.filter(k => !columns[k]?.hidden)
+  const mutable = allKeys.filter(k => columns[k]?.mutable === true && !columns[k]?.hidden)
 
   // Insertable: mutable columns + required columns (even if not mutable,
   // a required column must be provided on insert)
   const insertable = allKeys.filter(k =>
-    (columns[k].mutable === true || columns[k].required === true) && !columns[k].hidden
+    (columns[k]?.mutable === true || columns[k]?.required === true) && !columns[k]?.hidden
   )
 
   return { selectable, mutable, insertable, hidden }

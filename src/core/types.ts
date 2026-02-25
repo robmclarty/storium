@@ -6,7 +6,7 @@
  * runtime schema types, and compile-time generic type utilities.
  */
 
-import type { ZodObject, ZodType } from 'zod'
+import type { ZodType } from 'zod'
 
 // ---------------------------------------------------------------- Dialect --
 
@@ -80,8 +80,8 @@ export type RawColumnConfig = BaseColumnMeta & {
 export type ColumnConfig = DslColumnConfig | RawColumnConfig
 
 /** Type guard: is this a raw column config? */
-export const isRawColumn = (config: ColumnConfig): config is RawColumnConfig =>
-  'raw' in config && typeof (config as any).raw === 'function'
+export const isRawColumn = (config: ColumnConfig | undefined): config is RawColumnConfig =>
+  !!config && 'raw' in config && typeof (config as any).raw === 'function'
 
 /** A record of column names to their configs. */
 export type ColumnsConfig = Record<string, ColumnConfig>

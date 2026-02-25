@@ -17,7 +17,6 @@
  */
 
 import { glob } from 'glob'
-import path from 'path'
 
 // --------------------------------------------------------------- Types --
 
@@ -69,7 +68,7 @@ export const collectSchemas = async (
     try {
       const mod = await import(filePath)
 
-      for (const [exportName, exportValue] of Object.entries(mod)) {
+      for (const [_exportName, exportValue] of Object.entries(mod)) {
         if (isTableDef(exportValue)) {
           const tableDef = exportValue as { table: any; name: string }
           schemaMap[tableDef.name] = tableDef.table

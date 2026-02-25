@@ -15,7 +15,7 @@
  * }
  */
 
-import type { AssertionFn, AssertionRegistry, TestFn } from './types'
+import type { AssertionRegistry, TestFn } from './types'
 
 // -------------------------------------------------- Built-in Assertions --
 

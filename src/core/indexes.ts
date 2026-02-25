@@ -20,7 +20,7 @@
  * }
  */
 
-import type { Dialect, IndexesConfig, IndexConfig, DslIndexConfig, ColumnsConfig } from './types'
+import type { Dialect, IndexesConfig, DslIndexConfig, ColumnsConfig } from './types'
 import { isRawIndex } from './types'
 import { SchemaError } from './errors'
 

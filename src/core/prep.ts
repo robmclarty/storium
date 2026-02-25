@@ -17,7 +17,6 @@
 
 import type {
   ColumnsConfig,
-  ColumnConfig,
   DslColumnConfig,
   DslType,
   TableAccess,

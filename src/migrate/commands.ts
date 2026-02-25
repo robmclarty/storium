@@ -18,7 +18,6 @@
  * await status(config)     // Show pending migrations
  */
 
-import path from 'path'
 import type { StoriumConfig } from '../core/types'
 import { ConfigError } from '../core/errors'
 

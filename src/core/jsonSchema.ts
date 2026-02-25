@@ -71,7 +71,7 @@ const DSL_TYPE_MAP: Record<DslType, JsonSchemaType | ((c: DslColumnConfig) => Js
 const columnToJsonSchema = (config: ColumnConfig): JsonSchemaType => {
   if (isRawColumn(config)) {
     // Raw columns: can't infer type, default to permissive
-    return {}
+    return {} as JsonSchemaType
   }
 
   return dslTypeToJsonSchema(config as DslColumnConfig)
@@ -132,7 +132,7 @@ export const buildJsonSchemas = (
   const insertRequired = access.insertable.filter(key => {
     const col = columns[key]
     if (col?.required) return true
-    if (!isRawColumn(col) && (col as DslColumnConfig).notNull && !(col as DslColumnConfig).default) return true
+    if (!isRawColumn(col) && (col as DslColumnConfig)?.notNull && !(col as DslColumnConfig)?.default) return true
     return false
   })
 
