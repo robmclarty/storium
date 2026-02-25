@@ -1,0 +1,1 @@
+export { withProperties } from './withProperties'

@@ -1,324 +1,290 @@
 # Storium
 
-Storium is an abstraction layer that works on top of (and with)
-[Knex](https://knexjs.org/).
+A lightweight, database-agnostic storage toolkit built on [Drizzle ORM](https://orm.drizzle.team).
 
-I built this as a more intermediate level abstraction that extends the capabilities
-of Knex, groups some common functionality (stantization, validation, restrictions)
-for convenience, but stands back and doesn't try to dictate how your data
-structures should look or behave like a full ORM might do.
+I built Storium because I wanted something a bit more than raw SQL, but a bit
+less than a full-blow ORM; something that handles the tedious stuff (validation, sanitization, types, CRUD) without trying to dictate how your data should look or behave. You define your schema once and Storium gives you TypeScript types, JSON Schema, Zod contracts, a repository with full CRUD, and migration tooling. All from a single `defineStore()` call.
 
-With this, you can think less about the low-level database/query problems, and
-more about your app-level storage problems (i.e., not *how* things are stored,
-but *what* gets stored and how should your app *behave*). You are in control
-of the *how* by defining your own query functions, validations, sanitizations,
-and schemas.
+Think less about the low-level database and query plumbing, and more about your app-level storage problems — not *how* things are stored, but *what* gets stored and how your app should *behave*. You stay in control of the *how* by defining your own query functions, validations, transforms, and schemas. Storium just makes the boring parts disappear.
 
-## Install
+## Quick Start
 
-`npm install storium`
+```bash
+npm install storium
 
-## Usage
+# Plus your database driver of choice:
+npm install pg             # PostgreSQL
+npm install mysql2         # MySQL
+npm install better-sqlite3 # SQLite
+```
 
-### Init
+```typescript
+import storium from 'storium'
 
-To initialze `storium` I like wrapping it in my own "adapter" module which helps
-act as a singleton reference from the rest of my application (I do the same with
-`knex` as well). Then I only need to worry about configuration and initialization
-in one central location that's predictable to reference.
+const db = storium.connect({
+  dialect: 'postgresql',
+  url: process.env.DATABASE_URL,
+})
 
-See: https://knexjs.org/guide/#configuration-options
+const users = db.defineStore('users', {
+  id:    { type: 'uuid', primaryKey: true, default: 'random_uuid' },
+  email: { type: 'varchar', maxLength: 255, mutable: true, required: true,
+           transform: (v) => String(v).trim().toLowerCase(),
+           validate: (v, test) => {
+             test(v, 'not_empty', 'Email cannot be empty')
+             test(v, 'is_email')
+           }
+  },
+  name:  { type: 'varchar', maxLength: 255, mutable: true },
+}, {
+  indexes: { 
+    id: {},
+    email: { unique: true } 
+  },
+})
 
-`knex.js`
+// CRUD — ready to go
+const user = await users.create({ 
+  email: 'alice@example.com', 
+  name: 'Alice' 
+})
+const found = await users.findById(user.id)
+await users.update(user.id, { name: 'Alice B.' })
+```
 
-```javascript
-const knex = require('knex')({
-  client: 'pg',
-  connection: {
-    host : '127.0.0.1',
-    port : 5432,
-    user : 'your_database_user',
-    password : 'your_database_password',
-    database : 'myapp_test'
+## Features
+
+- **Single source of truth** — one schema definition drives TypeScript types, JSON Schema, Zod schemas, and database migrations
+- **Repository pattern** — default CRUD with extensible custom queries
+- **Three-tier validation** — JSON Schema for the HTTP edge, Zod for runtime, prep pipeline for business rules
+- **Database agnostic** — PostgreSQL, MySQL, and SQLite via Drizzle
+- **Composable helpers** — `withBelongsTo`, `withMembers`, `withCache`, `withTransaction`
+- **Fastify integration** — `toJsonSchema()` for route validation
+- **Migration tooling** — thin CLI wrapping drizzle-kit
+- **Stands back** — Storium doesn't try to own your architecture. It gives you tools and gets out of the way.
+
+## Core Concepts
+
+### defineStore vs defineTable
+
+`defineStore` is the primary API; defines schema + queries in one call. This is where I'd start for most things:
+
+```typescript
+const users = db.defineStore('users', columns, {
+  indexes: { email: { unique: true } },
+  queries: {
+    findByEmail: (ctx) => async (email) =>
+      ctx.findOne({ email }),
   }
 })
-
-module.exports = knex
 ```
 
-All that's needed to configure `storium` is to pass your configured `knex`
-instance reference into it.
+`defineTable` defines schema only (no queries). I added this for the cases where I need to break circular dependencies (e.g., sometimes two stores reference each other and I need to define the table shape first, then wire up the queries later):
 
-`storium.js`
-
-```javascript
-const knex = require('./knex.js')
-const storium = require('storium')(knex)
-
-module.exports = storium
-```
-
-### Store
-
-With a configured instance of `storium` you can now use it to create new
-*stores* by providing its database table *name*, a *schema*, and any custom
-query functions you've created that you'd like to append to the store.
-
-The basic way to create a new store is to use the `storium.store()` function
-like this:
-
-`example_store.js`
-
-```javascript
-const storium = require('./storium.js')
-
-const example_schema = storium.schema({
-  // ...see example schema below
+```typescript
+const usersTable = db.defineTable('users', columns, {
+  indexes: { 
+    id: {},
+    email: { unique: true } 
+  },
 })
 
-const custom_func_1 = () => {}
-const custom_func_2 = () => {}
-const custom_func_3 = () => {}
-
-const example_store = storium.store('examples', example_schema, {
-  custom_func_1,
-  custom_func_2,
-  custom_func_3
-})
-
-module.exports = example_store
-```
-
-The signature for the `store()` function is as follows:
-
-`storium.store(table_name, schema_dfn, optional_custom_functions)`
-
-- `table_name` is the literal string name of the database table for this store
-- `schema_dfn` is an object containing the schema definition (see below)
-- `optional_custom_functions` is an object containing custom query functions
-
-I'll explain custom query functions below, but out of the box, a store will have
-the following query functions:
-
-- `find()`
-- `find_all()`
-- `find_one()`
-- `find_by_id()`
-- `find_by_id_in()`
-- `create()`
-- `update()`
-- `destroy()`
-- `destroy_all()`
-
-...as well as other helper functions and properties:
-
-- `knex`
-- `name`
-- `schema`
-- `selectables`
-- `mutables`
-- `sanitize()`
-- `validate()`
-- `mutable()`
-- `prep()`
-
-### Schema
-
-A *schema* is a way to define what properties can be seen, what properties can
-be modified, custom transformations to "sanitize" input data, which properties
-are required, as well as various validations and types.
-
-Each property in the schema must correspond exactly to the underlying database
-table columns being referenced when the store is initialized. Use square
-brackets if your table names cannot be defined as JS names (e.g.,
-`['my-custom-column-name']`).
-
-```javascript
-const my_custom_validation = value => {
-  return value === 'something custom'
-}
-
-const example_schema = storium.schema({
-  id: Number,
-  user_id: {
-    type: Number,
-    required: true
-  },
-  name: {
-    type: String,
-    mutable: true
-  },
-  url: {
-    type: String,
-    mutable: true,
-    required: true,
-    sanitize: value => String(value).trim(),
-    validate: (value, test) => {
-      test(value, 'not_empty', 'url must have a non-empty value')
-      test(value, my_custom_validation, 'url must be a valid')
-    }
-  },
-  is_admin: Boolean,
-  created_at: Date,
-  updated_at: Date
+// Later, add queries via createRepository
+const users = db.createRepository(usersTable, {
+  findByEmail: (ctx) => async (email) =>
+    ctx.findOne({ email }),
 })
 ```
 
-In this example, some properties are given a simple basic JS type. By
-default, a property will be treated as valid only if the input type matches the
-basic JS type defined in the schema.
+### Column Definitions
 
-More customizations can be made by assigning a custom object to a property
-schema, in which you can define various other settings such as custom
-`sanitize()` logic, custom `validate()` logic, if a property is "mutable" (that
-is, marking it as a field that a user can modify), a basic JS type, if
-the property is a required field, and whether it is selectable (e.g., perhaps
-on a user store you want to explicitly say that the `password` field should not
-be selectable as it is only used during authentication).
+Three modes for every column, depending on how much control you need:
 
-The `test()` function that is passed into the `validate()` function provides a
-basic way to validate a `value`. It is not a requirement, but provides some
-convenience. It's signature is `test(value, validation, error)` where `value` is
-the value being tested, `validation` can be either a function which returns
-`true` if the value is valid, or a string referencing one of the built-in
-validation methods ('is_url', 'is_email', 'is_numeric', or 'not_empty'). And
-finally `error` is either a string message to be thrown when not valid, or a
-function which will be called back when not valid and handled however you want
-to handle it.
+```typescript
+// DSL (90% of cases — just declare what it is)
+email: { type: 'varchar', maxLength: 255, mutable: true }
+
+// DSL + custom (one Drizzle tweak on top)
+email: { type: 'varchar', maxLength: 255, custom: col => col.unique() }
+
+// Raw (full Drizzle control — Storium steps aside entirely)
+meta: { raw: () => jsonb('meta').default({}) }
+```
+
+Column metadata (`mutable`, `hidden`, `required`, `transform`, `validate`) works with all modes. The `transform` callback runs before validation and is where you'd put sanitization (trim, lowercase), enrichment, or any other pre-save logic. Basically anything you'd otherwise scatter across your route handlers ;)
 
 ### Custom Queries
 
-If the basic set of query functions is not sufficient, you can easily append
-additional custom query functions too. Each function takes the core storium
-properties listed above and should return a new function which takes your
-custom input.
+This is where Storium really earns its keep. Custom queries receive `ctx` with the database handle and all default CRUD operations. You can override defaults by name. `ctx` always has the originals, so you can compose on top of them rather than starting from scratch:
 
-```javascript
-const find_by_username_or_email = ({ knex, selectables, name }) => async ({ email, username }) => {
-  return knex.first(selectables)
-    .from(name)
-    .where({ username: String(username) })
-    .orWhere({ email: String(email) })
+```typescript
+queries: {
+  // Override create — hash password before insert
+  create: (ctx) => async (input, opts) => {
+    const hashed = { ...input, password: await hash(input.password) }
+    return ctx.create(hashed, { ...opts, force: true })
+  },
+
+  // New query — just write Drizzle like you normally would
+  findByEmail: (ctx) => async (email) =>
+    ctx.db.select(ctx.selectColumns)
+      .from(ctx.table)
+      .where(eq(ctx.table.email, email))
+      .then(r => r[0] ?? null),
 }
+```
 
-const find_by_user_id = ({ knex, selectables, name }) => async user_id => {
-  return knex.select(selectables)
-    .from(name)
-    .where({ user_id })
+The pattern is always the same: `(ctx) => async (...yourArgs) => result`. Storium gives you the tools via `ctx`, you decide what to do with them.
+
+### Schemas
+
+Every store/table generates runtime schemas that you can use however you like. I find this especially handy for keeping validation consistent between my API layer and my business logic without duplicating definitions (and trying to keep them all in sync):
+
+```typescript
+// Validate input (throws ValidationError)
+users.schemas.insert.validate(data)
+
+// Try without throwing
+const result = users.schemas.insert.tryValidate(data)
+
+// JSON Schema (e.g., as used by Fastify)
+app.post('/users', {
+  schema: { body: users.schemas.insert.toJsonSchema() },
+})
+
+// Zod for composition
+const extended = users.schemas.insert.zod.extend({ extra: z.string() })
+```
+
+### Index DSL
+
+```typescript
+indexes: {
+  email: { unique: true },                         // → users_email_unique
+  school_id: {},                                   // → users_school_id_idx
+  school_role: { columns: ['school_id', 'role'] }, // → users_school_role_idx
+  active_email: {                                  // Partial index
+    columns: ['email'],
+    unique: true,
+    where: (table) => isNull(table.deleted_at),
+  },
+  search: {                                        // Raw (full Drizzle control)
+    raw: (table) => index('search_gin').using('gin', table.search_vector),
+  },
 }
+```
 
-const update_last_login = ({ knex, update }) => async id => {
-  return update(id, {
-    login_at: knex.fn.now()
-  }, { force: true })
-}
+## Helpers
 
-// Override the default `create()` function, but call default as result.
-const transformed_create = ({ knex, selectables, name, create }) => async input => {
-  // ...do something custom here (e.g., maybe transform the input or check some data first?)
-  const transformed_input = my_transformer(input)
+Storium ships a small set of composable helpers for relationship and caching patterns that come up constantly. Rather than writing the same join logic in every project, you can drop these in and move on.
 
-  // Pass intermediate result to default create() function (not necessary, but one use-case example):
-  return create(transformed_input)
-}
+### withBelongsTo
 
-const example_store = storium.store('examples', example_schema, {
-  find_by_username_or_email,
-  find_by_user_id,
-  update_last_login,
-  create: transformed_create // overrides default create
+```typescript
+import { withBelongsTo } from 'storium'
+
+const users = db.defineStore('users', columns, {
+  queries: {
+    ...withBelongsTo(schools, 'school_id', { alias: 'school', select: ['name'] }),
+  },
+})
+
+const user = await users.findWithSchool(userId)
+```
+
+### withMembers
+
+```typescript
+import { withMembers } from 'storium'
+
+const teams = db.defineStore('teams', columns, {
+  queries: {
+    ...withMembers(teamMembers, 'team_id'),
+  },
+})
+
+await teams.addMember(teamId, userId, { role: 'captain' })
+await teams.isMember(teamId, userId)
+```
+
+### withCache
+
+```typescript
+import { withCache } from 'storium'
+
+const cachedUsers = withCache(users, redisAdapter, {
+  findById: { ttl: 300, key: (id) => `user:${id}` },
 })
 ```
 
-### Use
+### Transactions
 
-From elsewhere in your app, you can use your new store modules to interface with
-your database without being concerned about the details of *how* that works.
-Storium (and Knex) will have encapsulated all storage concerns providing a
-higher level interface for usage within your app.
+```typescript
+const result = await db.withTransaction(async (tx) => {
+  const user = await users.create({ name: 'Alice' }, { tx })
+  const team = await teams.create({ name: 'Alpha', owner_id: user.id }, { tx })
+  return { user, team }
+})
+```
 
-Assuming some sort of [ExpressJS](https://expressjs.com/) app, a given
-resource's control functions might look something like this:
+## Fastify Integration
 
-`example_controller.js`
+Storium's JSON Schema output plugs directly into Fastify's route validation. The `withProperties` helper lets you extend a store's generated schema with extra fields without rewriting it from scratch.
 
-```javascript
-const example_store = require('./example_store.js')
+```typescript
+import { withProperties } from 'storium/fastify'
 
-// POST /examples
-const create_example = async (req, res, next) => {
-  const example = await example_store.create(req.body)
+app.post('/users', {
+  schema: {
+    body: withProperties(
+      users.schemas.insert.toJsonSchema(),
+      { invite_code: { type: 'string', minLength: 8 } },
+      ['invite_code'],
+    ),
+  },
+}, handler)
+```
 
-  res.json({
-    message: 'Example created',
-    example
-  })
-}
+## Migrations
 
-// GET /examples
-const get_all_examples = async (req, res, next) => {
-  const examples = await example_store.find_all()
+Storium wraps drizzle-kit with a thin CLI so you don't have to configure it directly. Schema changes are diffed automatically. Define your columns, run `generate`, and apply.
 
-  res.json({
-    message: 'Examples found',
-    examples
-  })
-}
+```bash
+npx storium generate   # Diff schemas → create SQL migration
+npx storium migrate    # Apply pending migrations
+npx storium push       # Push directly (dev only)
+npx storium status     # Check migration state
+npx storium seed       # Run seed files
+```
 
-// GET /users/:user_id/examples
-//
-// This is an example of using a custom-defined query function (same kind of
-// interface as defaults).
-const get_user_examples = async (req, res, next) => {
-  const user_id = Number(req.params.user_id)
-  const examples = await example_store.find_by_user_id(user_id)
+Configuration in `storium.config.ts`:
 
-  res.json({
-    message: 'User examples found',
-    examples
-  })
-}
+```typescript
+import { defineConfig } from 'storium/config'
 
-// GET /examples/:example_id
-const get_example = async (req, res, next) => {
-  const example_id = Number(req.params.example_id)
-  const example = await example_store.find_by_id(example_id)
+export default defineConfig({
+  dialect: 'postgresql',
+  connection: { url: process.env.DATABASE_URL },
+  schema: ['./src/entities/**/*.schema.ts'],
+  migrations: { directory: './migrations' },
+  seeds: { directory: './seeds' },
+})
+```
 
-  res.json({
-    message: 'Example found',
-    example
-  })
-}
+## Escape Hatches
 
-// PATCH /examples/:example_id
-const modify_example = async (req, res, next) => {
-  const example_id = Number(req.params.example_id)
-  const example = await example_store.update(example_id, req.body)
+Storium is not trying to be a walled garden. Direct Drizzle access is always available. If you need to drop down a level, nothing is stopping you:
 
-  res.json({
-    message: 'Example updated',
-    example
-  })
-}
+```typescript
+// Raw Drizzle instance
+db.drizzle.execute(sql`SELECT 1`)
 
-// DELETE /examples/:example_id
-const remove_example = async (req, res, next) => {
-  const example_id = Number(req.params.example_id)
-  const num_removed = await example_store.destroy(example_id)
+// Bring your own Drizzle
+import storium from 'storium'
+const db = storium.fromDrizzle(myDrizzleInstance, { dialect: 'postgresql' })
 
-  res.json({
-    message: 'Example updated',
-    num_removed
-  })
-}
-
-module.exports = {
-  create_example,
-  get_all_examples,
-  get_example,
-  modify_example,
-  remove_example
-}
+// Raw columns bypass the DSL entirely
+meta: { raw: () => jsonb('meta').default({}) }
 ```
 
 ## License

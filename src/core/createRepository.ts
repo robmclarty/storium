@@ -1,0 +1,254 @@
+/**
+ * Storium v1 — createRepository
+ *
+ * The repository factory. Takes a Drizzle database instance, a TableDef,
+ * and optional custom query functions. Returns a repository object with
+ * default CRUD operations + any customs.
+ *
+ * Custom queries receive `ctx` containing the original default operations,
+ * enabling composition and overrides. If a custom query has the same name
+ * as a default (e.g., `create`), it overrides the default on the returned
+ * object, but `ctx.create` still references the original.
+ *
+ * @example
+ * const userRepo = db.createRepository(usersTable, {
+ *   findByEmail: (ctx) => async (email) =>
+ *     ctx.db.select(ctx.selectColumns).from(ctx.table)
+ *       .where(eq(ctx.table.email, email)).then(r => r[0] ?? null),
+ *
+ *   create: (ctx) => async (input, opts) => {
+ *     const hashed = { ...input, password: await hash(input.password) }
+ *     return ctx.create(hashed, { ...opts, force: true })
+ *   },
+ * })
+ */
+
+import { eq, and, inArray } from 'drizzle-orm'
+import type {
+  TableDef,
+  CustomQueryFn,
+  PrepOptions,
+  RepositoryContext,
+  Repository,
+  AssertionRegistry,
+} from './types'
+import { createPrepFn } from './prep'
+
+// -------------------------------------------------------------- Types --
+
+type CrudOptions = Pick<PrepOptions, 'force' | 'tx'>
+
+// ------------------------------------------------------- CRUD Builder --
+
+/**
+ * Build the default CRUD operations for a table.
+ * These operations use the prep pipeline for input processing
+ * and respect selectColumns for output.
+ */
+const buildDefaultCrud = (
+  db: any,
+  tableDef: TableDef,
+  assertions: AssertionRegistry
+) => {
+  const { table, selectColumns, primaryKey, access, columns } = tableDef
+  const prep = createPrepFn(columns, access, assertions)
+
+  /**
+   * Get the query builder, optionally scoped to a transaction.
+   */
+  const getDb = (opts?: PrepOptions) =>
+    opts?.tx ?? db
+
+  const find = async (filters: Record<string, any>, opts?: PrepOptions) => {
+    const whereConditions = Object.entries(filters).map(
+      ([key, value]) => eq(table[key], value)
+    )
+
+    return getDb(opts)
+      .select(selectColumns)
+      .from(table)
+      .where(whereConditions.length === 1 ? whereConditions[0] : and(...whereConditions))
+  }
+
+  const findAll = async (opts?: PrepOptions) => {
+    return getDb(opts)
+      .select(selectColumns)
+      .from(table)
+  }
+
+  const findOne = async (filters: Record<string, any>, opts?: PrepOptions) => {
+    const rows = await find(filters, opts)
+    return rows[0] ?? null
+  }
+
+  const findById = async (id: string | number, opts?: PrepOptions) => {
+    const rows = await getDb(opts)
+      .select(selectColumns)
+      .from(table)
+      .where(eq(table[primaryKey], id))
+      .limit(1)
+
+    return rows[0] ?? null
+  }
+
+  const findByIdIn = async (ids: (string | number)[], opts?: PrepOptions) => {
+    if (ids.length === 0) return []
+
+    return getDb(opts)
+      .select(selectColumns)
+      .from(table)
+      .where(inArray(table[primaryKey], ids))
+  }
+
+  const create = async (input: Record<string, any>, opts?: PrepOptions) => {
+    const prepared = await prep(input, {
+      force: opts?.force ?? false,
+      validateRequired: true,
+      onlyMutables: false,
+    })
+
+    const rows = await getDb(opts)
+      .insert(table)
+      .values(prepared)
+      .returning(selectColumns)
+
+    return rows[0]
+  }
+
+  const update = async (
+    id: string | number,
+    input: Record<string, any>,
+    opts?: PrepOptions
+  ) => {
+    const prepared = await prep(input, {
+      force: opts?.force ?? false,
+      validateRequired: false,
+      onlyMutables: true,
+    })
+
+    const rows = await getDb(opts)
+      .update(table)
+      .set(prepared)
+      .where(eq(table[primaryKey], id))
+      .returning(selectColumns)
+
+    return rows[0]
+  }
+
+  const destroy = async (id: string | number, opts?: PrepOptions) => {
+    await getDb(opts)
+      .delete(table)
+      .where(eq(table[primaryKey], id))
+  }
+
+  const destroyAll = async (filters: Record<string, any>, opts?: PrepOptions) => {
+    const whereConditions = Object.entries(filters).map(
+      ([key, value]) => eq(table[key], value)
+    )
+
+    const result = await getDb(opts)
+      .delete(table)
+      .where(whereConditions.length === 1 ? whereConditions[0] : and(...whereConditions))
+
+    return result.rowCount ?? result.changes ?? 0
+  }
+
+  return {
+    prep,
+    find,
+    findAll,
+    findOne,
+    findById,
+    findByIdIn,
+    create,
+    update,
+    destroy,
+    destroyAll,
+  }
+}
+
+// -------------------------------------------------------- Public API --
+
+/**
+ * Create a `createRepository` function bound to a specific db instance
+ * and assertion registry.
+ */
+export const createCreateRepository = (
+  db: any,
+  assertions: AssertionRegistry = {}
+) => {
+  /**
+   * Create a repository from a TableDef with optional custom queries.
+   *
+   * @param tableDef - The table definition from defineTable()
+   * @param queries - Optional custom query functions
+   * @returns Repository object with default CRUD + customs
+   */
+  const createRepository = <
+    TTableDef extends TableDef,
+    TQueries extends Record<string, CustomQueryFn> = {}
+  >(
+    tableDef: TTableDef,
+    queries: TQueries = {} as TQueries
+  ): Repository<TTableDef, TQueries> => {
+
+    // Step 1: Build default CRUD operations
+    const defaults = buildDefaultCrud(db, tableDef, assertions)
+
+    // Step 2: Assemble ctx with defaults + metadata
+    // ctx always contains the ORIGINAL defaults, even if overridden by customs.
+    const ctx: RepositoryContext<TTableDef> = {
+      db,
+      table: tableDef.table,
+      tableDef,
+      selectColumns: tableDef.selectColumns,
+      primaryKey: tableDef.primaryKey,
+      schemas: tableDef.schemas,
+      prep: defaults.prep,
+      find: defaults.find,
+      findAll: defaults.findAll,
+      findOne: defaults.findOne,
+      findById: defaults.findById,
+      findByIdIn: defaults.findByIdIn,
+      create: defaults.create,
+      update: defaults.update,
+      destroy: defaults.destroy,
+      destroyAll: defaults.destroyAll,
+    }
+
+    // Step 3: Invoke each custom query function with ctx to produce
+    // the actual query function.
+    const customs: Record<string, any> = {}
+
+    for (const [key, queryFn] of Object.entries(queries)) {
+      if (typeof queryFn === 'function') {
+        customs[key] = queryFn(ctx)
+      }
+    }
+
+    // Step 4: Merge — customs override defaults by name.
+    // Also include TableDef properties so the repository satisfies TableDef.
+    const { prep: _prep, ...crudMethods } = defaults
+
+    const repository = {
+      // TableDef properties (so repository can be passed as TableDef)
+      table: tableDef.table,
+      columns: tableDef.columns,
+      access: tableDef.access,
+      selectColumns: tableDef.selectColumns,
+      primaryKey: tableDef.primaryKey,
+      name: tableDef.name,
+      schemas: tableDef.schemas,
+
+      // Default CRUD (overridden by customs where names match)
+      ...crudMethods,
+
+      // Custom queries (win on name collision)
+      ...customs,
+    }
+
+    return repository as Repository<TTableDef, TQueries>
+  }
+
+  return createRepository
+}
