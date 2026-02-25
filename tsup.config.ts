@@ -5,7 +5,6 @@ export default defineConfig({
     index: 'src/index.ts',
     config: 'src/config.ts',
     migrate: 'src/migrate/index.ts',
-    fastify: 'src/fastify/index.ts',
   },
   format: ['esm', 'cjs'],
   dts: true,

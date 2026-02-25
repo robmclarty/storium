@@ -227,18 +227,21 @@ const result = await db.withTransaction(async (tx) => {
 
 ## Fastify Integration
 
-Storium's JSON Schema output plugs directly into Fastify's route validation. The `withProperties` helper lets you extend a store's generated schema with extra fields without rewriting it from scratch.
+Storium's JSON Schema output plugs directly into Fastify's route validation via `toJsonSchema()`. Extend it inline as needed:
 
 ```typescript
-import { withProperties } from 'storium/fastify'
+const insertSchema = users.schemas.insert.toJsonSchema()
 
 app.post('/users', {
   schema: {
-    body: withProperties(
-      users.schemas.insert.toJsonSchema(),
-      { invite_code: { type: 'string', minLength: 8 } },
-      ['invite_code'],
-    ),
+    body: {
+      ...insertSchema,
+      properties: {
+        ...insertSchema.properties,
+        invite_code: { type: 'string', minLength: 8 },
+      },
+      required: [...(insertSchema.required ?? []), 'invite_code'],
+    },
   },
 }, handler)
 ```

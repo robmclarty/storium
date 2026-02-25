@@ -2,7 +2,7 @@
   "name": "storium",
   "version": "0.1.0",
   "description": "Lightweight, database-agnostic storage abstraction built on Drizzle ORM",
-  "keywords": ["drizzle", "orm", "database", "repository", "schema", "validation", "fastify"],
+  "keywords": ["drizzle", "orm", "database", "repository", "schema", "validation"],
   "author": "Rob McLarty <r@robmclarty.com> (https://robmclarty.com)",
   "homepage": "https://github.com/robmclarty/storium#readme",
   "repository": {
@@ -45,16 +45,6 @@
         "default": "./dist/migrate.cjs"
       }
     },
-    "./fastify": {
-      "import": {
-        "types": "./dist/fastify.d.ts",
-        "default": "./dist/fastify.js"
-      },
-      "require": {
-        "types": "./dist/fastify.d.cts",
-        "default": "./dist/fastify.cjs"
-      }
-    }
   },
   "bin": {
     "storium": "./dist/bin/storium.js"
