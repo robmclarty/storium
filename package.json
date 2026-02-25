@@ -2,7 +2,14 @@
   "name": "storium",
   "version": "0.1.2",
   "description": "Lightweight, database-agnostic storage abstraction built on Drizzle ORM",
-  "keywords": ["drizzle", "orm", "database", "repository", "schema", "validation"],
+  "keywords": [
+    "drizzle",
+    "orm",
+    "database",
+    "repository",
+    "schema",
+    "validation"
+  ],
   "author": "Rob McLarty <r@robmclarty.com> (https://robmclarty.com)",
   "homepage": "https://github.com/robmclarty/storium#readme",
   "repository": {
@@ -63,28 +70,35 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "drizzle-orm": "0.45.1",
     "drizzle-kit": "0.31.9",
-    "zod": "4.3.6",
-    "glob": "13.0.6"
+    "drizzle-orm": "0.45.1",
+    "glob": "13.0.6",
+    "zod": "4.3.6"
   },
   "peerDependencies": {
-    "pg": ">=8.0.0",
+    "better-sqlite3": ">=12.0.0",
     "mysql2": ">=3.0.0",
-    "better-sqlite3": ">=12.0.0"
+    "pg": ">=8.0.0"
   },
   "peerDependenciesMeta": {
-    "pg": { "optional": true },
-    "mysql2": { "optional": true },
-    "better-sqlite3": { "optional": true }
+    "pg": {
+      "optional": true
+    },
+    "mysql2": {
+      "optional": true
+    },
+    "better-sqlite3": {
+      "optional": true
+    }
   },
   "devDependencies": {
-    "tsup": "8.5.1",
-    "typescript": "5.9.3",
-    "vitest": "4.0.18",
+    "@types/better-sqlite3": "7.6.13",
     "@types/node": "25.3.0",
     "@types/pg": "8.16.0",
-    "@types/better-sqlite3": "7.6.13"
+    "oxlint": "1.50.0",
+    "tsup": "8.5.1",
+    "typescript": "5.9.3",
+    "vitest": "4.0.18"
   },
   "engines": {
     "node": ">=20"
