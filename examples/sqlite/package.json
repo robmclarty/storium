@@ -1,5 +1,5 @@
 {
-  "name": "storium:examples:sqlite",
+  "name": "storium-examples-sqlite",
   "description": "Using Storium with a SQLite file-based database, including connection setup and SQLite-specific considerations",
   "private": true,
   "type": "module",

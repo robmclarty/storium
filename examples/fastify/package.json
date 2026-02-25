@@ -1,5 +1,5 @@
 {
-  "name": "storium:examples:fastify",
+  "name": "storium-examples-fastify",
   "description": "Integrating Storium with Fastify using auto-generated JSON Schema for route validation",
   "private": true,
   "type": "module",

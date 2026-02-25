@@ -1,5 +1,5 @@
 {
-  "name": "storium:examples:relations",
+  "name": "storium-examples-relations",
   "description": "Modeling relationships between tables using withBelongsTo and withMembers helpers",
   "private": true,
   "type": "module",

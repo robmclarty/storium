@@ -1,5 +1,5 @@
 {
-  "name": "storium:examples:validation",
+  "name": "storium-examples-validation",
   "description": "Storium's validation pipeline: transforms, assertions, custom validators, required fields, and error handling",
   "private": true,
   "type": "module",

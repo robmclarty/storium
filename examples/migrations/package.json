@@ -1,5 +1,5 @@
 {
-  "name": "storium:examples:migrations",
+  "name": "storium-examples-migrations",
   "description": "Full migration lifecycle: config, schema generation, applying migrations, and running seeds",
   "private": true,
   "type": "module",

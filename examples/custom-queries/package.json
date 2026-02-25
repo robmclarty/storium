@@ -1,5 +1,5 @@
 {
-  "name": "storium:examples:custom-queries",
+  "name": "storium-examples-custom-queries",
   "description": "Writing custom queries using the repository context, overriding defaults, and using transactions",
   "private": true,
   "type": "module",

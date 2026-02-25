@@ -1,5 +1,5 @@
 {
-  "name": "storium:examples:postgres",
+  "name": "storium-examples-postgres",
   "description": "Using Storium with a PostgreSQL database, including connection setup and Postgres-specific features like jsonb and uuid columns",
   "private": true,
   "type": "module",

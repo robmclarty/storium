@@ -1,5 +1,5 @@
 {
-  "name": "storium:examples:mysql",
+  "name": "storium-examples-mysql",
   "description": "Using Storium with a MySQL database, including connection setup and MySQL-specific type mappings",
   "private": true,
   "type": "module",

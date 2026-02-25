@@ -1,5 +1,5 @@
 {
-  "name": "storium:examples:memory",
+  "name": "storium-examples-memory",
   "description": "Using Storium with an ephemeral in-memory SQLite database for prototyping and testing",
   "private": true,
   "type": "module",
