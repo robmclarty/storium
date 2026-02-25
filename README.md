@@ -275,7 +275,11 @@ export default defineConfig({
 
 ## Escape Hatches
 
-Storium is not trying to be a walled garden. Direct Drizzle access is always available. If you need to drop down a level, nothing is stopping you:
+Storium is not trying to be a walled garden. Every abstraction has a way out.
+
+### Drizzle
+
+Direct Drizzle access is always available. If you need to drop down a level, nothing is stopping you:
 
 ```typescript
 // Raw Drizzle instance
@@ -287,6 +291,39 @@ const db = storium.fromDrizzle(myDrizzleInstance, { dialect: 'postgresql' })
 
 // Raw columns bypass the DSL entirely
 meta: { raw: () => jsonb('meta').default({}) }
+
+// Raw indexes bypass the index DSL entirely
+search: { raw: (table) => index('search_gin').using('gin', table.search_vector) }
+
+// Custom queries give you the full Drizzle query builder
+findByEmail: (ctx) => async (email) =>
+  ctx.db.select(ctx.selectColumns)
+    .from(ctx.table)
+    .where(eq(ctx.table.email, email))
+    .then(r => r[0] ?? null)
+```
+
+### Zod
+
+Every generated schema exposes its underlying Zod schema directly. Use it to compose, extend, or integrate with any Zod-aware library:
+
+```typescript
+// Extend a generated schema
+const signupSchema = users.schemas.insert.zod.extend({
+  password: z.string().min(8),
+  invite_code: z.string().optional(),
+})
+
+// Compose schemas
+const loginSchema = z.object({
+  email: users.schemas.insert.zod.shape.email,
+  password: z.string(),
+})
+
+// Use with any Zod-compatible library (tRPC, react-hook-form, etc.)
+const router = t.router({
+  createUser: t.procedure.input(users.schemas.insert.zod).mutation(...)
+})
 ```
 
 ## License
