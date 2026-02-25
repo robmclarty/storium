@@ -2,10 +2,11 @@
 
 A lightweight, database-agnostic storage toolkit built on [Drizzle](https://orm.drizzle.team) and [Zod](https://zod.dev/).
 
-I built Storium because I wanted something a bit more than raw SQL, but a bit
-less than a full-blow ORM; something that handles the tedious stuff (validation, sanitization, types, CRUD) without trying to dictate how your data should look or behave. You define your schema once and Storium gives you TypeScript types, JSON Schema, Zod contracts, a repository with full CRUD, and migration tooling. All from a single `defineStore()` call.
+I built Storium because Drizzle gives you a fantastic query builder, but every project still needs the same scaffolding on top of it: validation, sanitization, CRUD operations, migration workflows, and some coherent pattern tying it all together. I kept rebuilding that scaffolding. Poorly, at first. Then well enough that I stopped wanting to rewrite it, which felt like a milestone worth shipping.
 
-Think less about the low-level database and query plumbing, and more about your app-level storage problems — not *how* things are stored, but *what* gets stored and how your app should *behave*. You stay in control of the *how* by defining your own query functions, validations, transforms, and schemas. Storium just makes the boring parts disappear.
+Define your schema once with `defineStore()` and Storium generates a full stack of contracts around it: TypeScript types for compile-time safety, Zod schemas for runtime validation, and JSON Schema for APIs and external tooling (e.g., Fastify/Ajv). You also get a repository with standard CRUD, custom query hooks powered by Drizzle's query builder, and migration tooling. One definition, every layer covered. No more redeclaring the same shape in three different formats and hoping they don't drift apart over time.
+
+The goal is a data-access layer that's structured enough to keep things consistent and predictable, but flexible enough that you're never fighting it. You define the stores, the queries, the transforms. Storium just makes it harder to stray from the pattern -- especially six months in when the codebase would have otherwise quietly rotted into three different ways of talking to the database.
 
 ## Quick Start
 
