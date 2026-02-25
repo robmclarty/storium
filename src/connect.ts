@@ -41,6 +41,7 @@ const createDrizzleInstance = (config: ConnectConfig): { db: any; teardown: () =
         max: config.pool?.max,
       })
       const db = drizzle(pool)
+      db.$dialect = config.dialect
       return {
         db,
         teardown: () => pool.end(),
@@ -52,9 +53,10 @@ const createDrizzleInstance = (config: ConnectConfig): { db: any; teardown: () =
       const { drizzle } = require('drizzle-orm/mysql2')
       const pool = mysql.createPool({
         uri: url,
-        ...(config.pool?.min !== undefined && { connectionLimit: config.pool.max }),
+        ...(config.pool?.max !== undefined && { connectionLimit: config.pool.max }),
       })
       const db = drizzle(pool)
+      db.$dialect = config.dialect
       return {
         db,
         teardown: () => pool.end(),
@@ -66,6 +68,7 @@ const createDrizzleInstance = (config: ConnectConfig): { db: any; teardown: () =
       const { drizzle } = require('drizzle-orm/better-sqlite3')
       const sqlite = new Database(url === ':memory:' ? ':memory:' : url)
       const db = drizzle(sqlite)
+      db.$dialect = config.dialect
       return {
         db,
         teardown: async () => sqlite.close(),
@@ -194,6 +197,8 @@ export const fromDrizzle = (
   if (!config?.dialect) {
     throw new ConfigError('`dialect` is required when using fromDrizzle()')
   }
+
+  drizzleDb.$dialect = config.dialect
 
   return buildInstance(
     drizzleDb,

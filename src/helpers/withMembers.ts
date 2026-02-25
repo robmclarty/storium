@@ -51,14 +51,30 @@ export const withMembers = (
       memberId: string | number,
       extra: Record<string, any> = {}
     ) => {
+      const values = {
+        [foreignKey]: collectionId,
+        [memberKey]: memberId,
+        ...extra,
+      }
+
+      if (ctx.db.$dialect === 'postgresql') {
+        const rows = await ctx.db
+          .insert(joinTable)
+          .values(values)
+          .returning()
+
+        return rows[0]
+      }
+
+      await ctx.db.insert(joinTable).values(values)
       const rows = await ctx.db
-        .insert(joinTable)
-        .values({
-          [foreignKey]: collectionId,
-          [memberKey]: memberId,
-          ...extra,
-        })
-        .returning()
+        .select()
+        .from(joinTable)
+        .where(and(
+          eq(joinTable[foreignKey], collectionId),
+          eq(joinTable[memberKey], memberId),
+        ))
+        .limit(1)
 
       return rows[0]
     },
@@ -113,7 +129,7 @@ export const withMembers = (
      */
     getMemberCount: (ctx) => async (collectionId: string | number): Promise<number> => {
       const rows = await ctx.db
-        .select({ count: sql<number>`count(*)::int` })
+        .select({ count: sql<number>`cast(count(*) as int)` })
         .from(joinTable)
         .where(eq(joinTable[foreignKey], collectionId))
 

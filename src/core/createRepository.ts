@@ -25,6 +25,7 @@
 
 import { eq, and, inArray } from 'drizzle-orm'
 import type {
+  Dialect,
   TableDef,
   CustomQueryFn,
   PrepOptions,
@@ -37,6 +38,8 @@ import { createPrepFn } from './prep'
 // -------------------------------------------------------------- Types --
 
 type CrudOptions = Pick<PrepOptions, 'force' | 'tx'>
+
+const getDialect = (db: any): Dialect => db.$dialect ?? 'postgresql'
 
 // ------------------------------------------------------- CRUD Builder --
 
@@ -107,10 +110,22 @@ const buildDefaultCrud = (
       onlyMutables: false,
     })
 
+    if (getDialect(db) === 'postgresql') {
+      const rows = await getDb(opts)
+        .insert(table)
+        .values(prepared)
+        .returning(selectColumns)
+
+      return rows[0]
+    }
+
+    await getDb(opts).insert(table).values(prepared)
+    const pk = prepared[primaryKey]
     const rows = await getDb(opts)
-      .insert(table)
-      .values(prepared)
-      .returning(selectColumns)
+      .select(selectColumns)
+      .from(table)
+      .where(eq(table[primaryKey], pk))
+      .limit(1)
 
     return rows[0]
   }
@@ -126,11 +141,26 @@ const buildDefaultCrud = (
       onlyMutables: true,
     })
 
-    const rows = await getDb(opts)
+    if (getDialect(db) === 'postgresql') {
+      const rows = await getDb(opts)
+        .update(table)
+        .set(prepared)
+        .where(eq(table[primaryKey], id))
+        .returning(selectColumns)
+
+      return rows[0]
+    }
+
+    await getDb(opts)
       .update(table)
       .set(prepared)
       .where(eq(table[primaryKey], id))
-      .returning(selectColumns)
+
+    const rows = await getDb(opts)
+      .select(selectColumns)
+      .from(table)
+      .where(eq(table[primaryKey], id))
+      .limit(1)
 
     return rows[0]
   }
@@ -150,7 +180,7 @@ const buildDefaultCrud = (
       .delete(table)
       .where(whereConditions.length === 1 ? whereConditions[0] : and(...whereConditions))
 
-    return result.rowCount ?? result.changes ?? 0
+    return result.rowCount ?? result.affectedRows ?? result.changes ?? 0
   }
 
   return {
