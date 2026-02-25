@@ -38,7 +38,6 @@ const users = db.defineStore('users', {
   name:  { type: 'varchar', maxLength: 255, mutable: true },
 }, {
   indexes: { 
-    id: {},
     email: { unique: true } 
   },
 })
@@ -84,7 +83,6 @@ const users = db.defineStore('users', columns, {
 ```typescript
 const usersTable = db.defineTable('users', columns, {
   indexes: { 
-    id: {},
     email: { unique: true } 
   },
 })
