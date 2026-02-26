@@ -172,6 +172,16 @@ const buildInstance = (
   const registry = createAssertionRegistry(assertions)
   const createRepository = createCreateRepository(db, registry)
 
+  const boundDefineTable = buildDefineTable(dialect, registry)
+
+  /**
+   * Rebuild a TableDef's schemas with instance-level assertions (if any).
+   */
+  const applyAssertions = (tableDef: any) =>
+    Object.keys(registry).length > 0
+      ? { ...tableDef, schemas: buildSchemaSet(tableDef.columns, tableDef.access, registry) }
+      : tableDef
+
   const register = <T extends Record<string, any>>(
     storeDefs: T
   ): { [K in keyof T]: any } => {
@@ -184,22 +194,43 @@ const buildInstance = (
           'Use defineStore(tableDef, { queries }) to create one.'
         )
       }
-      // Rebuild schemas with instance assertions if the TableDef was
-      // created standalone (without assertions from the connection config).
-      const tableDef = Object.keys(registry).length > 0
-        ? { ...def.tableDef, schemas: buildSchemaSet(def.tableDef.columns, def.tableDef.access, registry) }
-        : def.tableDef
-
-      result[key] = createRepository(tableDef, def.queries)
+      result[key] = createRepository(applyAssertions(def.tableDef), def.queries)
     }
 
     return result as { [K in keyof T]: any }
   }
 
+  /**
+   * Create a live store directly (simple path — no register step).
+   *
+   * Two overloads:
+   * - defineStore('users', columns, { queries }) — one-call
+   * - defineStore(tableDef, { queries }) — wrap existing TableDef
+   */
+  const instanceDefineStore = (first: any, second?: any, third?: any) => {
+    // Overload 1: TableDef object
+    if (typeof first === 'object' && first !== null && 'table' in first) {
+      const tableDef = applyAssertions(first)
+      return createRepository(tableDef, second ?? {})
+    }
+
+    // Overload 2: name + columns + options
+    if (typeof first === 'string') {
+      const { queries, ...tableOptions } = third ?? {}
+      const tableDef = boundDefineTable(first, second, tableOptions)
+      return createRepository(tableDef, queries ?? {})
+    }
+
+    throw new ConfigError(
+      'db.defineStore(): expected (name, columns, options) or (tableDef, queries).'
+    )
+  }
+
   return {
     drizzle: db,
     dialect,
-    defineTable: buildDefineTable(dialect, registry),
+    defineTable: boundDefineTable,
+    defineStore: instanceDefineStore,
     register,
     withTransaction: createWithTransaction(db, dialect),
     disconnect: teardown,

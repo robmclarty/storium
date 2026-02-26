@@ -1,6 +1,6 @@
 
 export { defineTable, buildDefineTable } from './defineTable'
-export { defineStore, isStoreDefinition } from './defineStore'
+export { defineStore, isStoreDefinition, buildDefineStore } from './defineStore'
 export { createCreateRepository } from './createRepository'
 export { createPrepFn } from './prep'
 export { createTestFn, createAssertionRegistry, BUILTIN_ASSERTIONS } from './test'
@@ -12,7 +12,7 @@ export { buildZodSchemas } from './zodSchema'
 export { buildSchemaSet } from './runtimeSchema'
 export { loadDialectFromConfig } from './configLoader'
 
-export type { StoreDefinition } from './defineStore'
+export type { StoreDefinition, StoreOptions } from './defineStore'
 
 export type {
   Dialect,

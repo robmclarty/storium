@@ -372,6 +372,24 @@ export type StoriumInstance = {
     columns: TColumns,
     options?: TableOptions
   ) => TableDef<TColumns>
+  /**
+   * Create a live store directly (simple path — no register step).
+   *
+   * Two overloads:
+   * - `db.defineStore('users', columns, { queries })` — one-call, schema + store
+   * - `db.defineStore(tableDef, { queries })` — wrap existing TableDef
+   */
+  defineStore: {
+    <TColumns extends ColumnsConfig, TQueries extends Record<string, CustomQueryFn>>(
+      name: string,
+      columns: TColumns,
+      options?: TableOptions & { queries?: TQueries }
+    ): Store
+    <TColumns extends ColumnsConfig, TQueries extends Record<string, CustomQueryFn>>(
+      tableDef: TableDef<TColumns>,
+      queries?: TQueries
+    ): Store
+  }
   /** Materialize StoreDefinitions into live stores with CRUD + queries. */
   register: <T extends Record<string, any>>(
     storeDefs: T

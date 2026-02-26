@@ -90,21 +90,33 @@ const usersTable = dt('users', columns, options)
 const postsTable = dt('posts', columns, options)
 ```
 
-`defineStore` bundles a `TableDef` with optional custom queries into an inert DTO — no database, no side effects:
+`defineStore` bundles a `TableDef` with optional custom queries into an inert DTO — no database, no side effects. Three calling conventions, mirroring `defineTable`:
 
 ```typescript
-const userStore = defineStore(usersTable, {
-  findByEmail: (ctx) => async (email) =>
-    ctx.findOne({ email }),
-})
+// Wrap a pre-built TableDef (multi-file pattern)
+const userStore = defineStore(usersTable, { findByEmail, search })
+
+// One-call with explicit dialect (curried) — schema + store in one shot
+const userStore = defineStore('postgresql')('users', columns, { queries: { search } })
+
+// One-call, auto-loads dialect from storium.config.ts
+const userStore = defineStore('users', columns, { queries: { search }, indexes: { email: { unique: true } } })
 ```
 
-`db.register()` is the single composition point that materializes store definitions into live stores with CRUD:
+**Simple path — `db.defineStore()`:** After connecting, you can skip the DTO and create live stores directly. Dialect and assertions are already baked in:
+
+```typescript
+const db = storium.connect(config)
+const users = db.defineStore('users', columns, { queries: { search } })
+const posts = db.defineStore(postsTable, { findByAuthor })
+await users.findById('123')
+```
+
+**Multi-file path — `db.register()`:** For larger apps (100+ tables), define stores in separate files and wire them all together in one place:
 
 ```typescript
 const db = storium.connect(config)
 const { users, posts } = db.register({ users: userStore, posts: postStore })
-
 await users.findByEmail('alice@example.com')
 ```
 

@@ -33,6 +33,7 @@ export {
 
 export {
   buildDefineTable,
+  buildDefineStore,
   createCreateRepository,
   createTestFn,
   createAssertionRegistry,
@@ -56,6 +57,7 @@ export {
 
 export type {
   StoreDefinition,
+  StoreOptions,
 } from './core'
 
 export type {

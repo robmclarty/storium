@@ -15,7 +15,7 @@ storium/
 │   └── core/
 │       ├── types.ts            # All shared TypeScript types (Dialect, ColumnConfig, TableDef, etc.)
 │       ├── defineTable.ts      # Schema DSL — defineTable(name, cols, opts) with 3 overloads
-│       ├── defineStore.ts      # defineStore(tableDef, queries) → StoreDefinition DTO
+│       ├── defineStore.ts      # defineStore — 3 overloads (tableDef, curried dialect, auto-config)
 │       ├── configLoader.ts     # loadDialectFromConfig() — reads dialect from storium.config.ts
 │       ├── createRepository.ts # CRUD builder + custom query context (ctx)
 │       ├── dialect.ts          # DSL type → Drizzle column builder mappings per dialect
@@ -74,7 +74,8 @@ import { generate, migrate, push, status, runSeeds, defineSeed, collectSchemas }
 db.drizzle           // Raw Drizzle instance (escape hatch)
 db.dialect           // Resolved dialect string
 db.defineTable()     // Dialect-bound schema definition (no CRUD)
-db.register()        // Materialize StoreDefinitions into live stores
+db.defineStore()     // Create a live store directly (simple path — no register step)
+db.register()        // Materialize StoreDefinitions into live stores (multi-file pattern)
 db.withTransaction() // Async transaction wrapper
 db.disconnect()      // Close connection / pool
 ```
@@ -92,17 +93,33 @@ const dt = defineTable()
 dt('users', columns, options) → TableDef
 ```
 
-### defineStore — StoreDefinition DTO
+### defineStore (3 overloads)
 ```typescript
-// Bundle a TableDef + optional custom queries into an inert DTO.
-// No db connection needed — just data.
-const userStore = defineStore(usersTable)
-const articleStore = defineStore(articlesTable, { search, findBySlug })
+// Overload 1: Wrap a pre-built TableDef (multi-file pattern)
+const userStore = defineStore(usersTable, { search, findByEmail })
+
+// Overload 2: One-call with explicit dialect (curried)
+const userStore = defineStore('postgresql')('users', columns, { queries: { search } })
+
+// Overload 3: One-call, auto-loads dialect from storium.config.ts
+const userStore = defineStore('users', columns, { queries: { search } })
+```
+All overloads return a `StoreDefinition` (inert DTO). The DTO surfaces `.table` and `.name`
+from the inner `TableDef` so `schemaCollector` can detect store files for migrations.
+
+### db.defineStore() — simple path (live store, no register)
+```typescript
+// Create a live store directly — dialect + assertions already baked in.
+const db = storium.connect(config)
+const users = db.defineStore('users', columns, { queries: { search } })
+const posts = db.defineStore(postsTable, { findByAuthor })
+await users.findById('123')
 ```
 
-### db.register() — materializing stores
+### db.register() — multi-file pattern
 ```typescript
 // Single composition point: wires StoreDefinitions to a live db connection.
+// Best for large apps with 100+ tables organized in separate files.
 const db = storium.connect(config)
 const { users, articles } = db.register({ users: userStore, articles: articleStore })
 await users.findById('123')
@@ -193,7 +210,8 @@ project/
 - Single `app.ts` — everything in one runnable file
 - `package.json`: `"start": "tsx app.ts"`, `storium: "file:../.."`, `tsx` in devDeps
 - In-memory examples: `dialect: 'memory'`, `db.drizzle.run(sql\`CREATE TABLE...\`)`
-- Pattern: `defineTable → defineStore → storium.connect → db.register → use stores`
+- Multi-file pattern: `defineTable → defineStore → storium.connect → db.register → use stores`
+- Simple pattern: `storium.connect → db.defineStore → use stores`
 - Console output: `=== Section name ===` headers matching style of existing examples
 - Always `await db.disconnect()` at end
 
