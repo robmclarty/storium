@@ -145,35 +145,73 @@ The pattern looks like this:
 entities/
 └── users/
     ├── user.schema.ts    ← defineTable (pure schema, no connection)
+    ├── user.helpers.ts   ← reusable query patterns
     ├── user.queries.ts   ← query functions
     └── user.store.ts     ← defineStore (bundles schema + queries)
 database.ts               ← connect + register all stores
 ```
 
-**Schema file** — importable by drizzle-kit for migration generation:
+**Schema file** — importable by drizzle-kit for migration generation. Uses `validate` and `transform` to enforce business rules at the data layer:
 
 ```typescript
 // entities/users/user.schema.ts
 import { defineTable } from 'storium'
 
-export const usersTable = defineTable('postgresql')('users', {
+export const usersTable = defineTable('users', {
   id:    { type: 'uuid', primaryKey: true, default: 'random_uuid' },
-  email: { type: 'varchar', maxLength: 255, mutable: true, required: true },
+  email: {
+    type: 'varchar', maxLength: 255, mutable: true, required: true,
+    transform: (v) => String(v).trim().toLowerCase(),
+    validate: (v, test) => {
+      test(v, 'not_empty', 'Email cannot be empty')
+      test(v, 'is_email')
+    },
+  },
   name:  { type: 'varchar', maxLength: 255, mutable: true },
+  slug:  {
+    type: 'varchar', maxLength: 100, mutable: true, required: true,
+    transform: (v) => String(v).trim().toLowerCase().replace(/\s+/g, '-'),
+    validate: (v, test) => {
+      test(v, 'is_slug', 'Slug must be lowercase letters, numbers, and hyphens')
+    },
+  },
 }, {
   indexes: { email: { unique: true } },
 })
 ```
 
-**Store file** — bundles the schema with custom queries into an inert DTO:
+`transform` runs before `validate` — sanitize first, then check. Built-in assertions like `is_email` and `not_empty` are always available. Custom assertions like `is_slug` are registered at connect time (see database file below).
+
+**Helpers file** — reusable query patterns you define yourself. Same `(ctx) => (...args) => result` shape as any custom query, so they compose naturally with built-in helpers like `withBelongsTo`:
+
+```typescript
+// entities/users/user.helpers.ts
+import { eq } from 'drizzle-orm'
+
+export const withSoftDelete = {
+  destroy: (ctx) => async (id: string, opts?) => {
+    return ctx.update(id, { deleted_at: new Date() }, opts)
+  },
+
+  findActive: (ctx) => async () =>
+    ctx.drizzle.select(ctx.selectColumns)
+      .from(ctx.table)
+      .where(eq(ctx.table.deleted_at, null)),
+}
+```
+
+**Store file** — bundles the schema with queries and helpers into an inert DTO:
 
 ```typescript
 // entities/users/user.store.ts
 import { defineStore } from 'storium'
 import { usersTable } from './user.schema'
+import { withSoftDelete } from './user.helpers'
 import { eq, ilike } from 'drizzle-orm'
 
 export const userStore = defineStore(usersTable, {
+  ...withSoftDelete,
+
   findByEmail: (ctx) => async (email: string) =>
     ctx.drizzle.select(ctx.selectColumns)
       .from(ctx.table)
@@ -187,7 +225,7 @@ export const userStore = defineStore(usersTable, {
 })
 ```
 
-**Database file** — one composition point that wires everything together:
+**Database file** — one composition point that wires everything together. Custom assertions are registered here so they're available to all stores:
 
 ```typescript
 // database.ts
@@ -198,6 +236,9 @@ import { postStore } from './entities/posts/post.store'
 const db = storium.connect({
   dialect: 'postgresql',
   url: process.env.DATABASE_URL,
+  assertions: {
+    is_slug: (v) => typeof v === 'string' && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(v),
+  },
 })
 
 export const { users, posts } = db.register({ users: userStore, posts: postStore })
@@ -232,7 +273,7 @@ const postsTable = dt('posts', columns)
 
 ## Helpers
 
-Storium ships a small set of composable helpers for relationship and caching patterns that come up constantly. Rather than writing the same join logic in every project, you can drop these in and move on.
+Storium ships a small set of composable helpers for common patterns. You can also write your own — a helper is just an object of query functions that you spread into a store definition.
 
 ### withBelongsTo
 
@@ -280,6 +321,32 @@ const result = await db.withTransaction(async (tx) => {
   return { user, team }
 })
 ```
+
+### Your Own Helpers
+
+A helper is just a plain object whose values follow the `(ctx) => (...args) => result` pattern. Spread it into any store:
+
+```typescript
+// helpers/withSoftDelete.ts
+export const withSoftDelete = {
+  destroy: (ctx) => async (id, opts?) =>
+    ctx.update(id, { deleted_at: new Date() }, opts),
+
+  findActive: (ctx) => async () =>
+    ctx.drizzle.select(ctx.selectColumns)
+      .from(ctx.table)
+      .where(eq(ctx.table.deleted_at, null)),
+}
+
+// user.store.ts
+const userStore = defineStore(usersTable, {
+  ...withSoftDelete,
+  ...withBelongsTo(schools, 'school_id'),
+  findByEmail: (ctx) => async (email) => { ... },
+})
+```
+
+Because helpers are plain objects, they compose with each other and with Storium's built-in helpers via spread. No special API — just JavaScript.
 
 ## Fastify Integration
 
