@@ -23,7 +23,7 @@
  * })
  */
 
-import { eq, and, inArray } from 'drizzle-orm'
+import { eq, and, inArray, asc, desc } from 'drizzle-orm'
 import { z } from 'zod'
 import type {
   Dialect,
@@ -62,6 +62,17 @@ const buildDefaultCrud = (
   const getDb = (opts?: PrepOptions) =>
     opts?.tx ?? db
 
+  /**
+   * Apply orderBy clauses to a query builder.
+   */
+  const applyOrderBy = (q: any, orderBy: import('./types').OrderBySpec | import('./types').OrderBySpec[]) => {
+    const specs = Array.isArray(orderBy) ? orderBy : [orderBy]
+    const clauses = specs.map(spec =>
+      (spec.direction === 'desc' ? desc : asc)(table[spec.column])
+    )
+    return q.orderBy(...clauses)
+  }
+
   const find = async (filters: Record<string, any>, opts?: PrepOptions) => {
     const entries = Object.entries(filters)
 
@@ -80,6 +91,7 @@ const buildDefaultCrud = (
       .from(table)
       .where(whereConditions.length === 1 ? whereConditions[0] : and(...whereConditions))
 
+    if (opts?.orderBy) q = applyOrderBy(q, opts.orderBy)
     if (opts?.limit !== undefined) q = q.limit(opts.limit)
     if (opts?.offset !== undefined) q = q.offset(opts.offset)
 
@@ -89,6 +101,7 @@ const buildDefaultCrud = (
   const findAll = async (opts?: PrepOptions) => {
     let q = getDb(opts).select(selectColumns).from(table)
 
+    if (opts?.orderBy) q = applyOrderBy(q, opts.orderBy)
     if (opts?.limit !== undefined) q = q.limit(opts.limit)
     if (opts?.offset !== undefined) q = q.offset(opts.offset)
 
@@ -113,10 +126,14 @@ const buildDefaultCrud = (
   const findByIdIn = async (ids: (string | number)[], opts?: PrepOptions) => {
     if (ids.length === 0) return []
 
-    return getDb(opts)
+    let q = getDb(opts)
       .select(selectColumns)
       .from(table)
       .where(inArray(table[primaryKey], ids))
+
+    if (opts?.orderBy) q = applyOrderBy(q, opts.orderBy)
+
+    return q
   }
 
   const create = async (input: Record<string, any>, opts?: PrepOptions) => {

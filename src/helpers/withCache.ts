@@ -1,5 +1,5 @@
 /**
- * Storium v1 — withCache
+ * Storium v1 — withCache (EXPERIMENTAL)
  *
  * Cache-aside wrapper for repositories/stores. Wraps specified read methods
  * with caching logic and auto-invalidates on write operations (create, update,
@@ -8,12 +8,27 @@
  * Returns a new object with the same interface — cached reads, invalidating
  * writes, and all other methods passed through unchanged.
  *
+ * **Experimental:** This API may change in future releases. Known limitations:
+ *
+ * - **Invalidation assumes a key prefix convention.** Write operations call
+ *   `delPattern(\`${tableName}:*\`)` to clear cache entries. This only works
+ *   if your cache keys start with the table name (e.g., `users:123`). Keys
+ *   that don't follow this convention will not be invalidated on writes.
+ *
+ * - **No per-key invalidation.** All cache entries matching the table prefix
+ *   are cleared on any write, even if only one row changed. This is simple
+ *   but may cause unnecessary cache misses under high write volume.
+ *
+ * - **`delPattern` must be implemented by the adapter.** Not all cache backends
+ *   support wildcard deletion natively (e.g., plain Redis `DEL` does not).
+ *   Your `CacheAdapter.delPattern` implementation must handle this.
+ *
  * @example
  * import { withCache } from 'storium'
  *
  * const cachedUsers = withCache(users, redisAdapter, {
- *   findById:    { ttl: 300, key: (id) => `user:${id}` },
- *   findByEmail: { ttl: 300, key: (email) => `user:email:${email}` },
+ *   findById:    { ttl: 300, key: (id) => `users:${id}` },
+ *   findByEmail: { ttl: 300, key: (email) => `users:email:${email}` },
  * })
  *
  * // Reads hit cache first
@@ -97,6 +112,8 @@ const wrapWithInvalidation = (
  *
  * Specified read methods get cache-aside behavior. Write methods (create,
  * update, destroy, destroyAll) auto-invalidate all configured cache entries.
+ *
+ * **Experimental** — see module-level docs for known limitations.
  *
  * @param store - The store or repository to wrap
  * @param cache - A CacheAdapter implementation (Redis, Memcached, etc.)

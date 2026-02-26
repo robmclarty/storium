@@ -41,6 +41,11 @@ const isTableDef = (value: any): boolean =>
 /**
  * Collect all Drizzle table objects from schema files matching the given globs.
  *
+ * Uses dynamic `import()` to load schema files at runtime. If your schema
+ * files are TypeScript (`.ts`), the runtime must support TypeScript imports
+ * — e.g., via `tsx`, `ts-node`, or Node.js 22+ with `--experimental-strip-types`.
+ * Pre-compiled `.js` files work in any Node.js environment.
+ *
  * @param patterns - Glob pattern(s) for schema files (string or array)
  * @param cwd - Working directory for glob resolution (default: process.cwd())
  * @returns A flat map of table names to Drizzle table objects

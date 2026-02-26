@@ -55,7 +55,9 @@ const DSL_TYPE_MAP: Record<DslType, JsonSchemaType | ((c: DslColumnConfig) => Js
   varchar:   (c) => ({ type: 'string', ...(c.maxLength ? { maxLength: c.maxLength } : {}) }),
   text:      { type: 'string' },
   integer:   { type: 'integer' },
-  bigint:    { type: 'integer' },
+  // BigInt values exceed JSON's safe integer range and are typically
+  // serialized as strings in JSON APIs. format: 'int64' signals this.
+  bigint:    { type: 'string', format: 'int64' },
   serial:    { type: 'integer' },
   real:      { type: 'number' },
   numeric:   { type: 'number' },

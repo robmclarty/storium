@@ -216,6 +216,12 @@ export type TableDef<TColumns extends ColumnsConfig = ColumnsConfig> = {
 
 // ----------------------------------------------------------- Prep Options --
 
+/** A single orderBy directive: column name + direction. */
+export type OrderBySpec = {
+  column: string
+  direction?: 'asc' | 'desc'
+}
+
 /** Options for the `prep` pipeline (used by `create` and `update`). */
 export type PrepOptions = {
   /** Skip the entire pipeline and pass input through raw. Default: false. */
@@ -230,6 +236,15 @@ export type PrepOptions = {
   limit?: number
   /** Skip this many rows before returning results (find, findAll). */
   offset?: number
+  /**
+   * Sort results. Accepts a single spec or array of specs.
+   * Each spec is `{ column, direction }` where direction defaults to `'asc'`.
+   *
+   * @example
+   * await users.findAll({ orderBy: { column: 'created_at', direction: 'desc' } })
+   * await users.findAll({ orderBy: [{ column: 'last_name' }, { column: 'first_name' }] })
+   */
+  orderBy?: OrderBySpec | OrderBySpec[]
 }
 
 // ------------------------------------------------------- Repository / Store --

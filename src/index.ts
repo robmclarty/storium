@@ -83,6 +83,7 @@ export type {
   DefaultCRUD,
   RepositoryContext,
   CustomQueryFn,
+  OrderBySpec,
   PrepOptions,
 
   // Schema & validation

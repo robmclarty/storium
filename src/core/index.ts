@@ -36,6 +36,7 @@ export type {
   RuntimeSchema,
   SchemaSet,
   TableDef,
+  OrderBySpec,
   PrepOptions,
   RepositoryContext,
   CustomQueryFn,

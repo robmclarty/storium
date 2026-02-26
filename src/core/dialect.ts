@@ -1,3 +1,6 @@
+// createRequire is used intentionally: dialect mappings are loaded lazily and
+// synchronously inside defineTable()/buildDslColumn(). Switching to async
+// import() would cascade into making defineTable() async — a breaking change.
 import { createRequire } from 'node:module'
 
 const require = createRequire(import.meta.url)
@@ -107,8 +110,11 @@ const getSqliteMapping = (): DialectMapping => {
       real:      (name) => sqlite.real(name),
       numeric:   (name) => sqlite.real(name),
       boolean:   (name) => sqlite.integer(name, { mode: 'boolean' }),
-      timestamp: (name) => sqlite.text(name),
-      date:      (name) => sqlite.text(name),
+      // Store timestamps as Unix epoch integers; Drizzle handles Date ↔ integer
+      // conversion automatically with mode: 'timestamp', ensuring round-trip
+      // correctness with z.coerce.date() in the Zod schema.
+      timestamp: (name) => sqlite.integer(name, { mode: 'timestamp' }),
+      date:      (name) => sqlite.integer(name, { mode: 'timestamp' }),
       jsonb:     (name) => sqlite.text(name, { mode: 'json' }),
     },
   }

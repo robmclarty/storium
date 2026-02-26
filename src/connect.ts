@@ -10,6 +10,11 @@
  * `drizzle` and `zod` escape hatches.
  */
 
+// createRequire is used intentionally here: connect() is synchronous, and the
+// dialect-specific drivers (pg, mysql2, better-sqlite3) must be loaded lazily
+// at call time. Switching to async import() would require making connect() async,
+// which is a breaking API change. createRequire is a standard Node.js API that
+// works in both ESM and CJS environments.
 import { createRequire } from 'node:module'
 import { z } from 'zod'
 import type {

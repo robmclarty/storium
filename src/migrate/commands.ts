@@ -23,9 +23,9 @@
  * await status(config)     // Show pending migrations
  */
 
-import { createRequire } from 'node:module'
-
-const require = createRequire(import.meta.url)
+import { resolve } from 'node:path'
+import { existsSync, readdirSync } from 'node:fs'
+import { glob } from 'glob'
 
 // --------------------------------------------------------------- Types --
 
@@ -45,7 +45,7 @@ const runDrizzleKit = async (
   config: any
 ): Promise<MigrationResult> => {
   try {
-    const drizzleKit = require('drizzle-kit')
+    const drizzleKit = await import('drizzle-kit') as any
 
     switch (command) {
       case 'generate':
@@ -105,20 +105,16 @@ export const push = async (config: any): Promise<MigrationResult> =>
  */
 export const status = async (config: any): Promise<MigrationResult> => {
   try {
-    const { glob } = require('glob')
-    const path = require('node:path')
-    const fs = require('node:fs')
-
     const out = config.out ?? './migrations'
     const schemaGlobs = config.schema
       ? Array.isArray(config.schema) ? config.schema : [config.schema]
       : []
 
     // List migration SQL files
-    const migrationsDir = path.resolve(process.cwd(), out)
+    const migrationsDir = resolve(process.cwd(), out)
     let migrationFiles: string[] = []
-    if (fs.existsSync(migrationsDir)) {
-      migrationFiles = fs.readdirSync(migrationsDir)
+    if (existsSync(migrationsDir)) {
+      migrationFiles = readdirSync(migrationsDir)
         .filter((f: string) => f.endsWith('.sql'))
         .sort()
     }
