@@ -9,14 +9,9 @@
  * // seeds/001_users.ts
  * import { defineSeed } from 'storium/migrate'
  *
- * export default defineSeed(async ({ db }) => {
+ * export default defineSeed(async ({ drizzle }) => {
  *   // Use raw Drizzle or import your stores
- *   const { users } = await import('../src/entities/users/user.store')
- *   const admin = await users.create({
- *     name: 'Admin',
- *     email: 'admin@example.com',
- *     role: 'admin',
- *   })
+ *   await drizzle.execute(sql`INSERT INTO users (name, email) VALUES ('Admin', 'admin@example.com')`)
  * })
  */
 
@@ -30,7 +25,7 @@ import { ConfigError } from '../core/errors'
 /** Context passed to each seed function. */
 export type SeedContext = {
   /** The raw Drizzle database instance. */
-  db: any
+  drizzle: any
   /** The active config for reference. */
   config: StoriumConfig
 }
@@ -102,7 +97,7 @@ export const runSeeds = async (
     return { success: true, message: 'No seed files found.', count: 0 }
   }
 
-  const ctx: SeedContext = { db, config }
+  const ctx: SeedContext = { drizzle: db, config }
   let count = 0
 
   for (const filePath of sorted) {

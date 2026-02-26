@@ -54,7 +54,7 @@ into a corner:
 - **Index-level**: Use the index DSL for common cases, or `raw` for full
   Drizzle index control (e.g., GIN indexes).
 - **Query-level**: Custom queries receive a `ctx` with full Drizzle access
-  (`ctx.db`, `ctx.table`) alongside all default CRUD methods.
+  (`ctx.drizzle`, `ctx.table`) alongside all default CRUD methods.
 - **Schema-level**: Every generated schema exposes `.zod` for direct access to
   the underlying Zod schema for composition, extension, or override.
 - **Instance-level**: Access the raw Drizzle instance via `db.drizzle`, or
@@ -104,7 +104,7 @@ through `defineStore`, all custom queries use `ctx`," then:
 ### Structured custom queries
 
 The `(ctx) => async (...args) => result` pattern for custom queries is
-constraining in exactly the right way. You can do anything with `ctx.db`, but
+constraining in exactly the right way. You can do anything with `ctx.drizzle`, but
 the structure forces you to:
 
 - Colocate queries with their table.

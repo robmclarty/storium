@@ -235,8 +235,8 @@ export type PrepOptions = {
  * and the prep pipeline.
  */
 export type RepositoryContext<T extends TableDef = TableDef> = {
-  /** The Drizzle database instance. */
-  db: any
+  /** The raw Drizzle database instance (escape hatch). */
+  drizzle: any
   /** The Drizzle table object. */
   table: T['table']
   /** The full TableDef. */

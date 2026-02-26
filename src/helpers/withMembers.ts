@@ -57,8 +57,8 @@ export const withMembers = (
         ...extra,
       }
 
-      if (ctx.db.$dialect === 'postgresql') {
-        const rows = await ctx.db
+      if (ctx.drizzle.$dialect === 'postgresql') {
+        const rows = await ctx.drizzle
           .insert(joinTable)
           .values(values)
           .returning()
@@ -66,8 +66,8 @@ export const withMembers = (
         return rows[0]
       }
 
-      await ctx.db.insert(joinTable).values(values)
-      const rows = await ctx.db
+      await ctx.drizzle.insert(joinTable).values(values)
+      const rows = await ctx.drizzle
         .select()
         .from(joinTable)
         .where(and(
@@ -86,7 +86,7 @@ export const withMembers = (
       collectionId: string | number,
       memberId: string | number
     ) => {
-      await ctx.db
+      await ctx.drizzle
         .delete(joinTable)
         .where(and(
           eq(joinTable[foreignKey], collectionId),
@@ -99,7 +99,7 @@ export const withMembers = (
      * For richer results (with member details), use a custom query with JOINs.
      */
     getMembers: (ctx) => async (collectionId: string | number) => {
-      return ctx.db
+      return ctx.drizzle
         .select()
         .from(joinTable)
         .where(eq(joinTable[foreignKey], collectionId))
@@ -112,7 +112,7 @@ export const withMembers = (
       collectionId: string | number,
       memberId: string | number
     ): Promise<boolean> => {
-      const rows = await ctx.db
+      const rows = await ctx.drizzle
         .select({ exists: sql<number>`1` })
         .from(joinTable)
         .where(and(
@@ -128,7 +128,7 @@ export const withMembers = (
      * Count the members in a collection.
      */
     getMemberCount: (ctx) => async (collectionId: string | number): Promise<number> => {
-      const rows = await ctx.db
+      const rows = await ctx.drizzle
         .select({ count: sql<number>`cast(count(*) as int)` })
         .from(joinTable)
         .where(eq(joinTable[foreignKey], collectionId))

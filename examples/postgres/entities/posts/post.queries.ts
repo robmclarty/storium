@@ -15,14 +15,14 @@ export const unpublish: CustomQueryFn = (ctx) => async (id: string) =>
 
 // Postgres-specific: array containment with @> operator
 export const findByTag: CustomQueryFn = (ctx) => async (tag: string) =>
-  ctx.db
+  ctx.drizzle
     .select(ctx.selectColumns)
     .from(ctx.table)
     .where(sql`${ctx.table.tags} @> ARRAY[${tag}]::text[]`)
 
 // Postgres-specific: query JSONB fields
 export const findByMetadata: CustomQueryFn = (ctx) => async (key: string, value: string) =>
-  ctx.db
+  ctx.drizzle
     .select(ctx.selectColumns)
     .from(ctx.table)
     .where(eq(sql`${ctx.table.metadata} ->> ${key}`, value))

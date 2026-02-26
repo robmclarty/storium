@@ -141,7 +141,7 @@ const userStore = defineStore(usersTable, {
 
   // New query — just write Drizzle like you normally would
   findByEmail: (ctx) => async (email) =>
-    ctx.db.select(ctx.selectColumns)
+    ctx.drizzle.select(ctx.selectColumns)
       .from(ctx.table)
       .where(eq(ctx.table.email, email))
       .then(r => r[0] ?? null),
@@ -310,7 +310,7 @@ search: { raw: (table) => index('search_gin').using('gin', table.search_vector) 
 
 // Custom queries give you the full Drizzle query builder
 findByEmail: (ctx) => async (email) =>
-  ctx.db.select(ctx.selectColumns)
+  ctx.drizzle.select(ctx.selectColumns)
     .from(ctx.table)
     .where(eq(ctx.table.email, email))
     .then(r => r[0] ?? null)

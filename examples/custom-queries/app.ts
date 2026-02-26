@@ -4,7 +4,7 @@ import { sql, eq, like, desc } from 'drizzle-orm'
 // Custom queries let you extend stores with domain-specific operations.
 // Each query receives a `ctx` object containing:
 //
-//   ctx.db            — the Drizzle database instance
+//   ctx.drizzle       — the raw Drizzle database instance
 //   ctx.table         — the Drizzle table object
 //   ctx.selectColumns — pre-built column map for SELECT
 //   ctx.primaryKey    — PK column name
@@ -59,16 +59,16 @@ const articleStore = defineStore(articlesTable, {
 
   // --- Use the raw Drizzle escape hatch ---
   // For queries that go beyond the built-in CRUD, drop down to
-  // ctx.db and ctx.table for full Drizzle query builder access.
+  // ctx.drizzle and ctx.table for full Drizzle query builder access.
 
   search: (ctx) => async (term: string) =>
-    ctx.db
+    ctx.drizzle
       .select(ctx.selectColumns)
       .from(ctx.table)
       .where(like(ctx.table.title, `%${term}%`)),
 
   mostViewed: (ctx) => async (limit = 5) =>
-    ctx.db
+    ctx.drizzle
       .select(ctx.selectColumns)
       .from(ctx.table)
       .where(eq(ctx.table.status, 'published'))
@@ -79,7 +79,7 @@ const articleStore = defineStore(articlesTable, {
   // Raw SQL for atomic operations that don't map to CRUD.
 
   incrementViews: (ctx) => async (id: string) => {
-    ctx.db.run(
+    ctx.drizzle.run(
       sql`UPDATE articles SET view_count = COALESCE(view_count, 0) + 1 WHERE id = ${id}`
     )
     return ctx.findById(id)

@@ -110,7 +110,7 @@ await users.findById('123')
 
 ### Custom query context (ctx)
 ```typescript
-ctx.db              // Raw Drizzle instance
+ctx.drizzle         // Raw Drizzle instance
 ctx.table           // Drizzle table object
 ctx.selectColumns   // Pre-built column map for SELECT
 ctx.primaryKey      // PK column name
@@ -171,8 +171,8 @@ await db.drizzle.execute(sql`CREATE TABLE ...`)
 ```typescript
 // seeds/001_posts.ts
 import { defineSeed } from 'storium/migrate'
-export default defineSeed(async ({ db, config }) => {
-  await db.execute(sql`INSERT INTO ...`)
+export default defineSeed(async ({ drizzle, config }) => {
+  await drizzle.execute(sql`INSERT INTO ...`)
 })
 // Run: await runSeeds(config, db.drizzle)
 ```

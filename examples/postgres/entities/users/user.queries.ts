@@ -5,7 +5,7 @@ export const findByEmail: CustomQueryFn = (ctx) => async (email: string) =>
   ctx.findOne({ email })
 
 export const search: CustomQueryFn = (ctx) => async (term: string) =>
-  ctx.db
+  ctx.drizzle
     .select(ctx.selectColumns)
     .from(ctx.table)
     .where(or(

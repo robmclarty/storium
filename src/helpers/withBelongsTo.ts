@@ -67,7 +67,7 @@ export const withBelongsTo = (
         }
       }
 
-      const rows = await ctx.db
+      const rows = await ctx.drizzle
         .select(selectObj)
         .from(ctx.table)
         .leftJoin(

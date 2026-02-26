@@ -13,7 +13,7 @@
  * @example
  * const userRepo = db.createRepository(usersTable, {
  *   findByEmail: (ctx) => async (email) =>
- *     ctx.db.select(ctx.selectColumns).from(ctx.table)
+ *     ctx.drizzle.select(ctx.selectColumns).from(ctx.table)
  *       .where(eq(ctx.table.email, email)).then(r => r[0] ?? null),
  *
  *   create: (ctx) => async (input, opts) => {
@@ -232,7 +232,7 @@ export const createCreateRepository = (
     // Step 2: Assemble ctx with defaults + metadata
     // ctx always contains the ORIGINAL defaults, even if overridden by customs.
     const ctx: RepositoryContext<TTableDef> = {
-      db,
+      drizzle: db,
       table: tableDef.table,
       tableDef,
       selectColumns: tableDef.selectColumns,
