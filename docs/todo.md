@@ -55,7 +55,7 @@ release.
       across all 3 dialects, including `primaryKey`, `notNull`, `default`,
       `custom`, and `raw` modes.
 - [ ] **defineTable / defineStore**: table construction, access derivation
-      (`mutable`, `hidden`, `required`), index building, constraints.
+      (`mutable`, `writeOnly`, `required`), index building, constraints.
 - [ ] **createRepository**: all 9 default CRUD operations, `force` option,
       transaction passthrough, custom queries receiving correct `ctx`.
 - [ ] **Zod schema generation** (`zodSchema.ts`): all 4 schema variants,
@@ -99,9 +99,9 @@ release.
       `require()` for lazy dialect loading in a `"type": "module"` package.
       Works via tsup transpilation but could break in strict ESM environments.
       Consider dynamic `import()` instead.
-- [ ] **Hidden + required interaction**: a column with `hidden: true` and
+- [ ] **writeOnly + required interaction**: a column with `writeOnly: true` and
       `required: true` cannot be set through `create()` without `force: true`.
-      Decide if this is intentional and document it, or allow hidden required
+      Decide if this is intentional and document it, or allow writeOnly required
       columns in the insert schema.
 - [ ] **Committed `.DS_Store` files**: remove from git history
       (`git rm --cached`).

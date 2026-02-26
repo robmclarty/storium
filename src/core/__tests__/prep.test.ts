@@ -21,7 +21,7 @@ const access: TableAccess = {
   selectable: ['id', 'email', 'name'],
   mutable: ['email', 'name'],
   insertable: ['email', 'name'],
-  hidden: [],
+  writeOnly: [],
 }
 
 describe('prep pipeline', () => {

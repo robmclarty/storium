@@ -75,17 +75,30 @@ const injectTimestamps = (columns: ColumnsConfig): ColumnsConfig => {
 const deriveAccess = (columns: ColumnsConfig): TableAccess => {
   const allKeys = Object.keys(columns)
 
-  const hidden = allKeys.filter(k => columns[k]?.hidden === true)
-  const selectable = allKeys.filter(k => !columns[k]?.hidden)
-  const mutable = allKeys.filter(k => columns[k]?.mutable === true && !columns[k]?.hidden)
+  // Guard: required + mutable:false is a contradiction. A required column
+  // that can never be written is impossible to satisfy. Use required:true
+  // alone (omit mutable) for insert-only fields.
+  for (const key of allKeys) {
+    const col = columns[key]
+    if (col?.required === true && col?.mutable === false) {
+      throw new SchemaError(
+        `Column '${key}': a column cannot be both \`required: true\` and \`mutable: false\`. ` +
+        'Use \`required: true\` alone (omit \`mutable\`) for insert-only fields.'
+      )
+    }
+  }
+
+  const writeOnly = allKeys.filter(k => columns[k]?.writeOnly === true)
+  const selectable = allKeys.filter(k => !columns[k]?.writeOnly)
+  const mutable = allKeys.filter(k => columns[k]?.mutable === true && !columns[k]?.writeOnly)
 
   // Insertable: mutable columns + required columns (even if not mutable,
   // a required column must be provided on insert)
   const insertable = allKeys.filter(k =>
-    (columns[k]?.mutable === true || columns[k]?.required === true) && !columns[k]?.hidden
+    (columns[k]?.mutable === true || columns[k]?.required === true) && !columns[k]?.writeOnly
   )
 
-  return { selectable, mutable, insertable, hidden }
+  return { selectable, mutable, insertable, writeOnly }
 }
 
 /**

@@ -330,6 +330,10 @@ export const fromDrizzle = (
 ): StoriumInstance => {
   const dialect = inferDialect(drizzleDb)
 
+  // Set $dialect so helpers (e.g. withMembers) can branch on dialect,
+  // consistent with instances created via connect().
+  drizzleDb.$dialect = dialect
+
   return buildInstance(
     drizzleDb,
     dialect,

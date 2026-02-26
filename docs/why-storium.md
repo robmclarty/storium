@@ -25,7 +25,7 @@ with every table you add.
 ## What Storium Does
 
 A single `defineStore()` call replaces all of the above. You describe each
-column once with its type and access metadata — `mutable`, `hidden`,
+column once with its type and access metadata — `mutable`, `writeOnly`,
 `required` — and Storium derives everything else:
 
 - A **Drizzle table** ready for migrations and queries.
@@ -75,7 +75,7 @@ write without you having to remember to wire them up. The schema sync problem
 — where your Zod schemas drift from your Drizzle table after a migration —
 goes away entirely.
 
-The cognitive load of learning `mutable`, `hidden`, `required`, and the custom
+The cognitive load of learning `mutable`, `writeOnly`, `required`, and the custom
 query pattern is paid once. The cognitive load of manually maintaining schema
 parity across Drizzle and Zod is paid forever.
 
@@ -97,7 +97,7 @@ through `defineStore`, all custom queries use `ctx`," then:
 
 - Validation **always** lives in column definitions.
 - Transforms **always** run before writes.
-- Hidden fields **never** leak into API responses.
+- Write-only fields **never** leak into API responses.
 - There's **one pattern** to learn, one pattern to code review, one pattern to
   grep for when something goes wrong.
 

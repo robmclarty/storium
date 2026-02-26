@@ -46,7 +46,6 @@ export {
   withMembers,
   withBelongsTo,
   withCache,
-  createWithTransaction,
 } from './helpers'
 
 // --------------------------------------------------------------- Types --

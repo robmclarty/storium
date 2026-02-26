@@ -77,6 +77,7 @@ const filterInput = (
   const result: Record<string, any> = {}
 
   for (const key of Object.keys(input)) {
+    // Drop undefined values here so transforms are never called on absent keys.
     if (allowedKeys.has(key) && input[key] !== undefined) {
       result[key] = input[key]
     }
@@ -149,6 +150,17 @@ const validateInput = (
         })
         // Skip custom validation if basic type check fails
         continue
+      }
+
+      // maxLength check for varchar columns
+      if (dsl.type === 'varchar' && dsl.maxLength !== undefined && typeof value === 'string') {
+        if (value.length > dsl.maxLength) {
+          errors.push({
+            field: key,
+            message: `\`${key}\` must be at most ${dsl.maxLength} characters`,
+          })
+          continue
+        }
       }
     }
 

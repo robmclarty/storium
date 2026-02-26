@@ -186,7 +186,7 @@ tags: { raw: () => text('tags').array().default([]), mutable: true }
 `uuid` | `varchar` | `text` | `integer` | `bigint` | `serial` | `real` | `numeric` | `boolean` | `timestamp` | `date` | `jsonb`
 
 ### Column metadata
-`type`, `primaryKey`, `notNull`, `maxLength`, `default` (`'now'`|`'random_uuid'`|literal), `mutable`, `hidden`, `required`, `transform`, `validate`, `custom`, `raw`
+`type`, `primaryKey`, `notNull`, `maxLength`, `default` (`'now'`|`'random_uuid'`|literal), `mutable`, `writeOnly`, `required`, `transform`, `validate`, `custom`, `raw`
 
 ### Config file (drizzle.config.ts)
 ```typescript

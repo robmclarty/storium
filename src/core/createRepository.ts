@@ -66,16 +66,24 @@ const buildDefaultCrud = (
       ([key, value]) => eq(table[key], value)
     )
 
-    return getDb(opts)
+    let q = getDb(opts)
       .select(selectColumns)
       .from(table)
       .where(whereConditions.length === 1 ? whereConditions[0] : and(...whereConditions))
+
+    if (opts?.limit !== undefined) q = q.limit(opts.limit)
+    if (opts?.offset !== undefined) q = q.offset(opts.offset)
+
+    return q
   }
 
   const findAll = async (opts?: PrepOptions) => {
-    return getDb(opts)
-      .select(selectColumns)
-      .from(table)
+    let q = getDb(opts).select(selectColumns).from(table)
+
+    if (opts?.limit !== undefined) q = q.limit(opts.limit)
+    if (opts?.offset !== undefined) q = q.offset(opts.offset)
+
+    return q
   }
 
   const findOne = async (filters: Record<string, any>, opts?: PrepOptions) => {

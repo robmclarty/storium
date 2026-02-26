@@ -66,7 +66,7 @@ email: { type: 'varchar', maxLength: 255, custom: col => col.unique() }
 meta: { raw: () => jsonb('meta').default({}) }
 ```
 
-Column metadata (`mutable`, `hidden`, `required`, `transform`, `validate`) works with all modes. The `transform` callback runs before validation and is where you'd put sanitization (trim, lowercase), enrichment, or any other pre-save logic. Basically anything you'd otherwise scatter across your route handlers ;)
+Column metadata (`mutable`, `writeOnly`, `required`, `transform`, `validate`) works with all modes. The `transform` callback runs before validation and is where you'd put sanitization (trim, lowercase), enrichment, or any other pre-save logic. Basically anything you'd otherwise scatter across your route handlers ;)
 
 ### Custom Queries
 

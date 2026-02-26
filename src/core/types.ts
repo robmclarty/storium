@@ -38,7 +38,7 @@ export type TestFn = (
 /** Base metadata that applies to ALL column modes (DSL, DSL+custom, raw). */
 type BaseColumnMeta = {
   mutable?: boolean
-  hidden?: boolean
+  writeOnly?: boolean
   required?: boolean
   transform?: (value: any) => any | Promise<any>
   validate?: (value: any, test: TestFn) => void
@@ -126,14 +126,14 @@ export type IndexesConfig = Record<string, IndexConfig>
 
 /** Derived access sets for a table. */
 export type TableAccess = {
-  /** Columns included in SELECT (all except hidden). */
+  /** Columns included in SELECT (all except writeOnly). */
   selectable: string[]
   /** Columns allowed in UPDATE input. */
   mutable: string[]
   /** Columns allowed in INSERT input (mutable + required). */
   insertable: string[]
-  /** Columns excluded from SELECT. */
-  hidden: string[]
+  /** Columns excluded from SELECT (present in INSERT/UPDATE input only). */
+  writeOnly: string[]
 }
 
 // --------------------------------------------------------- Runtime Schema --
@@ -225,6 +225,10 @@ export type PrepOptions = {
   onlyMutables?: boolean
   /** Participate in an external transaction. */
   tx?: any
+  /** Limit the number of rows returned (find, findAll). */
+  limit?: number
+  /** Skip this many rows before returning results (find, findAll). */
+  offset?: number
 }
 
 // ------------------------------------------------------- Repository / Store --
@@ -452,10 +456,10 @@ type ResolveColumnType<C extends ColumnConfig> =
 
 /**
  * Derive the SELECT result type from a columns config.
- * Excludes hidden columns.
+ * Excludes writeOnly columns.
  */
 export type SelectType<TColumns extends ColumnsConfig> = {
-  [K in keyof TColumns as TColumns[K] extends { hidden: true } ? never : K]:
+  [K in keyof TColumns as TColumns[K] extends { writeOnly: true } ? never : K]:
     ResolveColumnType<TColumns[K]>
 }
 
