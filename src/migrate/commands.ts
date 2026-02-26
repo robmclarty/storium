@@ -9,8 +9,13 @@
  * The bridge: defineStore/defineTable produce real Drizzle table objects
  * that drizzle-kit can diff against the current database state.
  *
+ * The config object passed to these functions IS a drizzle-kit config —
+ * storium-specific keys (assertions, pool, seeds) are simply ignored by
+ * drizzle-kit.
+ *
  * @example
  * import { generate, migrate, push, status } from 'storium/migrate'
+ * import config from './drizzle.config'
  *
  * await generate(config)   // Diff → create migration SQL
  * await migrate(config)    // Apply pending migrations
@@ -19,8 +24,6 @@
  */
 
 import { createRequire } from 'node:module'
-import type { StoriumConfig } from '../core/types'
-import { ConfigError } from '../core/errors'
 
 const require = createRequire(import.meta.url)
 
@@ -34,66 +37,27 @@ type MigrationResult = {
 // ------------------------------------------------------------ Helpers --
 
 /**
- * Build the drizzle-kit config object from Storium config.
- */
-const buildDrizzleKitConfig = (config: StoriumConfig) => {
-  const url = config.connection?.url ?? config.url
-
-  if (!url) {
-    throw new ConfigError(
-      'Database connection URL is required for migrations. ' +
-      'Set `connection.url` or `url` in your config.'
-    )
-  }
-
-  if (!config.schema) {
-    throw new ConfigError(
-      'Schema file path(s) are required for migrations. ' +
-      'Set `schema` in your config (string or array of globs).'
-    )
-  }
-
-  const dialectMap: Record<string, string> = {
-    postgresql: 'postgresql',
-    mysql: 'mysql',
-    sqlite: 'sqlite',
-    memory: 'sqlite',
-  }
-
-  return {
-    dialect: dialectMap[config.dialect] ?? config.dialect,
-    schema: config.schema,
-    out: config.migrations?.directory ?? './migrations',
-    dbCredentials: {
-      url,
-    },
-  }
-}
-
-/**
  * Dynamically load drizzle-kit and execute a command.
+ * The config is passed straight through — it IS drizzle-kit format.
  */
 const runDrizzleKit = async (
   command: string,
-  config: StoriumConfig
+  config: any
 ): Promise<MigrationResult> => {
-  const drizzleConfig = buildDrizzleKitConfig(config)
-
   try {
-    // drizzle-kit provides a programmatic API
     const drizzleKit = require('drizzle-kit')
 
     switch (command) {
       case 'generate':
-        await drizzleKit.generate(drizzleConfig)
+        await drizzleKit.generate(config)
         return { success: true, message: 'Migration file generated successfully.' }
 
       case 'migrate':
-        await drizzleKit.migrate(drizzleConfig)
+        await drizzleKit.migrate(config)
         return { success: true, message: 'Migrations applied successfully.' }
 
       case 'push':
-        await drizzleKit.push(drizzleConfig)
+        await drizzleKit.push(config)
         return { success: true, message: 'Schema pushed to database successfully.' }
 
       default:
@@ -113,7 +77,7 @@ const runDrizzleKit = async (
  *
  * Equivalent to `npx storium generate` or `npx drizzle-kit generate`.
  */
-export const generate = async (config: StoriumConfig): Promise<MigrationResult> =>
+export const generate = async (config: any): Promise<MigrationResult> =>
   runDrizzleKit('generate', config)
 
 /**
@@ -121,7 +85,7 @@ export const generate = async (config: StoriumConfig): Promise<MigrationResult> 
  *
  * Equivalent to `npx storium migrate` or `npx drizzle-kit migrate`.
  */
-export const migrate = async (config: StoriumConfig): Promise<MigrationResult> =>
+export const migrate = async (config: any): Promise<MigrationResult> =>
   runDrizzleKit('migrate', config)
 
 /**
@@ -130,7 +94,7 @@ export const migrate = async (config: StoriumConfig): Promise<MigrationResult> =
  *
  * Equivalent to `npx storium push` or `npx drizzle-kit push`.
  */
-export const push = async (config: StoriumConfig): Promise<MigrationResult> =>
+export const push = async (config: any): Promise<MigrationResult> =>
   runDrizzleKit('push', config)
 
 /**
@@ -138,21 +102,18 @@ export const push = async (config: StoriumConfig): Promise<MigrationResult> =>
  *
  * Equivalent to `npx storium status`.
  */
-export const status = async (config: StoriumConfig): Promise<MigrationResult> => {
-  const drizzleConfig = buildDrizzleKitConfig(config)
-
+export const status = async (config: any): Promise<MigrationResult> => {
   try {
     const drizzleKit = require('drizzle-kit')
 
-    // drizzle-kit may expose a check/status API; fall back to a basic check
     if (typeof drizzleKit.check === 'function') {
-      const result = await drizzleKit.check(drizzleConfig)
+      const result = await drizzleKit.check(config)
       return { success: true, message: result?.message ?? 'Migration status checked.' }
     }
 
     return {
       success: true,
-      message: `Migrations directory: ${drizzleConfig.out}\nSchema: ${JSON.stringify(drizzleConfig.schema)}`,
+      message: `Migrations directory: ${config.out ?? './migrations'}\nSchema: ${JSON.stringify(config.schema)}`,
     }
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)

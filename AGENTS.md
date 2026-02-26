@@ -11,12 +11,11 @@ storium/
 ├── src/
 │   ├── index.ts                # Public API — named export: { storium, defineTable, defineStore, ... }
 │   ├── connect.ts              # Connection factory; dialect-specific Drizzle wiring + register()
-│   ├── config.ts               # defineConfig() for storium.config.ts files
 │   └── core/
 │       ├── types.ts            # All shared TypeScript types (Dialect, ColumnConfig, TableDef, etc.)
 │       ├── defineTable.ts      # Schema DSL — defineTable(name, cols, opts) with 3 overloads
 │       ├── defineStore.ts      # defineStore — 3 overloads (tableDef, curried dialect, auto-config)
-│       ├── configLoader.ts     # loadDialectFromConfig() — reads dialect from storium.config.ts
+│       ├── configLoader.ts     # loadDialectFromConfig() — reads dialect from drizzle.config.ts
 │       ├── createRepository.ts # CRUD builder + custom query context (ctx)
 │       ├── dialect.ts          # DSL type → Drizzle column builder mappings per dialect
 │       ├── prep.ts             # Validation/transform pipeline (filter → transform → validate → required)
@@ -32,9 +31,9 @@ storium/
 │   │   ├── withCache.ts        # Caching wrapper
 │   │   └── withTransaction.ts  # createWithTransaction() helper
 │   └── migrate/
-│       ├── commands.ts         # generate(), migrate(), push(), status() — wrap drizzle-kit
+│       ├── commands.ts         # generate(), migrate(), push(), status() — pass config to drizzle-kit
 │       ├── schemaCollector.ts  # collectSchemas(globs) — imports schema files, extracts .table/.name
-│       └── seed.ts             # defineSeed(), runSeeds(config, db)
+│       └── seed.ts             # defineSeed(), runSeeds(seedsDir, db)
 ├── examples/
 │   ├── basic/                  # Complete: in-memory CRUD fundamentals
 │   ├── custom-queries/         # Complete: custom query patterns, raw Drizzle, overrides
@@ -55,10 +54,11 @@ storium/
 
 ```typescript
 // Named exports
-import { storium, defineTable, defineStore, defineConfig, ValidationError, withBelongsTo, ... } from 'storium'
+import { storium, defineTable, defineStore, ValidationError, withBelongsTo, ... } from 'storium'
 
-storium.connect(config)          // ConnectConfig | StoriumConfig → StoriumInstance
-storium.fromDrizzle(db, config)  // Wrap existing Drizzle instance
+storium.connect(config)          // ConnectConfig → StoriumInstance
+storium.fromDrizzle(drizzleDb)   // Auto-detects dialect from Drizzle instance
+storium.fromDrizzle(drizzleDb, { assertions }) // With storium options
 
 // Sub-path (migration tooling — heavy deps, opt-in)
 import { generate, migrate, push, status, runSeeds, defineSeed, collectSchemas } from 'storium/migrate'
@@ -69,9 +69,17 @@ import { generate, migrate, push, status, runSeeds, defineSeed, collectSchemas }
 ### Dialects
 `'postgresql'` | `'mysql'` | `'sqlite'` | `'memory'` (memory = SQLite `:memory:`)
 
-### StoriumInstance (returned by connect())
+### Dependencies
+- Peer: `drizzle-orm` (>=0.44), `drizzle-kit` (>=0.31), `zod` (>=4.0)
+- Peer (optional): `pg`, `mysql2`, `better-sqlite3` (install one for your dialect)
+- Runtime: `glob`
+
+npm auto-installs non-optional peer deps when you `npm install storium`.
+
+### StoriumInstance (returned by connect() / fromDrizzle())
 ```typescript
 db.drizzle           // Raw Drizzle instance (escape hatch)
+db.zod               // Zod namespace (convenience accessor matching db.drizzle)
 db.dialect           // Resolved dialect string
 db.defineTable()     // Dialect-bound schema definition (no CRUD)
 db.defineStore()     // Create a live store directly (simple path — no register step)
@@ -80,9 +88,34 @@ db.withTransaction() // Async transaction wrapper
 db.disconnect()      // Close connection / pool
 ```
 
+### ConnectConfig (single config object)
+```typescript
+// Accepts both storium inline and drizzle-kit config shapes.
+// Storium-specific keys (assertions, pool, seeds) are ignored by drizzle-kit.
+storium.connect({
+  dialect: 'postgresql',
+  url: process.env.DATABASE_URL,     // or dbCredentials: { url: '...' }
+  assertions: { is_slug: (v) => ... },
+  pool: { min: 2, max: 10 },
+  seeds: './seeds',
+})
+
+// Drizzle config + storium extras
+import config from './drizzle.config'
+storium.connect({ ...config, assertions: { ... } })
+```
+
+### fromDrizzle (auto-detects dialect)
+```typescript
+import { drizzle } from 'drizzle-orm/node-postgres'
+const myDrizzle = drizzle(myPool)
+const db = storium.fromDrizzle(myDrizzle)                     // dialect auto-detected
+const db = storium.fromDrizzle(myDrizzle, { assertions: {} }) // with options
+```
+
 ### defineTable (3 overloads)
 ```typescript
-// Overload 1: Direct call — auto-loads dialect from storium.config.ts
+// Overload 1: Direct call — auto-loads dialect from drizzle.config.ts
 defineTable('users', columns, options) → TableDef
 
 // Overload 2: Curried with explicit dialect — returns a bound function
@@ -101,7 +134,7 @@ const userStore = defineStore(usersTable, { search, findByEmail })
 // Overload 2: One-call with explicit dialect (curried)
 const userStore = defineStore('postgresql')('users', columns, { queries: { search } })
 
-// Overload 3: One-call, auto-loads dialect from storium.config.ts
+// Overload 3: One-call, auto-loads dialect from drizzle.config.ts
 const userStore = defineStore('users', columns, { queries: { search } })
 ```
 All overloads return a `StoreDefinition` (inert DTO). The DTO surfaces `.table` and `.name`
@@ -128,6 +161,7 @@ await users.findById('123')
 ### Custom query context (ctx)
 ```typescript
 ctx.drizzle         // Raw Drizzle instance
+ctx.zod             // Zod namespace (convenience accessor)
 ctx.table           // Drizzle table object
 ctx.selectColumns   // Pre-built column map for SELECT
 ctx.primaryKey      // PK column name
@@ -154,20 +188,26 @@ tags: { raw: () => text('tags').array().default([]), mutable: true }
 ### Column metadata
 `type`, `primaryKey`, `notNull`, `maxLength`, `default` (`'now'`|`'random_uuid'`|literal), `mutable`, `hidden`, `required`, `transform`, `validate`, `custom`, `raw`
 
-### StoriumConfig (storium.config.ts)
+### Config file (drizzle.config.ts)
 ```typescript
-defineConfig({
+// A single config shared by drizzle-kit and storium.
+// drizzle-kit keys: dialect, dbCredentials, schema, out
+// storium extras: assertions, pool, seeds (drizzle-kit ignores these)
+import type { ConnectConfig } from 'storium'
+
+export default {
   dialect: 'postgresql',
-  connection: { url: process.env.DATABASE_URL },
+  dbCredentials: { url: process.env.DATABASE_URL! },
   schema: ['./src/**/*.schema.ts'],
-  migrations: { directory: './migrations' },
-  seeds: { directory: './seeds' },
-})
+  out: './migrations',
+  seeds: './seeds',
+} satisfies ConnectConfig
 ```
-`connect()`, `generate()`, `migrate()`, `runSeeds()` all accept `StoriumConfig` — same object the CLI uses.
+`generate()`, `migrate()`, `push()` pass the config straight to drizzle-kit.
+`runSeeds(seedsDir, db)` takes the seeds directory as a string.
 
 ### Schema files (for migrations)
-Schema files must export a `TableDef` (has `.table` and `.name`) detectable by `collectSchemas()`. Use `defineTable('postgresql')('users', {...})` directly — `db.defineTable` can't be used because drizzle-kit imports schema files at module level before any db connection exists. If a `storium.config.ts` exists, `defineTable('users', {...})` auto-loads the dialect.
+Schema files must export a `TableDef` (has `.table` and `.name`) detectable by `collectSchemas()`. Use `defineTable('postgresql')('users', {...})` directly — `db.defineTable` can't be used because drizzle-kit imports schema files at module level before any db connection exists. If a `drizzle.config.ts` exists, `defineTable('users', {...})` auto-loads the dialect.
 
 ### Table creation (dialect differences)
 ```typescript
@@ -188,16 +228,16 @@ await db.drizzle.execute(sql`CREATE TABLE ...`)
 ```typescript
 // seeds/001_posts.ts
 import { defineSeed } from 'storium/migrate'
-export default defineSeed(async ({ drizzle, config }) => {
+export default defineSeed(async ({ drizzle }) => {
   await drizzle.execute(sql`INSERT INTO ...`)
 })
-// Run: await runSeeds(config, db.drizzle)
+// Run: await runSeeds('./seeds', db.drizzle)
 ```
 
 ### Recommended app structure (folder-per-store)
 ```
 project/
-├── storium.config.ts              # defineConfig({ dialect, connection, schema, ... })
+├── drizzle.config.ts              # Single config for drizzle-kit + storium
 ├── database.ts                    # Plumbing: connect + register all stores
 ├── entities/
 │   └── users/
@@ -214,8 +254,3 @@ project/
 - Simple pattern: `storium.connect → db.defineStore → use stores`
 - Console output: `=== Section name ===` headers matching style of existing examples
 - Always `await db.disconnect()` at end
-
-## Dependencies
-- Runtime: `drizzle-orm`, `zod`, `glob`
-- Peer (optional): `pg` (PostgreSQL), `mysql2` (MySQL), `better-sqlite3` (SQLite)
-- Dev: `tsx`, `vitest`, `tsup`, `oxlint`

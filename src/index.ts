@@ -5,7 +5,7 @@
  * The `storium` namespace provides `connect` and `fromDrizzle`.
  *
  * @example
- * import { storium, defineTable, defineStore, defineConfig } from 'storium'
+ * import { storium, defineTable, defineStore } from 'storium'
  *
  * const db = storium.connect(config)
  * const stores = db.register({ users: userStore })
@@ -16,10 +16,6 @@
 import { connect, fromDrizzle } from './connect'
 
 export const storium = { connect, fromDrizzle }
-
-// ---------------------------------------------------- Config --
-
-export { defineConfig } from './config'
 
 // ------------------------------------------------- Schema & Store DSL --
 
@@ -64,7 +60,7 @@ export type {
   // Dialect & config
   Dialect,
   ConnectConfig,
-  StoriumConfig,
+  FromDrizzleOptions,
   StoriumInstance,
 
   // Column & schema

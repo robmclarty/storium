@@ -17,7 +17,6 @@
 
 import path from 'node:path'
 import { glob } from 'glob'
-import type { StoriumConfig } from '../core/types'
 import { ConfigError } from '../core/errors'
 
 // --------------------------------------------------------------- Types --
@@ -26,8 +25,6 @@ import { ConfigError } from '../core/errors'
 export type SeedContext = {
   /** The raw Drizzle database instance. */
   drizzle: any
-  /** The active config for reference. */
-  config: StoriumConfig
 }
 
 /** A seed function receives the seed context. */
@@ -49,7 +46,7 @@ export type SeedModule = {
  * @returns A seed module object
  *
  * @example
- * export default defineSeed(async ({ db }) => {
+ * export default defineSeed(async ({ drizzle }) => {
  *   // seed logic here
  * })
  */
@@ -68,22 +65,20 @@ const isSeedModule = (value: any): value is SeedModule =>
   typeof value.run === 'function'
 
 /**
- * Run all seed files matching the configured seeds directory.
+ * Run all seed files in a directory.
  * Seeds are executed in alphabetical filename order.
  *
- * @param config - The Storium config (needs seeds.directory and connection info)
+ * @param seedsDir - Path to the seeds directory
  * @param db - The Drizzle database instance
  * @returns Summary of seeds run
  */
 export const runSeeds = async (
-  config: StoriumConfig,
+  seedsDir: string,
   db: any
 ): Promise<{ success: boolean; message: string; count: number }> => {
-  const seedsDir = config.seeds?.directory
-
   if (!seedsDir) {
     throw new ConfigError(
-      'Seeds directory is required. Set `seeds.directory` in your config.'
+      'Seeds directory is required. Pass a seeds directory path, or set `seeds` in your drizzle.config.ts.'
     )
   }
 
@@ -97,7 +92,7 @@ export const runSeeds = async (
     return { success: true, message: 'No seed files found.', count: 0 }
   }
 
-  const ctx: SeedContext = { drizzle: db, config }
+  const ctx: SeedContext = { drizzle: db }
   let count = 0
 
   for (const filePath of sorted) {

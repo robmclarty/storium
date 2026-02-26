@@ -13,7 +13,6 @@
 
 import { PostgreSqlContainer } from '@testcontainers/postgresql'
 import { generate, migrate, runSeeds } from 'storium/migrate'
-import type { StoriumConfig } from 'storium'
 import { createDatabase } from './database.js'
 
 // --- Start PostgreSQL container ---
@@ -23,13 +22,13 @@ const container = await new PostgreSqlContainer('postgres:16-alpine').start()
 const connectionUrl = container.getConnectionUri()
 console.log('Container started.')
 
-// Set DATABASE_URL so storium.config.ts can read it.
+// Set DATABASE_URL so drizzle.config.ts can read it.
 process.env.DATABASE_URL = connectionUrl
 
 // Import config lazily — after DATABASE_URL is set, so the connection URL
 // is resolved correctly. This is also how the CLI works: DATABASE_URL is
 // set in the environment before `npx storium generate` is called.
-const { default: config } = await import('./storium.config.js') as { default: StoriumConfig }
+const { default: config } = await import('./drizzle.config.js')
 
 // --- Generate and apply migrations ---
 
@@ -48,7 +47,7 @@ const { db, users, posts } = createDatabase(config)
 // --- Seed data ---
 
 console.log('\n=== Seeds ===')
-const seedResult = await runSeeds(config, db.drizzle)
+const seedResult = await runSeeds(config.seeds ?? './seeds', db.drizzle)
 console.log(seedResult.message)
 
 // --- CRUD ---

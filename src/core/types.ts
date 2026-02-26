@@ -237,6 +237,8 @@ export type PrepOptions = {
 export type RepositoryContext<T extends TableDef = TableDef> = {
   /** The raw Drizzle database instance (escape hatch). */
   drizzle: any
+  /** The Zod namespace (convenience accessor matching ctx.drizzle). */
+  zod: typeof import('zod').z
   /** The Drizzle table object. */
   table: T['table']
   /** The full TableDef. */
@@ -321,26 +323,26 @@ export type CacheMethodConfig = {
 
 // ----------------------------------------------------------- Connect Config --
 
-/** Configuration for `storium.connect()`. */
+/**
+ * Configuration for `storium.connect()`.
+ *
+ * Accepts both storium's inline shape and drizzle-kit's config shape.
+ * Storium normalizes either: `config.url ?? config.dbCredentials?.url ?? buildUrl(config)`.
+ *
+ * Storium-specific keys (assertions, pool, seeds) are ignored by drizzle-kit,
+ * so a single config object can be shared between both.
+ */
 export type ConnectConfig = {
   dialect: Dialect
-  /** Connection URL. Mutually exclusive with host/port/database/user/password. */
+  /** Connection URL (storium inline style). */
   url?: string
   host?: string
   port?: number
   database?: string
   user?: string
   password?: string
-  /** Connection pool settings. */
-  pool?: { min?: number; max?: number }
-  /** User-defined named assertions for `test()`. */
-  assertions?: AssertionRegistry
-}
-
-/** Full configuration for `storium.config.ts`. */
-export type StoriumConfig = ConnectConfig & {
-  /** Connection config (alternative grouping for config file). */
-  connection?: {
+  /** Drizzle-kit style connection credentials. */
+  dbCredentials?: {
     url?: string
     host?: string
     port?: number
@@ -348,22 +350,33 @@ export type StoriumConfig = ConnectConfig & {
     user?: string
     password?: string
   }
-  /** Glob path(s) to schema files. String or array of strings. */
+  /** Glob path(s) to schema files (used by drizzle-kit). */
   schema?: string | string[]
-  /** Migration settings. */
-  migrations?: {
-    directory: string
-  }
-  /** Seed settings. */
-  seeds?: {
-    directory: string
-  }
+  /** Migration output directory (used by drizzle-kit). */
+  out?: string
+  /** Connection pool settings (storium-specific). */
+  pool?: { min?: number; max?: number }
+  /** User-defined named assertions for `test()` (storium-specific). */
+  assertions?: AssertionRegistry
+  /** Seeds directory path (storium-specific; drizzle-kit ignores this). */
+  seeds?: string
+}
+
+/**
+ * Options for `storium.fromDrizzle()`.
+ * Dialect is auto-detected from the Drizzle instance.
+ */
+export type FromDrizzleOptions = {
+  /** User-defined named assertions for `test()`. */
+  assertions?: AssertionRegistry
 }
 
 /** The Storium instance returned by `connect()` or `fromDrizzle()`. */
 export type StoriumInstance = {
   /** Raw Drizzle instance (escape hatch). */
   drizzle: any
+  /** The Zod namespace (convenience accessor matching db.drizzle). */
+  zod: typeof import('zod').z
   /** The active dialect. */
   dialect: Dialect
   /** Create a table definition (pre-bound to dialect + assertions). */

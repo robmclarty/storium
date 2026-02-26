@@ -45,7 +45,7 @@ export type {
   CacheAdapter,
   CacheMethodConfig,
   ConnectConfig,
-  StoriumConfig,
+  FromDrizzleOptions,
   StoriumInstance,
   TableOptions,
   SelectType,

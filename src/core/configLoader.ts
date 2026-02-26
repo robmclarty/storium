@@ -1,11 +1,11 @@
 /**
  * Storium v1 — Config Loader
  *
- * Loads the dialect from storium.config.ts for use by the top-level
+ * Loads the dialect from drizzle.config.ts for use by the top-level
  * `defineTable()` function when called without an explicit dialect.
  *
- * Looks for `storium.config.ts` (or `.js`) in the current working directory.
- * Override the path via the `STORIUM_CONFIG` environment variable.
+ * Looks for `drizzle.config.ts` (or `.js`) in the current working directory.
+ * Override the path via the `DRIZZLE_CONFIG` environment variable.
  *
  * The result is cached — the config file is loaded at most once per process.
  */
@@ -20,14 +20,14 @@ const require = createRequire(import.meta.url)
 let cachedDialect: Dialect | null = null
 
 /**
- * Load the dialect string from the project's storium config file.
+ * Load the dialect string from the project's drizzle config file.
  * Throws a descriptive `ConfigError` if no config is found.
  */
 export const loadDialectFromConfig = (): Dialect => {
   if (cachedDialect) return cachedDialect
 
-  const configPath = process.env.STORIUM_CONFIG
-    ?? resolve(process.cwd(), 'storium.config')
+  const configPath = process.env.DRIZZLE_CONFIG
+    ?? resolve(process.cwd(), 'drizzle.config')
 
   try {
     const mod = require(configPath)
@@ -36,7 +36,7 @@ export const loadDialectFromConfig = (): Dialect => {
     if (!config?.dialect) {
       throw new ConfigError(
         'Config file found but `dialect` is not set. ' +
-        'Add `dialect` to your storium.config.ts.'
+        'Add `dialect` to your drizzle.config.ts.'
       )
     }
 
@@ -45,10 +45,10 @@ export const loadDialectFromConfig = (): Dialect => {
   } catch (err) {
     if ((err as any)?.code === 'MODULE_NOT_FOUND') {
       throw new ConfigError(
-        'defineTable() called without a dialect and no storium.config.ts found. ' +
+        'defineTable() called without a dialect and no drizzle.config.ts found. ' +
         "Either pass a dialect — defineTable('postgresql')('users', {...}) — " +
-        'or create storium.config.ts in your project root. ' +
-        'You can also set the STORIUM_CONFIG env var to a custom path.'
+        'or create drizzle.config.ts in your project root. ' +
+        'You can also set the DRIZZLE_CONFIG env var to a custom path.'
       )
     }
     throw err

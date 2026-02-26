@@ -11,7 +11,7 @@ The goal is a data-access layer that's structured enough to keep things consiste
 ## Quick Start
 
 ```bash
-npm install storium
+npm install storium drizzle-orm drizzle-kit zod
 
 # Plus your database driver of choice:
 npm install pg             # PostgreSQL
@@ -81,7 +81,7 @@ const usersTable = defineTable('postgresql')('users', columns, {
   indexes: { email: { unique: true } },
 })
 
-// Auto-detect dialect from storium.config.ts
+// Auto-detect dialect from drizzle.config.ts
 const usersTable = defineTable('users', columns, options)
 
 // Bound function for reuse across multiple tables
@@ -99,7 +99,7 @@ const userStore = defineStore(usersTable, { findByEmail, search })
 // One-call with explicit dialect (curried) — schema + store in one shot
 const userStore = defineStore('postgresql')('users', columns, { queries: { search } })
 
-// One-call, auto-loads dialect from storium.config.ts
+// One-call, auto-loads dialect from drizzle.config.ts
 const userStore = defineStore('users', columns, { queries: { search }, indexes: { email: { unique: true } } })
 ```
 
@@ -284,18 +284,18 @@ npx storium status     # Check migration state
 npx storium seed       # Run seed files
 ```
 
-Configuration in `storium.config.ts`:
+Configuration in `drizzle.config.ts` — a single config shared by drizzle-kit and storium:
 
 ```typescript
-import { defineConfig } from 'storium'
+import type { ConnectConfig } from 'storium'
 
-export default defineConfig({
+export default {
   dialect: 'postgresql',
-  connection: { url: process.env.DATABASE_URL },
+  dbCredentials: { url: process.env.DATABASE_URL! },
   schema: ['./src/entities/**/*.schema.ts'],
-  migrations: { directory: './migrations' },
-  seeds: { directory: './seeds' },
-})
+  out: './migrations',
+  seeds: './seeds',
+} satisfies ConnectConfig
 ```
 
 ## Escape Hatches
@@ -310,9 +310,9 @@ Direct Drizzle access is always available. If you need to drop down a level, not
 // Raw Drizzle instance
 db.drizzle.execute(sql`SELECT 1`)
 
-// Bring your own Drizzle
+// Bring your own Drizzle (dialect auto-detected)
 import { storium } from 'storium'
-const db = storium.fromDrizzle(myDrizzleInstance, { dialect: 'postgresql' })
+const db = storium.fromDrizzle(myDrizzleInstance)
 
 // Raw columns bypass the DSL entirely
 meta: { raw: () => jsonb('meta').default({}) }

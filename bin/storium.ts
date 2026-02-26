@@ -10,7 +10,7 @@
  *   npx storium status     — Show pending migrations
  *   npx storium seed       — Run seed files
  *
- * Reads configuration from storium.config.ts in the project root,
+ * Reads configuration from drizzle.config.ts in the project root,
  * or a path specified via --config.
  */
 
@@ -18,7 +18,6 @@ import path from 'node:path'
 import { generate, migrate, push, status } from '../src/migrate/commands'
 import { runSeeds } from '../src/migrate/seed'
 import { connect } from '../src/connect'
-import type { StoriumConfig } from '../src/core/types'
 
 // --------------------------------------------------------------- Helpers --
 
@@ -40,15 +39,15 @@ const usage = () => {
     seed        Run seed files
 
   Options:
-    --config <path>   Path to config file (default: ./storium.config.ts)
+    --config <path>   Path to config file (default: ./drizzle.config.ts)
     --help            Show this help message
 `)
 }
 
 /**
- * Load the Storium config file.
+ * Load the config file (drizzle.config.ts format).
  */
-const loadConfig = async (configPath: string): Promise<StoriumConfig> => {
+const loadConfig = async (configPath: string): Promise<any> => {
   const abs = path.resolve(process.cwd(), configPath)
 
   try {
@@ -67,7 +66,7 @@ const loadConfig = async (configPath: string): Promise<StoriumConfig> => {
 const parseArgs = (argv: string[]) => {
   const args = argv.slice(2)
   const command = args[0] as Command | undefined
-  let configPath = './storium.config.ts'
+  let configPath = './drizzle.config.ts'
 
   const configIdx = args.indexOf('--config')
   if (configIdx !== -1 && args[configIdx + 1]) {
@@ -129,8 +128,9 @@ const main = async () => {
     case 'seed': {
       // Seeds need a live DB connection
       const db = connect(config)
+      const seedsDir = config.seeds ?? './seeds'
       try {
-        const result = await runSeeds(config, db.drizzle)
+        const result = await runSeeds(seedsDir, db.drizzle)
         console.log(result.message)
         process.exit(result.success ? 0 : 1)
       } finally {

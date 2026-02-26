@@ -1,5 +1,5 @@
 import { storium } from 'storium'
-import type { StoriumConfig } from 'storium'
+import type { ConnectConfig } from 'storium'
 import { userStore } from './entities/users/user.store.js'
 import { postStore } from './entities/posts/post.store.js'
 
@@ -7,7 +7,7 @@ import { postStore } from './entities/posts/post.store.js'
 // imported directly because DATABASE_URL is set at runtime (by the
 // Testcontainers setup in app.ts, or by the environment in production).
 
-export const createDatabase = (config: StoriumConfig) => {
+export const createDatabase = (config: ConnectConfig) => {
   const db = storium.connect(config)
   const stores = db.register({ users: userStore, posts: postStore })
   return { db, ...stores }

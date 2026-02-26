@@ -2,17 +2,19 @@
  * Storium v1 — Connection Factory
  *
  * Creates a fully configured StoriumInstance from either:
- * - An inline config object
+ * - A config object (inline or drizzle-kit format)
  * - An existing Drizzle instance (via fromDrizzle)
  *
  * The returned instance has dialect-bound `defineTable`, `register` for
- * materializing store definitions, db-bound `withTransaction`, and a raw
- * `drizzle` escape hatch.
+ * materializing store definitions, db-bound `withTransaction`, and raw
+ * `drizzle` and `zod` escape hatches.
  */
 
 import { createRequire } from 'node:module'
+import { z } from 'zod'
 import type {
   ConnectConfig,
+  FromDrizzleOptions,
   StoriumInstance,
   Dialect,
   AssertionRegistry,
@@ -29,17 +31,26 @@ const require = createRequire(import.meta.url)
 // --------------------------------------------------- Drizzle Wiring --
 
 /**
- * Create a Drizzle database instance from a connection config.
- * Lazily loads the appropriate driver based on dialect.
+ * Resolve the effective dialect (memory → sqlite).
  */
 const resolveDialect = (dialect: Dialect): Exclude<Dialect, 'memory'> =>
   dialect === 'memory' ? 'sqlite' : dialect
 
+/**
+ * Normalize a connection URL from either storium inline or drizzle-kit config shape.
+ */
+const resolveUrl = (config: ConnectConfig): string | undefined =>
+  config.url ?? config.dbCredentials?.url
+
+/**
+ * Create a Drizzle database instance from a connection config.
+ * Lazily loads the appropriate driver based on dialect.
+ */
 const createDrizzleInstance = (config: ConnectConfig): { db: any; teardown: () => Promise<void> } => {
   const dialect = resolveDialect(config.dialect)
   const url = dialect === 'sqlite' && config.dialect === 'memory'
     ? ':memory:'
-    : config.url ?? buildConnectionUrl(config)
+    : resolveUrl(config) ?? buildConnectionUrl(config)
 
   switch (dialect) {
     case 'postgresql': {
@@ -94,11 +105,19 @@ const createDrizzleInstance = (config: ConnectConfig): { db: any; teardown: () =
 
 /**
  * Build a connection URL from individual config fields.
+ * Checks both top-level fields and dbCredentials.
  */
 const buildConnectionUrl = (config: ConnectConfig): string => {
-  if (config.url) return config.url
+  const url = resolveUrl(config)
+  if (url) return url
 
-  const { dialect, host, port, database, user, password } = config
+  // Try top-level fields first, then dbCredentials
+  const host = config.host ?? config.dbCredentials?.host
+  const port = config.port ?? config.dbCredentials?.port
+  const database = config.database ?? config.dbCredentials?.database
+  const user = config.user ?? config.dbCredentials?.user
+  const password = config.password ?? config.dbCredentials?.password
+  const dialect = config.dialect
 
   if (!host || !database) {
     throw new ConfigError(
@@ -155,6 +174,23 @@ const createWithTransaction = (db: any, dialect: Dialect) => {
   return async <T>(fn: (tx: any) => Promise<T>): Promise<T> => {
     return db.transaction(fn)
   }
+}
+
+// --------------------------------------------------- Dialect Inference --
+
+/**
+ * Infer the storium dialect string from a Drizzle database instance.
+ * Drizzle exposes `db.dialect` as an internal class (PgDialect, etc.).
+ */
+const inferDialect = (drizzleDb: any): Exclude<Dialect, 'memory'> => {
+  const name = drizzleDb?.dialect?.constructor?.name ?? ''
+  if (name.includes('Pg')) return 'postgresql'
+  if (name.includes('MySql')) return 'mysql'
+  if (name.includes('SQLite')) return 'sqlite'
+  throw new ConfigError(
+    `Could not infer dialect from Drizzle instance (got: '${name}'). ` +
+    'Ensure you pass a valid Drizzle database instance.'
+  )
 }
 
 // ---------------------------------------------------- Instance Builder --
@@ -228,6 +264,7 @@ const buildInstance = (
 
   return {
     drizzle: db,
+    zod: z,
     dialect,
     defineTable: boundDefineTable,
     defineStore: instanceDefineStore,
@@ -242,15 +279,20 @@ const buildInstance = (
 /**
  * Create a fully configured StoriumInstance.
  *
- * @param config - Inline config object with dialect, connection, and assertions
+ * Accepts both storium's inline config shape and drizzle-kit's config shape.
+ * Storium-specific keys (assertions, pool, seeds) are spread alongside
+ * drizzle-kit keys in a single flat object.
+ *
+ * @param config - Config object (inline or drizzle-kit format, with optional storium extras)
  * @returns StoriumInstance with all methods pre-bound
  *
  * @example
- * import { storium } from 'storium'
- * const db = storium.connect({
- *   dialect: 'postgresql',
- *   url: process.env.DATABASE_URL,
- * })
+ * // Inline config
+ * const db = storium.connect({ dialect: 'postgresql', url: '...' })
+ *
+ * // Drizzle config + storium extras
+ * import config from './drizzle.config'
+ * const db = storium.connect({ ...config, assertions: { ... } })
  */
 export const connect = (config: ConnectConfig): StoriumInstance => {
   if (!config?.dialect) {
@@ -270,32 +312,28 @@ export const connect = (config: ConnectConfig): StoriumInstance => {
 
 /**
  * Create a StoriumInstance from an existing Drizzle database instance.
- * Use this when you need fine-grained control over Drizzle configuration.
+ * Dialect is auto-detected from the Drizzle instance's internal dialect class.
  *
  * @param drizzleDb - A pre-configured Drizzle database instance
- * @param config - Dialect and optional assertions
+ * @param options - Optional storium-specific options (assertions)
  * @returns StoriumInstance with all methods pre-bound
  *
  * @example
  * import { drizzle } from 'drizzle-orm/node-postgres'
  * const myDrizzle = drizzle(myPool)
- * const db = storium.fromDrizzle(myDrizzle, { dialect: 'postgresql' })
+ * const db = storium.fromDrizzle(myDrizzle)
+ * const db = storium.fromDrizzle(myDrizzle, { assertions: { ... } })
  */
 export const fromDrizzle = (
   drizzleDb: any,
-  config: { dialect: Dialect; assertions?: AssertionRegistry }
+  options: FromDrizzleOptions = {}
 ): StoriumInstance => {
-  if (!config?.dialect) {
-    throw new ConfigError('`dialect` is required when using fromDrizzle()')
-  }
-
-  const dialect = resolveDialect(config.dialect)
-  drizzleDb.$dialect = dialect
+  const dialect = inferDialect(drizzleDb)
 
   return buildInstance(
     drizzleDb,
     dialect,
-    config.assertions ?? {},
+    options.assertions ?? {},
     async () => {} // No-op teardown — user manages their own connection
   )
 }

@@ -24,6 +24,7 @@
  */
 
 import { eq, and, inArray } from 'drizzle-orm'
+import { z } from 'zod'
 import type {
   Dialect,
   TableDef,
@@ -233,6 +234,7 @@ export const createCreateRepository = (
     // ctx always contains the ORIGINAL defaults, even if overridden by customs.
     const ctx: RepositoryContext<TTableDef> = {
       drizzle: db,
+      zod: z,
       table: tableDef.table,
       tableDef,
       selectColumns: tableDef.selectColumns,
