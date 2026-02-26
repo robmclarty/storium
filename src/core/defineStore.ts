@@ -167,7 +167,10 @@ export function defineStore<
 ): StoreDefinition<TColumns, TQueries>
 
 export function defineStore(first?: any, second?: any, third?: any) {
-  // Overload 2: dialect string → return curried bound function
+  // Overload 2: dialect string → return curried bound function.
+  // Only matches when no columns are provided (second is undefined).
+  // Note: table names that match a dialect string ('postgresql', 'mysql',
+  // 'sqlite', 'memory') are therefore reserved and cannot be used as table names.
   if (typeof first === 'string' && DIALECTS.has(first) && second === undefined) {
     return buildDefineStore(first as Dialect)
   }

@@ -25,12 +25,13 @@ export type AssertionRegistry = Record<string, AssertionFn>
  *
  * @param value - The value being tested
  * @param assertion - A built-in/registered string name, or a function returning true if valid
- * @param customError - Optional: string message, or callback receiving the default message
+ * @param customError - Optional: string message, or callback that receives the default message
+ *                      and returns the final error string
  */
 export type TestFn = (
   value: unknown,
   assertion: string | ((value: unknown) => boolean),
-  customError?: string | ((defaultMessage: string) => void)
+  customError?: string | ((defaultMessage: string) => string)
 ) => void
 
 // --------------------------------------------------- Column Configuration --

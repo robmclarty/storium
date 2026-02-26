@@ -262,8 +262,11 @@ export function defineTable(first?: string, columns?: any, options?: any) {
     return buildDefineTable(loadDialectFromConfig())
   }
 
-  // Overload 2: dialect string → return bound function
-  if (DIALECTS.has(first)) {
+  // Overload 2: dialect string → return bound function.
+  // Only matches when no columns are provided (second is undefined).
+  // Note: table names that match a dialect string ('postgresql', 'mysql',
+  // 'sqlite', 'memory') are therefore reserved and cannot be used as table names.
+  if (DIALECTS.has(first) && columns === undefined) {
     return buildDefineTable(first as Dialect)
   }
 

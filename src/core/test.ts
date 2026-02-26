@@ -112,14 +112,14 @@ export const createTestFn = (
     if (isValid) return
 
     // Determine the error message
-    if (typeof customError === 'function') {
-      customError(defaultMessage)
-    } else {
-      errors.push({
-        field: fieldName,
-        message: typeof customError === 'string' ? customError : defaultMessage,
-      })
-    }
+    errors.push({
+      field: fieldName,
+      message: typeof customError === 'function'
+        ? customError(defaultMessage)
+        : typeof customError === 'string'
+          ? customError
+          : defaultMessage,
+    })
   }
 }
 
