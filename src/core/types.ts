@@ -41,7 +41,7 @@ type BaseColumnMeta = {
   mutable?: boolean
   writeOnly?: boolean
   required?: boolean
-  transform?: (value: any) => any | Promise<any>
+  transform?: (value: any) => unknown | Promise<unknown>
   validate?: (value: any, test: TestFn) => void
 }
 
@@ -181,11 +181,11 @@ export type RuntimeSchema<T = any> = {
 }
 
 /** The full set of runtime schemas derived from a table definition. */
-export type SchemaSet = {
-  select: RuntimeSchema
-  insert: RuntimeSchema
-  update: RuntimeSchema
-  full: RuntimeSchema
+export type SchemaSet<TColumns extends ColumnsConfig = ColumnsConfig> = {
+  select: RuntimeSchema<SelectType<TColumns>>
+  insert: RuntimeSchema<InsertType<TColumns>>
+  update: RuntimeSchema<UpdateType<TColumns>>
+  full: RuntimeSchema<{ [K in keyof TColumns]: ResolveColumnType<TColumns[K]> }>
 }
 
 // ------------------------------------------------------------ Table Def --
@@ -211,7 +211,7 @@ export type TableDef<TColumns extends ColumnsConfig = ColumnsConfig> = {
   /** Table name. */
   name: string
   /** Auto-generated runtime schemas. */
-  schemas: SchemaSet
+  schemas: SchemaSet<TColumns>
 }
 
 // ----------------------------------------------------------- Prep Options --
@@ -453,7 +453,7 @@ type DslTypeToTs = {
 }
 
 /** Resolve the TypeScript type for a single column config. */
-type ResolveColumnType<C extends ColumnConfig> =
+export type ResolveColumnType<C extends ColumnConfig> =
   C extends RawColumnConfig ? any :
   C extends { type: infer T extends keyof DslTypeToTs } ? DslTypeToTs[T] :
   never

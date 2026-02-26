@@ -35,6 +35,7 @@ import type {
 } from './types'
 import { buildDefineTable } from './defineTable'
 import { loadDialectFromConfig } from './configLoader'
+import { ConfigError } from './errors'
 
 // --------------------------------------------------------------- Types --
 
@@ -185,7 +186,7 @@ export function defineStore(first?: any, second?: any, third?: any) {
     return buildDefineStore(loadDialectFromConfig())(first, second, third)
   }
 
-  throw new Error(
+  throw new ConfigError(
     'defineStore(): invalid arguments. Expected (tableDef, queries), ' +
     '(dialect), or (name, columns, options).'
   )

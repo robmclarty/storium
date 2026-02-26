@@ -37,6 +37,7 @@ export {
   ValidationError,
   ConfigError,
   SchemaError,
+  StoreError,
   buildSchemaSet,
 } from './core'
 
@@ -102,6 +103,7 @@ export type {
   CacheMethodConfig,
 
   // Compile-time type utilities
+  ResolveColumnType,
   SelectType,
   InsertType,
   UpdateType,

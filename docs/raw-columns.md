@@ -26,9 +26,11 @@ The `raw` key takes a zero-argument function that returns a Drizzle column build
 Raw columns receive **no Storium-level type checking**. The generated Zod schema for a raw column is `z.any()` — it accepts any value without error.
 
 This means:
+- `SelectType`, `InsertType`, and `UpdateType` resolve raw columns to `any` — no compile-time type checking on those fields.
 - The prep pipeline's validate stage does not check the value's type.
 - `maxLength` is not applicable (it's a DSL-only option).
 - JSON Schema output will use `{}` (permissive) for the field.
+- `RuntimeSchema.validate()` will accept any value for raw columns without error.
 
 The database itself will still enforce its own constraints (e.g., Postgres will reject a non-array value for a `text[]` column), but the error will come from the driver, not a clean `ValidationError`.
 

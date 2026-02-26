@@ -1,0 +1,252 @@
+# API Reference
+
+Exhaustive list of everything exported from `storium` and `storium/migrate`.
+
+---
+
+## `storium` (main entry)
+
+### Namespace
+
+| Export | Description |
+|--------|-------------|
+| `storium` | Namespace object containing `connect` and `fromDrizzle`. |
+
+### Connection
+
+| Export | Description |
+|--------|-------------|
+| `storium.connect(config)` | Create a `StoriumInstance` from a `ConnectConfig` (dialect, URL, assertions, pool). |
+| `storium.fromDrizzle(drizzleDb, opts?)` | Create a `StoriumInstance` from an existing Drizzle database instance; dialect is auto-detected. |
+
+### Schema & Store DSL
+
+| Export | Description |
+|--------|-------------|
+| `defineTable` | Define a table schema — 3 overloads: `(name, cols, opts)`, `(dialect)(name, cols, opts)`, `()(name, cols, opts)`. |
+| `defineStore` | Bundle a schema + custom queries into a `StoreDefinition` — 3 overloads: `(tableDef, queries)`, `(dialect)(name, cols, opts)`, `(name, cols, opts)`. |
+| `isStoreDefinition(value)` | Type guard: returns `true` if the value is a `StoreDefinition`. |
+
+### Error Classes
+
+| Export | Description |
+|--------|-------------|
+| `ValidationError` | Thrown when input validation fails; carries an `errors: FieldError[]` array with all field-level failures. |
+| `ConfigError` | Thrown when configuration is invalid (missing dialect, bad connection string, invalid `defineStore`/`defineTable` arguments). |
+| `SchemaError` | Thrown when a schema definition is invalid (index references non-existent column, duplicate primary keys). |
+| `StoreError` | Thrown when a store CRUD operation fails at runtime (e.g., `create`/`update` returned no rows, `find`/`destroyAll` called with empty filters). |
+
+### Helpers
+
+| Export | Description |
+|--------|-------------|
+| `withBelongsTo(relatedTable, foreignKey, opts)` | Generates a `findWith{Alias}` custom query that LEFT JOINs a related table. |
+| `withMembers(joinTable, foreignKey)` | Generates `addMember`, `removeMember`, `getMembers`, `isMember`, `getMemberCount` custom queries for collection patterns. |
+| `withCache(store, cacheAdapter, config)` | Wraps a store with cache-aside logic on configured read methods and auto-invalidation on writes. |
+
+### Builder Internals (advanced)
+
+These are lower-level building blocks. They are exported for power users who need to compose Storium's internals directly (e.g., building custom connection wrappers or test harnesses).
+
+| Export | Description |
+|--------|-------------|
+| `buildDefineTable(dialect, assertions?)` | Create a dialect-bound `defineTable` function. |
+| `buildDefineStore(dialect, assertions?)` | Create a dialect-bound `defineStore` function. |
+| `createCreateRepository(db, assertions?)` | Create a `createRepository` function bound to a Drizzle db instance and assertion registry. |
+| `buildSchemaSet(columns, access, assertions?)` | Build the full `SchemaSet` (select, insert, update, full) from column configs and access sets. |
+| `createTestFn(field, errors, assertions)` | Create a `test()` function for use in `validate` callbacks; collects errors into the provided array. |
+| `createAssertionRegistry(userAssertions?)` | Merge user-defined assertions with built-in assertions into a single registry. |
+| `BUILTIN_ASSERTIONS` | Record of built-in assertion functions (`is_email`, `is_url`, `is_uuid`, `is_slug`, `not_empty`). |
+
+---
+
+## `storium/migrate` (sub-path)
+
+Migration tooling — heavier dependencies, opt-in import.
+
+### Migration Commands
+
+| Export | Description |
+|--------|-------------|
+| `generate(config)` | Diff current schemas against the last migration state and generate a new migration SQL file. |
+| `migrate(config)` | Apply all pending migrations to the database. |
+| `push(config)` | Push the current schema directly to the database without creating migration files (dev only). |
+| `status(config)` | Show migration status: lists migration files and matched schema files. |
+
+### Seeds
+
+| Export | Description |
+|--------|-------------|
+| `defineSeed(fn)` | Wrap a seed function with a type marker; the function receives `SeedContext` with the raw Drizzle instance. |
+| `runSeeds(seedsDir, db)` | Run all seed files in a directory in alphabetical order; stops on first failure. |
+
+### Schema Collection
+
+| Export | Description |
+|--------|-------------|
+| `collectSchemas(patterns, cwd?)` | Import schema files matching glob patterns and extract Drizzle table objects from `TableDef`/`StoreDefinition` exports. |
+| `collectDrizzleSchema(patterns, cwd?)` | Alias for `collectSchemas`; returns the schema map in the format drizzle-kit expects. |
+
+---
+
+## `StoriumInstance` (returned by `connect` / `fromDrizzle`)
+
+| Property / Method | Description |
+|-------------------|-------------|
+| `db.drizzle` | Raw Drizzle database instance (escape hatch for direct Drizzle queries). |
+| `db.zod` | The Zod namespace (`z`) — convenience accessor. |
+| `db.dialect` | The active dialect string: `'postgresql'`, `'mysql'`, `'sqlite'`, or `'memory'`. |
+| `db.defineTable(name, cols, opts?)` | Create a `TableDef` pre-bound to this instance's dialect and assertions. |
+| `db.defineStore(name, cols, opts?)` | Create a live store directly (simple path — no `register` step needed). |
+| `db.defineStore(tableDef, queries?)` | Create a live store from an existing `TableDef`. |
+| `db.register(storeDefs)` | Materialize a record of `StoreDefinition` objects into live stores with CRUD + query methods. |
+| `db.transaction(fn)` | Execute an async function within a database transaction. |
+| `db.disconnect()` | Close the database connection pool (idempotent — safe to call multiple times). |
+
+---
+
+## Store / Repository (returned by `db.defineStore`, `db.register`, or `createRepository`)
+
+### Default CRUD Methods
+
+| Method | Description |
+|--------|-------------|
+| `store.find(filters, opts?)` | Find rows matching all key-value filters (requires at least one filter; use `findAll` for no filters). |
+| `store.findAll(opts?)` | Return all rows, optionally with `limit`/`offset`. |
+| `store.findOne(filters, opts?)` | Find the first row matching filters, or `null` if none found. |
+| `store.findById(id, opts?)` | Find a single row by primary key, or `null` if not found. |
+| `store.findByIdIn(ids, opts?)` | Find all rows whose primary key is in the given array. |
+| `store.create(input, opts?)` | Insert a new row; runs the prep pipeline (filter, transform, validate, required); throws `StoreError` if no row is returned. |
+| `store.update(id, input, opts?)` | Update a row by primary key; only mutable columns are accepted; throws `StoreError` if no row is matched. |
+| `store.destroy(id, opts?)` | Delete a single row by primary key. |
+| `store.destroyAll(filters, opts?)` | Delete all rows matching filters (requires at least one filter to prevent accidental full-table deletion). |
+
+### TableDef Properties (also on stores)
+
+| Property | Description |
+|----------|-------------|
+| `store.table` | The underlying Drizzle table object. |
+| `store.columns` | The original `ColumnsConfig` record. |
+| `store.access` | Derived access sets: `selectable`, `mutable`, `insertable`, `writeOnly`. |
+| `store.selectColumns` | Pre-built Drizzle column map for SELECT queries. |
+| `store.primaryKey` | Name of the primary key column. |
+| `store.name` | Table name string. |
+| `store.schemas` | `SchemaSet` with `select`, `insert`, `update`, and `full` `RuntimeSchema` objects. |
+
+---
+
+## RuntimeSchema
+
+Each schema variant (`select`, `insert`, `update`, `full`) on a `SchemaSet` exposes:
+
+| Method | Description |
+|--------|-------------|
+| `schema.validate(input)` | Validate input; throws `ValidationError` on failure, returns typed data on success. |
+| `schema.tryValidate(input)` | Validate without throwing; returns `{ success, data?, errors? }`. |
+| `schema.toJsonSchema(opts?)` | Generate a JSON Schema object (for Fastify, Ajv, OpenAPI, etc.). |
+| `schema.zod` | The underlying Zod schema for advanced composition (`.extend()`, `.pick()`, etc.). |
+
+---
+
+## Types
+
+### Configuration
+
+| Type | Description |
+|------|-------------|
+| `Dialect` | `'postgresql' \| 'mysql' \| 'sqlite' \| 'memory'` |
+| `ConnectConfig` | Configuration for `storium.connect()` — accepts storium inline shape or drizzle-kit config shape. |
+| `FromDrizzleOptions` | Options for `storium.fromDrizzle()` — currently just `{ assertions? }`. |
+| `StoriumInstance` | The instance returned by `connect` or `fromDrizzle`. |
+
+### Column Definition
+
+| Type | Description |
+|------|-------------|
+| `DslType` | Union of supported DSL type strings (`'uuid'`, `'varchar'`, `'text'`, etc.). |
+| `DslColumnConfig` | DSL-managed column config with `type`, `primaryKey`, `notNull`, `maxLength`, `default`, `custom`, etc. |
+| `RawColumnConfig` | Raw Drizzle column config with a `raw` function — bypasses the DSL entirely. |
+| `ColumnConfig` | Union of `DslColumnConfig \| RawColumnConfig`. |
+| `ColumnsConfig` | `Record<string, ColumnConfig>` — a table's column definitions. |
+
+### Index Definition
+
+| Type | Description |
+|------|-------------|
+| `DslIndexConfig` | DSL-managed index with `columns`, `unique`, `name`, `where`. |
+| `RawIndexConfig` | Raw Drizzle index with a `raw` function. |
+| `IndexConfig` | Union of `DslIndexConfig \| RawIndexConfig`. |
+| `IndexesConfig` | `Record<string, IndexConfig>`. |
+
+### Table & Store
+
+| Type | Description |
+|------|-------------|
+| `TableDef<TColumns>` | A table definition with Drizzle table, column metadata, access sets, and schemas. |
+| `TableAccess` | Derived access sets: `selectable`, `mutable`, `insertable`, `writeOnly`. |
+| `TableOptions` | Options for `defineTable`: `indexes`, `constraints`, `primaryKey`, `timestamps`. |
+| `StoreDefinition<TColumns, TQueries>` | Inert DTO bundling a `TableDef` with custom queries — materialized via `db.register()`. |
+| `StoreOptions<TQueries>` | `TableOptions` extended with a `queries` field for the one-call `defineStore` overloads. |
+| `Store<TColumns, TQueries>` | A live store: `TableDef` + default CRUD + materialized custom queries. |
+| `Repository<TTableDef, TQueries>` | Same shape as `Store`, produced by `createRepository()`. |
+| `DefaultCRUD<TColumns>` | The default CRUD method signatures (`find`, `findAll`, `create`, `update`, etc.). |
+
+### Query Context
+
+| Type | Description |
+|------|-------------|
+| `RepositoryContext<T>` | Context passed to custom query functions — contains `drizzle`, `zod`, `table`, `schemas`, `prep`, and all default CRUD methods. |
+| `CustomQueryFn<T>` | `(ctx: RepositoryContext<T>) => (...args) => any` — a custom query factory function. |
+| `PrepOptions` | Options for CRUD operations: `force`, `validateRequired`, `onlyMutables`, `tx`, `limit`, `offset`. |
+
+### Schema & Validation
+
+| Type | Description |
+|------|-------------|
+| `RuntimeSchema<T>` | Wraps a Zod schema with `validate`, `tryValidate`, `toJsonSchema`, and `zod` properties. |
+| `SchemaSet<TColumns>` | `{ select, insert, update, full }` — typed runtime schemas derived from column definitions. |
+| `JsonSchema` | A plain JSON Schema object with `type`, `properties`, `required`, `additionalProperties`. |
+| `JsonSchemaOptions` | Options for `toJsonSchema()`: `{ additionalProperties? }`. |
+| `FieldError` | `{ field: string, message: string }` — a single validation error entry. |
+| `ValidationResult<T>` | `{ success, data?, errors? }` — result from `tryValidate()`. |
+
+### Assertions
+
+| Type | Description |
+|------|-------------|
+| `AssertionFn` | `(value: unknown) => boolean` — a named assertion function. |
+| `AssertionRegistry` | `Record<string, AssertionFn>` — registry of named assertions. |
+| `TestFn` | The `test(value, assertion, customError?)` function signature passed to `validate` callbacks. |
+
+### Cache
+
+| Type | Description |
+|------|-------------|
+| `CacheAdapter` | Interface for cache implementations: `get`, `set`, `del`, `delPattern`. |
+| `CacheMethodConfig` | Per-method cache config: `{ ttl, key: (...args) => string }`. |
+
+### Compile-Time Type Utilities
+
+| Type | Description |
+|------|-------------|
+| `ResolveColumnType<C>` | Map a single `ColumnConfig` to its TypeScript type (raw columns resolve to `any`). |
+| `SelectType<TColumns>` | Derive the SELECT result type — excludes `writeOnly` columns. |
+| `InsertType<TColumns>` | Derive the INSERT input type — `required` fields mandatory, `mutable` fields optional. |
+| `UpdateType<TColumns>` | Derive the UPDATE input type — only `mutable` columns, all optional. |
+
+### Migrate Sub-Path Types
+
+| Type | Description |
+|------|-------------|
+| `SeedContext` | Context passed to seed functions: `{ drizzle }`. |
+| `SeedFn` | `(ctx: SeedContext) => Promise<void>` — a seed function. |
+| `SeedModule` | A module exporting a seed function with the `__isSeed` marker. |
+| `SchemaMap` | `Record<string, any>` — map of table names to Drizzle table objects. |
+
+---
+
+## Known Limitations
+
+### Raw columns are `any` in type utilities
+
+Columns defined with the `raw` escape hatch resolve to `any` in `SelectType`, `InsertType`, `UpdateType`, and `SchemaSet`. The Zod schema for a raw column is `z.any()`. This means raw columns bypass compile-time and runtime type checking. Use the `validate` callback on raw columns to add explicit runtime checks. See [raw-columns.md](./raw-columns.md) for details and patterns.

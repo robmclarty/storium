@@ -4,7 +4,7 @@ export { defineStore, isStoreDefinition, buildDefineStore } from './defineStore'
 export { createCreateRepository } from './createRepository'
 export { createPrepFn } from './prep'
 export { createTestFn, createAssertionRegistry, BUILTIN_ASSERTIONS } from './test'
-export { ValidationError, ConfigError, SchemaError } from './errors'
+export { ValidationError, ConfigError, SchemaError, StoreError } from './errors'
 export { getDialectMapping, buildDslColumn } from './dialect'
 export { buildIndexes } from './indexes'
 export { buildJsonSchemas } from './jsonSchema'
@@ -48,6 +48,7 @@ export type {
   FromDrizzleOptions,
   StoriumInstance,
   TableOptions,
+  ResolveColumnType,
   SelectType,
   InsertType,
   UpdateType,

@@ -205,10 +205,11 @@ const buildInstance = (
   assertions: AssertionRegistry,
   teardown: () => Promise<void>
 ): StoriumInstance => {
+  const drizzleDialect = resolveDialect(dialect)
   const registry = createAssertionRegistry(assertions)
   const createRepository = createCreateRepository(db, registry)
 
-  const boundDefineTable = buildDefineTable(dialect, registry)
+  const boundDefineTable = buildDefineTable(drizzleDialect, registry)
 
   /**
    * Rebuild a TableDef's schemas with instance-level assertions (if any).
@@ -262,6 +263,13 @@ const buildInstance = (
     )
   }
 
+  let disconnected = false
+  const disconnect = async () => {
+    if (disconnected) return
+    disconnected = true
+    await teardown()
+  }
+
   return {
     drizzle: db,
     zod: z,
@@ -269,8 +277,8 @@ const buildInstance = (
     defineTable: boundDefineTable,
     defineStore: instanceDefineStore,
     register,
-    transaction: createWithTransaction(db, dialect),
-    disconnect: teardown,
+    transaction: createWithTransaction(db, drizzleDialect),
+    disconnect,
   }
 }
 
@@ -299,12 +307,11 @@ export const connect = (config: ConnectConfig): StoriumInstance => {
     throw new ConfigError('`dialect` is required in connection config')
   }
 
-  const dialect = resolveDialect(config.dialect)
   const { db, teardown } = createDrizzleInstance(config)
 
   return buildInstance(
     db,
-    dialect,
+    config.dialect,
     config.assertions ?? {},
     teardown
   )

@@ -17,15 +17,15 @@ import { ConfigError } from './errors'
 
 const require = createRequire(import.meta.url)
 
-let cachedDialect: Dialect | null = null
-
 /**
  * Load the dialect string from the project's drizzle config file.
  * Throws a descriptive `ConfigError` if no config is found.
+ *
+ * No module-level cache — Node's `require()` cache handles repeat loads,
+ * and a process-global singleton would return the wrong dialect in
+ * multi-dialect test suites or monorepos.
  */
 export const loadDialectFromConfig = (): Dialect => {
-  if (cachedDialect) return cachedDialect
-
   const configPath = process.env.DRIZZLE_CONFIG
     ?? resolve(process.cwd(), 'drizzle.config')
 
@@ -40,8 +40,7 @@ export const loadDialectFromConfig = (): Dialect => {
       )
     }
 
-    cachedDialect = config.dialect
-    return cachedDialect!
+    return config.dialect
   } catch (err) {
     if ((err as any)?.code === 'MODULE_NOT_FOUND') {
       throw new ConfigError(

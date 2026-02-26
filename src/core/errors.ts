@@ -61,3 +61,14 @@ export class SchemaError extends Error {
     this.name = 'SchemaError'
   }
 }
+
+/**
+ * Thrown when a store CRUD operation fails at runtime (e.g., create/update
+ * returned no rows, find/destroyAll called with empty filters).
+ */
+export class StoreError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'StoreError'
+  }
+}

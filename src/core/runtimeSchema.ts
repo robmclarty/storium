@@ -100,14 +100,14 @@ export const buildSchemaSet = (
   columns: ColumnsConfig,
   access: TableAccess,
   assertions: AssertionRegistry = {}
-): SchemaSet => {
+): SchemaSet<any> => {
   const zodSchemas = buildZodSchemas(columns, access, assertions)
   const jsonSchemas = buildJsonSchemas(columns, access)
 
   return {
-    select: createRuntimeSchema(zodSchemas.select, jsonSchemas.select),
-    insert: createRuntimeSchema(zodSchemas.insert, jsonSchemas.insert),
-    update: createRuntimeSchema(zodSchemas.update, jsonSchemas.update),
-    full:   createRuntimeSchema(zodSchemas.full, jsonSchemas.full),
+    select: createRuntimeSchema(zodSchemas.select, jsonSchemas.select) as RuntimeSchema<any>,
+    insert: createRuntimeSchema(zodSchemas.insert, jsonSchemas.insert) as RuntimeSchema<any>,
+    update: createRuntimeSchema(zodSchemas.update, jsonSchemas.update) as RuntimeSchema<any>,
+    full:   createRuntimeSchema(zodSchemas.full, jsonSchemas.full) as RuntimeSchema<any>,
   }
 }

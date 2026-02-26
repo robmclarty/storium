@@ -32,6 +32,7 @@ import type {
   TableOptions,
   TableDef,
   TableAccess,
+  SchemaSet,
   AssertionRegistry,
 } from './types'
 import { isRawColumn } from './types'
@@ -227,7 +228,7 @@ export const buildDefineTable = (
     const selectColumns = buildSelectColumns(drizzleTable, access.selectable)
 
     // Build schemas
-    const schemas = buildSchemaSet(resolvedColumns, access, assertions)
+    const schemas = buildSchemaSet(resolvedColumns, access, assertions) as SchemaSet<TColumns>
 
     return {
       table: drizzleTable,

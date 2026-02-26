@@ -98,23 +98,49 @@ export const push = async (config: any): Promise<MigrationResult> =>
   runDrizzleKit('push', config)
 
 /**
- * Check for pending migrations. Returns info about migration state.
+ * Show migration status: lists migration files found in the output directory
+ * and schema files matched by the config globs.
  *
  * Equivalent to `npx storium status`.
  */
 export const status = async (config: any): Promise<MigrationResult> => {
   try {
-    const drizzleKit = require('drizzle-kit')
+    const { glob } = require('glob')
+    const path = require('node:path')
+    const fs = require('node:fs')
 
-    if (typeof drizzleKit.check === 'function') {
-      const result = await drizzleKit.check(config)
-      return { success: true, message: result?.message ?? 'Migration status checked.' }
+    const out = config.out ?? './migrations'
+    const schemaGlobs = config.schema
+      ? Array.isArray(config.schema) ? config.schema : [config.schema]
+      : []
+
+    // List migration SQL files
+    const migrationsDir = path.resolve(process.cwd(), out)
+    let migrationFiles: string[] = []
+    if (fs.existsSync(migrationsDir)) {
+      migrationFiles = fs.readdirSync(migrationsDir)
+        .filter((f: string) => f.endsWith('.sql'))
+        .sort()
     }
 
-    return {
-      success: true,
-      message: `Migrations directory: ${config.out ?? './migrations'}\nSchema: ${JSON.stringify(config.schema)}`,
+    // List matched schema files
+    let schemaFiles: string[] = []
+    for (const pattern of schemaGlobs) {
+      const matches = await glob(pattern, { cwd: process.cwd(), absolute: false })
+      schemaFiles.push(...matches)
     }
+    schemaFiles = [...new Set(schemaFiles)].sort()
+
+    const lines = [
+      `Dialect: ${config.dialect ?? 'unknown'}`,
+      `Migrations directory: ${out}`,
+      `Migration files: ${migrationFiles.length === 0 ? '(none)' : ''}`,
+      ...migrationFiles.map(f => `  ${f}`),
+      `Schema files: ${schemaFiles.length === 0 ? '(none)' : ''}`,
+      ...schemaFiles.map(f => `  ${f}`),
+    ]
+
+    return { success: true, message: lines.join('\n') }
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
     return { success: false, message: `Status check failed: ${message}` }
