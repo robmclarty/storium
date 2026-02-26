@@ -1,12 +1,20 @@
 {
   "name": "storium-examples-postgres",
-  "description": "Using Storium with a PostgreSQL database, including connection setup and Postgres-specific features like jsonb and uuid columns",
+  "description": "Storium with PostgreSQL — multi-file organization, migrations, seeds",
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "tsx app.ts"
+    "start": "tsx app.ts",
+    "generate": "storium generate",
+    "migrate": "storium migrate"
+  },
+  "dependencies": {
+    "storium": "file:../..",
+    "pg": "^8.13.0"
   },
   "devDependencies": {
-    "tsx": "4.21.0"
+    "tsx": "4.21.0",
+    "@testcontainers/postgresql": "^10.18.0",
+    "testcontainers": "^10.18.0"
   }
 }
