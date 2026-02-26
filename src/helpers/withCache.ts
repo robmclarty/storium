@@ -1,5 +1,5 @@
 /**
- * Storium v1 — withCache (EXPERIMENTAL)
+ * @module withCache (EXPERIMENTAL)
  *
  * Cache-aside wrapper for repositories/stores. Wraps specified read methods
  * with caching logic and auto-invalidates on write operations (create, update,

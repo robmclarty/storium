@@ -1,5 +1,5 @@
 /**
- * Storium v1 — withMembers
+ * @module withMembers
  *
  * Composable membership operations for collection-pattern repositories.
  * Generates standard add/remove/get/check/count operations for any entity

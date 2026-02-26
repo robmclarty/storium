@@ -1,5 +1,5 @@
 /**
- * Storium v1 — Zod Schema Generation
+ * @module zodSchema
  *
  * Generates Zod schemas from Storium column configs. Unlike JSON Schema
  * generation (which only captures structure), Zod schemas include:

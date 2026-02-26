@@ -1,12 +1,5 @@
-// createRequire is used intentionally: dialect mappings are loaded lazily and
-// synchronously inside defineTable()/buildDslColumn(). Switching to async
-// import() would cascade into making defineTable() async — a breaking change.
-import { createRequire } from 'node:module'
-
-const require = createRequire(import.meta.url)
-
 /**
- * Storium v1 — Dialect Mapping
+ * @module dialect
  *
  * Maps DSL type strings and table constructors to dialect-specific Drizzle
  * column builders and table functions. This module is the bridge between
@@ -19,6 +12,13 @@ const require = createRequire(import.meta.url)
 
 import type { Dialect, DslType, DslColumnConfig } from './types'
 import { ConfigError } from './errors'
+
+// createRequire is used intentionally: dialect mappings are loaded lazily and
+// synchronously inside defineTable()/buildDslColumn(). Switching to async
+// import() would cascade into making defineTable() async — a breaking change.
+import { createRequire } from 'node:module'
+
+const require = createRequire(import.meta.url)
 
 // -------------------------------------------------------------- Types --
 

@@ -1,5 +1,5 @@
 /**
- * Storium v1 — Assertion Helper
+ * @module test
  *
  * The `test()` function is passed into column `validate` callbacks. It provides
  * a simple way to assert that a value meets a condition, using either built-in

@@ -1,5 +1,5 @@
 /**
- * Storium v1 — defineStore
+ * @module defineStore
  *
  * Bundles a TableDef with custom query functions into a StoreDefinition.
  * This is a pure data structure — no database connection needed.

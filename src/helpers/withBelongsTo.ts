@@ -1,5 +1,5 @@
 /**
- * Storium v1 — withBelongsTo
+ * @module withBelongsTo
  *
  * Composable "belongs to" join helper. Generates a `findWith{Alias}` query
  * that LEFT JOINs a related table and returns the entity with inlined

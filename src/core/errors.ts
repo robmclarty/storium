@@ -1,5 +1,5 @@
 /**
- * Storium v1 — Error Types
+ * @module errors
  *
  * Custom error classes for validation failures and configuration issues.
  * ValidationError accumulates all field errors before throwing, so consumers

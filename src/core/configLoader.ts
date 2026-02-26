@@ -1,5 +1,5 @@
 /**
- * Storium v1 — Config Loader
+ * @module configLoader
  *
  * Loads the dialect from drizzle.config.ts for use by the top-level
  * `defineTable()` function when called without an explicit dialect.
@@ -10,10 +10,14 @@
  * The result is cached — the config file is loaded at most once per process.
  */
 
-import { createRequire } from 'node:module'
 import { resolve } from 'node:path'
 import type { Dialect } from './types'
 import { ConfigError } from './errors'
+
+// createRequire is used intentionally: loadDialectFromConfig() is called
+// synchronously by defineTable(). Switching to async import() would cascade
+// into making defineTable() async — a breaking API change.
+import { createRequire } from 'node:module'
 
 const require = createRequire(import.meta.url)
 

@@ -1,5 +1,5 @@
 /**
- * Storium v1 — RuntimeSchema
+ * @module runtimeSchema
  *
  * Wraps a Zod schema and a JSON Schema factory behind a unified interface.
  * Provides Storium-flavored methods (validate, tryValidate, toJsonSchema)

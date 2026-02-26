@@ -1,6 +1,4 @@
 /**
- * Storium v1 — Main Entry Point
- *
  * All public API is available as named exports from 'storium'.
  * The `storium` namespace provides `connect` and `fromDrizzle`.
  *

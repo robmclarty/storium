@@ -1,5 +1,5 @@
 /**
- * Storium v1 — JSON Schema Generation
+ * @module jsonSchema
  *
  * Generates JSON Schema objects from Storium column configs. These schemas
  * are used for Fastify/Ajv validation at the HTTP edge, providing fast,

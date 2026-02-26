@@ -1,9 +1,5 @@
-import { createRequire } from 'node:module'
-
-const require = createRequire(import.meta.url)
-
 /**
- * Storium v1 — Index DSL
+ * @module indexes
  *
  * Builds Drizzle index definitions from Storium's index config. Handles
  * auto-naming conventions, single-column shorthand, composite indexes,
@@ -27,6 +23,13 @@ const require = createRequire(import.meta.url)
 import type { Dialect, IndexesConfig, DslIndexConfig, ColumnsConfig } from './types'
 import { isRawIndex } from './types'
 import { SchemaError } from './errors'
+
+// createRequire is used intentionally: buildIndexes() returns a synchronous
+// callback passed to Drizzle's table constructor. Switching to async import()
+// would require making defineTable() async — a breaking API change.
+import { createRequire } from 'node:module'
+
+const require = createRequire(import.meta.url)
 
 // ------------------------------------------------------------- Helpers --
 

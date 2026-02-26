@@ -1,5 +1,5 @@
 /**
- * Storium v1 — Migration Commands
+ * @module commands
  *
  * Programmatic wrappers around drizzle-kit for schema diffing and migration.
  * These are used by the CLI and can be called directly for programmatic

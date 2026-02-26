@@ -1,5 +1,5 @@
 /**
- * Storium v1 — Prep Pipeline
+ * @module prep
  *
  * The `prep` pipeline processes input data before database operations.
  * It runs four stages in order:

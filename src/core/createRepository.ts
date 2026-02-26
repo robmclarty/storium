@@ -1,5 +1,5 @@
 /**
- * Storium v1 — createRepository
+ * @module createRepository
  *
  * The repository factory. Takes a Drizzle database instance, a TableDef,
  * and optional custom query functions. Returns a repository object with

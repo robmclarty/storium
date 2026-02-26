@@ -1,5 +1,5 @@
 /**
- * Storium v1 — Core Type Definitions
+ * @module types
  *
  * This module defines all shared TypeScript types for the Storium library.
  * It includes column config types, table definition types, repository types,

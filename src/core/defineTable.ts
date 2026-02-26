@@ -1,5 +1,5 @@
 /**
- * Storium v1 — defineTable
+ * @module defineTable
  *
  * The core schema DSL. Defines a database table with co-located column metadata
  * (types, mutability, visibility, validation, sanitization), an index DSL, and

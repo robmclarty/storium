@@ -1,5 +1,5 @@
 /**
- * Storium v1 — Seed Runner
+ * @module seed
  *
  * Provides `defineSeed()` for authoring seed files and a runner that
  * executes them in alphabetical order. Seeds receive a context with

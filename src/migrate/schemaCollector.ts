@@ -1,5 +1,5 @@
 /**
- * Storium v1 — Schema Collector
+ * @module schemaCollector
  *
  * Collects Drizzle table objects from Storium schema files. Used by the CLI
  * and programmatic migration API to build the schema map that drizzle-kit
