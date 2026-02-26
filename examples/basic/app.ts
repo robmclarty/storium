@@ -79,7 +79,7 @@ try {
 
 // --- Transactions ---
 
-const txResult = await db.withTransaction(async (tx) => {
+const txResult = await db.transaction(async (tx) => {
   const u1 = await users.create({ email: 'carol@example.com', name: 'Carol' }, { tx })
   const u2 = await users.create({ email: 'dave@example.com', name: 'Dave' }, { tx })
   return [u1, u2]

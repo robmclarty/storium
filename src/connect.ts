@@ -6,7 +6,7 @@
  * - An existing Drizzle instance (via fromDrizzle)
  *
  * The returned instance has dialect-bound `defineTable`, `register` for
- * materializing store definitions, db-bound `withTransaction`, and raw
+ * materializing store definitions, db-bound `transaction`, and raw
  * `drizzle` and `zod` escape hatches.
  */
 
@@ -269,7 +269,7 @@ const buildInstance = (
     defineTable: boundDefineTable,
     defineStore: instanceDefineStore,
     register,
-    withTransaction: createWithTransaction(db, dialect),
+    transaction: createWithTransaction(db, dialect),
     disconnect: teardown,
   }
 }

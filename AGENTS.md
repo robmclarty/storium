@@ -84,7 +84,7 @@ db.dialect           // Resolved dialect string
 db.defineTable()     // Dialect-bound schema definition (no CRUD)
 db.defineStore()     // Create a live store directly (simple path — no register step)
 db.register()        // Materialize StoreDefinitions into live stores (multi-file pattern)
-db.withTransaction() // Async transaction wrapper
+db.transaction()     // Async transaction wrapper
 db.disconnect()      // Close connection / pool
 ```
 
@@ -222,7 +222,7 @@ await db.drizzle.execute(sql`CREATE TABLE ...`)
 ### Transactions (dialect differences)
 - PostgreSQL/MySQL: uses Drizzle's native `db.transaction()` — fully async
 - SQLite: manual `BEGIN/COMMIT/ROLLBACK` (better-sqlite3 rejects async callbacks)
-- Both: `db.withTransaction(async (tx) => { ... })` — same API
+- Both: `db.transaction(async (tx) => { ... })` — same API
 
 ### Seeds
 ```typescript

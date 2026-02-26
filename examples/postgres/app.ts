@@ -107,7 +107,7 @@ console.log(`Unpublished: "${unpub.title}" is back to ${unpub.status}`)
 
 console.log('\n=== Transactions ===')
 
-const txResult = await db.withTransaction(async (tx: any) => {
+const txResult = await db.transaction(async (tx: any) => {
   const newUser = await users.create({ email: 'dave@example.com', name: 'Dave' }, { tx })
   const newPost = await posts.create({
     title: 'Atomic Post',

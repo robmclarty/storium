@@ -44,7 +44,7 @@ await users.update(user.id, { name: 'Alice B.' })
 - **Repository pattern** — default CRUD with extensible custom queries
 - **Three-tier validation** — JSON Schema for the HTTP edge, Zod for runtime, prep pipeline for business rules
 - **Database agnostic** — PostgreSQL, MySQL, and SQLite via Drizzle
-- **Composable helpers** — `withBelongsTo`, `withMembers`, `withCache`, `withTransaction`
+- **Composable helpers** — `withBelongsTo`, `withMembers`, `withCache`, `transaction`
 - **Fastify integration** — `toJsonSchema()` for route validation
 - **Migration tooling** — thin CLI wrapping drizzle-kit
 - **Stands back** — Storium doesn't try to own your architecture. It gives you tools and gets out of the way.
@@ -315,7 +315,7 @@ const cachedUsers = withCache(users, redisAdapter, {
 ### Transactions
 
 ```typescript
-const result = await db.withTransaction(async (tx) => {
+const result = await db.transaction(async (tx) => {
   const user = await users.create({ name: 'Alice' }, { tx })
   const team = await teams.create({ name: 'Alpha', owner_id: user.id }, { tx })
   return { user, team }

@@ -175,7 +175,7 @@ const unpub = await articles.unpublish(a2.id)
 console.log(`"${unpub.title}" status: ${unpub.status}`)
 
 console.log('\n=== Transactions ===')
-await db.withTransaction(async (tx) => {
+await db.transaction(async (tx) => {
   await articles.create({
     title: 'Atomic Article 1',
     status: 'published',

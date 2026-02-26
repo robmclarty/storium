@@ -408,7 +408,7 @@ export type StoriumInstance = {
     storeDefs: T
   ) => { [K in keyof T]: Store }
   /** Scoped transaction helper (pre-bound to db). */
-  withTransaction: <T>(fn: (tx: any) => Promise<T>) => Promise<T>
+  transaction: <T>(fn: (tx: any) => Promise<T>) => Promise<T>
   /** Close the database connection pool. */
   disconnect: () => Promise<void>
 }
