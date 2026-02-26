@@ -75,15 +75,26 @@ const injectTimestamps = (columns: ColumnsConfig): ColumnsConfig => {
 const deriveAccess = (columns: ColumnsConfig): TableAccess => {
   const allKeys = Object.keys(columns)
 
-  // Guard: required + mutable:false is a contradiction. A required column
-  // that can never be written is impossible to satisfy. Use required:true
-  // alone (omit mutable) for insert-only fields.
+  // Guard invalid column config combinations at definition time.
   for (const key of allKeys) {
     const col = columns[key]
+
+    // required + mutable:false is a contradiction. A required column
+    // that can never be written is impossible to satisfy. Use required:true
+    // alone (omit mutable) for insert-only fields.
     if (col?.required === true && col?.mutable === false) {
       throw new SchemaError(
         `Column '${key}': a column cannot be both \`required: true\` and \`mutable: false\`. ` +
         'Use \`required: true\` alone (omit \`mutable\`) for insert-only fields.'
+      )
+    }
+
+    // required + writeOnly is a contradiction. A write-only column is excluded
+    // from SELECT results entirely — it has no meaningful "required" presence.
+    if (col?.required === true && col?.writeOnly === true) {
+      throw new SchemaError(
+        `Column '${key}': a column cannot be both \`required: true\` and \`writeOnly: true\`. ` +
+        'A write-only column is excluded from SELECT results and cannot be meaningfully required.'
       )
     }
   }

@@ -62,6 +62,10 @@ const DSL_TYPE_MAP: Record<DslType, JsonSchemaType | ((c: DslColumnConfig) => Js
   boolean:   { type: 'boolean' },
   timestamp: { type: 'string', format: 'date-time' },
   date:      { type: 'string', format: 'date' },
+  // Note: jsonb columns accept any valid JSON value (objects, arrays, scalars),
+  // but JSON Schema `{ type: 'object' }` only validates JSON objects. This is
+  // the most common real-world use case. If your jsonb column stores arrays or
+  // mixed types, use a `raw` column with a custom `validate` callback instead.
   jsonb:     { type: 'object' },
 }
 

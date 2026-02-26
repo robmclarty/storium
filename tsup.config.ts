@@ -4,6 +4,7 @@ export default defineConfig({
   entry: {
     index: 'src/index.ts',
     migrate: 'src/migrate/index.ts',
+    'bin/storium': 'bin/storium.ts',
   },
   format: ['esm', 'cjs'],
   dts: true,
