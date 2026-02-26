@@ -69,8 +69,9 @@ const parseArgs = (argv: string[]) => {
   let configPath = './drizzle.config.ts'
 
   const configIdx = args.indexOf('--config')
-  if (configIdx !== -1 && args[configIdx + 1]) {
-    configPath = args[configIdx + 1]
+  const configArg = args[configIdx + 1]
+  if (configIdx !== -1 && configArg) {
+    configPath = configArg
   }
 
   const help = args.includes('--help') || args.includes('-h')
