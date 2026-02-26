@@ -11,9 +11,9 @@ The goal is a data-access layer that's structured enough to keep things consiste
 ## Quick Start
 
 ```bash
-npm install storium drizzle-orm drizzle-kit zod
+npm install storium
 
-# Plus your database driver of choice:
+# Plus your database driver:
 npm install pg             # PostgreSQL
 npm install mysql2         # MySQL
 npm install better-sqlite3 # SQLite
@@ -203,6 +203,18 @@ const db = storium.connect({
 export const { users, posts } = db.register({ users: userStore, posts: postStore })
 ```
 
+### Peer Dependencies
+
+Storium declares `drizzle-orm`, `drizzle-kit`, and `zod` as peer dependencies — npm installs them automatically alongside storium. If you need to pin specific versions (or already have them in your project), just install them explicitly:
+
+```bash
+npm install storium drizzle-orm@0.45 drizzle-kit@0.31 zod@4
+```
+
+Database drivers (`pg`, `mysql2`, `better-sqlite3`) are optional peers — install whichever one matches your dialect.
+
+### defineTable Calling Conventions
+
 `defineTable` has three calling conventions depending on how you manage the dialect:
 
 ```typescript
@@ -292,17 +304,7 @@ app.post('/users', {
 
 ## Migrations
 
-Storium wraps drizzle-kit with a thin CLI so you don't have to configure it directly. Schema changes are diffed automatically. Define your columns, run `generate`, and apply.
-
-```bash
-npx storium generate   # Diff schemas → create SQL migration
-npx storium migrate    # Apply pending migrations
-npx storium push       # Push directly (dev only)
-npx storium status     # Check migration state
-npx storium seed       # Run seed files
-```
-
-Configuration in `drizzle.config.ts` — a single config shared by drizzle-kit and storium:
+Storium uses the same `drizzle.config.ts` that drizzle-kit already reads — no separate config file. If you already have a drizzle-kit setup, storium slots right in. Storium-specific keys like `seeds` sit alongside drizzle-kit keys; drizzle-kit ignores what it doesn't recognize.
 
 ```typescript
 import type { ConnectConfig } from 'storium'
@@ -312,9 +314,21 @@ export default {
   dbCredentials: { url: process.env.DATABASE_URL! },
   schema: ['./src/entities/**/*.schema.ts'],
   out: './migrations',
-  seeds: './seeds',
+  seeds: './seeds',            // storium-only — drizzle-kit ignores this
 } satisfies ConnectConfig
 ```
+
+Storium ships a thin CLI wrapper for convenience:
+
+```bash
+npx storium generate   # Diff schemas → create SQL migration
+npx storium migrate    # Apply pending migrations
+npx storium push       # Push directly (dev only)
+npx storium status     # Check migration state
+npx storium seed       # Run seed files
+```
+
+This is purely a convenience — you can use `npx drizzle-kit generate`, `npx drizzle-kit migrate`, etc. directly with the same config. The storium CLI just adds the `seed` command on top.
 
 ## Escape Hatches
 
