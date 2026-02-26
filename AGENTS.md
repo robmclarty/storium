@@ -60,8 +60,7 @@ import { storium, defineTable, defineStore, defineConfig, ValidationError, withB
 storium.connect(config)          // ConnectConfig | StoriumConfig → StoriumInstance
 storium.fromDrizzle(db, config)  // Wrap existing Drizzle instance
 
-// Sub-paths
-import { defineConfig } from 'storium/config'
+// Sub-path (migration tooling — heavy deps, opt-in)
 import { generate, migrate, push, status, runSeeds, defineSeed, collectSchemas } from 'storium/migrate'
 ```
 

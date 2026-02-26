@@ -7,7 +7,7 @@
  *
  * @example
  * // storium.config.ts
- * import { defineConfig } from 'storium/config'
+ * import { defineConfig } from 'storium'
  *
  * export default defineConfig({
  *   dialect: 'postgresql',

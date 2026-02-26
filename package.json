@@ -32,16 +32,6 @@
         "default": "./dist/index.cjs"
       }
     },
-    "./config": {
-      "import": {
-        "types": "./dist/config.d.ts",
-        "default": "./dist/config.js"
-      },
-      "require": {
-        "types": "./dist/config.d.cts",
-        "default": "./dist/config.cjs"
-      }
-    },
     "./migrate": {
       "import": {
         "types": "./dist/migrate.d.ts",
