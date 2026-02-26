@@ -93,9 +93,9 @@ const users = db.defineStore('users', columns, {
 
 The pattern is always the same: `(ctx) => async (...yourArgs) => result`. Storium gives you the tools via `ctx`, you decide what to do with them.
 
-### Schemas
+### Validation Schemas
 
-Every store generates runtime schemas that you can use however you like. I find this especially handy for keeping validation consistent between my API layer and my business logic without duplicating definitions (and trying to keep them all in sync):
+Every store generates runtime validation schemas that you can use however you like. I find this especially handy for keeping validation consistent between my API layer and my business logic without duplicating definitions (and trying to keep them all in sync):
 
 ```typescript
 // Validate input (throws ValidationError)
