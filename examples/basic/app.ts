@@ -1,8 +1,11 @@
-import { storium, defineTable, defineStore } from 'storium'
+import { storium } from 'storium'
 import { sql } from 'drizzle-orm'
 
-// Define the schema — produces a real Drizzle table.
-const usersTable = defineTable('memory')('users', {
+// Connect to an in-memory database.
+const db = storium.connect({ dialect: 'memory' })
+
+// Define a store in one call — schema + CRUD, ready to use.
+const users = db.defineStore('users', {
   id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
   email: {
     type: 'varchar',
@@ -16,14 +19,9 @@ const usersTable = defineTable('memory')('users', {
     },
   },
   name: { type: 'varchar', maxLength: 255, mutable: true },
+}, {
+  indexes: { email: { unique: true } },
 })
-
-// Bundle the schema into a store definition (inert — no db yet).
-const userStore = defineStore(usersTable)
-
-// Connect and register stores.
-const db = storium.connect({ dialect: 'memory' })
-const { users } = db.register({ users: userStore })
 
 // Create the table in the in-memory database.
 // (In a real project you'd use `storium migrate` or `storium push` instead.)
