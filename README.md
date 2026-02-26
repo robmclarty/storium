@@ -4,7 +4,7 @@ A lightweight, database-agnostic storage toolkit built on [Drizzle](https://orm.
 
 I built Storium because Drizzle gives you a fantastic query builder, but every project still needs the same scaffolding on top of it: validation, sanitization, CRUD operations, migration workflows, and some coherent pattern tying it all together. I kept rebuilding that scaffolding. Poorly, at first. Then well enough that I stopped wanting to rewrite it, which felt like a milestone worth shipping.
 
-Define your schema once with `defineStore()` and Storium generates a full stack of contracts around it: TypeScript types for compile-time safety, Zod schemas for runtime validation, and JSON Schema for APIs and external tooling (e.g., Fastify/Ajv). You also get a repository with standard CRUD, custom query hooks powered by Drizzle's query builder, and migration tooling. One definition, every layer covered. No more redeclaring the same shape in three different formats and hoping they don't drift apart over time.
+Define your schema once with `defineTable()` and Storium generates a full stack of contracts around it: TypeScript types for compile-time safety, Zod schemas for runtime validation, and JSON Schema for APIs and external tooling (e.g., Fastify/Ajv). Bundle it into a store with `defineStore()` and you get standard CRUD, custom query hooks powered by Drizzle's query builder, and migration tooling. One definition, every layer covered. No more redeclaring the same shape in three different formats and hoping they don't drift apart over time.
 
 The goal is a data-access layer that's structured enough to keep things consistent and predictable, but flexible enough that you're never fighting it. You define the stores, the queries, the transforms. Storium just makes it harder to stray from the pattern -- especially six months in when the codebase would have otherwise quietly rotted into three different ways of talking to the database.
 
@@ -20,14 +20,10 @@ npm install better-sqlite3 # SQLite
 ```
 
 ```typescript
-import storium from 'storium'
+import { storium, defineTable, defineStore } from 'storium'
 
-const db = storium.connect({
-  dialect: 'postgresql',
-  url: process.env.DATABASE_URL,
-})
-
-const users = db.defineStore('users', {
+// 1. Define schema — no db connection needed
+const usersTable = defineTable('postgresql')('users', {
   id:    { type: 'uuid', primaryKey: true, default: 'random_uuid' },
   email: { type: 'varchar', maxLength: 255, mutable: true, required: true,
            transform: (v) => String(v).trim().toLowerCase(),
@@ -38,15 +34,23 @@ const users = db.defineStore('users', {
   },
   name:  { type: 'varchar', maxLength: 255, mutable: true },
 }, {
-  indexes: { 
-    email: { unique: true } 
-  },
+  indexes: { email: { unique: true } },
 })
 
+// 2. Bundle into a store definition (still inert — just data)
+const userStore = defineStore(usersTable)
+
+// 3. Connect and register — stores come to life
+const db = storium.connect({
+  dialect: 'postgresql',
+  url: process.env.DATABASE_URL,
+})
+const { users } = db.register({ users: userStore })
+
 // CRUD — ready to go
-const user = await users.create({ 
-  email: 'alice@example.com', 
-  name: 'Alice' 
+const user = await users.create({
+  email: 'alice@example.com',
+  name: 'Alice'
 })
 const found = await users.findById(user.id)
 await users.update(user.id, { name: 'Alice B.' })
@@ -65,35 +69,46 @@ await users.update(user.id, { name: 'Alice B.' })
 
 ## Core Concepts
 
-### defineStore vs defineTable
+### defineTable, defineStore, register
 
-`defineStore` is the primary API; defines schema + queries in one call. This is where I'd start for most things:
+Schema and store definitions are independent of any database connection. You define them up front, then wire everything together at connection time with `db.register()`.
+
+`defineTable` creates a schema definition (a `TableDef`). Three calling conventions depending on how you want to manage the dialect:
 
 ```typescript
-const users = db.defineStore('users', columns, {
+// Explicit dialect (curried) — no config file needed
+const usersTable = defineTable('postgresql')('users', columns, {
   indexes: { email: { unique: true } },
-  queries: {
-    findByEmail: (ctx) => async (email) =>
-      ctx.findOne({ email }),
-  }
 })
+
+// Auto-detect dialect from storium.config.ts
+const usersTable = defineTable('users', columns, options)
+
+// Bound function for reuse across multiple tables
+const dt = defineTable('postgresql')
+const usersTable = dt('users', columns, options)
+const postsTable = dt('posts', columns, options)
 ```
 
-`defineTable` defines schema only (no queries). I added this for the cases where I need to break circular dependencies (e.g., sometimes two stores reference each other and I need to define the table shape first, then wire up the queries later):
+`defineStore` bundles a `TableDef` with optional custom queries into an inert DTO — no database, no side effects:
 
 ```typescript
-const usersTable = db.defineTable('users', columns, {
-  indexes: {
-    email: { unique: true }
-  },
-})
-
-// Later, add queries by passing the TableDef to defineStore
-const users = db.defineStore(usersTable, {
+const userStore = defineStore(usersTable, {
   findByEmail: (ctx) => async (email) =>
     ctx.findOne({ email }),
 })
 ```
+
+`db.register()` is the single composition point that materializes store definitions into live stores with CRUD:
+
+```typescript
+const db = storium.connect(config)
+const { users, posts } = db.register({ users: userStore, posts: postStore })
+
+await users.findByEmail('alice@example.com')
+```
+
+This separation means schema files can be imported by drizzle-kit for migration generation (which happens at module level, before any db connection exists), and store definitions can be tested or composed without a live database.
 
 ### Column Definitions
 
@@ -117,7 +132,7 @@ Column metadata (`mutable`, `hidden`, `required`, `transform`, `validate`) works
 This is where Storium really earns its keep. Custom queries receive `ctx` with the database handle and all default CRUD operations. You can override defaults by name. `ctx` always has the originals, so you can compose on top of them rather than starting from scratch:
 
 ```typescript
-queries: {
+const userStore = defineStore(usersTable, {
   // Override create — hash password before insert
   create: (ctx) => async (input, opts) => {
     const hashed = { ...input, password: await hash(input.password) }
@@ -130,7 +145,7 @@ queries: {
       .from(ctx.table)
       .where(eq(ctx.table.email, email))
       .then(r => r[0] ?? null),
-}
+})
 ```
 
 The pattern is always the same: `(ctx) => async (...yourArgs) => result`. Storium gives you the tools via `ctx`, you decide what to do with them.
@@ -182,12 +197,11 @@ Storium ships a small set of composable helpers for relationship and caching pat
 ```typescript
 import { withBelongsTo } from 'storium'
 
-const users = db.defineStore('users', columns, {
-  queries: {
-    ...withBelongsTo(schools, 'school_id', { alias: 'school', select: ['name'] }),
-  },
+const userStore = defineStore(usersTable, {
+  ...withBelongsTo(schools, 'school_id', { alias: 'school', select: ['name'] }),
 })
 
+const { users } = db.register({ users: userStore })
 const user = await users.findWithSchool(userId)
 ```
 
@@ -196,12 +210,11 @@ const user = await users.findWithSchool(userId)
 ```typescript
 import { withMembers } from 'storium'
 
-const teams = db.defineStore('teams', columns, {
-  queries: {
-    ...withMembers(teamMembers, 'team_id'),
-  },
+const teamStore = defineStore(teamsTable, {
+  ...withMembers(teamMembers, 'team_id'),
 })
 
+const { teams } = db.register({ teams: teamStore })
 await teams.addMember(teamId, userId, { role: 'captain' })
 await teams.isMember(teamId, userId)
 ```
@@ -262,7 +275,7 @@ npx storium seed       # Run seed files
 Configuration in `storium.config.ts`:
 
 ```typescript
-import { defineConfig } from 'storium/config'
+import { defineConfig } from 'storium'
 
 export default defineConfig({
   dialect: 'postgresql',
@@ -286,7 +299,7 @@ Direct Drizzle access is always available. If you need to drop down a level, not
 db.drizzle.execute(sql`SELECT 1`)
 
 // Bring your own Drizzle
-import storium from 'storium'
+import { storium } from 'storium'
 const db = storium.fromDrizzle(myDrizzleInstance, { dialect: 'postgresql' })
 
 // Raw columns bypass the DSL entirely
