@@ -279,7 +279,7 @@ export const createCreateRepository = (
 
     for (const [key, queryFn] of Object.entries(queries)) {
       if (typeof queryFn === 'function') {
-        customs[key] = queryFn(ctx)
+        customs[key] = queryFn(ctx as any)
       }
     }
 
@@ -304,7 +304,7 @@ export const createCreateRepository = (
       ...customs,
     }
 
-    return repository as Repository<TTableDef, TQueries>
+    return repository as unknown as Repository<TTableDef, TQueries>
   }
 
   return createRepository

@@ -239,7 +239,10 @@ export type PrepOptions = {
  * Contains the database handle, table metadata, default CRUD operations,
  * and the prep pipeline.
  */
-export type RepositoryContext<T extends TableDef = TableDef> = {
+export type RepositoryContext<
+  T extends TableDef = TableDef,
+  TColumns extends ColumnsConfig = T extends TableDef<infer C> ? C : ColumnsConfig
+> = {
   /** The raw Drizzle database instance (escape hatch). */
   drizzle: any
   /** The Zod namespace (convenience accessor matching ctx.drizzle). */
@@ -257,13 +260,13 @@ export type RepositoryContext<T extends TableDef = TableDef> = {
   /** The filter → transform → validate pipeline. */
   prep: (input: Record<string, any>, opts?: PrepOptions) => Promise<Record<string, any>>
   /** Default CRUD operations (always originals, even if overridden). */
-  find: (filters: Record<string, any>, opts?: PrepOptions) => Promise<any[]>
-  findAll: (opts?: PrepOptions) => Promise<any[]>
-  findOne: (filters: Record<string, any>, opts?: PrepOptions) => Promise<any | null>
-  findById: (id: string | number, opts?: PrepOptions) => Promise<any | null>
-  findByIdIn: (ids: (string | number)[], opts?: PrepOptions) => Promise<any[]>
-  create: (input: Record<string, any>, opts?: PrepOptions) => Promise<any>
-  update: (id: string | number, input: Record<string, any>, opts?: PrepOptions) => Promise<any>
+  find: (filters: Record<string, any>, opts?: PrepOptions) => Promise<SelectType<TColumns>[]>
+  findAll: (opts?: PrepOptions) => Promise<SelectType<TColumns>[]>
+  findOne: (filters: Record<string, any>, opts?: PrepOptions) => Promise<SelectType<TColumns> | null>
+  findById: (id: string | number, opts?: PrepOptions) => Promise<SelectType<TColumns> | null>
+  findByIdIn: (ids: (string | number)[], opts?: PrepOptions) => Promise<SelectType<TColumns>[]>
+  create: (input: InsertType<TColumns>, opts?: PrepOptions) => Promise<SelectType<TColumns>>
+  update: (id: string | number, input: UpdateType<TColumns>, opts?: PrepOptions) => Promise<SelectType<TColumns>>
   destroy: (id: string | number, opts?: PrepOptions) => Promise<void>
   destroyAll: (filters: Record<string, any>, opts?: PrepOptions) => Promise<number>
 }
@@ -277,14 +280,14 @@ export type CustomQueryFn<T extends TableDef = TableDef> =
   (ctx: RepositoryContext<T>) => (...args: any[]) => any
 
 /** Default CRUD operations present on every store/repository. */
-export type DefaultCRUD = {
-  find: (filters: Record<string, any>, opts?: PrepOptions) => Promise<any[]>
-  findAll: (opts?: PrepOptions) => Promise<any[]>
-  findOne: (filters: Record<string, any>, opts?: PrepOptions) => Promise<any | null>
-  findById: (id: string | number, opts?: PrepOptions) => Promise<any | null>
-  findByIdIn: (ids: (string | number)[], opts?: PrepOptions) => Promise<any[]>
-  create: (input: Record<string, any>, opts?: PrepOptions) => Promise<any>
-  update: (id: string | number, input: Record<string, any>, opts?: PrepOptions) => Promise<any>
+export type DefaultCRUD<TColumns extends ColumnsConfig = ColumnsConfig> = {
+  find: (filters: Record<string, any>, opts?: PrepOptions) => Promise<SelectType<TColumns>[]>
+  findAll: (opts?: PrepOptions) => Promise<SelectType<TColumns>[]>
+  findOne: (filters: Record<string, any>, opts?: PrepOptions) => Promise<SelectType<TColumns> | null>
+  findById: (id: string | number, opts?: PrepOptions) => Promise<SelectType<TColumns> | null>
+  findByIdIn: (ids: (string | number)[], opts?: PrepOptions) => Promise<SelectType<TColumns>[]>
+  create: (input: InsertType<TColumns>, opts?: PrepOptions) => Promise<SelectType<TColumns>>
+  update: (id: string | number, input: UpdateType<TColumns>, opts?: PrepOptions) => Promise<SelectType<TColumns>>
   destroy: (id: string | number, opts?: PrepOptions) => Promise<void>
   destroyAll: (filters: Record<string, any>, opts?: PrepOptions) => Promise<number>
 }
@@ -296,7 +299,7 @@ export type DefaultCRUD = {
 export type Store<
   TColumns extends ColumnsConfig = ColumnsConfig,
   TQueries extends Record<string, CustomQueryFn> = {}
-> = TableDef<TColumns> & DefaultCRUD & {
+> = TableDef<TColumns> & DefaultCRUD<TColumns> & {
   [K in keyof TQueries]: TQueries[K] extends (ctx: any) => infer R ? R : never
 }
 
@@ -306,7 +309,7 @@ export type Store<
 export type Repository<
   TTableDef extends TableDef = TableDef,
   TQueries extends Record<string, CustomQueryFn> = {}
-> = TTableDef & DefaultCRUD & {
+> = TTableDef & DefaultCRUD<TTableDef extends TableDef<infer C> ? C : ColumnsConfig> & {
   [K in keyof TQueries]: TQueries[K] extends (ctx: any) => infer R ? R : never
 }
 
@@ -398,20 +401,20 @@ export type StoriumInstance = {
    * - `db.defineStore(tableDef, { queries })` — wrap existing TableDef
    */
   defineStore: {
-    <TColumns extends ColumnsConfig, TQueries extends Record<string, CustomQueryFn>>(
+    <TColumns extends ColumnsConfig, TQueries extends Record<string, CustomQueryFn> = {}>(
       name: string,
       columns: TColumns,
       options?: TableOptions & { queries?: TQueries }
-    ): Store
-    <TColumns extends ColumnsConfig, TQueries extends Record<string, CustomQueryFn>>(
+    ): Store<TColumns, TQueries>
+    <TColumns extends ColumnsConfig, TQueries extends Record<string, CustomQueryFn> = {}>(
       tableDef: TableDef<TColumns>,
       queries?: TQueries
-    ): Store
+    ): Store<TColumns, TQueries>
   }
   /** Materialize StoreDefinitions into live stores with CRUD + queries. */
   register: <T extends Record<string, any>>(
     storeDefs: T
-  ) => { [K in keyof T]: Store }
+  ) => { [K in keyof T]: T[K] extends import('./defineStore').StoreDefinition<infer C extends ColumnsConfig, infer Q extends Record<string, CustomQueryFn>> ? Store<C, Q> : Store }
   /** Scoped transaction helper (pre-bound to db). */
   transaction: <T>(fn: (tx: any) => Promise<T>) => Promise<T>
   /** Close the database connection pool. */
