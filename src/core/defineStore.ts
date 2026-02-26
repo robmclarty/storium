@@ -1,90 +1,70 @@
 /**
  * Storium v1 — defineStore
  *
- * The primary entry point for defining a data store. Combines `defineTable`
- * (schema + indexes) with `createRepository` (CRUD + custom queries) into
- * a single call.
+ * Bundles a TableDef with custom query functions into a StoreDefinition.
+ * This is a pure data structure — no database connection needed.
  *
- * The returned Store object IS a TableDef (can be passed to withBelongsTo,
- * withMembers, foreign key references, etc.) AND has repository methods
- * directly on it.
- *
- * For circular dependency cases where schema must be separated from queries,
- * use `defineTable()` first, then `defineStore(tableDef, queries)` to add
- * queries later — pass the pre-built TableDef as the first argument.
+ * The StoreDefinition is materialized into a live store (with CRUD methods
+ * and bound queries) when passed to `db.register()`.
  *
  * @example
- * const users = db.defineStore('users', {
- *   id:    { type: 'uuid', primaryKey: true, default: 'random_uuid' },
- *   email: { type: 'varchar', maxLength: 255, notNull: true, mutable: true },
- *   name:  { type: 'varchar', maxLength: 255, mutable: true },
- * }, {
- *   indexes: { email: { unique: true } },
- *   queries: {
- *     findByEmail: (ctx) => async (email) => ctx.findOne({ email }),
- *   },
- * })
+ * import { defineStore } from 'storium'
+ * import { usersTable } from './user.schema'
+ * import { search, findByEmail } from './user.queries'
  *
- * // Use as a repository:
- * await users.findById('123')
- * await users.findByEmail('alice@example.com')
- *
- * // Use as a TableDef:
- * withBelongsTo(users, 'user_id')
+ * export const userStore = defineStore(usersTable, { search, findByEmail })
  */
 
 import type {
-  Dialect,
   ColumnsConfig,
   TableDef,
-  StoreOptions,
   CustomQueryFn,
-  AssertionRegistry,
-  DefineStoreFn,
 } from './types'
-import { createDefineTable } from './defineTable'
-import { createCreateRepository } from './createRepository'
+
+// --------------------------------------------------------------- Types --
+
+/**
+ * A store definition: a TableDef bundled with custom query functions.
+ * This is an inert data structure — pass it to `db.register()` to
+ * get a live store with CRUD + query methods.
+ */
+export type StoreDefinition<
+  TColumns extends ColumnsConfig = ColumnsConfig,
+  TQueries extends Record<string, CustomQueryFn> = {}
+> = {
+  readonly __storeDefinition: true
+  tableDef: TableDef<TColumns>
+  queries: TQueries
+}
+
+/**
+ * Type guard: is this value a StoreDefinition?
+ */
+export const isStoreDefinition = (value: any): value is StoreDefinition =>
+  value !== null &&
+  typeof value === 'object' &&
+  value.__storeDefinition === true
 
 // -------------------------------------------------------- Public API --
 
 /**
- * Create a `defineStore` function bound to a specific dialect, db instance,
- * and assertion registry.
+ * Define a store by bundling a TableDef with custom query functions.
  *
- * This is called internally by `connect()` to produce the instance-bound version.
+ * Returns a StoreDefinition (inert DTO). Pass it to `db.register()`
+ * to get a live store with CRUD operations and bound queries.
+ *
+ * @param tableDef - A table definition from `defineTable()`
+ * @param queries - Custom query functions (receive repository context)
+ * @returns StoreDefinition
  */
-export const createDefineStore = (
-  dialect: Dialect,
-  db: any,
-  assertions: AssertionRegistry = {}
-) => {
-  const defineTable = createDefineTable(dialect, assertions)
-  const createRepository = createCreateRepository(db, assertions)
-
-  /**
-   * Define a data store: table schema + indexes + CRUD + custom queries.
-   *
-   * Overload 1: `(name, columns, options?)` — define schema + queries in one step.
-   * Overload 2: `(tableDef, queries?)` — wrap a pre-built TableDef with queries.
-   *
-   * @returns Store / Repository (TableDef + CRUD + custom queries)
-   */
-  const defineStore: DefineStoreFn = (
-    nameOrTableDef: string | TableDef,
-    columnsOrQueries?: ColumnsConfig | Record<string, CustomQueryFn>,
-    options: StoreOptions & { queries?: Record<string, CustomQueryFn> } = {}
-  ): any => {
-    if (typeof nameOrTableDef === 'string') {
-      // Overload 1: name + columns
-      const { queries = {}, ...tableOptions } = options
-      const tableDef = defineTable(nameOrTableDef, columnsOrQueries as ColumnsConfig, tableOptions)
-      return createRepository(tableDef, queries)
-    } else {
-      // Overload 2: pre-built TableDef + queries
-      const queries = (columnsOrQueries ?? {}) as Record<string, CustomQueryFn>
-      return createRepository(nameOrTableDef, queries)
-    }
-  }
-
-  return defineStore
-}
+export const defineStore = <
+  TColumns extends ColumnsConfig,
+  TQueries extends Record<string, CustomQueryFn> = {}
+>(
+  tableDef: TableDef<TColumns>,
+  queries: TQueries = {} as TQueries
+): StoreDefinition<TColumns, TQueries> => ({
+  __storeDefinition: true as const,
+  tableDef,
+  queries,
+})

@@ -319,34 +319,6 @@ export type CacheMethodConfig = {
   key: (...args: any[]) => string
 }
 
-// -------------------------------------------------------- DefineStore Fn --
-
-/**
- * Overloaded type for the `defineStore` function.
- *
- * Accepts either:
- * - `(name, columns, options?)` — define schema + repository in one step
- * - `(tableDef, queries?)` — wrap a pre-built TableDef with queries (circular dep pattern)
- */
-export interface DefineStoreFn {
-  <
-    TColumns extends ColumnsConfig,
-    TQueries extends Record<string, CustomQueryFn> = {}
-  >(
-    name: string,
-    columns: TColumns,
-    options?: StoreOptions & { queries?: TQueries }
-  ): Store<TColumns, TQueries>
-
-  <
-    TTableDef extends TableDef,
-    TQueries extends Record<string, CustomQueryFn> = {}
-  >(
-    tableDef: TTableDef,
-    queries?: TQueries
-  ): Repository<TTableDef, TQueries>
-}
-
 // ----------------------------------------------------------- Connect Config --
 
 /** Configuration for `storium.connect()`. */
@@ -394,14 +366,16 @@ export type StoriumInstance = {
   drizzle: any
   /** The active dialect. */
   dialect: Dialect
-  /** Create a table definition (pre-bound to dialect). */
-  defineTable: (
+  /** Create a table definition (pre-bound to dialect + assertions). */
+  defineTable: <TColumns extends ColumnsConfig>(
     name: string,
-    columns: ColumnsConfig,
+    columns: TColumns,
     options?: TableOptions
-  ) => TableDef
-  /** Create a full store with queries (pre-bound to dialect + db). */
-  defineStore: DefineStoreFn
+  ) => TableDef<TColumns>
+  /** Materialize StoreDefinitions into live stores with CRUD + queries. */
+  register: <T extends Record<string, any>>(
+    storeDefs: T
+  ) => { [K in keyof T]: Store }
   /** Scoped transaction helper (pre-bound to db). */
   withTransaction: <T>(fn: (tx: any) => Promise<T>) => Promise<T>
   /** Close the database connection pool. */
@@ -410,17 +384,12 @@ export type StoriumInstance = {
 
 // --------------------------------------------------------- Options Types --
 
-/** Options for `defineTable()` (no queries). */
+/** Options for `defineTable()`. */
 export type TableOptions = {
   indexes?: IndexesConfig
   constraints?: (table: any) => Record<string, any>
   primaryKey?: string
   timestamps?: boolean
-}
-
-/** Options for `defineStore()` (includes queries). */
-export type StoreOptions = TableOptions & {
-  queries?: Record<string, CustomQueryFn>
 }
 
 // ------------------------------------------- Compile-Time Type Utilities --

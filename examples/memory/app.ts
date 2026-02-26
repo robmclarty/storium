@@ -1,4 +1,5 @@
-import storium from 'storium'
+import { storium, defineTable, defineStore } from 'storium'
+import type { StoriumInstance } from 'storium'
 import { sql } from 'drizzle-orm'
 
 // The "memory" dialect creates an ephemeral SQLite database that lives
@@ -9,20 +10,19 @@ import { sql } from 'drizzle-orm'
 //   - Unit/integration tests with fully isolated state
 //   - Trying out schema designs before committing to a real database
 
-// --- Spin up two independent in-memory databases ---
+// --- Define the schema once, reuse across connections ---
 
-const db1 = storium.connect({ dialect: 'memory' })
-const db2 = storium.connect({ dialect: 'memory' })
+const productsTable = defineTable('memory')('products', {
+  id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
+  name: { type: 'varchar', maxLength: 255, mutable: true, required: true },
+  price: { type: 'integer', mutable: true, required: true },
+  in_stock: { type: 'boolean', mutable: true },
+})
 
-// Each connection is completely isolated — they share no state.
+const productStore = defineStore(productsTable)
 
-const defineProducts = (db: ReturnType<typeof storium.connect>) => {
-  const products = db.defineStore('products', {
-    id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
-    name: { type: 'varchar', maxLength: 255, mutable: true, required: true },
-    price: { type: 'integer', mutable: true, required: true },
-    in_stock: { type: 'boolean', mutable: true },
-  })
+const setupDb = (db: StoriumInstance) => {
+  const { products } = db.register({ products: productStore })
 
   db.drizzle.run(sql`
     CREATE TABLE IF NOT EXISTS products (
@@ -36,8 +36,14 @@ const defineProducts = (db: ReturnType<typeof storium.connect>) => {
   return products
 }
 
-const products1 = defineProducts(db1)
-const products2 = defineProducts(db2)
+// --- Spin up two independent in-memory databases ---
+
+const db1 = storium.connect({ dialect: 'memory' })
+const db2 = storium.connect({ dialect: 'memory' })
+
+// Each connection is completely isolated — they share no state.
+const products1 = setupDb(db1)
+const products2 = setupDb(db2)
 
 // --- Populate db1 with some data ---
 

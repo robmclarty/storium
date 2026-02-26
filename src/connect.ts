@@ -3,12 +3,11 @@
  *
  * Creates a fully configured StoriumInstance from either:
  * - An inline config object
- * - A path to storium.config.ts
- * - No argument (looks for storium.config.ts in project root)
  * - An existing Drizzle instance (via fromDrizzle)
  *
- * The returned instance has dialect-bound `defineTable` and `defineStore`,
- * db-bound `withTransaction`, and a raw `drizzle` escape hatch.
+ * The returned instance has dialect-bound `defineTable`, `register` for
+ * materializing store definitions, db-bound `withTransaction`, and a raw
+ * `drizzle` escape hatch.
  */
 
 import { createRequire } from 'node:module'
@@ -19,9 +18,11 @@ import type {
   AssertionRegistry,
 } from './core/types'
 import { ConfigError } from './core/errors'
-import { createDefineTable } from './core/defineTable'
-import { createDefineStore } from './core/defineStore'
+import { buildDefineTable } from './core/defineTable'
+import { isStoreDefinition } from './core/defineStore'
+import { createCreateRepository } from './core/createRepository'
 import { createAssertionRegistry } from './core/test'
+import { buildSchemaSet } from './core/runtimeSchema'
 
 const require = createRequire(import.meta.url)
 
@@ -169,12 +170,37 @@ const buildInstance = (
   teardown: () => Promise<void>
 ): StoriumInstance => {
   const registry = createAssertionRegistry(assertions)
+  const createRepository = createCreateRepository(db, registry)
+
+  const register = <T extends Record<string, any>>(
+    storeDefs: T
+  ): { [K in keyof T]: any } => {
+    const result: Record<string, any> = {}
+
+    for (const [key, def] of Object.entries(storeDefs)) {
+      if (!isStoreDefinition(def)) {
+        throw new ConfigError(
+          `register(): '${key}' is not a valid StoreDefinition. ` +
+          'Use defineStore(tableDef, { queries }) to create one.'
+        )
+      }
+      // Rebuild schemas with instance assertions if the TableDef was
+      // created standalone (without assertions from the connection config).
+      const tableDef = Object.keys(registry).length > 0
+        ? { ...def.tableDef, schemas: buildSchemaSet(def.tableDef.columns, def.tableDef.access, registry) }
+        : def.tableDef
+
+      result[key] = createRepository(tableDef, def.queries)
+    }
+
+    return result as { [K in keyof T]: any }
+  }
 
   return {
     drizzle: db,
     dialect,
-    defineTable: createDefineTable(dialect, registry),
-    defineStore: createDefineStore(dialect, db, registry),
+    defineTable: buildDefineTable(dialect, registry),
+    register,
     withTransaction: createWithTransaction(db, dialect),
     disconnect: teardown,
   }
@@ -189,10 +215,10 @@ const buildInstance = (
  * @returns StoriumInstance with all methods pre-bound
  *
  * @example
+ * import { storium } from 'storium'
  * const db = storium.connect({
  *   dialect: 'postgresql',
  *   url: process.env.DATABASE_URL,
- *   assertions: { is_slug: (v) => /^[a-z0-9-]+$/.test(v) },
  * })
  */
 export const connect = (config: ConnectConfig): StoriumInstance => {

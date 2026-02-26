@@ -6,18 +6,24 @@
  * optional constraints. Produces a TableDef containing the real Drizzle table,
  * derived access sets, and auto-generated schemas.
  *
- * This is the schema-only entry point — no query functions. For a full store
- * with queries, use `defineStore()`. For adding queries to an existing TableDef,
- * use `createRepository()`.
+ * Three call signatures:
  *
  * @example
- * const users = db.defineTable('users', {
+ * // 1. Direct call — auto-loads dialect from storium.config.ts
+ * const users = defineTable('users', {
  *   id:    { type: 'uuid', primaryKey: true, default: 'random_uuid' },
  *   email: { type: 'varchar', maxLength: 255, notNull: true, mutable: true },
- *   name:  { type: 'varchar', maxLength: 255, mutable: true },
- * }, {
- *   indexes: { email: { unique: true } },
  * })
+ *
+ * @example
+ * // 2. Curried with explicit dialect
+ * const users = defineTable('postgresql')('users', { ... })
+ *
+ * @example
+ * // 3. No-arg — auto-loads dialect, returns reusable bound function
+ * const dt = defineTable()
+ * const users = dt('users', { ... })
+ * const projects = dt('projects', { ... })
  */
 
 import type {
@@ -33,6 +39,7 @@ import { SchemaError } from './errors'
 import { getDialectMapping, buildDslColumn } from './dialect'
 import { buildIndexes } from './indexes'
 import { buildSchemaSet } from './runtimeSchema'
+import { loadDialectFromConfig } from './configLoader'
 
 // ------------------------------------------------------------ Helpers --
 
@@ -128,27 +135,22 @@ const buildSelectColumns = (
   return result
 }
 
-// -------------------------------------------------------- Public API --
+// -------------------------------------------------------- Internal API --
+
+const DIALECTS = new Set<string>(['postgresql', 'mysql', 'sqlite', 'memory'])
 
 /**
- * Create a `defineTable` function bound to a specific dialect and assertion registry.
- * This is called internally by `connect()` to produce the instance-bound version.
+ * Build a dialect-bound defineTable function. Used internally by the
+ * `defineTable()` overloads and by `connect()` to create the instance-bound
+ * version (which also passes assertions from the config).
  */
-export const createDefineTable = (
+export const buildDefineTable = (
   dialect: Dialect,
   assertions: AssertionRegistry = {}
 ) => {
   const mapping = getDialectMapping(dialect)
 
-  /**
-   * Define a database table with co-located column metadata.
-   *
-   * @param name - Database table name
-   * @param columns - Flat column definitions
-   * @param options - Indexes, constraints, timestamps, primary key override
-   * @returns TableDef
-   */
-  const defineTable = <TColumns extends ColumnsConfig>(
+  const boundDefineTable = <TColumns extends ColumnsConfig>(
     name: string,
     columns: TColumns,
     options: TableOptions = {}
@@ -214,5 +216,44 @@ export const createDefineTable = (
     }
   }
 
-  return defineTable
+  return boundDefineTable
+}
+
+// -------------------------------------------------------- Public API --
+
+type BoundDefineTable = <TColumns extends ColumnsConfig>(
+  name: string,
+  columns: TColumns,
+  options?: TableOptions
+) => TableDef<TColumns>
+
+/**
+ * Define a database table with co-located column metadata.
+ *
+ * Three call signatures:
+ *
+ * 1. `defineTable('users', columns, options)` — auto-loads dialect from storium.config.ts
+ * 2. `defineTable('postgresql')('users', columns, options)` — explicit dialect, returns bound function
+ * 3. `defineTable()` — auto-loads dialect, returns reusable bound function
+ */
+export function defineTable(): BoundDefineTable
+export function defineTable(dialect: Dialect): BoundDefineTable
+export function defineTable<TColumns extends ColumnsConfig>(
+  name: string,
+  columns: TColumns,
+  options?: TableOptions
+): TableDef<TColumns>
+export function defineTable(first?: string, columns?: any, options?: any) {
+  // Overload 3: no-arg → auto-load dialect, return bound function
+  if (first === undefined) {
+    return buildDefineTable(loadDialectFromConfig())
+  }
+
+  // Overload 2: dialect string → return bound function
+  if (DIALECTS.has(first)) {
+    return buildDefineTable(first as Dialect)
+  }
+
+  // Overload 1: table name → auto-load dialect, build immediately
+  return buildDefineTable(loadDialectFromConfig())(first, columns, options)
 }

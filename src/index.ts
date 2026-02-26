@@ -1,31 +1,39 @@
 /**
  * Storium v1 — Main Entry Point
  *
- * Re-exports the public API. The default export provides `connect` and
- * `fromDrizzle` as the primary entry points. Named exports provide
- * individual utilities for consumers who import selectively.
+ * All public API is available as named exports from 'storium'.
+ * The `storium` namespace provides `connect` and `fromDrizzle`.
  *
  * @example
- * import storium from 'storium'
- * const db = storium.connect({ dialect: 'postgresql', url: '...' })
+ * import { storium, defineTable, defineStore, defineConfig } from 'storium'
  *
- * @example
- * import { withBelongsTo, withMembers, ValidationError } from 'storium'
+ * const db = storium.connect(config)
+ * const stores = db.register({ users: userStore })
  */
 
-// ------------------------------------------------- Connection (default) --
+// ------------------------------------------------- Connection namespace --
 
 import { connect, fromDrizzle } from './connect'
 
-const storium = { connect, fromDrizzle }
+export const storium = { connect, fromDrizzle }
 
-export default storium
+// ---------------------------------------------------- Config --
+
+export { defineConfig } from './config'
+
+// ------------------------------------------------- Schema & Store DSL --
+
+export {
+  defineTable,
+  defineStore,
+  isStoreDefinition,
+} from './core'
 
 // -------------------------------------------------------- Core Utilities --
 
 export {
-  createDefineTable,
-  createDefineStore,
+  buildDefineTable,
+  createCreateRepository,
   createTestFn,
   createAssertionRegistry,
   BUILTIN_ASSERTIONS,
@@ -45,6 +53,10 @@ export {
 } from './helpers'
 
 // --------------------------------------------------------------- Types --
+
+export type {
+  StoreDefinition,
+} from './core'
 
 export type {
   // Dialect & config
@@ -68,10 +80,8 @@ export type {
   TableDef,
   TableAccess,
   TableOptions,
-  StoreOptions,
   Store,
   Repository,
-  DefineStoreFn,
   DefaultCRUD,
   RepositoryContext,
   CustomQueryFn,

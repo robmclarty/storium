@@ -1,4 +1,4 @@
-import storium from 'storium'
+import { storium, defineTable, defineStore } from 'storium'
 import { sql, eq, like, desc } from 'drizzle-orm'
 
 // Custom queries let you extend stores with domain-specific operations.
@@ -16,11 +16,9 @@ import { sql, eq, like, desc } from 'drizzle-orm'
 // defaults, so even if you override `create`, ctx.create still refers
 // to the built-in version.
 
-const db = storium.connect({ dialect: 'memory' })
+// --- Define the schema ---
 
-// --- A store with custom queries ---
-
-const articles = db.defineStore('articles', {
+const articlesTable = defineTable('memory')('articles', {
   id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
   title: { type: 'varchar', maxLength: 255, mutable: true, required: true },
   slug: { type: 'varchar', maxLength: 255, mutable: true, required: true },
@@ -28,71 +26,78 @@ const articles = db.defineStore('articles', {
   status: { type: 'varchar', maxLength: 20, mutable: true, required: true },
   author_id: { type: 'uuid', mutable: true, required: true },
   view_count: { type: 'integer', mutable: true },
-}, {
-  queries: {
-    // --- Compose with built-in CRUD ---
-    // Use ctx.find / ctx.findOne to build domain-specific lookups.
-
-    findBySlug: (ctx) => async (slug: string) =>
-      ctx.findOne({ slug }),
-
-    findByAuthor: (ctx) => async (authorId: string) =>
-      ctx.find({ author_id: authorId }),
-
-    findPublished: (ctx) => async () =>
-      ctx.find({ status: 'published' }),
-
-    // --- Override a default ---
-    // Override `create` to auto-generate a slug from the title.
-    // ctx.create still refers to the original built-in create,
-    // so there's no infinite recursion.
-
-    create: (ctx) => async (input: Record<string, any>, opts?: any) => {
-      const slug = input.slug ?? input.title
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-|-$/g, '')
-
-      return ctx.create({ ...input, slug }, opts)
-    },
-
-    // --- Use the raw Drizzle escape hatch ---
-    // For queries that go beyond the built-in CRUD, drop down to
-    // ctx.db and ctx.table for full Drizzle query builder access.
-
-    search: (ctx) => async (term: string) =>
-      ctx.db
-        .select(ctx.selectColumns)
-        .from(ctx.table)
-        .where(like(ctx.table.title, `%${term}%`)),
-
-    mostViewed: (ctx) => async (limit = 5) =>
-      ctx.db
-        .select(ctx.selectColumns)
-        .from(ctx.table)
-        .where(eq(ctx.table.status, 'published'))
-        .orderBy(desc(ctx.table.view_count))
-        .limit(limit),
-
-    // --- Increment a counter ---
-    // Raw SQL for atomic operations that don't map to CRUD.
-
-    incrementViews: (ctx) => async (id: string) => {
-      ctx.db.run(
-        sql`UPDATE articles SET view_count = COALESCE(view_count, 0) + 1 WHERE id = ${id}`
-      )
-      return ctx.findById(id)
-    },
-
-    // --- Publish/unpublish as domain actions ---
-
-    publish: (ctx) => async (id: string) =>
-      ctx.update(id, { status: 'published' }),
-
-    unpublish: (ctx) => async (id: string) =>
-      ctx.update(id, { status: 'draft' }),
-  },
 })
+
+// --- Define the store with custom queries ---
+
+const articleStore = defineStore(articlesTable, {
+  // --- Compose with built-in CRUD ---
+  // Use ctx.find / ctx.findOne to build domain-specific lookups.
+
+  findBySlug: (ctx) => async (slug: string) =>
+    ctx.findOne({ slug }),
+
+  findByAuthor: (ctx) => async (authorId: string) =>
+    ctx.find({ author_id: authorId }),
+
+  findPublished: (ctx) => async () =>
+    ctx.find({ status: 'published' }),
+
+  // --- Override a default ---
+  // Override `create` to auto-generate a slug from the title.
+  // ctx.create still refers to the original built-in create,
+  // so there's no infinite recursion.
+
+  create: (ctx) => async (input: Record<string, any>, opts?: any) => {
+    const slug = input.slug ?? input.title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '')
+
+    return ctx.create({ ...input, slug }, opts)
+  },
+
+  // --- Use the raw Drizzle escape hatch ---
+  // For queries that go beyond the built-in CRUD, drop down to
+  // ctx.db and ctx.table for full Drizzle query builder access.
+
+  search: (ctx) => async (term: string) =>
+    ctx.db
+      .select(ctx.selectColumns)
+      .from(ctx.table)
+      .where(like(ctx.table.title, `%${term}%`)),
+
+  mostViewed: (ctx) => async (limit = 5) =>
+    ctx.db
+      .select(ctx.selectColumns)
+      .from(ctx.table)
+      .where(eq(ctx.table.status, 'published'))
+      .orderBy(desc(ctx.table.view_count))
+      .limit(limit),
+
+  // --- Increment a counter ---
+  // Raw SQL for atomic operations that don't map to CRUD.
+
+  incrementViews: (ctx) => async (id: string) => {
+    ctx.db.run(
+      sql`UPDATE articles SET view_count = COALESCE(view_count, 0) + 1 WHERE id = ${id}`
+    )
+    return ctx.findById(id)
+  },
+
+  // --- Publish/unpublish as domain actions ---
+
+  publish: (ctx) => async (id: string) =>
+    ctx.update(id, { status: 'published' }),
+
+  unpublish: (ctx) => async (id: string) =>
+    ctx.update(id, { status: 'draft' }),
+})
+
+// --- Connect and register ---
+
+const db = storium.connect({ dialect: 'memory' })
+const { articles } = db.register({ articles: articleStore })
 
 db.drizzle.run(sql`
   CREATE TABLE IF NOT EXISTS articles (

@@ -1,4 +1,4 @@
-import storium, { ValidationError } from 'storium'
+import { storium, defineTable, defineStore, ValidationError } from 'storium'
 import { sql } from 'drizzle-orm'
 
 // Storium's prep pipeline processes every create/update through four stages:
@@ -16,15 +16,7 @@ import { sql } from 'drizzle-orm'
 // alongside the built-ins (is_email, is_url, is_uuid, is_numeric, not_empty,
 // is_boolean, is_integer) inside any column's validate callback.
 
-const db = storium.connect({
-  dialect: 'memory',
-  assertions: {
-    is_slug: (v) => typeof v === 'string' && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(v),
-    is_hex_color: (v) => typeof v === 'string' && /^#[0-9a-fA-F]{6}$/.test(v),
-  },
-})
-
-const products = db.defineStore('products', {
+const productsTable = defineTable('memory')('products', {
   id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
   name: {
     type: 'varchar',
@@ -71,6 +63,18 @@ const products = db.defineStore('products', {
     transform: (v: string) => v.trim(),
   },
 })
+
+const productStore = defineStore(productsTable)
+
+const db = storium.connect({
+  dialect: 'memory',
+  assertions: {
+    is_slug: (v) => typeof v === 'string' && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(v),
+    is_hex_color: (v) => typeof v === 'string' && /^#[0-9a-fA-F]{6}$/.test(v),
+  },
+})
+
+const { products } = db.register({ products: productStore })
 
 db.drizzle.run(sql`
   CREATE TABLE IF NOT EXISTS products (

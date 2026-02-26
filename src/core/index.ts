@@ -1,6 +1,7 @@
 
-export { createDefineTable } from './defineTable'
-export { createDefineStore } from './defineStore'
+export { defineTable, buildDefineTable } from './defineTable'
+export { defineStore, isStoreDefinition } from './defineStore'
+export { createCreateRepository } from './createRepository'
 export { createPrepFn } from './prep'
 export { createTestFn, createAssertionRegistry, BUILTIN_ASSERTIONS } from './test'
 export { ValidationError, ConfigError, SchemaError } from './errors'
@@ -9,6 +10,9 @@ export { buildIndexes } from './indexes'
 export { buildJsonSchemas } from './jsonSchema'
 export { buildZodSchemas } from './zodSchema'
 export { buildSchemaSet } from './runtimeSchema'
+export { loadDialectFromConfig } from './configLoader'
+
+export type { StoreDefinition } from './defineStore'
 
 export type {
   Dialect,
@@ -38,14 +42,12 @@ export type {
   DefaultCRUD,
   Store,
   Repository,
-  DefineStoreFn,
   CacheAdapter,
   CacheMethodConfig,
   ConnectConfig,
   StoriumConfig,
   StoriumInstance,
   TableOptions,
-  StoreOptions,
   SelectType,
   InsertType,
   UpdateType,
