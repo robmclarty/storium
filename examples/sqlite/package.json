@@ -1,10 +1,16 @@
 {
   "name": "storium-examples-sqlite",
-  "description": "Using Storium with a SQLite file-based database, including connection setup and SQLite-specific considerations",
+  "description": "Storium with SQLite — multi-file organization, migrations, seeds",
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "tsx app.ts"
+    "start": "tsx app.ts",
+    "generate": "storium generate",
+    "migrate": "storium migrate"
+  },
+  "dependencies": {
+    "storium": "file:../..",
+    "better-sqlite3": "^12.0.0"
   },
   "devDependencies": {
     "tsx": "4.21.0"
