@@ -44,19 +44,13 @@ Exhaustive list of everything exported from `storium` and `storium/migrate`.
 | `withMembers(joinTable, foreignKey)` | Generates `addMember`, `removeMember`, `getMembers`, `isMember`, `getMemberCount` custom queries for collection patterns. |
 | `withCache(store, cacheAdapter, config)` | Wraps a store with cache-aside logic on configured read methods and auto-invalidation on writes. |
 
-### Builder Internals (advanced)
-
-These are lower-level building blocks. They are exported for power users who need to compose Storium's internals directly (e.g., building custom connection wrappers or test harnesses).
+### Type Guards
 
 | Export | Description |
 |--------|-------------|
-| `buildDefineTable(dialect, assertions?)` | Create a dialect-bound `defineTable` function. |
-| `buildDefineStore(dialect, assertions?)` | Create a dialect-bound `defineStore` function. |
-| `createCreateRepository(db, assertions?)` | Create a `createRepository` function bound to a Drizzle db instance and assertion registry. |
-| `buildSchemaSet(columns, access, assertions?)` | Build the full `SchemaSet` (select, insert, update, full) from column configs and access sets. |
-| `createTestFn(field, errors, assertions)` | Create a `test()` function for use in `validate` callbacks; collects errors into the provided array. |
-| `createAssertionRegistry(userAssertions?)` | Merge user-defined assertions with built-in assertions into a single registry. |
-| `BUILTIN_ASSERTIONS` | Record of built-in assertion functions (`is_email`, `is_url`, `is_uuid`, `is_slug`, `not_empty`). |
+| `isStoreDefinition(value)` | Returns `true` if the value is a `StoreDefinition`. |
+| `isRawColumn(config)` | Returns `true` if the column config is a `RawColumnConfig` (has a `raw` function). |
+| `isRawIndex(config)` | Returns `true` if the index config is a `RawIndexConfig` (has a `raw` function). |
 
 ---
 
