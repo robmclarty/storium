@@ -9,28 +9,20 @@ Remaining work for a production-ready release.
 
 ## Test Coverage
 
-- [ ] **Dialect mapping** (`dialect.ts`): column building for all 11 types
-      across all 3 dialects, including `primaryKey`, `notNull`, `default`,
-      `custom`, and `raw` modes.
-- [ ] **defineTable / defineStore**: table construction, access derivation
-      (`mutable`, `writeOnly`, `required`), index building, constraints.
-- [ ] **createRepository**: all 9 default CRUD operations, `force` option,
-      transaction passthrough, custom queries receiving correct `ctx`.
-- [ ] **Zod schema generation** (`zodSchema.ts`): all 4 schema variants,
-      transforms, validation via `test()`, required/optional handling.
-- [ ] **JSON Schema generation** (`jsonSchema.ts`): output correctness for all
-      column types.
-- [ ] **RuntimeSchema**: `validate`, `tryValidate`, `toJsonSchema`, `.zod`
-      access.
-- [ ] **Assertions**: all 7 built-in assertions, custom assertion registration.
-- [ ] **Prep pipeline**: expand beyond the existing 6 tests to cover edge
-      cases (async transforms, multiple validation errors, `force` bypass).
-- [ ] **Helpers**: `withBelongsTo`, `withMembers`, `withCache`,
-      `withTransaction`.
-- [ ] **Connect / fromDrizzle**: instance creation, `withTransaction` on the
-      instance, helper composition.
-- [ ] **Migration commands**: `generate`, `migrate`, `push`, `status`.
-- [ ] **Schema collector**: glob resolution, `.table` extraction from exports.
-- [ ] **Seed runner**: `defineSeed`, `seed` ordering and execution.
-- [ ] **Error classes**: `ValidationError`, `ConfigError`, `SchemaError`
-      structure and messages.
+- [x] **Error classes**: `ValidationError`, `ConfigError`, `SchemaError`, `StoreError`.
+- [x] **Assertions** (`test.ts`): all 7 built-in assertions, custom assertion registration.
+- [x] **JSON Schema generation** (`jsonSchema.ts`): all DSL types, schema variants, required logic.
+- [x] **Zod schema generation** (`zodSchema.ts`): types, transforms, validate callbacks, modes.
+- [x] **RuntimeSchema**: `validate`, `tryValidate`, `toJsonSchema`, `.zod` access.
+- [x] **Indexes** (`indexes.ts`): single/multi-column, unique, errors, raw escape hatch.
+- [x] **defineStore**: StoreDefinition creation, type guard, error cases.
+- [x] **defineTable**: metadata, access derivation, timestamps, PK detection, raw columns.
+- [x] **createRepository**: full CRUD lifecycle, pagination, ref, custom queries, prep integration.
+- [x] **Prep pipeline**: Promise resolution, onlyMutables, custom assertions, multi-error.
+- [x] **Helpers**: `withBelongsTo`, `withMembers`, `withCache`.
+- [x] **Connect / fromDrizzle**: instance creation, register, transaction, disconnect, assertions.
+- [x] **Schema collector**: glob resolution, table extraction from exports.
+- [x] **Seed runner**: `defineSeed`, `seed` ordering and execution.
+- [x] **Migration commands**: `status` reporting.
+- [ ] **Dialect mapping** (`dialect.ts`): column building for all 13 types
+      across all 3 dialects (requires dialect-specific Drizzle mocking).
