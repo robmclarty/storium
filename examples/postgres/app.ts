@@ -1,19 +1,21 @@
-// PostgreSQL example — full lifecycle with a real database
-//
-// Demonstrates:
-//   - Multi-file organization (entities/users/, entities/posts/)
-//   - Migration generation and application
-//   - Seed data
-//   - CRUD + custom queries
-//   - Postgres-specific features: jsonb, text[], array containment, ILIKE
-//   - Transactions
-//   - Validation and runtime schemas
-//
-// If you just want to see storium in action, start with the basic/ or
-// custom-queries/ example first — they run in-memory with zero setup.
-//
-// Requirements: Docker (for the temporary database)
-// Run: npm start
+/**
+ * PostgreSQL example — full lifecycle with a real database
+ *
+ * Demonstrates:
+ *  - Multi-file organization (entities/users/, entities/posts/)
+ *  - Migration generation and application
+ *  - Seed data
+ *  - CRUD + custom queries
+ *  - Postgres-specific features: jsonb, text[], array containment, ILIKE
+ *  - Transactions
+ *  - Validation and runtime schemas
+ *
+ * If you just want to see storium in action, start with the basic/ or
+ * custom-queries/ example first — they run in-memory with zero setup.
+ *
+ * Requirements: Docker (for the temporary database)
+ * Run: npm start
+ */
 
 import { ValidationError } from 'storium'
 import { generate, migrate, runSeeds } from 'storium/migrate'

@@ -1,14 +1,16 @@
+/**
+ * Storium's prep pipeline processes every create/update through four stages:
+ *
+ *   1. Filter    — strip unknown keys (and non-mutable keys on update)
+ *   2. Transform — run column transform functions (sanitize, normalize)
+ *   3. Validate  — type checks + custom validate callbacks (collects ALL errors)
+ *   4. Required  — ensure required fields are present
+ *
+ * This example walks through each stage.
+ */
+
 import { storium, defineTable, defineStore, ValidationError } from 'storium'
 import { sql } from 'drizzle-orm'
-
-// Storium's prep pipeline processes every create/update through four stages:
-//
-//   1. Filter    — strip unknown keys (and non-mutable keys on update)
-//   2. Transform — run column transform functions (sanitize, normalize)
-//   3. Validate  — type checks + custom validate callbacks (collects ALL errors)
-//   4. Required  — ensure required fields are present
-//
-// This example walks through each stage.
 
 // --- Custom assertions ---
 //

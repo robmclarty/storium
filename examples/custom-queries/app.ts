@@ -1,21 +1,23 @@
+/**
+ * Custom queries let you extend stores with domain-specific operations.
+ * Each query receives a `ctx` object containing:
+ *
+ *   ctx.drizzle       — the raw Drizzle database instance
+ *   ctx.table         — the Drizzle table object
+ *   ctx.selectColumns — pre-built column map for SELECT
+ *   ctx.primaryKey    — PK column name
+ *   ctx.schemas       — runtime schemas
+ *   ctx.prep()        — the validation/transform pipeline
+ *   ctx.find, ctx.findOne, ctx.findById, ctx.create, ctx.update, ...
+ *
+ * Custom queries return a function — this lets ctx capture the original
+ * defaults, so even if you override `create`, ctx.create still refers
+ * to the built-in version.
+ */
+
 import { storium, defineTable, defineStore } from 'storium'
 import type { Ctx } from 'storium'
 import { sql, eq, like, desc } from 'drizzle-orm'
-
-// Custom queries let you extend stores with domain-specific operations.
-// Each query receives a `ctx` object containing:
-//
-//   ctx.drizzle       — the raw Drizzle database instance
-//   ctx.table         — the Drizzle table object
-//   ctx.selectColumns — pre-built column map for SELECT
-//   ctx.primaryKey    — PK column name
-//   ctx.schemas       — runtime schemas
-//   ctx.prep()        — the validation/transform pipeline
-//   ctx.find, ctx.findOne, ctx.findById, ctx.create, ctx.update, ...
-//
-// Custom queries return a function — this lets ctx capture the original
-// defaults, so even if you override `create`, ctx.create still refers
-// to the built-in version.
 
 // --- Define the schema ---
 

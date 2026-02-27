@@ -1,14 +1,16 @@
+/**
+ * The "memory" dialect creates an ephemeral SQLite database that lives
+ * entirely in memory. Nothing touches disk. When you disconnect, the
+ * data is gone. This makes it ideal for:
+ *
+ *   - Quick prototyping without setting up a database server
+ *   - Unit/integration tests with fully isolated state
+ *   - Trying out schema designs before committing to a real database
+ */
+
 import { storium, defineTable, defineStore } from 'storium'
 import type { StoriumInstance } from 'storium'
 import { sql } from 'drizzle-orm'
-
-// The "memory" dialect creates an ephemeral SQLite database that lives
-// entirely in memory. Nothing touches disk. When you disconnect, the
-// data is gone. This makes it ideal for:
-//
-//   - Quick prototyping without setting up a database server
-//   - Unit/integration tests with fully isolated state
-//   - Trying out schema designs before committing to a real database
 
 // --- Define the schema once, reuse across connections ---
 

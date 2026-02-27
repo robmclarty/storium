@@ -1,3 +1,19 @@
+/**
+ * Basic example — the simplest path to a working store.
+ *
+ * Demonstrates:
+ *   - db.defineStore() — define a schema and get a live store in one call
+ *   - CRUD operations: create, findById, findAll, findOne, update, destroy
+ *   - Validation: transforms, built-in assertions (is_email, not_empty)
+ *   - Transactions: atomic multi-row inserts
+ *   - Runtime schemas: toJsonSchema(), tryValidate()
+ *
+ * No config files, no migrations, no external database — just connect
+ * with `dialect: 'memory'` and start building.
+ *
+ * Run: npm start
+ */
+
 import { storium } from 'storium'
 import { sql } from 'drizzle-orm'
 

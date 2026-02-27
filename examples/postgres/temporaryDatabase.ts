@@ -1,13 +1,15 @@
-// Temporary PostgreSQL database for demo purposes.
-//
-// This file is NOT part of a typical storium application. It uses
-// Testcontainers to spin up a disposable PostgreSQL instance inside Docker
-// so the example can run without any external database setup.
-//
-// In a real app you would simply set DATABASE_URL in your environment and
-// import your drizzle.config.ts directly — no container management needed.
-//
-// Requirements: Docker must be running on your machine.
+/**
+ * Temporary PostgreSQL database for demo purposes.
+ *
+ * This file is NOT part of a typical storium application. It uses
+ * Testcontainers to spin up a disposable PostgreSQL instance inside Docker
+ * so the example can run without any external database setup.
+ *
+ * In a real app you would simply set DATABASE_URL in your environment and
+ * import your drizzle.config.ts directly — no container management needed.
+ *
+ * Requirements: Docker must be running on your machine.
+ */
 
 import { PostgreSqlContainer } from '@testcontainers/postgresql'
 import type { ConnectConfig } from 'storium'
