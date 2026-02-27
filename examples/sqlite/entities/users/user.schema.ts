@@ -1,6 +1,6 @@
 import { defineTable } from 'storium'
 
-// defineTable auto-detects the dialect from drizzle.config.ts
+// defineTable auto-detects the dialect from storium.config.ts
 export const usersTable = defineTable('users', {
   id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
   email: {

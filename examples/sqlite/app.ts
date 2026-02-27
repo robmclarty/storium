@@ -21,7 +21,7 @@
 import { existsSync, unlinkSync } from 'node:fs'
 import { ValidationError } from 'storium'
 import { generate, migrate, seed } from 'storium/migrate'
-import config from './drizzle.config.js'
+import config from './storium.config.js'
 import { createDatabase } from './database.js'
 
 // --- Setup: clean slate, migrations, connection, seeds ---

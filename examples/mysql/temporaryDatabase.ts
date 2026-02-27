@@ -25,7 +25,7 @@ export async function startTemporaryDatabase(): Promise<TemporaryDatabase> {
   console.log('Container started.')
 
   process.env.DATABASE_URL = container.getConnectionUri()
-  const { default: config } = await import('./drizzle.config.js')
+  const { default: config } = await import('./storium.config.js')
 
   return {
     config,

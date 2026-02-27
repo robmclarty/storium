@@ -6,7 +6,7 @@
  * so the example can run without any external database setup.
  *
  * In a real app you would simply set DATABASE_URL in your environment and
- * import your drizzle.config.ts directly — no container management needed.
+ * import your storium.config.ts directly — no container management needed.
  *
  * Requirements: Docker must be running on your machine.
  */
@@ -41,13 +41,13 @@ export async function startTemporaryDatabase(): Promise<TemporaryDatabase> {
 
   console.log('Container started.')
 
-  // Set DATABASE_URL so drizzle.config.ts can read it. In a real app this
+  // Set DATABASE_URL so storium.config.ts can read it. In a real app this
   // would already be set in your environment or .env file.
   process.env.DATABASE_URL = container.getConnectionUri()
 
   // Import config lazily — after DATABASE_URL is set, so the connection
   // string resolves correctly.
-  const { default: config } = await import('./drizzle.config.js')
+  const { default: config } = await import('./storium.config.js')
 
   return {
     config,
