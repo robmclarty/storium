@@ -55,6 +55,7 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit",
+    "typecheck:examples": "for dir in examples/*/; do echo \"--- $dir ---\" && (cd \"$dir\" && npx tsc --noEmit 2>&1 || true); done",
     "lint": "node --import tsx/esm $(which oxlint) .",
     "lint:fix": "node --import tsx/esm $(which oxlint) . --fix",
     "test": "vitest",

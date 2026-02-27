@@ -11,6 +11,23 @@
 import type { FastifyInstance } from 'fastify'
 import { ValidationError } from 'storium'
 
+const errorSchema = {
+  type: 'object',
+  properties: {
+    error: { type: 'string' },
+    errors: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          field: { type: 'string' },
+          message: { type: 'string' },
+        },
+      },
+    },
+  },
+}
+
 export async function taskRoutes(fastify: FastifyInstance) {
   const { tasks } = fastify.stores
 
@@ -39,7 +56,7 @@ export async function taskRoutes(fastify: FastifyInstance) {
         properties: { id: { type: 'string', format: 'uuid' } },
         required: ['id'],
       },
-      response: { 200: selectSchema },
+      response: { 200: selectSchema, 404: errorSchema },
     },
   }, async (req, reply) => {
     const { id } = req.params as { id: string }
@@ -53,7 +70,7 @@ export async function taskRoutes(fastify: FastifyInstance) {
   fastify.post('/tasks', {
     schema: {
       body: insertSchema,
-      response: { 201: selectSchema },
+      response: { 201: selectSchema, 400: errorSchema },
     },
   }, async (req, reply) => {
     try {
@@ -77,7 +94,7 @@ export async function taskRoutes(fastify: FastifyInstance) {
         required: ['id'],
       },
       body: updateSchema,
-      response: { 200: selectSchema },
+      response: { 200: selectSchema, 400: errorSchema },
     },
   }, async (req, reply) => {
     const { id } = req.params as { id: string }

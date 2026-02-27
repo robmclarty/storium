@@ -96,7 +96,7 @@ const main = async () => {
 
   switch (command) {
     case 'generate': {
-      const result = await generate(config)
+      const result = await generate()
       console.log(result.message)
       process.exit(result.success ? 0 : 1)
       break
@@ -115,7 +115,7 @@ const main = async () => {
     }
 
     case 'push': {
-      const result = await push(config)
+      const result = await push()
       console.log(result.message)
       process.exit(result.success ? 0 : 1)
       break

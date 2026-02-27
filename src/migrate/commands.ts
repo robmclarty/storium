@@ -63,13 +63,13 @@ const run = (cmd: string, args: string[]): Promise<{ stdout: string; stderr: str
  * Generate a new migration file by diffing current schemas against the
  * last migration state. Shells out to drizzle-kit CLI.
  *
- * @param config - Optional config override (default: auto-loads drizzle.config.ts)
+ * Uses the config file path from resolveConfigPath() (auto-detected or
+ * set via STORIUM_CONFIG env var).
  *
  * @example
- * await generate()                    // auto-loads config
- * await generate(customConfig)        // explicit config
+ * await generate()
  */
-export const generate = async (config?: StoriumConfig): Promise<MigrationResult> => {
+export const generate = async (): Promise<MigrationResult> => {
   const cfgPath = resolveConfigPath()
   try {
     const { stdout } = await run('npx', ['drizzle-kit', 'generate', `--config=${cfgPath}`])
@@ -129,9 +129,10 @@ export const migrate = async (db: StoriumInstance, config?: StoriumConfig): Prom
  * migration files. Useful for development only — not for production.
  * Shells out to drizzle-kit CLI.
  *
- * @param config - Optional config override (default: auto-loads drizzle.config.ts)
+ * Uses the config file path from resolveConfigPath() (auto-detected or
+ * set via STORIUM_CONFIG env var).
  */
-export const push = async (config?: StoriumConfig): Promise<MigrationResult> => {
+export const push = async (): Promise<MigrationResult> => {
   const cfgPath = resolveConfigPath()
   try {
     const { stdout } = await run('npx', ['drizzle-kit', 'push', `--config=${cfgPath}`])

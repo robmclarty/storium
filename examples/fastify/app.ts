@@ -53,7 +53,8 @@ const address = await fastify.listen({ port: 0 }) // random port for self-test
 
 const base = address
 
-const get = (path: string) => fetch(`${base}${path}`).then(r => r.json())
+const json = (r: Response) => r.json() as Promise<any>
+const get = (path: string) => fetch(`${base}${path}`).then(json)
 const post = (path: string, body: any) =>
   fetch(`${base}${path}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) })
 const patch = (path: string, body: any) =>
@@ -70,22 +71,22 @@ const found = await get(`/tasks/${first.id}`)
 
 // Create a new task
 const createRes = await post('/tasks', { title: 'New task from API', priority: 10 })
-const created = await createRes.json()
+const created = await json(createRes)
 
 // Update it
 const patchRes = await patch(`/tasks/${created.id}`, { status: 'done' })
-const updated = await patchRes.json()
+const updated = await json(patchRes)
 
 // Validation error — empty title
 const badRes = await post('/tasks', { title: '' })
-const badBody = await badRes.json()
+const badBody = await json(badRes)
 
 // Batch create (transaction)
 const batchRes = await post('/tasks/batch', [
   { title: 'Batch task 1', priority: 20 },
   { title: 'Batch task 2', priority: 21 },
 ])
-const batch = await batchRes.json()
+const batch = await json(batchRes)
 
 // Delete
 const deleteRes = await del(`/tasks/${created.id}`)
