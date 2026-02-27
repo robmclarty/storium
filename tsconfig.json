@@ -26,5 +26,5 @@
     }
   },
   "include": ["src/**/*.ts", "bin/**/*.ts"],
-  "exclude": ["node_modules", "dist", "test", "**/__tests__"]
+  "exclude": ["node_modules", "dist", "test", "examples", "**/__tests__"]
 }

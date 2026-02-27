@@ -1,8 +1,12 @@
-import type { ConnectConfig } from 'storium'
+// Single config shared by both drizzle-kit (CLI migrations) and storium (runtime).
+//
+// drizzle-kit reads: dialect, dbCredentials, schema, out
+// storium reads:     dialect, dbCredentials, seeds, assertions
+//
+// Using `satisfies ConnectConfig` gives you autocomplete and type checking
+// while keeping the object compatible with both tools.
 
-// A single config object shared by drizzle-kit (migrations) and storium (runtime).
-// drizzle-kit uses: dialect, dbCredentials, schema, out
-// storium uses: dialect, dbCredentials, seeds, assertions
+import type { ConnectConfig } from 'storium'
 
 export default {
   dialect: 'postgresql',

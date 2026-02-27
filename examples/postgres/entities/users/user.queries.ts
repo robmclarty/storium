@@ -1,10 +1,10 @@
 import { ilike, or } from 'drizzle-orm'
-import type { CustomQueryFn } from 'storium'
+import type { Ctx } from 'storium'
 
-export const findByEmail: CustomQueryFn = (ctx) => async (email: string) =>
+export const findByEmail = (ctx: Ctx) => async (email: string) =>
   ctx.findOne({ email })
 
-export const search: CustomQueryFn = (ctx) => async (term: string) =>
+export const search = (ctx: Ctx) => async (term: string) =>
   ctx.drizzle
     .select(ctx.selectColumns)
     .from(ctx.table)
