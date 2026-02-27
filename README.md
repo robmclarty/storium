@@ -4,7 +4,7 @@ A lightweight, database-agnostic storage toolkit built on [Drizzle](https://orm.
 
 I built Storium because Drizzle gives you a fantastic query builder, but every project still needs the same scaffolding on top of it: validation, sanitization, CRUD operations, migration workflows, and some coherent pattern tying it all together. I kept rebuilding that scaffolding. Poorly, at first. Then well enough that I stopped wanting to rewrite it, which felt like a milestone worth shipping.
 
-Define your schema once with `defineStore()` and Storium generates a full stack of contracts around it: TypeScript types for compile-time safety, Zod schemas for runtime validation, and JSON Schema for APIs and external tooling (e.g., Fastify/Ajv). You get standard CRUD, custom query hooks powered by Drizzle's query builder, and migration tooling. One definition, every layer covered. No more redeclaring the same shape in three different formats and hoping they don't drift apart over time.
+Define your schema once with `defineTable()` and Storium generates a full stack of contracts around it: TypeScript types for compile-time safety, Zod schemas for runtime validation, and JSON Schema for APIs and external tooling (e.g., Fastify/Ajv). You get standard CRUD, custom query hooks powered by Drizzle's query builder, and migration tooling. One definition, every layer covered. No more redeclaring the same shape in three different formats and hoping they don't drift apart over time.
 
 The goal is a data-access layer that's structured enough to keep things consistent and predictable, but flexible enough that you're never fighting it. You define the stores, the queries, the transforms. Storium just makes it harder to stray from the pattern -- especially six months in when the codebase would have otherwise quietly rotted into three different ways of talking to the database.
 
@@ -27,11 +27,13 @@ const db = storium.connect({
   url: process.env.DATABASE_URL,
 })
 
-const users = db.defineStore('users', {
+const usersTable = db.defineTable('users', {
   id:    { type: 'uuid', primaryKey: true, default: 'random_uuid' },
   email: { type: 'varchar', maxLength: 255, mutable: true, required: true },
   name:  { type: 'varchar', maxLength: 255, mutable: true },
 })
+
+const users = db.defineStore(usersTable)
 
 const user = await users.create({ email: 'alice@example.com', name: 'Alice' })
 const found = await users.findById(user.id)
@@ -73,21 +75,21 @@ Column metadata (`mutable`, `writeOnly`, `required`, `transform`, `validate`) wo
 This is where Storium really earns its keep. Custom queries receive `ctx` with the database handle and all default CRUD operations. You can override defaults by name. `ctx` always has the originals, so you can compose on top of them rather than starting from scratch:
 
 ```typescript
-const users = db.defineStore('users', columns, {
-  queries: {
-    // Override create — hash password before insert
-    create: (ctx) => async (input, opts) => {
-      const hashed = { ...input, password: await hash(input.password) }
-      return ctx.create(hashed, { ...opts, force: true })
-    },
+const usersTable = db.defineTable('users', columns)
 
-    // New query — just write Drizzle like you normally would
-    findByEmail: (ctx) => async (email) =>
-      ctx.drizzle.select(ctx.selectColumns)
-        .from(ctx.table)
-        .where(eq(ctx.table.email, email))
-        .then(r => r[0] ?? null),
+const users = db.defineStore(usersTable, {
+  // Override create — hash password before insert
+  create: (ctx) => async (input, opts) => {
+    const hashed = { ...input, password: await hash(input.password) }
+    return ctx.create(hashed, { ...opts, force: true })
   },
+
+  // New query — just write Drizzle like you normally would
+  findByEmail: (ctx) => async (email) =>
+    ctx.drizzle.select(ctx.selectColumns)
+      .from(ctx.table)
+      .where(eq(ctx.table.email, email))
+      .then(r => r[0] ?? null),
 })
 ```
 
@@ -133,7 +135,7 @@ indexes: {
 
 ## Scaling Up
 
-The Quick Start uses `db.defineStore()` — the simplest path. But as a project grows, you may want schema definitions separated from store logic. Three reasons:
+The Quick Start uses `db.defineTable()` + `db.defineStore()` — the simplest path. But as a project grows, you may want schema definitions separated from store logic. Three reasons:
 
 - **Migration tooling** — `drizzle-kit` imports schema files at module level, before any database connection exists. Standalone `defineTable()` files work at module scope; `db.defineStore()` can't because it requires a live connection.
 - **Organization** — Schemas, queries, and wiring live in separate files. Easier to navigate when you have 50+ tables.
