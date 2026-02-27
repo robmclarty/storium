@@ -116,7 +116,7 @@ export const status = async (config: any): Promise<MigrationResult> => {
     if (existsSync(migrationsDir)) {
       migrationFiles = readdirSync(migrationsDir)
         .filter((f: string) => f.endsWith('.sql'))
-        .sort()
+        .toSorted()
     }
 
     // List matched schema files
@@ -125,7 +125,7 @@ export const status = async (config: any): Promise<MigrationResult> => {
       const matches = await glob(pattern, { cwd: process.cwd(), absolute: false })
       schemaFiles.push(...matches)
     }
-    schemaFiles = [...new Set(schemaFiles)].sort()
+    schemaFiles = [...new Set(schemaFiles)].toSorted()
 
     const lines = [
       `Dialect: ${config.dialect ?? 'unknown'}`,

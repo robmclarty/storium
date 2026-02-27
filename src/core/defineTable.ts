@@ -86,7 +86,7 @@ const deriveAccess = (columns: ColumnsConfig): TableAccess => {
     if (col?.required === true && col?.mutable === false) {
       throw new SchemaError(
         `Column '${key}': a column cannot be both \`required: true\` and \`mutable: false\`. ` +
-        'Use \`required: true\` alone (omit \`mutable\`) for insert-only fields.'
+        'Use `required: true` alone (omit `mutable`) for insert-only fields.'
       )
     }
 

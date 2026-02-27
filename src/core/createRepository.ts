@@ -30,6 +30,7 @@ import type {
   TableDef,
   CustomQueryFn,
   PrepOptions,
+  OrderBySpec,
   RepositoryContext,
   Repository,
   AssertionRegistry,
@@ -65,7 +66,7 @@ const buildDefaultCrud = (
   /**
    * Apply orderBy clauses to a query builder.
    */
-  const applyOrderBy = (q: any, orderBy: import('./types').OrderBySpec | import('./types').OrderBySpec[]) => {
+  const applyOrderBy = (q: any, orderBy: OrderBySpec | OrderBySpec[]) => {
     const specs = Array.isArray(orderBy) ? orderBy : [orderBy]
     const clauses = specs.map(spec =>
       (spec.direction === 'desc' ? desc : asc)(table[spec.column])

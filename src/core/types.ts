@@ -6,7 +6,7 @@
  * runtime schema types, and compile-time generic type utilities.
  */
 
-import type { ZodType } from 'zod'
+import type { ZodType, z as ZodNamespace } from 'zod'
 
 // ---------------------------------------------------------------- Dialect --
 
@@ -261,7 +261,7 @@ export type RepositoryContext<
   /** The raw Drizzle database instance (escape hatch). */
   drizzle: any
   /** The Zod namespace (convenience accessor matching ctx.drizzle). */
-  zod: typeof import('zod').z
+  zod: typeof ZodNamespace
   /** The Drizzle table object. */
   table: T['table']
   /** The full TableDef. */
@@ -399,7 +399,7 @@ export type StoriumInstance = {
   /** Raw Drizzle instance (escape hatch). */
   drizzle: any
   /** The Zod namespace (convenience accessor matching db.drizzle). */
-  zod: typeof import('zod').z
+  zod: typeof ZodNamespace
   /** The active dialect. */
   dialect: Dialect
   /** Create a table definition (pre-bound to dialect + assertions). */
@@ -429,7 +429,7 @@ export type StoriumInstance = {
   /** Materialize StoreDefinitions into live stores with CRUD + queries. */
   register: <T extends Record<string, any>>(
     storeDefs: T
-  ) => { [K in keyof T]: T[K] extends import('./defineStore').StoreDefinition<infer C extends ColumnsConfig, infer Q extends Record<string, CustomQueryFn>> ? Store<C, Q> : Store }
+  ) => { [K in keyof T]: Store }
   /** Scoped transaction helper (pre-bound to db). */
   transaction: <T>(fn: (tx: any) => Promise<T>) => Promise<T>
   /** Close the database connection pool. */
