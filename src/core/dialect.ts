@@ -53,6 +53,12 @@ const getPostgresMapping = (): DialectMapping => {
       timestamp: (name) => pg.timestamp(name, { withTimezone: true }),
       date:      (name) => pg.date(name),
       jsonb:     (name) => pg.jsonb(name),
+      array:     (name, c) => {
+        const itemType = c.items ?? 'text'
+        const itemBuilder = pgMapping!.columnBuilders[itemType]
+        if (!itemBuilder) throw new ConfigError(`Unknown array item type '${itemType}' on '${name}'.`)
+        return itemBuilder(name, { type: itemType } as DslColumnConfig).array()
+      },
     },
   }
 
@@ -83,6 +89,7 @@ const getMysqlMapping = (): DialectMapping => {
       timestamp: (name) => mysql.timestamp(name),
       date:      (name) => mysql.date(name),
       jsonb:     (name) => mysql.json(name),
+      array:     (name) => mysql.json(name),
     },
   }
 
@@ -116,6 +123,7 @@ const getSqliteMapping = (): DialectMapping => {
       timestamp: (name) => sqlite.integer(name, { mode: 'timestamp' }),
       date:      (name) => sqlite.integer(name, { mode: 'timestamp' }),
       jsonb:     (name) => sqlite.text(name, { mode: 'json' }),
+      array:     (name) => sqlite.text(name, { mode: 'json' }),
     },
   }
 

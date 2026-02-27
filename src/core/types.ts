@@ -60,6 +60,7 @@ export type DslType =
   | 'timestamp'
   | 'date'
   | 'jsonb'
+  | 'array'
 
 /** DSL-managed column — type string drives the Drizzle builder automatically. */
 export type DslColumnConfig = BaseColumnMeta & {
@@ -67,7 +68,9 @@ export type DslColumnConfig = BaseColumnMeta & {
   primaryKey?: boolean
   notNull?: boolean
   maxLength?: number
-  default?: 'now' | 'random_uuid' | string | number | boolean | Record<string, unknown>
+  default?: 'now' | 'random_uuid' | string | number | boolean | Record<string, unknown> | unknown[]
+  /** Element type for array columns (e.g. 'text', 'integer', 'uuid'). */
+  items?: DslType
   /** Modify the auto-built Drizzle column before finalization. */
   custom?: (col: any) => any
 }
@@ -477,6 +480,7 @@ type DslTypeToTs = {
   timestamp: Date
   date: Date
   jsonb: Record<string, unknown>
+  array: unknown[]
 }
 
 /** Resolve the TypeScript type for a single column config. */

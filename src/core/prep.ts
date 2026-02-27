@@ -47,6 +47,7 @@ const TYPE_CHECKS: Partial<Record<DslType, (value: unknown) => boolean>> = {
   timestamp: (v) => v instanceof Date || typeof v === 'string' || typeof v === 'number',
   date:      (v) => v instanceof Date || typeof v === 'string',
   jsonb:     (v) => typeof v === 'object' && v !== null,
+  array:     (v) => Array.isArray(v),
 }
 
 const TYPE_NAMES: Partial<Record<DslType, string>> = {
@@ -54,7 +55,7 @@ const TYPE_NAMES: Partial<Record<DslType, string>> = {
   integer: 'integer', bigint: 'bigint', serial: 'integer',
   real: 'number', numeric: 'number', boolean: 'boolean',
   timestamp: 'Date or date string', date: 'Date or date string',
-  jsonb: 'object',
+  jsonb: 'object', array: 'array',
 }
 
 // ---------------------------------------------------- Pipeline Stages --

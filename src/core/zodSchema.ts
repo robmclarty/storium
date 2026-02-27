@@ -51,6 +51,14 @@ const ZOD_TYPE_MAP: Record<DslType, ZodType | ((c: DslColumnConfig) => ZodType)>
   timestamp: z.coerce.date(),
   date:      z.coerce.date(),
   jsonb:     z.record(z.string(), z.unknown()),
+  array:     (c) => {
+    if (c.items) {
+      const base = ZOD_TYPE_MAP[c.items]
+      const itemSchema = typeof base === 'function' ? base(c) : base
+      return z.array(itemSchema ?? z.unknown())
+    }
+    return z.array(z.unknown())
+  },
 }
 
 // -------------------------------------------------------- Field Builder --

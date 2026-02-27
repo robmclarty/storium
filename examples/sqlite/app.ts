@@ -127,7 +127,7 @@ const { newUser, newPost } = await db.transaction(async (tx: any) => {
     body: 'Created in a transaction with its author.',
     status: 'published',
     author_id: txUser.id,
-    tags: { transaction: true, demo: true },
+    tags: ['transaction', 'demo'],
   }, { tx })
   return { newUser: txUser, newPost: txPost }
 })

@@ -69,6 +69,14 @@ const DSL_TYPE_MAP: Record<DslType, JsonSchemaType | ((c: DslColumnConfig) => Js
   // the most common real-world use case. If your jsonb column stores arrays or
   // mixed types, use a `raw` column with a custom `validate` callback instead.
   jsonb:     { type: 'object' },
+  array:     (c) => {
+    const itemSchema = c.items
+      ? (typeof DSL_TYPE_MAP[c.items] === 'function'
+          ? (DSL_TYPE_MAP[c.items] as (c: DslColumnConfig) => JsonSchemaType)(c)
+          : DSL_TYPE_MAP[c.items])
+      : {}
+    return { type: 'array', items: itemSchema }
+  },
 }
 
 /**
