@@ -72,4 +72,90 @@ describe('prep pipeline', () => {
 
     expect(result).toBe(raw)
   })
+
+  it('resolves Promise values in input (Stage 0)', async () => {
+    const result = await prep(
+      { email: Promise.resolve('async@example.com') },
+      { validateRequired: true }
+    )
+
+    expect(result.email).toBe('async@example.com')
+  })
+
+  it('strips non-mutable columns when onlyMutables is true', async () => {
+    const result = await prep(
+      { id: 'should-be-removed', email: 'test@example.com' },
+      { validateRequired: false, onlyMutables: true }
+    )
+
+    expect(result).not.toHaveProperty('id')
+    expect(result).toHaveProperty('email')
+  })
+
+  it('accumulates multiple validation errors in a single throw', async () => {
+    // Use columns without transforms so type checks run and accumulate
+    const plainColumns: ColumnsConfig = {
+      a: { type: 'varchar', maxLength: 255, mutable: true },
+      b: { type: 'integer', mutable: true },
+    }
+    const plainAccess: TableAccess = {
+      selectable: ['a', 'b'],
+      mutable: ['a', 'b'],
+      insertable: ['a', 'b'],
+      writeOnly: [],
+    }
+    const plainPrep = createPrepFn(plainColumns, plainAccess)
+    const { ValidationError } = await import('../errors')
+
+    try {
+      await plainPrep(
+        { a: 123, b: 'not-a-number' },
+        { validateRequired: false }
+      )
+      expect.fail('should have thrown')
+    } catch (err: any) {
+      expect(err).toBeInstanceOf(ValidationError)
+      expect(err.errors.length).toBeGreaterThanOrEqual(2)
+    }
+  })
+})
+
+describe('prep with custom assertions', () => {
+  const colsWithValidate: ColumnsConfig = {
+    slug: {
+      type: 'varchar',
+      maxLength: 255,
+      mutable: true,
+      required: true,
+      validate: (v, test) => {
+        test(v, 'is_slug', 'Must be a valid slug')
+      },
+    },
+  }
+
+  const slugAccess: TableAccess = {
+    selectable: ['slug'],
+    mutable: ['slug'],
+    insertable: ['slug'],
+    writeOnly: [],
+  }
+
+  it('uses custom assertions from the registry', async () => {
+    const prep = createPrepFn(colsWithValidate, slugAccess, {
+      is_slug: (v) => typeof v === 'string' && /^[a-z0-9-]+$/.test(v),
+    })
+
+    const result = await prep({ slug: 'valid-slug' }, { validateRequired: true })
+    expect(result.slug).toBe('valid-slug')
+  })
+
+  it('rejects values that fail custom assertions', async () => {
+    const prep = createPrepFn(colsWithValidate, slugAccess, {
+      is_slug: (v) => typeof v === 'string' && /^[a-z0-9-]+$/.test(v),
+    })
+
+    await expect(
+      prep({ slug: 'INVALID SLUG' }, { validateRequired: true })
+    ).rejects.toThrow()
+  })
 })
