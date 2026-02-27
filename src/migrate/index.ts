@@ -1,5 +1,6 @@
 export { generate, migrate, push, status } from './commands'
 export { defineSeed, seed } from './seed'
 export { collectSchemas, collectDrizzleSchema } from './schemaCollector'
+export { loadConfig } from '../core/configLoader'
 export type { SeedContext, SeedFn, SeedModule } from './seed'
 export type { SchemaMap } from './schemaCollector'

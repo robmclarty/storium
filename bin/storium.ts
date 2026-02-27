@@ -14,7 +14,6 @@
  * or a path specified via --config.
  */
 
-import path from 'node:path'
 import { register } from 'node:module'
 
 // Register tsx as a loader so we can import .ts config and schema files.
@@ -28,6 +27,7 @@ try {
 import { generate, migrate, push, status } from '../src/migrate/commands'
 import { seed } from '../src/migrate/seed'
 import { connect } from '../src/connect'
+import { loadConfig } from '../src/core/configLoader'
 
 // --------------------------------------------------------------- Helpers --
 
@@ -55,37 +55,15 @@ const usage = () => {
 }
 
 /**
- * Load the config file (drizzle.config.ts format).
- */
-const loadConfig = async (configPath: string): Promise<any> => {
-  const abs = path.resolve(process.cwd(), configPath)
-
-  try {
-    const mod = await import(abs)
-    return mod.default ?? mod
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err)
-    const hint = abs.endsWith('.ts')
-      ? '\nHint: Loading .ts config files requires tsx. Install it: npm install -D tsx'
-      : ''
-    console.error(`Failed to load config from '${abs}': ${msg}${hint}`)
-    process.exit(1)
-  }
-}
-
-/**
  * Parse CLI arguments.
  */
 const parseArgs = (argv: string[]) => {
   const args = argv.slice(2)
   const command = args[0] as Command | undefined
-  let configPath = './drizzle.config.ts'
 
   const configIdx = args.indexOf('--config')
   const configArg = args[configIdx + 1]
-  if (configIdx !== -1 && configArg) {
-    configPath = configArg
-  }
+  const configPath = configIdx !== -1 && configArg ? configArg : undefined
 
   const help = args.includes('--help') || args.includes('-h')
 
@@ -108,11 +86,13 @@ const main = async () => {
     process.exit(1)
   }
 
+  // Load config once — pass to functions that need it.
+  // --config flag overrides the default drizzle.config.ts path.
   const config = await loadConfig(configPath)
 
   switch (command) {
     case 'generate': {
-      const result = await generate(configPath)
+      const result = await generate(config)
       console.log(result.message)
       process.exit(result.success ? 0 : 1)
       break
@@ -121,7 +101,7 @@ const main = async () => {
     case 'migrate': {
       const db = connect(config)
       try {
-        const result = await migrate(config, db)
+        const result = await migrate(db, config)
         console.log(result.message)
         process.exit(result.success ? 0 : 1)
       } finally {
@@ -131,7 +111,7 @@ const main = async () => {
     }
 
     case 'push': {
-      const result = await push(configPath)
+      const result = await push(config)
       console.log(result.message)
       process.exit(result.success ? 0 : 1)
       break
@@ -145,11 +125,9 @@ const main = async () => {
     }
 
     case 'seed': {
-      // Seeds need a live DB connection
       const db = connect(config)
-      const seedsDir = config.seeds ?? './seeds'
       try {
-        const result = await seed(seedsDir, db, config)
+        const result = await seed(db, config)
         console.log(result.message)
         process.exit(result.success ? 0 : 1)
       } finally {

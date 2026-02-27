@@ -19,9 +19,9 @@
 
 import path from 'node:path'
 import { glob } from 'glob'
-import { ConfigError } from '../core/errors'
 import { hasMeta } from '../core/defineTable'
 import { isStoreDefinition } from '../core/defineStore'
+import { loadConfig } from '../core/configLoader'
 import type { StoriumInstance, ConnectConfig, Dialect, TableDef } from '../core/types'
 
 // --------------------------------------------------------------- Types --
@@ -174,24 +174,22 @@ const discoverStores = async (
  * Run all seed files in a directory.
  * Seeds are executed in alphabetical filename order.
  *
- * @param seedsDir - Path to the seeds directory
+ * Auto-loads config from `drizzle.config.ts` for seeds directory path
+ * and store/schema discovery. Pass an optional config to override.
+ *
  * @param db - A StoriumInstance (from connect())
- * @param config - Optional config for auto-discovering stores from schema/store globs
+ * @param config - Optional config override (default: auto-loads drizzle.config.ts)
  * @returns Summary of seeds run
  */
 export const seed = async (
-  seedsDir: string,
   db: StoriumInstance,
   config?: ConnectConfig
 ): Promise<{ success: boolean; message: string; count: number }> => {
-  if (!seedsDir) {
-    throw new ConfigError(
-      'Seeds directory is required. Pass a seeds directory path, or set `seeds` in your drizzle.config.ts.'
-    )
-  }
+  const cfg = config ?? await loadConfig()
+  const seedsDir = cfg.seeds ?? './seeds'
 
   // Auto-discover stores from config globs
-  const stores = await discoverStores(db, config)
+  const stores = await discoverStores(db, cfg)
 
   // Build the seed context
   const ctx: SeedContext = {

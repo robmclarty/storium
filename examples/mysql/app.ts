@@ -30,8 +30,8 @@ const tempDb = await startTemporaryDatabase()
 const { db, users, posts } = createDatabase(tempDb.config)
 
 await generate()
-await migrate(tempDb.config, db)
-await seed(tempDb.config.seeds ?? './seeds', db, tempDb.config)
+await migrate(db)
+await seed(db)
 
 // --- CRUD ---
 

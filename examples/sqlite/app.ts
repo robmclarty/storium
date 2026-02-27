@@ -33,8 +33,8 @@ if (existsSync(dbPath)) unlinkSync(dbPath)
 const { db, users, posts } = createDatabase(config)
 
 await generate()
-await migrate(config, db)
-await seed(config.seeds ?? './seeds', db, config)
+await migrate(db)
+await seed(db)
 
 // --- CRUD ---
 
