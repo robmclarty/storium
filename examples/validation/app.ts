@@ -90,13 +90,16 @@ db.drizzle.run(sql`
 // --- Stage 1: Filter (unknown keys are stripped) ---
 
 console.log('=== Filter stage ===')
-const widget = await products.create({
+// Intentional: pass unknown keys to demonstrate that storium strips them at runtime.
+// We use a plain object to bypass TypeScript's excess property checking.
+const inputWithUnknownKeys = {
   name: 'Widget',
   slug: 'Widget',
   price: 999,
   this_field_does_not_exist: 'ignored',
   also_unknown: 42,
-})
+}
+const widget = await products.create(inputWithUnknownKeys)
 console.log('Created (unknown keys silently stripped):', widget)
 
 // --- Stage 2: Transform (runs before validation) ---
@@ -152,6 +155,7 @@ try {
 
 console.log('\n=== Required fields ===')
 try {
+  // @ts-expect-error — intentional: storium validates required fields at runtime
   await products.create({
     name: 'Only a name',
     // slug and price are missing — both are required
@@ -201,6 +205,7 @@ console.log(JSON.stringify(products.schemas.insert.toJsonSchema(), null, 2))
 
 // Zod escape hatch: compose with other Zod schemas
 const zodSchema = products.schemas.insert.zod
+// @ts-expect-error — .shape exists at runtime (ZodObject) but RuntimeSchema types it as ZodType
 console.log('\nZod schema keys:', Object.keys(zodSchema.shape))
 
 await db.disconnect()
