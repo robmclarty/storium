@@ -19,7 +19,7 @@ import { storium, defineTable, defineStore } from 'storium'
 import type { Ctx } from 'storium'
 import { sql, eq, like, desc } from 'drizzle-orm'
 
-// --- Define the schema ---
+// --- Schema ---
 
 const articlesTable = defineTable('memory')('articles', {
   id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
@@ -31,12 +31,10 @@ const articlesTable = defineTable('memory')('articles', {
   view_count: { type: 'integer', mutable: true },
 })
 
-// --- Define the store with custom queries ---
+// --- Store with custom queries ---
 
 const articleStore = defineStore(articlesTable, {
-  // --- Compose with built-in CRUD ---
-  // Use ctx.find / ctx.findOne to build domain-specific lookups.
-
+  // Compose with built-in CRUD
   findBySlug: (ctx: Ctx) => async (slug: string) =>
     ctx.findOne({ slug }),
 
@@ -46,24 +44,17 @@ const articleStore = defineStore(articlesTable, {
   findPublished: (ctx: Ctx) => async () =>
     ctx.find({ status: 'published' }),
 
-  // --- Override a default ---
-  // Override `create` to auto-generate a slug from the title.
-  // ctx.create still refers to the original built-in create,
-  // so there's no infinite recursion.
-
+  // Override create — auto-generate slug from title.
+  // ctx.create still refers to the original, so no infinite recursion.
   create: (ctx: Ctx) => async (input: Record<string, any>, opts?: any) => {
     const slug = input.slug ?? input.title
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-|-$/g, '')
-
     return ctx.create({ ...input, slug }, opts)
   },
 
-  // --- Use the raw Drizzle escape hatch ---
-  // For queries that go beyond the built-in CRUD, drop down to
-  // ctx.drizzle and ctx.table for full Drizzle query builder access.
-
+  // Raw Drizzle escape hatch
   search: (ctx: Ctx) => async (term: string) =>
     ctx.drizzle
       .select(ctx.selectColumns)
@@ -78,9 +69,7 @@ const articleStore = defineStore(articlesTable, {
       .orderBy(desc(ctx.table.view_count))
       .limit(limit),
 
-  // --- Increment a counter ---
-  // Raw SQL for atomic operations that don't map to CRUD.
-
+  // Raw SQL for atomic operations
   incrementViews: (ctx: Ctx) => async (id: string) => {
     ctx.drizzle.run(
       sql`UPDATE articles SET view_count = COALESCE(view_count, 0) + 1 WHERE id = ${id}`
@@ -88,8 +77,7 @@ const articleStore = defineStore(articlesTable, {
     return ctx.findById(id)
   },
 
-  // --- Publish/unpublish as domain actions ---
-
+  // Domain actions
   publish: (ctx: Ctx) => async (id: string) =>
     ctx.update(id, { status: 'published' }),
 
@@ -114,9 +102,10 @@ db.drizzle.run(sql`
   )
 `)
 
-// --- Demo ---
+// --- Override: auto-slug ---
 
 console.log('=== Override: auto-slug from title ===')
+
 const a1 = await articles.create({
   title: 'Getting Started with Storium',
   body: 'Storium is a lightweight storage abstraction...',
@@ -124,9 +113,6 @@ const a1 = await articles.create({
   author_id: 'user-1',
   view_count: 0,
 })
-console.log('Created with auto-slug:', a1.slug)
-// => "getting-started-with-storium"
-
 const a2 = await articles.create({
   title: 'Advanced Custom Queries',
   body: 'Custom queries let you extend stores...',
@@ -134,7 +120,6 @@ const a2 = await articles.create({
   author_id: 'user-1',
   view_count: 0,
 })
-
 const a3 = await articles.create({
   title: 'Storium vs Raw SQL',
   body: 'Why use an abstraction?',
@@ -143,56 +128,59 @@ const a3 = await articles.create({
   view_count: 0,
 })
 
-console.log('\n=== Custom lookup: findBySlug ===')
+console.log('Auto-slug:', a1.slug)
+
+// --- Custom lookups ---
+
+console.log('\n=== Custom Lookups ===')
+
 const found = await articles.findBySlug('getting-started-with-storium')
-console.log('Found:', found?.title)
-
-console.log('\n=== Custom lookup: findByAuthor ===')
 const byAuthor = await articles.findByAuthor('user-1')
-console.log('Articles by user-1:', byAuthor.map((a: any) => a.title))
-
-console.log('\n=== Custom lookup: findPublished ===')
 const published = await articles.findPublished()
+
+console.log('By slug:', found?.title)
+console.log('By author:', byAuthor.map((a: any) => a.title))
 console.log('Published:', published.map((a: any) => a.title))
 
-console.log('\n=== Raw Drizzle: search ===')
+// --- Raw Drizzle: search ---
+
+console.log('\n=== Search ===')
+
 const results = await articles.search('Storium')
 console.log('Search "Storium":', results.map((a: any) => a.title))
 
-console.log('\n=== Raw SQL: incrementViews ===')
+// --- Raw SQL: increment views ---
+
+console.log('\n=== Increment Views ===')
+
 await articles.incrementViews(a1.id)
 await articles.incrementViews(a1.id)
 await articles.incrementViews(a1.id)
 await articles.incrementViews(a3.id)
-const viewed = await articles.findById(a1.id)
-console.log(`"${viewed.title}" has ${viewed.view_count} views`)
 
-console.log('\n=== Raw Drizzle: mostViewed ===')
 const top = await articles.mostViewed(2)
 console.log('Most viewed:', top.map((a: any) => `${a.title} (${a.view_count} views)`))
 
-console.log('\n=== Domain actions: publish/unpublish ===')
+// --- Domain actions ---
+
+console.log('\n=== Domain Actions ===')
+
 const pub = await articles.publish(a2.id)
-console.log(`"${pub.title}" status: ${pub.status}`)
 const unpub = await articles.unpublish(a2.id)
-console.log(`"${unpub.title}" status: ${unpub.status}`)
+
+console.log(`Published: "${pub.title}" → ${pub.status}`)
+console.log(`Unpublished: "${unpub.title}" → ${unpub.status}`)
+
+// --- Transactions ---
 
 console.log('\n=== Transactions ===')
+
 await db.transaction(async (tx) => {
-  await articles.create({
-    title: 'Atomic Article 1',
-    status: 'published',
-    author_id: 'user-3',
-    view_count: 0,
-  }, { tx })
-  await articles.create({
-    title: 'Atomic Article 2',
-    status: 'published',
-    author_id: 'user-3',
-    view_count: 0,
-  }, { tx })
+  await articles.create({ title: 'Atomic Article 1', status: 'published', author_id: 'user-3', view_count: 0 }, { tx })
+  await articles.create({ title: 'Atomic Article 2', status: 'published', author_id: 'user-3', view_count: 0 }, { tx })
 })
+
 const all = await articles.findAll()
-console.log(`Total articles after transaction: ${all.length}`)
+console.log(`Total articles: ${all.length}`)
 
 await db.disconnect()

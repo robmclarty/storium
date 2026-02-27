@@ -5,7 +5,9 @@
  *  - Multi-file organization (entities/users/, entities/posts/)
  *  - Migration generation and application
  *  - Seed data
- *  - CRUD + custom queries
+ *  - CRUD: create, find, update, destroy, findByIdIn, orderBy
+ *  - writeOnly columns + includeWriteOnly for authentication
+ *  - Custom queries (search, domain actions, Postgres-specific)
  *  - Postgres-specific features: jsonb, text[], array containment, ILIKE
  *  - Transactions
  *  - Validation and runtime schemas
@@ -22,77 +24,68 @@ import { generate, migrate, runSeeds } from 'storium/migrate'
 import { startTemporaryDatabase } from './temporaryDatabase.js'
 import { createDatabase } from './database.js'
 
-// --- Start a temporary PostgreSQL container ---
+// --- Setup: container, migrations, connection, seeds ---
 
 const tempDb = await startTemporaryDatabase()
 
-// --- Generate and apply migrations ---
-
-console.log('\n=== Migrations ===')
-
-const genResult = await generate(tempDb.config)
-console.log('generate:', genResult.message)
-
-const migResult = await migrate(tempDb.config)
-console.log('migrate:', migResult.message)
-
-// --- Connect and register stores ---
+await generate(tempDb.config)
+await migrate(tempDb.config)
 
 const { db, users, posts } = createDatabase(tempDb.config)
 
-// --- Seed data ---
-
-console.log('\n=== Seeds ===')
-const seedResult = await runSeeds(tempDb.config.seeds ?? './seeds', db.drizzle)
-console.log(seedResult.message)
+await runSeeds(tempDb.config.seeds ?? './seeds', db.drizzle)
 
 // --- CRUD ---
 
 console.log('\n=== CRUD ===')
 
 const allUsers = await users.findAll()
-console.log(`Found ${allUsers.length} users:`, allUsers.map(u => u.name))
-// => Found 3 users: [ 'Alice', 'Bob', 'Carol' ]
-
 const alice = await users.findByEmail('alice@example.com')
-console.log('Found Alice:', alice?.name, '— metadata:', alice?.metadata)
-// => Found Alice: Alice — metadata: { role: 'admin' }
-
 const updated = await users.update(alice.id, { bio: 'Updated bio!' })
-console.log('Updated Alice bio:', updated.bio)
-// => Updated Alice bio: Updated bio!
+const twoUsers = await users.findByIdIn([alice.id, allUsers[1].id])
+const sorted = await users.findAll({ orderBy: { column: 'name', direction: 'desc' } })
+
+console.log('All users:', allUsers.map(u => u.name))
+console.log('Found Alice:', alice?.name, '— metadata:', alice?.metadata)
+console.log('Updated bio:', updated.bio)
+console.log('Batch lookup:', twoUsers.map(u => u.name))
+console.log('Sorted desc:', sorted.map(u => u.name))
+
+// --- writeOnly columns ---
+
+console.log('\n=== writeOnly Columns ===')
+
+// password_hash is writeOnly — excluded from normal queries
+console.log('Normal findAll keys:', Object.keys(allUsers[0]))
+
+// authenticate uses includeWriteOnly internally to read the hash
+const authed = await users.authenticate('alice@example.com', 'hashed_alice_pw')
+const badAuth = await users.authenticate('alice@example.com', 'wrong_password')
+
+console.log('Good password:', authed ? 'success' : 'failed')
+console.log('Bad password:', badAuth ? 'success' : 'failed')
 
 // --- Custom queries ---
 
 console.log('\n=== Custom Queries ===')
 
 const searchResults = await users.search('bob')
-console.log('Search "bob":', searchResults.map(u => u.email))
-// => Search "bob": [ 'bob@example.com' ]
-
 const alicePosts = await posts.findByAuthor(alice.id)
-console.log(`Alice's posts:`, alicePosts.map(p => p.title))
-// => Alice's posts: [ 'Getting Started with Storium', 'Advanced Queries' ]
-
 const published = await posts.findPublished()
-console.log('Published posts:', published.map(p => p.title))
-// => Published posts: [ 'Getting Started...', 'Advanced Queries', 'PostgreSQL Tips' ]
 
-// --- Postgres-specific: array containment ---
+console.log('Search "bob":', searchResults.map(u => u.email))
+console.log('Alice\'s posts:', alicePosts.map(p => p.title))
+console.log('Published:', published.map(p => p.title))
 
-console.log('\n=== Postgres: Array Queries ===')
+// --- Postgres-specific: array containment + JSONB queries ---
+
+console.log('\n=== Postgres: Arrays & JSONB ===')
 
 const tutorials = await posts.findByTag('tutorial')
-console.log('Posts tagged "tutorial":', tutorials.map(p => p.title))
-// => Posts tagged "tutorial": [ 'Getting Started with Storium', 'PostgreSQL Tips' ]
-
-// --- Postgres-specific: JSONB queries ---
-
-console.log('\n=== Postgres: JSONB Queries ===')
-
 const featured = await posts.findByMetadata('featured', 'true')
-console.log('Featured posts:', featured.map(p => p.title))
-// => Featured posts: [ 'Getting Started with Storium', 'PostgreSQL Tips' ]
+
+console.log('Tagged "tutorial":', tutorials.map(p => p.title))
+console.log('Featured:', featured.map(p => p.title))
 
 // --- Domain actions ---
 
@@ -101,16 +94,11 @@ console.log('\n=== Domain Actions ===')
 const draft = await posts.findOne({ status: 'draft' })
 if (!draft) throw new Error('Expected a draft post from seed data')
 
-console.log(`"${draft.title}" is ${draft.status}`)
-// => "Draft Post" is draft
-
 const pub = await posts.publish(draft.id)
 console.log(`Published: "${pub.title}" is now ${pub.status}`)
-// => Published: "Draft Post" is now published
 
 const unpub = await posts.unpublish(draft.id)
 console.log(`Unpublished: "${unpub.title}" is back to ${unpub.status}`)
-// => Unpublished: "Draft Post" is back to draft
 
 // --- Validation ---
 
@@ -120,8 +108,7 @@ try {
   await users.create({ email: '', name: 'Bad User' })
 } catch (err) {
   if (err instanceof ValidationError) {
-    console.log('Validation caught:', err.errors.map(e => `${e.field}: ${e.message}`))
-    // => Validation caught: [ 'email: ...' ]
+    console.log('Caught:', err.errors.map(e => `${e.field}: ${e.message}`))
   }
 }
 
@@ -129,7 +116,7 @@ try {
 
 console.log('\n=== Transactions ===')
 
-const txResult = await db.transaction(async (tx: any) => {
+const { newUser, newPost } = await db.transaction(async (tx: any) => {
   const newUser = await users.create({ email: 'dave@example.com', name: 'Dave' }, { tx })
   const newPost = await posts.create({
     title: 'Atomic Post',
@@ -140,34 +127,30 @@ const txResult = await db.transaction(async (tx: any) => {
   }, { tx })
   return { newUser, newPost }
 })
-console.log('Transaction created user:', txResult.newUser.name)
-// => Transaction created user: Dave
-console.log('Transaction created post:', txResult.newPost.title)
-// => Transaction created post: Atomic Post
 
-const finalCount = await users.findAll()
-console.log(`\nTotal users: ${finalCount.length}`)
-// => Total users: 4
-const postCount = await posts.findAll()
-console.log(`Total posts: ${postCount.length}`)
-// => Total posts: 5
+console.log('Created user:', newUser.name, '+ post:', newPost.title)
+
+// --- Destroy ---
+
+console.log('\n=== Destroy ===')
+
+await posts.destroy(newPost.id)
+
+const remainingPosts = await posts.findAll()
+console.log('Deleted post:', newPost.title, `— ${remainingPosts.length} remaining`)
 
 // --- Runtime schemas ---
 
 console.log('\n=== Schemas ===')
 
 const insertSchema = users.schemas.insert.toJsonSchema()
-console.log('User insert schema properties:', Object.keys(insertSchema.properties))
-// => User insert schema properties: [ 'email', 'name', 'bio', 'metadata' ]
-
 const validation = users.schemas.insert.tryValidate({ email: 'test@example.com' })
+
+console.log('Insert schema properties:', Object.keys(insertSchema.properties))
 console.log('Validation result:', validation.success ? 'valid' : validation.errors)
-// => Validation result: valid
 
 // --- Teardown ---
 
-console.log('\n=== Teardown ===')
 await db.disconnect()
-console.log('Disconnected from database.')
 await tempDb.stop()
-console.log('Container stopped. Done!')
+console.log('\nDone!')

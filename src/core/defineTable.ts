@@ -225,7 +225,9 @@ export const buildDefineTable = (
     // Derive metadata
     const access = deriveAccess(resolvedColumns)
     const primaryKey = detectPrimaryKey(resolvedColumns, options.primaryKey)
+    const allKeys = Object.keys(resolvedColumns)
     const selectColumns = buildSelectColumns(drizzleTable, access.selectable)
+    const allColumns = buildSelectColumns(drizzleTable, allKeys)
 
     // Build schemas
     const schemas = buildSchemaSet(resolvedColumns, access, assertions) as SchemaSet<TColumns>
@@ -235,6 +237,7 @@ export const buildDefineTable = (
       columns: resolvedColumns,
       access,
       selectColumns,
+      allColumns,
       primaryKey,
       name,
       schemas,

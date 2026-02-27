@@ -13,6 +13,7 @@ export const usersTable = dt('users', {
     required: true,
     transform: (v: string) => v.trim().toLowerCase(),
   },
+  password_hash: { type: 'varchar', maxLength: 255, mutable: true, writeOnly: true },
   name: { type: 'varchar', maxLength: 100, mutable: true },
   bio: { type: 'text', mutable: true },
   metadata: { type: 'jsonb', mutable: true },

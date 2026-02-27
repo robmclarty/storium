@@ -6,10 +6,10 @@ export default defineSeed(async ({ drizzle }) => {
   // In a real app you might import and use your registered stores instead.
 
   await drizzle.execute(sql`
-    INSERT INTO users (id, email, name, bio, metadata) VALUES
-      ('a0000000-0000-0000-0000-000000000001', 'alice@example.com', 'Alice', 'Writes about databases.', '{"role": "admin"}'),
-      ('a0000000-0000-0000-0000-000000000002', 'bob@example.com', 'Bob', 'Likes building APIs.', '{"role": "editor"}'),
-      ('a0000000-0000-0000-0000-000000000003', 'carol@example.com', 'Carol', null, '{"role": "viewer"}')
+    INSERT INTO users (id, email, password_hash, name, bio, metadata) VALUES
+      ('a0000000-0000-0000-0000-000000000001', 'alice@example.com', 'hashed_alice_pw', 'Alice', 'Writes about databases.', '{"role": "admin"}'),
+      ('a0000000-0000-0000-0000-000000000002', 'bob@example.com', 'hashed_bob_pw', 'Bob', 'Likes building APIs.', '{"role": "editor"}'),
+      ('a0000000-0000-0000-0000-000000000003', 'carol@example.com', 'hashed_carol_pw', 'Carol', null, '{"role": "viewer"}')
   `)
 
   await drizzle.execute(sql`

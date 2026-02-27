@@ -54,7 +54,7 @@ const buildDefaultCrud = (
   tableDef: TableDef,
   assertions: AssertionRegistry
 ) => {
-  const { table, selectColumns, primaryKey, access, columns } = tableDef
+  const { table, selectColumns, allColumns, primaryKey, access, columns } = tableDef
   const prep = createPrepFn(columns, access, assertions)
 
   /**
@@ -62,6 +62,14 @@ const buildDefaultCrud = (
    */
   const getDb = (opts?: PrepOptions) =>
     opts?.tx ?? db
+
+  /**
+   * Return the column map for SELECT/RETURNING clauses.
+   * Normally returns selectColumns (excludes writeOnly); when
+   * `includeWriteOnly` is set, returns the full column map.
+   */
+  const getCols = (opts?: PrepOptions) =>
+    opts?.includeWriteOnly ? allColumns : selectColumns
 
   /**
    * Apply orderBy clauses to a query builder.
@@ -88,7 +96,7 @@ const buildDefaultCrud = (
     )
 
     let q = getDb(opts)
-      .select(selectColumns)
+      .select(getCols(opts))
       .from(table)
       .where(whereConditions.length === 1 ? whereConditions[0] : and(...whereConditions))
 
@@ -100,7 +108,7 @@ const buildDefaultCrud = (
   }
 
   const findAll = async (opts?: PrepOptions) => {
-    let q = getDb(opts).select(selectColumns).from(table)
+    let q = getDb(opts).select(getCols(opts)).from(table)
 
     if (opts?.orderBy) q = applyOrderBy(q, opts.orderBy)
     if (opts?.limit !== undefined) q = q.limit(opts.limit)
@@ -116,7 +124,7 @@ const buildDefaultCrud = (
 
   const findById = async (id: string | number, opts?: PrepOptions) => {
     const rows = await getDb(opts)
-      .select(selectColumns)
+      .select(getCols(opts))
       .from(table)
       .where(eq(table[primaryKey], id))
       .limit(1)
@@ -128,7 +136,7 @@ const buildDefaultCrud = (
     if (ids.length === 0) return []
 
     let q = getDb(opts)
-      .select(selectColumns)
+      .select(getCols(opts))
       .from(table)
       .where(inArray(table[primaryKey], ids))
 
@@ -150,7 +158,7 @@ const buildDefaultCrud = (
       const rows = await getDb(opts)
         .insert(table)
         .values(prepared)
-        .returning(selectColumns)
+        .returning(getCols(opts))
 
       if (!rows[0]) {
         throw new StoreError(
@@ -175,7 +183,7 @@ const buildDefaultCrud = (
     const result = await getDb(opts).insert(table).values(prepared)
     const pk = prepared[primaryKey] ?? (result as any).insertId
     const rows = await getDb(opts)
-      .select(selectColumns)
+      .select(getCols(opts))
       .from(table)
       .where(eq(table[primaryKey], pk))
       .limit(1)
@@ -208,7 +216,7 @@ const buildDefaultCrud = (
         .update(table)
         .set(prepared)
         .where(eq(table[primaryKey], id))
-        .returning(selectColumns)
+        .returning(getCols(opts))
 
       if (!rows[0]) {
         throw new StoreError(
@@ -226,7 +234,7 @@ const buildDefaultCrud = (
       .where(eq(table[primaryKey], id))
 
     const rows = await getDb(opts)
-      .select(selectColumns)
+      .select(getCols(opts))
       .from(table)
       .where(eq(table[primaryKey], id))
       .limit(1)
@@ -316,6 +324,7 @@ export const createCreateRepository = (
       table: tableDef.table,
       tableDef,
       selectColumns: tableDef.selectColumns,
+      allColumns: tableDef.allColumns,
       primaryKey: tableDef.primaryKey,
       schemas: tableDef.schemas,
       prep: defaults.prep,
@@ -350,6 +359,7 @@ export const createCreateRepository = (
       columns: tableDef.columns,
       access: tableDef.access,
       selectColumns: tableDef.selectColumns,
+      allColumns: tableDef.allColumns,
       primaryKey: tableDef.primaryKey,
       name: tableDef.name,
       schemas: tableDef.schemas,

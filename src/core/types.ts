@@ -204,8 +204,10 @@ export type TableDef<TColumns extends ColumnsConfig = ColumnsConfig> = {
   columns: TColumns
   /** Derived access sets. */
   access: TableAccess
-  /** Pre-built Drizzle column map for `db.select()`. */
+  /** Pre-built Drizzle column map for `db.select()` (excludes writeOnly). */
   selectColumns: Record<string, any>
+  /** Full Drizzle column map including writeOnly columns. */
+  allColumns: Record<string, any>
   /** Name of the primary key column. */
   primaryKey: string
   /** Table name. */
@@ -245,6 +247,13 @@ export type PrepOptions = {
    * await users.findAll({ orderBy: [{ column: 'last_name' }, { column: 'first_name' }] })
    */
   orderBy?: OrderBySpec | OrderBySpec[]
+  /**
+   * Include writeOnly columns in the result. Default: false.
+   * Use this for specific operations that need sensitive data (e.g. password
+   * hash comparison during authentication). The flag is intentionally verbose
+   * so it stands out in code review.
+   */
+  includeWriteOnly?: boolean
 }
 
 // ------------------------------------------------------- Repository / Store --
@@ -266,8 +275,10 @@ export type RepositoryContext<
   table: T['table']
   /** The full TableDef. */
   tableDef: T
-  /** Pre-built column map for select(). */
+  /** Pre-built column map for select() (excludes writeOnly). */
   selectColumns: T['selectColumns']
+  /** Full column map including writeOnly columns. */
+  allColumns: T['allColumns']
   /** Primary key column name. */
   primaryKey: string
   /** Runtime schemas. */
