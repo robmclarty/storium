@@ -1,10 +1,18 @@
 {
   "name": "storium-examples-migrations",
-  "description": "Full migration lifecycle: config, schema generation, applying migrations, and running seeds",
+  "description": "Full migration lifecycle: generate, migrate, seed, status — programmatic and CLI",
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "tsx app.ts"
+    "start": "tsx app.ts",
+    "generate": "storium generate",
+    "migrate": "storium migrate",
+    "seed": "storium seed",
+    "status": "storium status"
+  },
+  "dependencies": {
+    "storium": "file:../..",
+    "better-sqlite3": "^12.0.0"
   },
   "devDependencies": {
     "tsx": "4.21.0"
