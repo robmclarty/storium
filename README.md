@@ -100,19 +100,22 @@ The pattern is always the same: `(ctx) => async (...yourArgs) => result`. Storiu
 Every store generates runtime validation schemas that you can use however you like. I find this especially handy for keeping validation consistent between my API layer and my business logic without duplicating definitions (and trying to keep them all in sync):
 
 ```typescript
+// Optionally destructure schemas from store
+const { createSchema } = users.schemas
+
 // Validate input (throws ValidationError)
-users.schemas.createSchema.validate(data)
+createSchema.validate(data)
 
 // Try without throwing
-const result = users.schemas.createSchema.tryValidate(data)
+const result = createSchema.tryValidate(data)
 
 // JSON Schema (e.g., as used by Fastify)
 app.post('/users', {
-  schema: { body: users.schemas.createSchema.toJsonSchema() },
+  schema: { body: createSchema.toJsonSchema() },
 })
 
 // Zod for composition
-const extended = users.schemas.createSchema.zod.extend({ extra: z.string() })
+const extended = createSchema.zod.extend({ extra: z.string() })
 ```
 
 ### Index DSL
@@ -437,21 +440,24 @@ findByEmail: (ctx) => async (email) =>
 Every generated schema exposes its underlying Zod schema directly. Use it to compose, extend, or integrate with any Zod-aware library:
 
 ```typescript
+// Extract schema for easier re-use
+const { createSchema } = users.schemas
+
 // Extend a generated schema
-const signupSchema = users.schemas.createSchema.zod.extend({
+const signupSchema = createSchema.zod.extend({
   password: z.string().min(8),
   invite_code: z.string().optional(),
 })
 
 // Compose schemas
 const loginSchema = z.object({
-  email: users.schemas.createSchema.zod.shape.email,
+  email: createSchema.zod.shape.email,
   password: z.string(),
 })
 
 // Use with any Zod-compatible library (tRPC, react-hook-form, etc.)
 const router = t.router({
-  createUser: t.procedure.input(users.schemas.createSchema.zod).mutation(...)
+  createUser: t.procedure.input(createSchema.zod).mutation(...)
 })
 ```
 
