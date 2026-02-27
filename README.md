@@ -302,7 +302,10 @@ await teams.addMember(teamId, userId, { role: 'captain' })
 await teams.isMember(teamId, userId)
 ```
 
-### withCache
+### withCache (Experimental)
+
+> **Experimental** — this API may change in future releases. See the source
+> JSDoc for known limitations around cache key conventions and invalidation.
 
 ```typescript
 import { withCache } from 'storium'

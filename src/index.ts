@@ -23,20 +23,13 @@ export {
   isStoreDefinition,
 } from './core'
 
-// -------------------------------------------------------- Core Utilities --
+// ------------------------------------------------------------ Errors --
 
 export {
-  buildDefineTable,
-  buildDefineStore,
-  createCreateRepository,
-  createTestFn,
-  createAssertionRegistry,
-  BUILTIN_ASSERTIONS,
   ValidationError,
   ConfigError,
   SchemaError,
   StoreError,
-  buildSchemaSet,
 } from './core'
 
 // -------------------------------------------------------------- Helpers --
@@ -48,6 +41,11 @@ export {
 } from './helpers'
 
 // --------------------------------------------------------------- Types --
+
+export {
+  isRawColumn,
+  isRawIndex,
+} from './core'
 
 export type {
   StoreDefinition,
