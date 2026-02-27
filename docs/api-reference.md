@@ -118,7 +118,7 @@ Migration tooling — heavier dependencies, opt-in import.
 
 | Property | Description |
 |----------|-------------|
-| `store.schemas` | `SchemaSet` with `select`, `insert`, `update`, and `full` `RuntimeSchema` objects. |
+| `store.schemas` | `SchemaSet` with `createSchema`, `updateSchema`, `selectSchema`, and `fullSchema` `RuntimeSchema` objects. |
 
 ### TableDef Properties (on Drizzle tables from `defineTable`)
 
@@ -132,13 +132,13 @@ Storium metadata is attached as a non-enumerable `.storium` property on the Driz
 | `table.storium.allColumns` | Full Drizzle column map including writeOnly columns. |
 | `table.storium.primaryKey` | Name of the primary key column. |
 | `table.storium.name` | Table name string. |
-| `table.storium.schemas` | `SchemaSet` with `select`, `insert`, `update`, and `full` `RuntimeSchema` objects. |
+| `table.storium.schemas` | `SchemaSet` with `createSchema`, `updateSchema`, `selectSchema`, and `fullSchema` `RuntimeSchema` objects. |
 
 ---
 
 ## RuntimeSchema
 
-Each schema variant (`select`, `insert`, `update`, `full`) on a `SchemaSet` exposes:
+Each schema variant (`createSchema`, `updateSchema`, `selectSchema`, `fullSchema`) on a `SchemaSet` exposes:
 
 | Method | Description |
 |--------|-------------|
@@ -205,7 +205,7 @@ Each schema variant (`select`, `insert`, `update`, `full`) on a `SchemaSet` expo
 | Type | Description |
 |------|-------------|
 | `RuntimeSchema<T>` | Wraps a Zod schema with `validate`, `tryValidate`, `toJsonSchema`, and `zod` properties. |
-| `SchemaSet<TColumns>` | `{ select, insert, update, full }` — typed runtime schemas derived from column definitions. |
+| `SchemaSet<TColumns>` | `{ createSchema, updateSchema, selectSchema, fullSchema }` — typed runtime schemas derived from column definitions. |
 | `JsonSchema` | A plain JSON Schema object with `type`, `properties`, `required`, `additionalProperties`. |
 | `JsonSchemaOptions` | Options for `toJsonSchema()`: `{ additionalProperties? }`. |
 | `FieldError` | `{ field: string, message: string }` — a single validation error entry. |

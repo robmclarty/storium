@@ -174,8 +174,8 @@ export const buildZodSchemas = (
   access: TableAccess,
   assertions: AssertionRegistry = {}
 ) => ({
-  select: buildZodSchema(columns, access.selectable, 'strict', assertions),
-  insert: buildZodSchema(columns, access.insertable, 'insert', assertions),
-  update: buildZodSchema(columns, access.mutable, 'update', assertions),
-  full:   buildZodSchema(columns, Object.keys(columns), 'strict', assertions),
+  selectSchema: buildZodSchema(columns, access.selectable, 'strict', assertions),
+  createSchema: buildZodSchema(columns, access.insertable, 'insert', assertions),
+  updateSchema: buildZodSchema(columns, access.mutable, 'update', assertions),
+  fullSchema:   buildZodSchema(columns, Object.keys(columns), 'strict', assertions),
 })

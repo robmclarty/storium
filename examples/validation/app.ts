@@ -181,10 +181,10 @@ console.log('\n=== Runtime schemas ===')
 
 const validInput = { name: 'Lamp', slug: 'lamp', price: 49 }
 const invalidInput = { name: 123, price: 'abc' }
-const good = products.schemas.insert.tryValidate(validInput)
-const bad = products.schemas.insert.tryValidate(invalidInput)
-const jsonSchema = products.schemas.insert.toJsonSchema()
-const zodSchema = products.schemas.insert.zod
+const good = products.schemas.createSchema.tryValidate(validInput)
+const bad = products.schemas.createSchema.tryValidate(invalidInput)
+const jsonSchema = products.schemas.createSchema.toJsonSchema()
+const zodSchema = products.schemas.createSchema.zod
 
 console.log('Valid input:', good)
 console.log('Invalid input:', bad)

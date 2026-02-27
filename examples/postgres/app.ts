@@ -142,9 +142,9 @@ console.log('Deleted post:', newPost.title, `— ${remainingPosts.length} remain
 
 console.log('\n=== Schemas ===')
 
-const insertSchema = users.schemas.insert.toJsonSchema()
+const insertSchema = users.schemas.createSchema.toJsonSchema()
 const userInput = { email: 'test@example.com' }
-const validation = users.schemas.insert.tryValidate(userInput)
+const validation = users.schemas.createSchema.tryValidate(userInput)
 
 console.log('Insert schema properties:', Object.keys(insertSchema.properties))
 console.log('Validation result:', validation.success ? 'valid' : validation.errors)

@@ -7,18 +7,20 @@
  * validation engine.
  *
  * @example
+ * const { createSchema } = users.schemas
+ *
  * // Validate (throws ValidationError on failure)
- * const user = users.schemas.insert.validate(input)
+ * const user = createSchema.validate(input)
  *
  * // Try validate (never throws)
- * const result = users.schemas.insert.tryValidate(input)
+ * const result = createSchema.tryValidate(input)
  * if (!result.success) console.log(result.errors)
  *
  * // JSON Schema for Fastify
- * app.post('/users', { schema: { body: users.schemas.insert.toJsonSchema() } })
+ * app.post('/users', { schema: { body: createSchema.toJsonSchema() } })
  *
  * // Zod escape hatch
- * const extended = users.schemas.insert.zod.extend({ extra: z.string() })
+ * const extended = createSchema.zod.extend({ extra: z.string() })
  */
 
 import type { ZodType, ZodError } from 'zod'
@@ -94,7 +96,7 @@ const createRuntimeSchema = <T>(
  * @param columns - Column config record
  * @param access - Derived access sets
  * @param assertions - Combined assertion registry (built-ins + user-defined)
- * @returns SchemaSet with select, insert, update, and full RuntimeSchemas
+ * @returns SchemaSet with selectSchema, createSchema, updateSchema, and fullSchema RuntimeSchemas
  */
 export const buildSchemaSet = (
   columns: ColumnsConfig,
@@ -105,9 +107,9 @@ export const buildSchemaSet = (
   const jsonSchemas = buildJsonSchemas(columns, access)
 
   return {
-    select: createRuntimeSchema(zodSchemas.select, jsonSchemas.select) as RuntimeSchema<any>,
-    insert: createRuntimeSchema(zodSchemas.insert, jsonSchemas.insert) as RuntimeSchema<any>,
-    update: createRuntimeSchema(zodSchemas.update, jsonSchemas.update) as RuntimeSchema<any>,
-    full:   createRuntimeSchema(zodSchemas.full, jsonSchemas.full) as RuntimeSchema<any>,
+    selectSchema: createRuntimeSchema(zodSchemas.selectSchema, jsonSchemas.selectSchema) as RuntimeSchema<any>,
+    createSchema: createRuntimeSchema(zodSchemas.createSchema, jsonSchemas.createSchema) as RuntimeSchema<any>,
+    updateSchema: createRuntimeSchema(zodSchemas.updateSchema, jsonSchemas.updateSchema) as RuntimeSchema<any>,
+    fullSchema:   createRuntimeSchema(zodSchemas.fullSchema, jsonSchemas.fullSchema) as RuntimeSchema<any>,
   }
 }

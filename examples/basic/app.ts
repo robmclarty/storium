@@ -103,9 +103,9 @@ console.log('Created in transaction:', txResult.map((u: any) => u.name))
 
 console.log('\n=== Schemas ===')
 
-const jsonSchema = users.schemas.insert.toJsonSchema()
+const jsonSchema = users.schemas.createSchema.toJsonSchema()
 const userInput = { email: 'valid@example.com' }
-const validation = users.schemas.insert.tryValidate(userInput)
+const validation = users.schemas.createSchema.tryValidate(userInput)
 
 console.log('JSON Schema:', JSON.stringify(jsonSchema, null, 2))
 console.log('Validation:', validation)

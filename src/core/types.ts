@@ -186,10 +186,10 @@ export type RuntimeSchema<T = any> = {
 
 /** The full set of runtime schemas derived from a table definition. */
 export type SchemaSet<TColumns extends ColumnsConfig = ColumnsConfig> = {
-  select: RuntimeSchema<SelectType<TColumns>>
-  insert: RuntimeSchema<InsertType<TColumns>>
-  update: RuntimeSchema<UpdateType<TColumns>>
-  full: RuntimeSchema<{ [K in keyof TColumns]: ResolveColumnType<TColumns[K]> }>
+  selectSchema: RuntimeSchema<SelectType<TColumns>>
+  createSchema: RuntimeSchema<InsertType<TColumns>>
+  updateSchema: RuntimeSchema<UpdateType<TColumns>>
+  fullSchema: RuntimeSchema<{ [K in keyof TColumns]: ResolveColumnType<TColumns[K]> }>
 }
 
 // ------------------------------------------------------------ Table Def --

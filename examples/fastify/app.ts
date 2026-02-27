@@ -124,7 +124,7 @@ console.log(`${finalTasks.length} tasks remaining`)
 // --- JSON Schema inspection ---
 
 console.log('\n=== JSON Schemas ===')
-console.log('Insert schema:', JSON.stringify(stores.tasks.schemas.insert.toJsonSchema(), null, 2))
+console.log('Insert schema:', JSON.stringify(stores.tasks.schemas.createSchema.toJsonSchema(), null, 2))
 
 // --- Teardown ---
 

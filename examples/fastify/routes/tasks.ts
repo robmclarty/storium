@@ -33,9 +33,9 @@ export async function taskRoutes(fastify: FastifyInstance) {
 
   // JSON Schemas generated from the storium table definition.
   // Fastify compiles these with Ajv for fast request/response validation.
-  const insertSchema = tasks.schemas.insert.toJsonSchema()
-  const updateSchema = tasks.schemas.update.toJsonSchema()
-  const selectSchema = tasks.schemas.select.toJsonSchema()
+  const insertSchema = tasks.schemas.createSchema.toJsonSchema()
+  const updateSchema = tasks.schemas.updateSchema.toJsonSchema()
+  const selectSchema = tasks.schemas.selectSchema.toJsonSchema()
 
   // --- GET /tasks ---
 

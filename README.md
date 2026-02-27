@@ -101,18 +101,18 @@ Every store generates runtime validation schemas that you can use however you li
 
 ```typescript
 // Validate input (throws ValidationError)
-users.schemas.insert.validate(data)
+users.schemas.createSchema.validate(data)
 
 // Try without throwing
-const result = users.schemas.insert.tryValidate(data)
+const result = users.schemas.createSchema.tryValidate(data)
 
 // JSON Schema (e.g., as used by Fastify)
 app.post('/users', {
-  schema: { body: users.schemas.insert.toJsonSchema() },
+  schema: { body: users.schemas.createSchema.toJsonSchema() },
 })
 
 // Zod for composition
-const extended = users.schemas.insert.zod.extend({ extra: z.string() })
+const extended = users.schemas.createSchema.zod.extend({ extra: z.string() })
 ```
 
 ### Index DSL
@@ -358,7 +358,7 @@ Because helpers are plain objects, they compose with each other and with Storium
 Storium's JSON Schema output plugs directly into Fastify's route validation via `toJsonSchema()`. Extend it inline as needed:
 
 ```typescript
-const insertSchema = users.schemas.insert.toJsonSchema()
+const insertSchema = users.schemas.createSchema.toJsonSchema()
 
 app.post('/users', {
   schema: {
@@ -438,20 +438,20 @@ Every generated schema exposes its underlying Zod schema directly. Use it to com
 
 ```typescript
 // Extend a generated schema
-const signupSchema = users.schemas.insert.zod.extend({
+const signupSchema = users.schemas.createSchema.zod.extend({
   password: z.string().min(8),
   invite_code: z.string().optional(),
 })
 
 // Compose schemas
 const loginSchema = z.object({
-  email: users.schemas.insert.zod.shape.email,
+  email: users.schemas.createSchema.zod.shape.email,
   password: z.string(),
 })
 
 // Use with any Zod-compatible library (tRPC, react-hook-form, etc.)
 const router = t.router({
-  createUser: t.procedure.input(users.schemas.insert.zod).mutation(...)
+  createUser: t.procedure.input(users.schemas.createSchema.zod).mutation(...)
 })
 ```
 

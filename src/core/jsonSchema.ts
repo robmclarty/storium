@@ -158,16 +158,16 @@ export const buildJsonSchemas = (
   })
 
   return {
-    select: (opts?: JsonSchemaOptions) =>
+    selectSchema: (opts?: JsonSchemaOptions) =>
       buildJsonSchema(columns, access.selectable, selectRequired, opts),
 
-    insert: (opts?: JsonSchemaOptions) =>
+    createSchema: (opts?: JsonSchemaOptions) =>
       buildJsonSchema(columns, access.insertable, insertRequired, opts),
 
-    update: (opts?: JsonSchemaOptions) =>
+    updateSchema: (opts?: JsonSchemaOptions) =>
       buildJsonSchema(columns, access.mutable, [], opts), // all optional for updates
 
-    full: (opts?: JsonSchemaOptions) =>
+    fullSchema: (opts?: JsonSchemaOptions) =>
       buildJsonSchema(
         columns,
         Object.keys(columns),

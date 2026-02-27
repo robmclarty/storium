@@ -19,7 +19,7 @@ storium/
 │       ├── createRepository.ts # CRUD builder + custom query context (ctx)
 │       ├── dialect.ts          # DSL type → Drizzle column builder mappings per dialect
 │       ├── prep.ts             # Validation/transform pipeline (filter → transform → validate → required)
-│       ├── runtimeSchema.ts    # buildSchemaSet() → { insert, update } RuntimeSchema objects
+│       ├── runtimeSchema.ts    # buildSchemaSet() → { createSchema, updateSchema, selectSchema, fullSchema } RuntimeSchema objects
 │       ├── zodSchema.ts        # Zod schema generation from column configs
 │       ├── jsonSchema.ts       # JSON Schema generation
 │       ├── indexes.ts          # Index DSL → Drizzle index builders
@@ -160,7 +160,7 @@ ctx.zod             // Zod namespace (convenience accessor)
 ctx.table           // Drizzle table object
 ctx.selectColumns   // Pre-built column map for SELECT
 ctx.primaryKey      // PK column name
-ctx.schemas         // { insert, update } RuntimeSchema
+ctx.schemas         // { createSchema, updateSchema, selectSchema, fullSchema } RuntimeSchema
 ctx.prep()          // Validation/transform pipeline
 ctx.find/findOne/findById/findByIdIn/create/update/destroy/destroyAll  // originals
 ```
