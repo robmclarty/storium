@@ -1,10 +1,7 @@
 import { defineTable } from 'storium'
 
-// Explicit dialect (curried) — schema files must be self-contained because
-// drizzle-kit imports them at module level before any db connection exists.
-const dt = defineTable('postgresql')
-
-export const usersTable = dt('users', {
+// defineTable auto-detects the dialect from drizzle.config.ts
+export const usersTable = defineTable('users', {
   id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
   email: {
     type: 'varchar',

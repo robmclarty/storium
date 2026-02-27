@@ -1,8 +1,7 @@
 import { defineTable } from 'storium'
 
-const dt = defineTable('sqlite')
-
-export const usersTable = dt('users', {
+// defineTable auto-detects the dialect from drizzle.config.ts
+export const usersTable = defineTable('users', {
   id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
   email: {
     type: 'varchar',

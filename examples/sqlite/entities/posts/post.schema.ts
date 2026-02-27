@@ -1,8 +1,6 @@
 import { defineTable } from 'storium'
 
-const dt = defineTable('sqlite')
-
-export const postsTable = dt('posts', {
+export const postsTable = defineTable('posts', {
   id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
   title: { type: 'varchar', maxLength: 255, mutable: true, required: true },
   body: { type: 'text', mutable: true },
