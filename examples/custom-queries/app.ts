@@ -90,6 +90,7 @@ const articleStore = defineStore(articlesTable, {
 const db = storium.connect({ dialect: 'memory' })
 const { articles } = db.register({ articles: articleStore })
 
+// Normally this would be handled by a migration, but for the sake of simplicity:
 db.drizzle.run(sql`
   CREATE TABLE IF NOT EXISTS articles (
     id TEXT PRIMARY KEY,

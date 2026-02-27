@@ -25,6 +25,8 @@ const productStore = defineStore(productsTable)
 
 const setupDb = (db: StoriumInstance) => {
   const { products } = db.register({ products: productStore })
+
+  // Normally this would be handled by a migration, but for the sake of simplicity:
   db.drizzle.run(sql`
     CREATE TABLE IF NOT EXISTS products (
       id TEXT PRIMARY KEY,
@@ -33,6 +35,7 @@ const setupDb = (db: StoriumInstance) => {
       in_stock INTEGER DEFAULT 1
     )
   `)
+
   return products
 }
 

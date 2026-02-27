@@ -72,6 +72,7 @@ const db = storium.connect({
 
 const { products } = db.register({ products: productStore })
 
+// Normally this would be handled by a migration, but for the sake of simplicity:
 db.drizzle.run(sql`
   CREATE TABLE IF NOT EXISTS products (
     id TEXT PRIMARY KEY,

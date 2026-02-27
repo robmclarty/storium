@@ -39,6 +39,7 @@ const usersTable = db.defineTable('users', {
   indexes: { email: { unique: true } },
 })
 
+// Normally this would be handled by a migration, but for the sake of simplicity:
 db.drizzle.run(sql`
   CREATE TABLE IF NOT EXISTS users (
     id TEXT PRIMARY KEY,
