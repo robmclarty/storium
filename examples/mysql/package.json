@@ -1,12 +1,20 @@
 {
   "name": "storium-examples-mysql",
-  "description": "Using Storium with a MySQL database, including connection setup and MySQL-specific type mappings",
+  "description": "Storium with MySQL — multi-file organization, migrations, seeds",
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "tsx app.ts"
+    "start": "tsx app.ts",
+    "generate": "storium generate",
+    "migrate": "storium migrate"
+  },
+  "dependencies": {
+    "storium": "file:../..",
+    "mysql2": "^3.12.0"
   },
   "devDependencies": {
-    "tsx": "4.21.0"
+    "tsx": "4.21.0",
+    "@testcontainers/mysql": "^10.18.0",
+    "testcontainers": "^10.18.0"
   }
 }
