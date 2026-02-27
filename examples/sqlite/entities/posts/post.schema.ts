@@ -7,7 +7,7 @@ export const postsTable = defineTable('posts', {
   status: { type: 'varchar', maxLength: 20, mutable: true, default: 'draft' },
   author_id: { type: 'uuid', mutable: true, required: true },
   // SQLite: arrays stored as JSON text under the hood
-  tags: { type: 'array', items: 'text', mutable: true },
+  tags: { type: 'array', items: 'text', mutable: true, default: [] },
   // SQLite: jsonb maps to text(mode: 'json')
   metadata: { type: 'jsonb', mutable: true },
 }, {

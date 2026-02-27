@@ -15,6 +15,16 @@
  */
 
 import path from 'node:path'
+import { register } from 'node:module'
+
+// Register tsx as a loader so we can import .ts config and schema files.
+// tsx is expected as a devDependency in the user's project.
+try {
+  register('tsx/esm', import.meta.url)
+} catch {
+  // tsx not installed — .ts imports will fail with a clear error in loadConfig
+}
+
 import { generate, migrate, push, status } from '../src/migrate/commands'
 import { seed } from '../src/migrate/seed'
 import { connect } from '../src/connect'
@@ -55,7 +65,10 @@ const loadConfig = async (configPath: string): Promise<any> => {
     return mod.default ?? mod
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
-    console.error(`Failed to load config from '${abs}': ${msg}`)
+    const hint = abs.endsWith('.ts')
+      ? '\nHint: Loading .ts config files requires tsx. Install it: npm install -D tsx'
+      : ''
+    console.error(`Failed to load config from '${abs}': ${msg}${hint}`)
     process.exit(1)
   }
 }
