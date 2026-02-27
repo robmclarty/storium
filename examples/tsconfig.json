@@ -9,10 +9,6 @@
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "noEmit": true,
-    "paths": {
-      "storium": ["../src/index.ts"],
-      "storium/*": ["../src/*/index.ts"]
-    }
+    "noEmit": true
   }
 }

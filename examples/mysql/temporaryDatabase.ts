@@ -1,3 +1,16 @@
+/**
+ * Temporary MySQL database for demo purposes.
+ *
+ * This file is NOT part of a typical storium application. It uses
+ * Testcontainers to spin up a disposable MySQL instance inside Docker
+ * so the example can run without any external database setup.
+ *
+ * In a real app you would simply set DATABASE_URL in your environment and
+ * import your storium.config.ts directly — no container management needed.
+ *
+ * Requirements: Docker must be running on your machine.
+ */
+
 import { MySqlContainer } from '@testcontainers/mysql'
 import type { StoriumConfig } from 'storium'
 
@@ -6,6 +19,10 @@ export type TemporaryDatabase = {
   stop: () => Promise<void>
 }
 
+/**
+ * Start a disposable MySQL 8 container and return a storium-compatible
+ * config object. Call `stop()` when you're done to tear down the container.
+ */
 export async function startTemporaryDatabase(): Promise<TemporaryDatabase> {
   console.log('Starting MySQL container (requires Docker)...')
 
@@ -24,7 +41,12 @@ export async function startTemporaryDatabase(): Promise<TemporaryDatabase> {
 
   console.log('Container started.')
 
+  // Set DATABASE_URL so storium.config.ts can read it. In a real app this
+  // would already be set in your environment or .env file.
   process.env.DATABASE_URL = container.getConnectionUri()
+
+  // Import config lazily — after DATABASE_URL is set, so the connection
+  // string resolves correctly.
   const { default: config } = await import('./storium.config.js')
 
   return {

@@ -30,11 +30,12 @@ import { buildSchemaSet } from './core/runtimeSchema'
 // createRequire is used intentionally here: connect() is synchronous, and the
 // dialect-specific drivers (pg, mysql2, better-sqlite3) must be loaded lazily
 // at call time. Switching to async import() would require making connect() async,
-// which is a breaking API change. createRequire is a standard Node.js API that
-// works in both ESM and CJS environments.
+// which is a breaking API change. createRequire resolves from cwd so that peer
+// dependencies installed in the consumer's node_modules are found correctly.
+import { resolve } from 'node:path'
 import { createRequire } from 'node:module'
 
-const require = createRequire(import.meta.url)
+const require = createRequire(resolve(process.cwd(), 'package.json'))
 
 // --------------------------------------------------- Drizzle Wiring --
 
