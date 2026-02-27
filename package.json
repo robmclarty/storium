@@ -60,6 +60,8 @@
     "lint:fix": "node --import tsx/esm $(which oxlint) . --fix",
     "test": "vitest",
     "test:run": "vitest run",
+    "test:examples": "for dir in examples/*/; do echo \"--- $dir ---\" && (cd \"$dir\" && npm install --silent && npm start) || exit 1; done",
+    "release": "npm publish --access public",
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
