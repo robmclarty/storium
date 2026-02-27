@@ -102,6 +102,7 @@ export type {
   CacheMethodConfig,
 
   // Compile-time type utilities
+  Promisable,
   ResolveColumnType,
   SelectType,
   InsertType,

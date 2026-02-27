@@ -50,6 +50,7 @@ export type {
   FromDrizzleOptions,
   StoriumInstance,
   TableOptions,
+  Promisable,
   ResolveColumnType,
   SelectType,
   InsertType,

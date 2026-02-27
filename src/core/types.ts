@@ -495,6 +495,13 @@ export type ResolveColumnType<C extends ColumnConfig> =
   never
 
 /**
+ * A value or a Promise of it. Matches the prep pipeline's Stage 0 (Promise resolution).
+ * The Promise branch accepts `any` because `ref()` returns `Promise<string | number>`
+ * and should be assignable to any field type without explicit narrowing.
+ */
+export type Promisable<T> = T | Promise<any>
+
+/**
  * Derive the SELECT result type from a columns config.
  * Excludes writeOnly columns.
  */
@@ -511,14 +518,14 @@ export type SelectType<TColumns extends ColumnsConfig> = {
 export type InsertType<TColumns extends ColumnsConfig> =
   // Required fields (required: true)
   { [K in keyof TColumns as TColumns[K] extends { required: true } ? K : never]:
-      ResolveColumnType<TColumns[K]> }
+      Promisable<ResolveColumnType<TColumns[K]>> }
   &
   // Optional mutable fields (mutable: true, not required)
   { [K in keyof TColumns as
       TColumns[K] extends { mutable: true }
         ? TColumns[K] extends { required: true } ? never : K
         : never
-    ]?: ResolveColumnType<TColumns[K]> }
+    ]?: Promisable<ResolveColumnType<TColumns[K]>> }
 
 /**
  * Derive the UPDATE input type from a columns config.
@@ -526,5 +533,5 @@ export type InsertType<TColumns extends ColumnsConfig> =
  */
 export type UpdateType<TColumns extends ColumnsConfig> = {
   [K in keyof TColumns as TColumns[K] extends { mutable: true } ? K : never]?:
-    ResolveColumnType<TColumns[K]>
+    Promisable<ResolveColumnType<TColumns[K]>>
 }
