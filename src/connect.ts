@@ -15,11 +15,13 @@ import type {
   ConnectConfig,
   FromDrizzleOptions,
   StoriumInstance,
+  TableDef,
+  CustomQueryFn,
   Dialect,
   AssertionRegistry,
 } from './core/types'
 import { ConfigError } from './core/errors'
-import { buildDefineTable } from './core/defineTable'
+import { buildDefineTable, hasMeta } from './core/defineTable'
 import { isStoreDefinition } from './core/defineStore'
 import { createCreateRepository } from './core/createRepository'
 import { createAssertionRegistry } from './core/test'
@@ -218,12 +220,20 @@ const buildInstance = (
   const boundDefineTable = buildDefineTable(drizzleDialect, registry)
 
   /**
-   * Rebuild a TableDef's schemas with instance-level assertions (if any).
+   * Rebuild a table's storium schemas with instance-level assertions (if any).
+   * Mutates the .storium property in place (safe — called once at startup).
    */
-  const applyAssertions = (tableDef: any) =>
-    Object.keys(registry).length > 0
-      ? { ...tableDef, schemas: buildSchemaSet(tableDef.columns, tableDef.access, registry) }
-      : tableDef
+  const applyAssertions = (tableDef: TableDef) => {
+    if (Object.keys(registry).length === 0) return tableDef
+    const meta = tableDef.storium
+    Object.defineProperty(tableDef, 'storium', {
+      value: { ...meta, schemas: buildSchemaSet(meta.columns, meta.access, registry) },
+      enumerable: false,
+      configurable: true,
+      writable: false,
+    })
+    return tableDef
+  }
 
   const register = <T extends Record<string, any>>(
     storeDefs: T
@@ -244,29 +254,16 @@ const buildInstance = (
   }
 
   /**
-   * Create a live store directly (simple path — no register step).
-   *
-   * Two overloads:
-   * - defineStore('users', columns, { queries }) — one-call
-   * - defineStore(tableDef, { queries }) — wrap existing TableDef
+   * Create a live store from a table definition (simple path — no register step).
    */
-  const instanceDefineStore = (first: any, second?: any, third?: any) => {
-    // Overload 1: TableDef object
-    if (typeof first === 'object' && first !== null && 'table' in first) {
-      const tableDef = applyAssertions(first)
-      return createRepository(tableDef, second ?? {})
+  const instanceDefineStore = (tableDef: TableDef, queries?: Record<string, CustomQueryFn>) => {
+    if (!hasMeta(tableDef)) {
+      throw new ConfigError(
+        'db.defineStore(): first argument must be a table from defineTable().'
+      )
     }
-
-    // Overload 2: name + columns + options
-    if (typeof first === 'string') {
-      const { queries, ...tableOptions } = third ?? {}
-      const tableDef = boundDefineTable(first, second, tableOptions)
-      return createRepository(tableDef, queries ?? {})
-    }
-
-    throw new ConfigError(
-      'db.defineStore(): expected (name, columns, options) or (tableDef, queries).'
-    )
+    const applied = applyAssertions(tableDef)
+    return createRepository(applied, queries ?? {})
   }
 
   let disconnected = false
@@ -281,7 +278,7 @@ const buildInstance = (
     zod: z,
     dialect,
     defineTable: boundDefineTable,
-    defineStore: instanceDefineStore,
+    defineStore: instanceDefineStore as StoriumInstance['defineStore'],
     register,
     transaction: createWithTransaction(db, drizzleDialect),
     disconnect,

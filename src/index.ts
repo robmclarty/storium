@@ -49,8 +49,9 @@ export {
 
 export type {
   StoreDefinition,
-  StoreOptions,
 } from './core'
+
+export type { StoriumMeta } from './core/defineTable'
 
 export type {
   // Dialect & config

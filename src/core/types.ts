@@ -7,6 +7,7 @@
  */
 
 import type { ZodType, z as ZodNamespace } from 'zod'
+import type { StoriumMeta } from './defineTable'
 
 // ---------------------------------------------------------------- Dialect --
 
@@ -191,29 +192,17 @@ export type SchemaSet<TColumns extends ColumnsConfig = ColumnsConfig> = {
 // ------------------------------------------------------------ Table Def --
 
 /**
- * A table definition produced by `defineTable()`. Contains the Drizzle table,
- * column metadata, access rules, and auto-generated schemas.
+ * A table definition: a plain Drizzle table object with storium metadata
+ * attached as a non-enumerable `.storium` property.
  *
- * Satisfies the interface required by `defineStore()`, `withBelongsTo()`,
- * `withMembers()`, and foreign key references.
+ * Returned by `defineTable()`. Compatible with drizzle-kit (which sees a
+ * real Drizzle table) and storium (which reads `table.storium.*`).
  */
 export type TableDef<TColumns extends ColumnsConfig = ColumnsConfig> = {
-  /** The real Drizzle table object (for queries, migrations, drizzle-kit). */
-  table: any
-  /** Original column configuration (for introspection). */
-  columns: TColumns
-  /** Derived access sets. */
-  access: TableAccess
-  /** Pre-built Drizzle column map for `db.select()` (excludes writeOnly). */
-  selectColumns: Record<string, any>
-  /** Full Drizzle column map including writeOnly columns. */
-  allColumns: Record<string, any>
-  /** Name of the primary key column. */
-  primaryKey: string
-  /** Table name. */
-  name: string
-  /** Auto-generated runtime schemas. */
-  schemas: SchemaSet<TColumns>
+  /** Storium metadata (columns, access sets, schemas, etc.). */
+  storium: StoriumMeta<TColumns>
+  /** Drizzle column access — any other property is a Drizzle column. */
+  [key: string]: any
 }
 
 // ----------------------------------------------------------- Prep Options --
@@ -271,18 +260,18 @@ export type RepositoryContext<
   drizzle: any
   /** The Zod namespace (convenience accessor matching ctx.drizzle). */
   zod: typeof ZodNamespace
-  /** The Drizzle table object. */
-  table: T['table']
-  /** The full TableDef. */
+  /** The Drizzle table object (same as tableDef — it IS the Drizzle table). */
+  table: T
+  /** The Drizzle table with `.storium` metadata. */
   tableDef: T
   /** Pre-built column map for select() (excludes writeOnly). */
-  selectColumns: T['selectColumns']
+  selectColumns: Record<string, any>
   /** Full column map including writeOnly columns. */
-  allColumns: T['allColumns']
+  allColumns: Record<string, any>
   /** Primary key column name. */
   primaryKey: string
   /** Runtime schemas. */
-  schemas: T['schemas']
+  schemas: SchemaSet<TColumns>
   /** The filter → transform → validate pipeline. */
   prep: (input: Record<string, any>, opts?: PrepOptions) => Promise<Record<string, any>>
   /** Default CRUD operations (always originals, even if overridden). */
@@ -325,13 +314,15 @@ export type DefaultCRUD<TColumns extends ColumnsConfig = ColumnsConfig> = {
 }
 
 /**
- * A Store is a TableDef with CRUD operations and custom queries directly on it.
- * Produced by `defineStore()`.
+ * A Store is a live object with CRUD operations, custom queries, and
+ * runtime schemas. Produced by `db.defineStore()` or `db.register()`.
  */
 export type Store<
   TColumns extends ColumnsConfig = ColumnsConfig,
   TQueries extends Record<string, Function> = {}
-> = TableDef<TColumns> & DefaultCRUD<TColumns> & {
+> = DefaultCRUD<TColumns> & {
+  schemas: SchemaSet<TColumns>
+} & {
   [K in keyof TQueries]: TQueries[K] extends (ctx: any) => infer R ? R : never
 }
 
@@ -351,7 +342,9 @@ export type InferStore<T> =
 export type Repository<
   TTableDef extends TableDef = TableDef,
   TQueries extends Record<string, Function> = {}
-> = TTableDef & DefaultCRUD<TTableDef extends TableDef<infer C> ? C : ColumnsConfig> & {
+> = DefaultCRUD<TTableDef extends TableDef<infer C> ? C : ColumnsConfig> & {
+  schemas: SchemaSet<TTableDef extends TableDef<infer C> ? C : ColumnsConfig>
+} & {
   [K in keyof TQueries]: TQueries[K] extends (ctx: any) => infer R ? R : never
 }
 
@@ -436,23 +429,15 @@ export type StoriumInstance = {
     options?: TableOptions
   ) => TableDef<TColumns>
   /**
-   * Create a live store directly (simple path — no register step).
+   * Create a live store from a table definition (simple path — no register step).
    *
-   * Two overloads:
-   * - `db.defineStore('users', columns, { queries })` — one-call, schema + store
-   * - `db.defineStore(tableDef, { queries })` — wrap existing TableDef
+   * @param tableDef - A table from `defineTable()` or `db.defineTable()`
+   * @param queries - Optional custom query functions
    */
-  defineStore: {
-    <TColumns extends ColumnsConfig, TQueries extends Record<string, Function> = {}>(
-      name: string,
-      columns: TColumns,
-      options?: TableOptions & { queries?: TQueries }
-    ): Store<TColumns, TQueries>
-    <TColumns extends ColumnsConfig, TQueries extends Record<string, Function> = {}>(
-      tableDef: TableDef<TColumns>,
-      queries?: TQueries
-    ): Store<TColumns, TQueries>
-  }
+  defineStore: <TColumns extends ColumnsConfig, TQueries extends Record<string, Function> = {}>(
+    tableDef: TableDef<TColumns>,
+    queries?: TQueries
+  ) => Store<TColumns, TQueries>
   /** Materialize StoreDefinitions into live stores with CRUD + queries. */
   register: <T extends Record<string, any>>(
     storeDefs: T

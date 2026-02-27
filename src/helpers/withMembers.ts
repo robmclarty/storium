@@ -37,7 +37,7 @@ export const withMembers = (
   foreignKey: string,
   memberKey: string = 'user_id'
 ): Record<string, CustomQueryFn> => {
-  const joinTable = joinTableDef.table
+  const joinTable = joinTableDef
 
   return {
     /**

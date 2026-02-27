@@ -20,7 +20,7 @@
 
 import { existsSync, unlinkSync } from 'node:fs'
 import { ValidationError } from 'storium'
-import { generate, migrate, runSeeds } from 'storium/migrate'
+import { generate, migrate, seed } from 'storium/migrate'
 import config from './drizzle.config.js'
 import { createDatabase } from './database.js'
 
@@ -30,12 +30,11 @@ import { createDatabase } from './database.js'
 const dbPath = './data.db'
 if (existsSync(dbPath)) unlinkSync(dbPath)
 
-await generate(config)
-await migrate(config)
-
 const { db, users, posts } = createDatabase(config)
 
-await runSeeds(config.seeds ?? './seeds', db.drizzle)
+await generate()
+await migrate(config, db)
+await seed(config.seeds ?? './seeds', db)
 
 // --- CRUD ---
 
@@ -122,15 +121,15 @@ try {
 console.log('\n=== Transactions ===')
 
 const { newUser, newPost } = await db.transaction(async (tx: any) => {
-  const newUser = await users.create({ email: 'dave@example.com', name: 'Dave' }, { tx })
-  const newPost = await posts.create({
+  const txUser = await users.create({ email: 'dave@example.com', name: 'Dave' }, { tx })
+  const txPost = await posts.create({
     title: 'Atomic Post',
     body: 'Created in a transaction with its author.',
     status: 'published',
-    author_id: newUser.id,
+    author_id: txUser.id,
     tags: ['transaction', 'demo'],
   }, { tx })
-  return { newUser, newPost }
+  return { newUser: txUser, newPost: txPost }
 })
 
 console.log('Created user:', newUser.name, '+ post:', newPost.title)

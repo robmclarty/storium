@@ -43,14 +43,15 @@ export const withBelongsTo = (
   options: BelongsToOptions
 ): Record<string, CustomQueryFn> => {
   const { alias, select: selectFields } = options
-  const relatedTable = relatedTableDef.table
-  const relatedPk = relatedTableDef.primaryKey
+  const relatedTable = relatedTableDef
+  const meta = relatedTableDef.storium
+  const relatedPk = meta.primaryKey
 
   // Capitalize first letter for method name: 'school' → 'findWithSchool'
   const methodName = `findWith${alias.charAt(0).toUpperCase()}${alias.slice(1)}`
 
   // Determine which related columns to include
-  const relatedColumns = selectFields ?? relatedTableDef.access.selectable
+  const relatedColumns = selectFields ?? meta.access.selectable
 
   return {
     /**

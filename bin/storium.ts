@@ -16,7 +16,7 @@
 
 import path from 'node:path'
 import { generate, migrate, push, status } from '../src/migrate/commands'
-import { runSeeds } from '../src/migrate/seed'
+import { seed } from '../src/migrate/seed'
 import { connect } from '../src/connect'
 
 // --------------------------------------------------------------- Helpers --
@@ -99,21 +99,26 @@ const main = async () => {
 
   switch (command) {
     case 'generate': {
-      const result = await generate(config)
+      const result = await generate(configPath)
       console.log(result.message)
       process.exit(result.success ? 0 : 1)
       break
     }
 
     case 'migrate': {
-      const result = await migrate(config)
-      console.log(result.message)
-      process.exit(result.success ? 0 : 1)
+      const db = connect(config)
+      try {
+        const result = await migrate(config, db)
+        console.log(result.message)
+        process.exit(result.success ? 0 : 1)
+      } finally {
+        await db.disconnect()
+      }
       break
     }
 
     case 'push': {
-      const result = await push(config)
+      const result = await push(configPath)
       console.log(result.message)
       process.exit(result.success ? 0 : 1)
       break
@@ -131,7 +136,7 @@ const main = async () => {
       const db = connect(config)
       const seedsDir = config.seeds ?? './seeds'
       try {
-        const result = await runSeeds(seedsDir, db.drizzle)
+        const result = await seed(seedsDir, db)
         console.log(result.message)
         process.exit(result.success ? 0 : 1)
       } finally {

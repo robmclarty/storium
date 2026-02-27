@@ -2,7 +2,7 @@
  * Basic example — the simplest path to a working store.
  *
  * Demonstrates:
- *   - db.defineStore() — define a schema and get a live store in one call
+ *   - db.defineTable() + db.defineStore() — two-step schema + store creation
  *   - CRUD operations: create, findById, findAll, findOne, update, destroy
  *   - Validation: transforms, built-in assertions (is_email, not_empty)
  *   - Transactions: atomic multi-row inserts
@@ -21,7 +21,7 @@ import { sql } from 'drizzle-orm'
 
 const db = storium.connect({ dialect: 'memory' })
 
-const users = db.defineStore('users', {
+const usersTable = db.defineTable('users', {
   id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
   email: {
     type: 'varchar',
@@ -46,6 +46,8 @@ db.drizzle.run(sql`
     name TEXT
   )
 `)
+
+const users = db.defineStore(usersTable)
 
 // --- CRUD ---
 

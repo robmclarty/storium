@@ -3,13 +3,13 @@
  *
  * The core schema DSL. Defines a database table with co-located column metadata
  * (types, mutability, visibility, validation, sanitization), an index DSL, and
- * optional constraints. Produces a TableDef containing the real Drizzle table,
- * derived access sets, and auto-generated schemas.
+ * optional constraints. Returns a plain Drizzle table with storium metadata
+ * attached as a non-enumerable `.storium` property.
  *
  * Three call signatures:
  *
  * @example
- * // 1. Direct call — auto-loads dialect from storium.config.ts
+ * // 1. Direct call — auto-loads dialect from drizzle.config.ts
  * const users = defineTable('users', {
  *   id:    { type: 'uuid', primaryKey: true, default: 'random_uuid' },
  *   email: { type: 'varchar', maxLength: 255, notNull: true, mutable: true },
@@ -35,6 +35,28 @@ import type {
   SchemaSet,
   AssertionRegistry,
 } from './types'
+
+// --------------------------------------------------------- Storium Meta --
+
+/**
+ * Storium metadata attached to every Drizzle table produced by defineTable().
+ * Accessed via `table.storium.columns`, `table.storium.schemas`, etc.
+ */
+export type StoriumMeta<TColumns extends ColumnsConfig = ColumnsConfig> = {
+  columns: TColumns
+  access: TableAccess
+  selectColumns: Record<string, any>
+  allColumns: Record<string, any>
+  primaryKey: string
+  name: string
+  schemas: SchemaSet<TColumns>
+}
+
+/**
+ * Check whether a value is a storium-defined table (has `.storium` metadata).
+ */
+export const hasMeta = (value: unknown): boolean =>
+  value !== null && typeof value === 'object' && 'storium' in (value as any)
 import { isRawColumn } from './types'
 import { SchemaError } from './errors'
 import { getDialectMapping, buildDslColumn } from './dialect'
@@ -232,16 +254,16 @@ export const buildDefineTable = (
     // Build schemas
     const schemas = buildSchemaSet(resolvedColumns, access, assertions) as SchemaSet<TColumns>
 
-    return {
-      table: drizzleTable,
-      columns: resolvedColumns,
-      access,
-      selectColumns,
-      allColumns,
-      primaryKey,
-      name,
-      schemas,
-    }
+    // Attach storium metadata as a non-enumerable property on the Drizzle table.
+    // drizzle-kit sees a real Drizzle table; storium code accesses table.storium.*
+    Object.defineProperty(drizzleTable, 'storium', {
+      value: { columns: resolvedColumns, access, selectColumns, allColumns, primaryKey, name, schemas },
+      enumerable: false,
+      configurable: true,
+      writable: false,
+    })
+
+    return drizzleTable
   }
 
   return boundDefineTable

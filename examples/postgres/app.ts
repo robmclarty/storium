@@ -20,20 +20,18 @@
  */
 
 import { ValidationError } from 'storium'
-import { generate, migrate, runSeeds } from 'storium/migrate'
+import { generate, migrate, seed } from 'storium/migrate'
 import { startTemporaryDatabase } from './temporaryDatabase.js'
 import { createDatabase } from './database.js'
 
 // --- Setup: container, migrations, connection, seeds ---
 
 const tempDb = await startTemporaryDatabase()
-
-await generate(tempDb.config)
-await migrate(tempDb.config)
-
 const { db, users, posts } = createDatabase(tempDb.config)
 
-await runSeeds(tempDb.config.seeds ?? './seeds', db.drizzle)
+await generate()
+await migrate(tempDb.config, db)
+await seed(tempDb.config.seeds ?? './seeds', db)
 
 // --- CRUD ---
 
@@ -118,15 +116,15 @@ try {
 console.log('\n=== Transactions ===')
 
 const { newUser, newPost } = await db.transaction(async (tx: any) => {
-  const newUser = await users.create({ email: 'dave@example.com', name: 'Dave' }, { tx })
-  const newPost = await posts.create({
+  const txUser = await users.create({ email: 'dave@example.com', name: 'Dave' }, { tx })
+  const txPost = await posts.create({
     title: 'Atomic Post',
     body: 'Created in a transaction with its author.',
     status: 'published',
-    author_id: newUser.id,
+    author_id: txUser.id,
     tags: ['transaction', 'demo'],
   }, { tx })
-  return { newUser, newPost }
+  return { newUser: txUser, newPost: txPost }
 })
 
 console.log('Created user:', newUser.name, '+ post:', newPost.title)

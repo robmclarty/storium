@@ -6,7 +6,8 @@
  * diffs against the database.
  *
  * Scans files matching glob patterns from the config, imports them, and
- * extracts `.table` properties from any TableDef or Store exports.
+ * extracts Drizzle tables from storium-defined exports (via `.storium`
+ * metadata on tables, or `__storeDefinition` on store definitions).
  *
  * @example
  * const tables = await collectSchemas([
@@ -17,24 +18,12 @@
  */
 
 import { glob } from 'glob'
+import { hasMeta } from '../core/defineTable'
 
 // --------------------------------------------------------------- Types --
 
 /** A map of table names to Drizzle table objects. */
 export type SchemaMap = Record<string, any>
-
-// ------------------------------------------------------------ Helpers --
-
-/**
- * Check if an exported value looks like a Storium TableDef or Store.
- * We detect by the presence of `.table` (Drizzle table) and `.name` (table name).
- */
-const isTableDef = (value: any): boolean =>
-  value !== null &&
-  typeof value === 'object' &&
-  'table' in value &&
-  'name' in value &&
-  typeof value.name === 'string'
 
 // --------------------------------------------------------- Public API --
 
@@ -74,9 +63,19 @@ export const collectSchemas = async (
       const mod = await import(filePath)
 
       for (const [_exportName, exportValue] of Object.entries(mod)) {
-        if (isTableDef(exportValue)) {
-          const tableDef = exportValue as { table: any; name: string }
-          schemaMap[tableDef.name] = tableDef.table
+        // Case 1: Plain storium table (from defineTable)
+        if (hasMeta(exportValue)) {
+          schemaMap[(exportValue as any).storium.name] = exportValue
+          continue
+        }
+        // Case 2: StoreDefinition (from defineStore)
+        if (
+          exportValue !== null &&
+          typeof exportValue === 'object' &&
+          (exportValue as any).__storeDefinition === true
+        ) {
+          const def = exportValue as { table: any; name: string }
+          schemaMap[def.name] = def.table
         }
       }
     } catch (err) {

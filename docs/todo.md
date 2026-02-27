@@ -31,6 +31,6 @@ Remaining work for a production-ready release.
       instance, helper composition.
 - [ ] **Migration commands**: `generate`, `migrate`, `push`, `status`.
 - [ ] **Schema collector**: glob resolution, `.table` extraction from exports.
-- [ ] **Seed runner**: `defineSeed`, `runSeeds` ordering and execution.
+- [ ] **Seed runner**: `defineSeed`, `seed` ordering and execution.
 - [ ] **Error classes**: `ValidationError`, `ConfigError`, `SchemaError`
       structure and messages.

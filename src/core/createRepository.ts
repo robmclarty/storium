@@ -31,7 +31,6 @@ import type {
   CustomQueryFn,
   PrepOptions,
   OrderBySpec,
-  RepositoryContext,
   Repository,
   AssertionRegistry,
 } from './types'
@@ -54,7 +53,8 @@ const buildDefaultCrud = (
   tableDef: TableDef,
   assertions: AssertionRegistry
 ) => {
-  const { table, selectColumns, allColumns, primaryKey, access, columns } = tableDef
+  const { selectColumns, allColumns, primaryKey, access, columns, name: tableName } = tableDef.storium
+  const table = tableDef
   const prep = createPrepFn(columns, access, assertions)
 
   /**
@@ -162,7 +162,7 @@ const buildDefaultCrud = (
 
       if (!rows[0]) {
         throw new StoreError(
-          `create(): INSERT into '${tableDef.name}' succeeded but returned no rows. ` +
+          `create(): INSERT into '${tableName}' succeeded but returned no rows. ` +
           'The RETURNING clause produced an empty result.'
         )
       }
@@ -190,7 +190,7 @@ const buildDefaultCrud = (
 
     if (!rows[0]) {
       throw new StoreError(
-        `create(): INSERT into '${tableDef.name}' succeeded but the follow-up SELECT ` +
+        `create(): INSERT into '${tableName}' succeeded but the follow-up SELECT ` +
         `found no row with ${primaryKey} = ${pk}.`
       )
     }
@@ -220,7 +220,7 @@ const buildDefaultCrud = (
 
       if (!rows[0]) {
         throw new StoreError(
-          `update(): UPDATE on '${tableDef.name}' matched no row with ${primaryKey} = ${id}.`
+          `update(): UPDATE on '${tableName}' matched no row with ${primaryKey} = ${id}.`
         )
       }
 
@@ -241,7 +241,7 @@ const buildDefaultCrud = (
 
     if (!rows[0]) {
       throw new StoreError(
-        `update(): UPDATE on '${tableDef.name}' matched no row with ${primaryKey} = ${id}.`
+        `update(): UPDATE on '${tableName}' matched no row with ${primaryKey} = ${id}.`
       )
     }
 
@@ -318,15 +318,16 @@ export const createCreateRepository = (
 
     // Step 2: Assemble ctx with defaults + metadata
     // ctx always contains the ORIGINAL defaults, even if overridden by customs.
-    const ctx: RepositoryContext<TTableDef> = {
+    const meta = tableDef.storium
+    const ctx = {
       drizzle: db,
       zod: z,
-      table: tableDef.table,
+      table: tableDef,
       tableDef,
-      selectColumns: tableDef.selectColumns,
-      allColumns: tableDef.allColumns,
-      primaryKey: tableDef.primaryKey,
-      schemas: tableDef.schemas,
+      selectColumns: meta.selectColumns,
+      allColumns: meta.allColumns,
+      primaryKey: meta.primaryKey,
+      schemas: meta.schemas,
       prep: defaults.prep,
       find: defaults.find,
       findAll: defaults.findAll,
@@ -350,19 +351,10 @@ export const createCreateRepository = (
     }
 
     // Step 4: Merge — customs override defaults by name.
-    // Also include TableDef properties so the repository satisfies TableDef.
     const { prep: _prep, ...crudMethods } = defaults
 
     const repository = {
-      // TableDef properties (so repository can be passed as TableDef)
-      table: tableDef.table,
-      columns: tableDef.columns,
-      access: tableDef.access,
-      selectColumns: tableDef.selectColumns,
-      allColumns: tableDef.allColumns,
-      primaryKey: tableDef.primaryKey,
-      name: tableDef.name,
-      schemas: tableDef.schemas,
+      schemas: meta.schemas,
 
       // Default CRUD (overridden by customs where names match)
       ...crudMethods,

@@ -13,8 +13,8 @@ storium/
 │   ├── connect.ts              # Connection factory; dialect-specific Drizzle wiring + register()
 │   └── core/
 │       ├── types.ts            # All shared TypeScript types (Dialect, ColumnConfig, TableDef, etc.)
-│       ├── defineTable.ts      # Schema DSL — defineTable(name, cols, opts) with 3 overloads
-│       ├── defineStore.ts      # defineStore — 3 overloads (tableDef, curried dialect, auto-config)
+│       ├── defineTable.ts      # Schema DSL — defineTable(name, cols, opts); returns Drizzle table + .storium metadata
+│       ├── defineStore.ts      # defineStore(tableDef, queries) — bundles table with custom queries
 │       ├── configLoader.ts     # loadDialectFromConfig() — reads dialect from drizzle.config.ts
 │       ├── createRepository.ts # CRUD builder + custom query context (ctx)
 │       ├── dialect.ts          # DSL type → Drizzle column builder mappings per dialect
@@ -31,9 +31,9 @@ storium/
 │   │   ├── withCache.ts        # Caching wrapper
 │   │   └── withTransaction.ts  # createWithTransaction() helper
 │   └── migrate/
-│       ├── commands.ts         # generate(), migrate(), push(), status() — pass config to drizzle-kit
-│       ├── schemaCollector.ts  # collectSchemas(globs) — imports schema files, extracts .table/.name
-│       └── seed.ts             # defineSeed(), runSeeds(seedsDir, db)
+│       ├── commands.ts         # generate(), migrate(), push(), status() — drizzle-kit CLI + drizzle-orm migrators
+│       ├── schemaCollector.ts  # collectSchemas(globs) — imports schema files, extracts storium tables
+│       └── seed.ts             # defineSeed(), seed(seedsDir, db)
 ├── examples/
 │   ├── basic/                  # Complete: in-memory CRUD fundamentals
 │   ├── custom-queries/         # Complete: custom query patterns, raw Drizzle, overrides
@@ -61,7 +61,7 @@ storium.fromDrizzle(drizzleDb)   // Auto-detects dialect from Drizzle instance
 storium.fromDrizzle(drizzleDb, { assertions }) // With storium options
 
 // Sub-path (migration tooling — heavy deps, opt-in)
-import { generate, migrate, push, status, runSeeds, defineSeed, collectSchemas } from 'storium/migrate'
+import { generate, migrate, push, status, seed, defineSeed, collectSchemas } from 'storium/migrate'
 ```
 
 ## Key Patterns
@@ -126,26 +126,21 @@ const dt = defineTable()
 dt('users', columns, options) → TableDef
 ```
 
-### defineStore (3 overloads)
+### defineStore (single signature)
 ```typescript
-// Overload 1: Wrap a pre-built TableDef (multi-file pattern)
+// Bundle a table (from defineTable) with custom queries into a StoreDefinition.
+// Two distinct steps: defineTable defines schema, defineStore adds behavior.
 const userStore = defineStore(usersTable, { search, findByEmail })
-
-// Overload 2: One-call with explicit dialect (curried)
-const userStore = defineStore('postgresql')('users', columns, { queries: { search } })
-
-// Overload 3: One-call, auto-loads dialect from drizzle.config.ts
-const userStore = defineStore('users', columns, { queries: { search } })
 ```
-All overloads return a `StoreDefinition` (inert DTO). The DTO surfaces `.table` and `.name`
-from the inner `TableDef` so `schemaCollector` can detect store files for migrations.
+Returns a `StoreDefinition` (inert DTO). The DTO surfaces `.table` and `.name`
+so `schemaCollector` can detect store files for migrations.
 
 ### db.defineStore() — simple path (live store, no register)
 ```typescript
-// Create a live store directly — dialect + assertions already baked in.
+// Create a live store from a table definition — no register step needed.
 const db = storium.connect(config)
-const users = db.defineStore('users', columns, { queries: { search } })
-const posts = db.defineStore(postsTable, { findByAuthor })
+const usersTable = db.defineTable('users', columns, options)
+const users = db.defineStore(usersTable, { search })
 await users.findById('123')
 ```
 
@@ -203,11 +198,19 @@ export default {
   seeds: './seeds',
 } satisfies ConnectConfig
 ```
-`generate()`, `migrate()`, `push()` pass the config straight to drizzle-kit.
-`runSeeds(seedsDir, db)` takes the seeds directory as a string.
+`generate()` and `push()` shell out to drizzle-kit CLI. `migrate(config, db)` uses drizzle-orm's built-in migrators.
+`seed(seedsDir, db)` takes the seeds directory as a string.
 
 ### Schema files (for migrations)
-Schema files must export a `TableDef` (has `.table` and `.name`) detectable by `collectSchemas()`. Use `defineTable('postgresql')('users', {...})` directly — `db.defineTable` can't be used because drizzle-kit imports schema files at module level before any db connection exists. If a `drizzle.config.ts` exists, `defineTable('users', {...})` auto-loads the dialect.
+`defineTable` returns a plain Drizzle table with a non-enumerable `.storium` property.
+drizzle-kit detects these as real Drizzle tables — no re-export workaround needed.
+Use `defineTable('users', {...})` directly (auto-loads dialect from `drizzle.config.ts`)
+or `defineTable('postgresql')('users', {...})` for explicit dialect.
+`db.defineTable` can't be used because drizzle-kit imports schema files at module level
+before any db connection exists.
+
+Storium metadata is accessible via `table.storium.columns`, `table.storium.schemas`, etc.
+The `StoriumMeta` type is exported for advanced users writing custom query helpers.
 
 ### Table creation (dialect differences)
 ```typescript
@@ -231,7 +234,7 @@ import { defineSeed } from 'storium/migrate'
 export default defineSeed(async ({ drizzle }) => {
   await drizzle.execute(sql`INSERT INTO ...`)
 })
-// Run: await runSeeds('./seeds', db.drizzle)
+// Run: await seed('./seeds', db)
 ```
 
 ### Recommended app structure (folder-per-store)
@@ -251,6 +254,6 @@ project/
 - `package.json`: `"start": "tsx app.ts"`, `storium: "file:../.."`, `tsx` in devDeps
 - In-memory examples: `dialect: 'memory'`, `db.drizzle.run(sql\`CREATE TABLE...\`)`
 - Multi-file pattern: `defineTable → defineStore → storium.connect → db.register → use stores`
-- Simple pattern: `storium.connect → db.defineStore → use stores`
+- Simple pattern: `storium.connect → db.defineTable → db.defineStore → use stores`
 - Console output: `=== Section name ===` headers matching style of existing examples
 - Always `await db.disconnect()` at end

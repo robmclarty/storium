@@ -24,7 +24,7 @@ Exhaustive list of everything exported from `storium` and `storium/migrate`.
 | Export | Description |
 |--------|-------------|
 | `defineTable` | Define a table schema — 3 overloads: `(name, cols, opts)`, `(dialect)(name, cols, opts)`, `()(name, cols, opts)`. |
-| `defineStore` | Bundle a schema + custom queries into a `StoreDefinition` — 3 overloads: `(tableDef, queries)`, `(dialect)(name, cols, opts)`, `(name, cols, opts)`. |
+| `defineStore` | Bundle a table (from `defineTable`) + custom queries into a `StoreDefinition`: `defineStore(table, queries)`. |
 | `isStoreDefinition(value)` | Type guard: returns `true` if the value is a `StoreDefinition`. |
 
 ### Error Classes
@@ -62,9 +62,9 @@ Migration tooling — heavier dependencies, opt-in import.
 
 | Export | Description |
 |--------|-------------|
-| `generate(config)` | Diff current schemas against the last migration state and generate a new migration SQL file. |
-| `migrate(config)` | Apply all pending migrations to the database. |
-| `push(config)` | Push the current schema directly to the database without creating migration files (dev only). |
+| `generate(configPath?)` | Diff current schemas against the last migration state and generate a new migration SQL file. Shells out to drizzle-kit CLI. |
+| `migrate(config, db)` | Apply all pending migrations to the database using drizzle-orm's built-in migrators. Accepts a StoriumInstance or raw Drizzle instance. |
+| `push(configPath?)` | Push the current schema directly to the database without creating migration files (dev only). Shells out to drizzle-kit CLI. |
 | `status(config)` | Show migration status: lists migration files and matched schema files. |
 
 ### Seeds
@@ -72,7 +72,7 @@ Migration tooling — heavier dependencies, opt-in import.
 | Export | Description |
 |--------|-------------|
 | `defineSeed(fn)` | Wrap a seed function with a type marker; the function receives `SeedContext` with the raw Drizzle instance. |
-| `runSeeds(seedsDir, db)` | Run all seed files in a directory in alphabetical order; stops on first failure. |
+| `seed(seedsDir, db)` | Run all seed files in a directory in alphabetical order; stops on first failure. Accepts a StoriumInstance or raw Drizzle instance. |
 
 ### Schema Collection
 
@@ -90,9 +90,8 @@ Migration tooling — heavier dependencies, opt-in import.
 | `db.drizzle` | Raw Drizzle database instance (escape hatch for direct Drizzle queries). |
 | `db.zod` | The Zod namespace (`z`) — convenience accessor. |
 | `db.dialect` | The active dialect string: `'postgresql'`, `'mysql'`, `'sqlite'`, or `'memory'`. |
-| `db.defineTable(name, cols, opts?)` | Create a `TableDef` pre-bound to this instance's dialect and assertions. |
-| `db.defineStore(name, cols, opts?)` | Create a live store directly (simple path — no `register` step needed). |
-| `db.defineStore(tableDef, queries?)` | Create a live store from an existing `TableDef`. |
+| `db.defineTable(name, cols, opts?)` | Create a Drizzle table with `.storium` metadata, pre-bound to this instance's dialect and assertions. |
+| `db.defineStore(tableDef, queries?)` | Create a live store from a table definition (simple path — no `register` step needed). |
 | `db.register(storeDefs)` | Materialize a record of `StoreDefinition` objects into live stores with CRUD + query methods. |
 | `db.transaction(fn)` | Execute an async function within a database transaction. |
 | `db.disconnect()` | Close the database connection pool (idempotent — safe to call multiple times). |
@@ -115,17 +114,25 @@ Migration tooling — heavier dependencies, opt-in import.
 | `store.destroy(id, opts?)` | Delete a single row by primary key. |
 | `store.destroyAll(filters, opts?)` | Delete all rows matching filters (requires at least one filter to prevent accidental full-table deletion). |
 
-### TableDef Properties (also on stores)
+### Store Properties
 
 | Property | Description |
 |----------|-------------|
-| `store.table` | The underlying Drizzle table object. |
-| `store.columns` | The original `ColumnsConfig` record. |
-| `store.access` | Derived access sets: `selectable`, `mutable`, `insertable`, `writeOnly`. |
-| `store.selectColumns` | Pre-built Drizzle column map for SELECT queries. |
-| `store.primaryKey` | Name of the primary key column. |
-| `store.name` | Table name string. |
 | `store.schemas` | `SchemaSet` with `select`, `insert`, `update`, and `full` `RuntimeSchema` objects. |
+
+### TableDef Properties (on Drizzle tables from `defineTable`)
+
+Storium metadata is attached as a non-enumerable `.storium` property on the Drizzle table:
+
+| Property | Description |
+|----------|-------------|
+| `table.storium.columns` | The original `ColumnsConfig` record (storium DSL definitions). |
+| `table.storium.access` | Derived access sets: `selectable`, `mutable`, `insertable`, `writeOnly`. |
+| `table.storium.selectColumns` | Pre-built Drizzle column map for SELECT queries. |
+| `table.storium.allColumns` | Full Drizzle column map including writeOnly columns. |
+| `table.storium.primaryKey` | Name of the primary key column. |
+| `table.storium.name` | Table name string. |
+| `table.storium.schemas` | `SchemaSet` with `select`, `insert`, `update`, and `full` `RuntimeSchema` objects. |
 
 ---
 
@@ -176,12 +183,12 @@ Each schema variant (`select`, `insert`, `update`, `full`) on a `SchemaSet` expo
 
 | Type | Description |
 |------|-------------|
-| `TableDef<TColumns>` | A table definition with Drizzle table, column metadata, access sets, and schemas. |
+| `TableDef<TColumns>` | A Drizzle table with `.storium` metadata (columns, access sets, schemas). |
+| `StoriumMeta<TColumns>` | The metadata type attached to Drizzle tables via `.storium`. |
 | `TableAccess` | Derived access sets: `selectable`, `mutable`, `insertable`, `writeOnly`. |
 | `TableOptions` | Options for `defineTable`: `indexes`, `constraints`, `primaryKey`, `timestamps`. |
 | `StoreDefinition<TColumns, TQueries>` | Inert DTO bundling a `TableDef` with custom queries — materialized via `db.register()`. |
-| `StoreOptions<TQueries>` | `TableOptions` extended with a `queries` field for the one-call `defineStore` overloads. |
-| `Store<TColumns, TQueries>` | A live store: `TableDef` + default CRUD + materialized custom queries. |
+| `Store<TColumns, TQueries>` | A live store: default CRUD + schemas + materialized custom queries. |
 | `Repository<TTableDef, TQueries>` | Same shape as `Store`, produced by `createRepository()`. |
 | `DefaultCRUD<TColumns>` | The default CRUD method signatures (`find`, `findAll`, `create`, `update`, etc.). |
 

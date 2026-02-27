@@ -69,10 +69,10 @@ const isSeedModule = (value: any): value is SeedModule =>
  * Seeds are executed in alphabetical filename order.
  *
  * @param seedsDir - Path to the seeds directory
- * @param db - The Drizzle database instance
+ * @param db - A StoriumInstance or raw Drizzle instance
  * @returns Summary of seeds run
  */
-export const runSeeds = async (
+export const seed = async (
   seedsDir: string,
   db: any
 ): Promise<{ success: boolean; message: string; count: number }> => {
@@ -81,6 +81,9 @@ export const runSeeds = async (
       'Seeds directory is required. Pass a seeds directory path, or set `seeds` in your drizzle.config.ts.'
     )
   }
+
+  // Accept either a StoriumInstance (has .drizzle) or a raw Drizzle instance
+  const drizzle = db?.drizzle ?? db
 
   const pattern = path.join(seedsDir, '**/*.{ts,js,mjs}')
   const files = await glob(pattern, { cwd: process.cwd(), absolute: true })
@@ -92,7 +95,7 @@ export const runSeeds = async (
     return { success: true, message: 'No seed files found.', count: 0 }
   }
 
-  const ctx: SeedContext = { drizzle: db }
+  const ctx: SeedContext = { drizzle }
   let count = 0
 
   for (const filePath of sorted) {
