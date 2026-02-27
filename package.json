@@ -1,6 +1,6 @@
 {
   "name": "storium",
-  "version": "0.7.5",
+  "version": "0.7.6",
   "description": "Lightweight, database-agnostic storage abstraction built on Drizzle ORM",
   "keywords": [
     "drizzle",
