@@ -4,7 +4,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "tsx app.ts"
+    "start": "tsx app.ts",
+    "generate": "storium generate",
+    "migrate": "storium migrate",
+    "seed": "storium seed",
+    "status": "storium status"
   },
   "devDependencies": {
     "tsx": "4.21.0"
