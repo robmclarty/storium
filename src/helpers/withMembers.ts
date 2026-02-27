@@ -57,7 +57,7 @@ export const withMembers = (
         ...extra,
       }
 
-      if (ctx.drizzle.$dialect === 'postgresql') {
+      if (ctx.dialect === 'postgresql') {
         const rows = await ctx.drizzle
           .insert(joinTable)
           .values(values)

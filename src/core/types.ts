@@ -263,6 +263,8 @@ export type RepositoryContext<
   drizzle: any
   /** The Zod namespace (convenience accessor matching ctx.drizzle). */
   zod: typeof ZodNamespace
+  /** The active dialect. */
+  dialect: Dialect
   /** The Drizzle table object (same as tableDef — it IS the Drizzle table). */
   table: T
   /** The Drizzle table with `.storium` metadata. */

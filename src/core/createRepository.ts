@@ -38,10 +38,6 @@ import { isRawColumn } from './types'
 import { StoreError } from './errors'
 import { createPrepFn } from './prep'
 
-// -------------------------------------------------------------- Types --
-
-const getDialect = (db: any): Dialect => db.$dialect ?? 'postgresql'
-
 // ------------------------------------------------------- CRUD Builder --
 
 /**
@@ -52,7 +48,8 @@ const getDialect = (db: any): Dialect => db.$dialect ?? 'postgresql'
 const buildDefaultCrud = (
   db: any,
   tableDef: TableDef,
-  assertions: AssertionRegistry
+  assertions: AssertionRegistry,
+  dialect: Dialect
 ) => {
   const { selectColumns, allColumns, primaryKey, access, columns, name: tableName } = tableDef.storium
   const table = tableDef
@@ -153,9 +150,7 @@ const buildDefaultCrud = (
       onlyMutables: false,
     })
 
-    const dialect = getDialect(db)
-
-    if (dialect === 'postgresql' || dialect === 'sqlite') {
+    if (dialect === 'postgresql' || dialect === 'sqlite' || dialect === 'memory') {
       const rows = await getDb(opts)
         .insert(table)
         .values(prepared)
@@ -220,9 +215,7 @@ const buildDefaultCrud = (
       onlyMutables: true,
     })
 
-    const dialect = getDialect(db)
-
-    if (dialect === 'postgresql' || dialect === 'sqlite') {
+    if (dialect === 'postgresql' || dialect === 'sqlite' || dialect === 'memory') {
       const rows = await getDb(opts)
         .update(table)
         .set(prepared)
@@ -321,7 +314,8 @@ const buildDefaultCrud = (
  */
 export const createCreateRepository = (
   db: any,
-  assertions: AssertionRegistry = {}
+  assertions: AssertionRegistry = {},
+  dialect: Dialect = 'postgresql'
 ) => {
   /**
    * Create a repository from a TableDef with optional custom queries.
@@ -339,7 +333,7 @@ export const createCreateRepository = (
   ): Repository<TTableDef, TQueries> => {
 
     // Step 1: Build default CRUD operations
-    const defaults = buildDefaultCrud(db, tableDef, assertions)
+    const defaults = buildDefaultCrud(db, tableDef, assertions, dialect)
 
     // Step 2: Assemble ctx with defaults + metadata
     // ctx always contains the ORIGINAL defaults, even if overridden by customs.
@@ -347,6 +341,7 @@ export const createCreateRepository = (
     const ctx = {
       drizzle: db,
       zod: z,
+      dialect,
       table: tableDef,
       tableDef,
       selectColumns: meta.selectColumns,

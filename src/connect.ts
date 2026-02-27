@@ -71,7 +71,7 @@ const createDrizzleInstance = (config: StoriumConfig): { db: any; teardown: () =
         max: config.pool?.max,
       })
       const db = drizzle(pool)
-      db.$dialect = dialect
+
       return {
         db,
         teardown: () => pool.end(),
@@ -86,7 +86,7 @@ const createDrizzleInstance = (config: StoriumConfig): { db: any; teardown: () =
         ...(config.pool?.max !== undefined && { connectionLimit: config.pool.max }),
       })
       const db = drizzle(pool)
-      db.$dialect = dialect
+
       return {
         db,
         teardown: () => pool.end(),
@@ -98,7 +98,7 @@ const createDrizzleInstance = (config: StoriumConfig): { db: any; teardown: () =
       const { drizzle } = require('drizzle-orm/better-sqlite3')
       const sqlite = new Database(url === ':memory:' ? ':memory:' : url)
       const db = drizzle(sqlite)
-      db.$dialect = dialect
+
       return {
         db,
         teardown: async () => sqlite.close(),
@@ -216,7 +216,7 @@ const buildInstance = (
 ): StoriumInstance => {
   const drizzleDialect = resolveDialect(dialect)
   const registry = createAssertionRegistry(assertions)
-  const createRepository = createCreateRepository(db, registry)
+  const createRepository = createCreateRepository(db, registry, dialect)
 
   const boundDefineTable = buildDefineTable(drizzleDialect, registry)
 
@@ -340,10 +340,6 @@ export const fromDrizzle = (
   options: FromDrizzleOptions = {}
 ): StoriumInstance => {
   const dialect = inferDialect(drizzleDb)
-
-  // Set $dialect so helpers (e.g. withMembers) can branch on dialect,
-  // consistent with instances created via connect().
-  drizzleDb.$dialect = dialect
 
   return buildInstance(
     drizzleDb,
