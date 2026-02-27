@@ -24,12 +24,12 @@ with every table you add.
 
 ## What Storium Does
 
-A single `defineStore()` call replaces all of the above. You describe each
+A single `defineTable()` call replaces all of the above. You describe each
 column once with its type and access metadata — `mutable`, `writeOnly`,
 `required` — and Storium derives everything else:
 
 - A **Drizzle table** ready for migrations and queries.
-- **Zod schemas** for select, insert, update, and full validation, with
+- **Zod schemas** for create, update, select, and full validation, with
   transforms and custom validation baked in.
 - **JSON Schema** output for HTTP-layer validation (e.g., Fastify/Ajv).
 - A **repository** with default CRUD operations that respect column access
@@ -92,8 +92,9 @@ Another puts it in a repository method. Another forgets entirely. Six months
 in, nobody knows where input sanitization happens for any given table without
 reading the code. Code review becomes archaeology.
 
-Storium eliminates that class of inconsistency. If the rule is "all writes go
-through `defineStore`, all custom queries use `ctx`," then:
+Storium eliminates that class of inconsistency. If the rule is "all tables go
+through `defineTable`, all stores through `defineStore`, all custom queries
+use `ctx`," then:
 
 - Validation **always** lives in column definitions.
 - Transforms **always** run before writes.

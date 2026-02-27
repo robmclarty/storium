@@ -41,7 +41,7 @@ Exhaustive list of everything exported from `storium` and `storium/migrate`.
 | Export | Description |
 |--------|-------------|
 | `withBelongsTo(relatedTable, foreignKey, opts)` | Generates a `findWith{Alias}` custom query that LEFT JOINs a related table. |
-| `withMembers(joinTable, foreignKey)` | Generates `addMember`, `removeMember`, `getMembers`, `isMember`, `getMemberCount` custom queries for collection patterns. |
+| `withMembers(joinTable, foreignKey, memberKey?)` | Generates `addMember`, `removeMember`, `getMembers`, `isMember`, `getMemberCount` custom queries for collection patterns. `memberKey` defaults to `'user_id'`. |
 | `withCache(store, cacheAdapter, config)` | Wraps a store with cache-aside logic on configured read methods and auto-invalidation on writes. |
 
 ### Type Guards
@@ -62,17 +62,18 @@ Migration tooling — heavier dependencies, opt-in import.
 
 | Export | Description |
 |--------|-------------|
-| `generate(configPath?)` | Diff current schemas against the last migration state and generate a new migration SQL file. Shells out to drizzle-kit CLI. |
-| `migrate(config, db)` | Apply all pending migrations to the database using drizzle-orm's built-in migrators. Accepts a StoriumInstance or raw Drizzle instance. |
-| `push(configPath?)` | Push the current schema directly to the database without creating migration files (dev only). Shells out to drizzle-kit CLI. |
-| `status(config)` | Show migration status: lists migration files and matched schema files. |
+| `generate()` | Diff current schemas against the last migration state and generate a new migration SQL file. Auto-loads config; shells out to drizzle-kit CLI. |
+| `migrate(db, config?)` | Apply all pending migrations to the database using drizzle-orm's built-in migrators. Auto-loads config if not provided. |
+| `push()` | Push the current schema directly to the database without creating migration files (dev only). Auto-loads config; shells out to drizzle-kit CLI. |
+| `status(config?)` | Show migration status: lists migration files and matched schema files. Auto-loads config if not provided. |
+| `loadConfig(configPath?)` | Load and return the resolved `StoriumConfig` from the config file. |
 
 ### Seeds
 
 | Export | Description |
 |--------|-------------|
-| `defineSeed(fn)` | Wrap a seed function with a type marker; the function receives `SeedContext` with the raw Drizzle instance. |
-| `seed(seedsDir, db)` | Run all seed files in a directory in alphabetical order; stops on first failure. Accepts a StoriumInstance or raw Drizzle instance. |
+| `defineSeed(fn)` | Wrap a seed function with a type marker; the function receives `SeedContext` with auto-discovered stores, Drizzle instance, and more. |
+| `seed(db, config?)` | Run all seed files in alphabetical order; auto-discovers stores from config globs. Stops on first failure. |
 
 ### Schema Collection
 
@@ -113,6 +114,7 @@ Migration tooling — heavier dependencies, opt-in import.
 | `store.update(id, input, opts?)` | Update a row by primary key; only mutable columns are accepted; throws `StoreError` if no row is matched. |
 | `store.destroy(id, opts?)` | Delete a single row by primary key. |
 | `store.destroyAll(filters, opts?)` | Delete all rows matching filters (requires at least one filter to prevent accidental full-table deletion). |
+| `store.ref(filter, opts?)` | Look up a row by filter and return its primary key value. Throws `StoreError` if not found. |
 
 ### Store Properties
 
@@ -197,8 +199,9 @@ Each schema variant (`createSchema`, `updateSchema`, `selectSchema`, `fullSchema
 | Type | Description |
 |------|-------------|
 | `RepositoryContext<T>` | Context passed to custom query functions — contains `drizzle`, `zod`, `table`, `schemas`, `prep`, and all default CRUD methods. |
+| `Ctx<T>` | Shorthand alias for `RepositoryContext<T>` — use as `ctx: Ctx` in custom queries. |
 | `CustomQueryFn<T>` | `(ctx: RepositoryContext<T>) => (...args) => any` — a custom query factory function. |
-| `PrepOptions` | Options for CRUD operations: `force`, `validateRequired`, `onlyMutables`, `tx`, `limit`, `offset`. |
+| `PrepOptions` | Options for CRUD operations: `force`, `validateRequired`, `onlyMutables`, `tx`, `limit`, `offset`, `orderBy`, `includeWriteOnly`. |
 
 ### Schema & Validation
 
@@ -232,14 +235,15 @@ Each schema variant (`createSchema`, `updateSchema`, `selectSchema`, `fullSchema
 |------|-------------|
 | `ResolveColumnType<C>` | Map a single `ColumnConfig` to its TypeScript type (raw columns resolve to `any`). |
 | `SelectType<TColumns>` | Derive the SELECT result type — excludes `writeOnly` columns. |
-| `InsertType<TColumns>` | Derive the INSERT input type — `required` fields mandatory, `mutable` fields optional. |
+| `InsertType<TColumns>` | Derive the INSERT input type — `required` fields mandatory, `mutable` fields optional. Values accept `Promise` for `ref()` ergonomics. |
 | `UpdateType<TColumns>` | Derive the UPDATE input type — only `mutable` columns, all optional. |
+| `Promisable<T>` | `T \| Promise<any>` — allows `ref()` values in insert/update input without casts. |
 
 ### Migrate Sub-Path Types
 
 | Type | Description |
 |------|-------------|
-| `SeedContext` | Context passed to seed functions: `{ drizzle }`. |
+| `SeedContext` | Context passed to seed functions: `{ stores, drizzle, dialect, transaction, instance }`. |
 | `SeedFn` | `(ctx: SeedContext) => Promise<void>` — a seed function. |
 | `SeedModule` | A module exporting a seed function with the `__isSeed` marker. |
 | `SchemaMap` | `Record<string, any>` — map of table names to Drizzle table objects. |
