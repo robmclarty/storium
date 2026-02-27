@@ -11,7 +11,7 @@
  */
 
 import { resolve } from 'node:path'
-import type { Dialect, ConnectConfig } from './types'
+import type { Dialect, StoriumConfig } from './types'
 import { ConfigError } from './errors'
 
 // createRequire is used intentionally: loadDialectFromConfig() is called
@@ -73,7 +73,7 @@ export const resolveConfigPath = (): string =>
  *
  * @param configPath - Optional explicit path (defaults to resolveConfigPath())
  */
-export const loadConfig = async (configPath?: string): Promise<ConnectConfig> => {
+export const loadConfig = async (configPath?: string): Promise<StoriumConfig> => {
   const abs = resolve(process.cwd(), configPath ?? resolveConfigPath())
 
   try {

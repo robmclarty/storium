@@ -12,7 +12,7 @@
 
 import { z } from 'zod'
 import type {
-  ConnectConfig,
+  StoriumConfig,
   FromDrizzleOptions,
   StoriumInstance,
   TableDef,
@@ -47,14 +47,14 @@ const resolveDialect = (dialect: Dialect): Exclude<Dialect, 'memory'> =>
 /**
  * Normalize a connection URL from either storium inline or drizzle-kit config shape.
  */
-const resolveUrl = (config: ConnectConfig): string | undefined =>
+const resolveUrl = (config: StoriumConfig): string | undefined =>
   config.url ?? config.dbCredentials?.url
 
 /**
  * Create a Drizzle database instance from a connection config.
  * Lazily loads the appropriate driver based on dialect.
  */
-const createDrizzleInstance = (config: ConnectConfig): { db: any; teardown: () => Promise<void> } => {
+const createDrizzleInstance = (config: StoriumConfig): { db: any; teardown: () => Promise<void> } => {
   const dialect = resolveDialect(config.dialect)
   const url = dialect === 'sqlite' && config.dialect === 'memory'
     ? ':memory:'
@@ -115,7 +115,7 @@ const createDrizzleInstance = (config: ConnectConfig): { db: any; teardown: () =
  * Build a connection URL from individual config fields.
  * Checks both top-level fields and dbCredentials.
  */
-const buildConnectionUrl = (config: ConnectConfig): string => {
+const buildConnectionUrl = (config: StoriumConfig): string => {
   const url = resolveUrl(config)
   if (url) return url
 
@@ -305,7 +305,7 @@ const buildInstance = (
  * import config from './drizzle.config'
  * const db = storium.connect({ ...config, assertions: { ... } })
  */
-export const connect = (config: ConnectConfig): StoriumInstance => {
+export const connect = (config: StoriumConfig): StoriumInstance => {
   if (!config?.dialect) {
     throw new ConfigError('`dialect` is required in connection config')
   }

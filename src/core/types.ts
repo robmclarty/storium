@@ -381,7 +381,7 @@ export type CacheMethodConfig = {
  * Storium-specific keys (assertions, pool, seeds) are ignored by drizzle-kit,
  * so a single config object can be shared between both.
  */
-export type ConnectConfig = {
+export type StoriumConfig = {
   dialect: Dialect
   /** Connection URL (storium inline style). */
   url?: string

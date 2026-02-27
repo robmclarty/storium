@@ -4,11 +4,11 @@
  * drizzle-kit reads: dialect, dbCredentials, schema, out
  * storium reads:     dialect, dbCredentials, stores, seeds
  *
- * Using `satisfies ConnectConfig` gives you autocomplete and type checking
+ * Using `satisfies StoriumConfig` gives you autocomplete and type checking
  * while keeping the object compatible with both tools.
  */
 
-import type { ConnectConfig } from 'storium'
+import type { StoriumConfig } from 'storium'
 
 export default {
   dialect: 'sqlite',
@@ -17,4 +17,4 @@ export default {
   stores: ['./entities/**/*.store.ts'],
   out: './migrations',
   seeds: './seeds',
-} satisfies ConnectConfig
+} satisfies StoriumConfig

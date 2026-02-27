@@ -22,7 +22,7 @@ import { glob } from 'glob'
 import { hasMeta } from '../core/defineTable'
 import { isStoreDefinition } from '../core/defineStore'
 import { loadConfig } from '../core/configLoader'
-import type { StoriumInstance, ConnectConfig, Dialect, TableDef } from '../core/types'
+import type { StoriumInstance, StoriumConfig, Dialect, TableDef } from '../core/types'
 
 // --------------------------------------------------------------- Types --
 
@@ -130,7 +130,7 @@ const importAndCollect = async <T>(
  */
 const discoverStores = async (
   db: StoriumInstance,
-  config?: ConnectConfig
+  config?: StoriumConfig
 ): Promise<Record<string, any>> => {
   const liveStores: Record<string, any> = {}
   const coveredTables = new Set<string>()
@@ -183,7 +183,7 @@ const discoverStores = async (
  */
 export const seed = async (
   db: StoriumInstance,
-  config?: ConnectConfig
+  config?: StoriumConfig
 ): Promise<{ success: boolean; message: string; count: number }> => {
   const cfg = config ?? await loadConfig()
   const seedsDir = cfg.seeds ?? './seeds'

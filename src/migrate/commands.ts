@@ -27,7 +27,7 @@ import { spawn } from 'node:child_process'
 import { resolve as resolvePath } from 'node:path'
 import { existsSync, readdirSync } from 'node:fs'
 import { glob } from 'glob'
-import type { ConnectConfig, StoriumInstance } from '../core/types'
+import type { StoriumConfig, StoriumInstance } from '../core/types'
 import { loadConfig, resolveConfigPath } from '../core/configLoader'
 
 // --------------------------------------------------------------- Types --
@@ -69,7 +69,7 @@ const run = (cmd: string, args: string[]): Promise<{ stdout: string; stderr: str
  * await generate()                    // auto-loads config
  * await generate(customConfig)        // explicit config
  */
-export const generate = async (config?: ConnectConfig): Promise<MigrationResult> => {
+export const generate = async (config?: StoriumConfig): Promise<MigrationResult> => {
   const cfgPath = resolveConfigPath()
   try {
     const { stdout } = await run('npx', ['drizzle-kit', 'generate', `--config=${cfgPath}`])
@@ -91,7 +91,7 @@ export const generate = async (config?: ConnectConfig): Promise<MigrationResult>
  * await migrate(db)                   // auto-loads config
  * await migrate(db, customConfig)     // explicit config
  */
-export const migrate = async (db: StoriumInstance, config?: ConnectConfig): Promise<MigrationResult> => {
+export const migrate = async (db: StoriumInstance, config?: StoriumConfig): Promise<MigrationResult> => {
   const cfg = config ?? await loadConfig()
   const drizzle = db.drizzle
   const migrationsFolder = resolvePath(process.cwd(), cfg.out ?? './migrations')
@@ -131,7 +131,7 @@ export const migrate = async (db: StoriumInstance, config?: ConnectConfig): Prom
  *
  * @param config - Optional config override (default: auto-loads drizzle.config.ts)
  */
-export const push = async (config?: ConnectConfig): Promise<MigrationResult> => {
+export const push = async (config?: StoriumConfig): Promise<MigrationResult> => {
   const cfgPath = resolveConfigPath()
   try {
     const { stdout } = await run('npx', ['drizzle-kit', 'push', `--config=${cfgPath}`])
@@ -148,7 +148,7 @@ export const push = async (config?: ConnectConfig): Promise<MigrationResult> => 
  *
  * @param config - Optional config override (default: auto-loads drizzle.config.ts)
  */
-export const status = async (config?: ConnectConfig): Promise<MigrationResult> => {
+export const status = async (config?: StoriumConfig): Promise<MigrationResult> => {
   const cfg = config ?? await loadConfig()
 
   try {

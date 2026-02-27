@@ -377,7 +377,7 @@ app.post('/users', {
 Storium uses the same `drizzle.config.ts` that drizzle-kit already reads — no separate config file. If you already have a drizzle-kit setup, storium slots right in. Storium-specific keys like `seeds` sit alongside drizzle-kit keys; drizzle-kit ignores what it doesn't recognize.
 
 ```typescript
-import type { ConnectConfig } from 'storium'
+import type { StoriumConfig } from 'storium'
 
 export default {
   dialect: 'postgresql',
@@ -385,7 +385,7 @@ export default {
   schema: ['./src/entities/**/*.schema.ts'],
   out: './migrations',
   seeds: './seeds',            // storium-only — drizzle-kit ignores this
-} satisfies ConnectConfig
+} satisfies StoriumConfig
 ```
 
 Storium ships a thin CLI wrapper for convenience:

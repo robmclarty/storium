@@ -16,7 +16,7 @@ Exhaustive list of everything exported from `storium` and `storium/migrate`.
 
 | Export | Description |
 |--------|-------------|
-| `storium.connect(config)` | Create a `StoriumInstance` from a `ConnectConfig` (dialect, URL, assertions, pool). |
+| `storium.connect(config)` | Create a `StoriumInstance` from a `StoriumConfig` (dialect, URL, assertions, pool). |
 | `storium.fromDrizzle(drizzleDb, opts?)` | Create a `StoriumInstance` from an existing Drizzle database instance; dialect is auto-detected. |
 
 ### Schema & Store DSL
@@ -156,7 +156,7 @@ Each schema variant (`select`, `insert`, `update`, `full`) on a `SchemaSet` expo
 | Type | Description |
 |------|-------------|
 | `Dialect` | `'postgresql' \| 'mysql' \| 'sqlite' \| 'memory'` |
-| `ConnectConfig` | Configuration for `storium.connect()` — accepts storium inline shape or drizzle-kit config shape. |
+| `StoriumConfig` | Configuration for `storium.connect()` — accepts storium inline shape or drizzle-kit config shape. |
 | `FromDrizzleOptions` | Options for `storium.fromDrizzle()` — currently just `{ assertions? }`. |
 | `StoriumInstance` | The instance returned by `connect` or `fromDrizzle`. |
 

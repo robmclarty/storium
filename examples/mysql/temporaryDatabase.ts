@@ -1,8 +1,8 @@
 import { MySqlContainer } from '@testcontainers/mysql'
-import type { ConnectConfig } from 'storium'
+import type { StoriumConfig } from 'storium'
 
 export type TemporaryDatabase = {
-  config: ConnectConfig
+  config: StoriumConfig
   stop: () => Promise<void>
 }
 

@@ -56,7 +56,7 @@ export type { StoriumMeta } from './core/defineTable'
 export type {
   // Dialect & config
   Dialect,
-  ConnectConfig,
+  StoriumConfig,
   FromDrizzleOptions,
   StoriumInstance,
 

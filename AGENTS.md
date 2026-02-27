@@ -56,7 +56,7 @@ storium/
 // Named exports
 import { storium, defineTable, defineStore, ValidationError, withBelongsTo, ... } from 'storium'
 
-storium.connect(config)          // ConnectConfig → StoriumInstance
+storium.connect(config)          // StoriumConfig → StoriumInstance
 storium.fromDrizzle(drizzleDb)   // Auto-detects dialect from Drizzle instance
 storium.fromDrizzle(drizzleDb, { assertions }) // With storium options
 
@@ -88,7 +88,7 @@ db.transaction()     // Async transaction wrapper
 db.disconnect()      // Close connection / pool
 ```
 
-### ConnectConfig (single config object)
+### StoriumConfig (single config object)
 ```typescript
 // Accepts both storium inline and drizzle-kit config shapes.
 // Storium-specific keys (assertions, pool, seeds) are ignored by drizzle-kit.
@@ -188,7 +188,7 @@ tags: { raw: () => text('tags').array().default([]), mutable: true }
 // A single config shared by drizzle-kit and storium.
 // drizzle-kit keys: dialect, dbCredentials, schema, out
 // storium extras: assertions, pool, seeds (drizzle-kit ignores these)
-import type { ConnectConfig } from 'storium'
+import type { StoriumConfig } from 'storium'
 
 export default {
   dialect: 'postgresql',
@@ -196,7 +196,7 @@ export default {
   schema: ['./src/**/*.schema.ts'],
   out: './migrations',
   seeds: './seeds',
-} satisfies ConnectConfig
+} satisfies StoriumConfig
 ```
 `generate()` and `push()` shell out to drizzle-kit CLI. `migrate(config, db)` uses drizzle-orm's built-in migrators.
 `seed(seedsDir, db)` takes the seeds directory as a string.
