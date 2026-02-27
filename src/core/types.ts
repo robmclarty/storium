@@ -286,6 +286,12 @@ export type RepositoryContext<
   destroyAll: (filters: Record<string, any>, opts?: PrepOptions) => Promise<number>
 }
 
+/** Shorthand alias for `RepositoryContext` — use as `ctx: Ctx` in custom queries. */
+export type Ctx<
+  T extends TableDef = TableDef,
+  TColumns extends ColumnsConfig = T extends TableDef<infer C> ? C : ColumnsConfig
+> = RepositoryContext<T, TColumns>
+
 /**
  * A custom query function receives the repository context and returns
  * the actual query function. This enables closure over `ctx` and
@@ -313,17 +319,27 @@ export type DefaultCRUD<TColumns extends ColumnsConfig = ColumnsConfig> = {
  */
 export type Store<
   TColumns extends ColumnsConfig = ColumnsConfig,
-  TQueries extends Record<string, CustomQueryFn> = {}
+  TQueries extends Record<string, Function> = {}
 > = TableDef<TColumns> & DefaultCRUD<TColumns> & {
   [K in keyof TQueries]: TQueries[K] extends (ctx: any) => infer R ? R : never
 }
+
+/**
+ * Infer `Store<C, Q>` from any object with `tableDef` and `queries` fields.
+ * Used by `register()` to preserve generic parameters without importing
+ * StoreDefinition (which would create a circular dependency with types.ts).
+ */
+export type InferStore<T> =
+  T extends { tableDef: TableDef<infer C extends ColumnsConfig>; queries: infer Q extends Record<string, Function> }
+    ? Store<C, Q>
+    : Store
 
 /**
  * A Repository is the same shape as a Store, produced by `createRepository()`.
  */
 export type Repository<
   TTableDef extends TableDef = TableDef,
-  TQueries extends Record<string, CustomQueryFn> = {}
+  TQueries extends Record<string, Function> = {}
 > = TTableDef & DefaultCRUD<TTableDef extends TableDef<infer C> ? C : ColumnsConfig> & {
   [K in keyof TQueries]: TQueries[K] extends (ctx: any) => infer R ? R : never
 }
@@ -416,12 +432,12 @@ export type StoriumInstance = {
    * - `db.defineStore(tableDef, { queries })` — wrap existing TableDef
    */
   defineStore: {
-    <TColumns extends ColumnsConfig, TQueries extends Record<string, CustomQueryFn> = {}>(
+    <TColumns extends ColumnsConfig, TQueries extends Record<string, Function> = {}>(
       name: string,
       columns: TColumns,
       options?: TableOptions & { queries?: TQueries }
     ): Store<TColumns, TQueries>
-    <TColumns extends ColumnsConfig, TQueries extends Record<string, CustomQueryFn> = {}>(
+    <TColumns extends ColumnsConfig, TQueries extends Record<string, Function> = {}>(
       tableDef: TableDef<TColumns>,
       queries?: TQueries
     ): Store<TColumns, TQueries>
@@ -429,7 +445,7 @@ export type StoriumInstance = {
   /** Materialize StoreDefinitions into live stores with CRUD + queries. */
   register: <T extends Record<string, any>>(
     storeDefs: T
-  ) => { [K in keyof T]: Store }
+  ) => { [K in keyof T]: InferStore<T[K]> }
   /** Scoped transaction helper (pre-bound to db). */
   transaction: <T>(fn: (tx: any) => Promise<T>) => Promise<T>
   /** Close the database connection pool. */

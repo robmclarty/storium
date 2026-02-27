@@ -30,7 +30,6 @@ import type {
   ColumnsConfig,
   TableDef,
   TableOptions,
-  CustomQueryFn,
   AssertionRegistry,
 } from './types'
 import { buildDefineTable } from './defineTable'
@@ -44,7 +43,7 @@ import { ConfigError } from './errors'
  * Combines TableOptions (indexes, timestamps, etc.) with a queries field.
  */
 export type StoreOptions<
-  TQueries extends Record<string, CustomQueryFn> = {}
+  TQueries extends Record<string, Function> = {}
 > = TableOptions & {
   queries?: TQueries
 }
@@ -60,7 +59,7 @@ export type StoreOptions<
  */
 export type StoreDefinition<
   TColumns extends ColumnsConfig = ColumnsConfig,
-  TQueries extends Record<string, CustomQueryFn> = {}
+  TQueries extends Record<string, Function> = {}
 > = {
   readonly __storeDefinition: true
   tableDef: TableDef<TColumns>
@@ -96,7 +95,7 @@ export const buildDefineStore = (
 
   const boundDefineStore = <
     TColumns extends ColumnsConfig,
-    TQueries extends Record<string, CustomQueryFn> = {}
+    TQueries extends Record<string, Function> = {}
   >(
     name: string,
     columns: TColumns,
@@ -116,7 +115,7 @@ export const buildDefineStore = (
  */
 const makeStoreDefinition = <
   TColumns extends ColumnsConfig,
-  TQueries extends Record<string, CustomQueryFn> = {}
+  TQueries extends Record<string, Function> = {}
 >(
   tableDef: TableDef<TColumns>,
   queries: TQueries
@@ -132,7 +131,7 @@ const makeStoreDefinition = <
 
 type BoundDefineStore = <
   TColumns extends ColumnsConfig,
-  TQueries extends Record<string, CustomQueryFn> = {}
+  TQueries extends Record<string, Function> = {}
 >(
   name: string,
   columns: TColumns,
@@ -150,7 +149,7 @@ type BoundDefineStore = <
  */
 export function defineStore<
   TColumns extends ColumnsConfig,
-  TQueries extends Record<string, CustomQueryFn> = {}
+  TQueries extends Record<string, Function> = {}
 >(
   tableDef: TableDef<TColumns>,
   queries?: TQueries
@@ -160,7 +159,7 @@ export function defineStore(dialect: Dialect): BoundDefineStore
 
 export function defineStore<
   TColumns extends ColumnsConfig,
-  TQueries extends Record<string, CustomQueryFn> = {}
+  TQueries extends Record<string, Function> = {}
 >(
   name: string,
   columns: TColumns,

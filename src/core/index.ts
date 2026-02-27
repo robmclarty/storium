@@ -39,6 +39,7 @@ export type {
   OrderBySpec,
   PrepOptions,
   RepositoryContext,
+  Ctx,
   CustomQueryFn,
   DefaultCRUD,
   Store,

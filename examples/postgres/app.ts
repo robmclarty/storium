@@ -95,6 +95,8 @@ console.log('Featured posts:', featured.map((p: any) => p.title))
 console.log('\n=== Domain Actions ===')
 
 const draft = await posts.findOne({ status: 'draft' })
+if (!draft) throw new Error('Expected a draft post from seed data')
+
 console.log(`"${draft.title}" is ${draft.status}`)
 
 const pub = await posts.publish(draft.id)

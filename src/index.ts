@@ -78,6 +78,7 @@ export type {
   Repository,
   DefaultCRUD,
   RepositoryContext,
+  Ctx,
   CustomQueryFn,
   OrderBySpec,
   PrepOptions,

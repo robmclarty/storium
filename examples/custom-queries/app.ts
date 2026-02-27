@@ -1,4 +1,5 @@
 import { storium, defineTable, defineStore } from 'storium'
+import type { Ctx } from 'storium'
 import { sql, eq, like, desc } from 'drizzle-orm'
 
 // Custom queries let you extend stores with domain-specific operations.
@@ -34,13 +35,13 @@ const articleStore = defineStore(articlesTable, {
   // --- Compose with built-in CRUD ---
   // Use ctx.find / ctx.findOne to build domain-specific lookups.
 
-  findBySlug: (ctx) => async (slug: string) =>
+  findBySlug: (ctx: Ctx) => async (slug: string) =>
     ctx.findOne({ slug }),
 
-  findByAuthor: (ctx) => async (authorId: string) =>
+  findByAuthor: (ctx: Ctx) => async (authorId: string) =>
     ctx.find({ author_id: authorId }),
 
-  findPublished: (ctx) => async () =>
+  findPublished: (ctx: Ctx) => async () =>
     ctx.find({ status: 'published' }),
 
   // --- Override a default ---
@@ -48,7 +49,7 @@ const articleStore = defineStore(articlesTable, {
   // ctx.create still refers to the original built-in create,
   // so there's no infinite recursion.
 
-  create: (ctx) => async (input: Record<string, any>, opts?: any) => {
+  create: (ctx: Ctx) => async (input: Record<string, any>, opts?: any) => {
     const slug = input.slug ?? input.title
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
@@ -61,13 +62,13 @@ const articleStore = defineStore(articlesTable, {
   // For queries that go beyond the built-in CRUD, drop down to
   // ctx.drizzle and ctx.table for full Drizzle query builder access.
 
-  search: (ctx) => async (term: string) =>
+  search: (ctx: Ctx) => async (term: string) =>
     ctx.drizzle
       .select(ctx.selectColumns)
       .from(ctx.table)
       .where(like(ctx.table.title, `%${term}%`)),
 
-  mostViewed: (ctx) => async (limit = 5) =>
+  mostViewed: (ctx: Ctx) => async (limit = 5) =>
     ctx.drizzle
       .select(ctx.selectColumns)
       .from(ctx.table)
@@ -78,7 +79,7 @@ const articleStore = defineStore(articlesTable, {
   // --- Increment a counter ---
   // Raw SQL for atomic operations that don't map to CRUD.
 
-  incrementViews: (ctx) => async (id: string) => {
+  incrementViews: (ctx: Ctx) => async (id: string) => {
     ctx.drizzle.run(
       sql`UPDATE articles SET view_count = COALESCE(view_count, 0) + 1 WHERE id = ${id}`
     )
@@ -87,10 +88,10 @@ const articleStore = defineStore(articlesTable, {
 
   // --- Publish/unpublish as domain actions ---
 
-  publish: (ctx) => async (id: string) =>
+  publish: (ctx: Ctx) => async (id: string) =>
     ctx.update(id, { status: 'published' }),
 
-  unpublish: (ctx) => async (id: string) =>
+  unpublish: (ctx: Ctx) => async (id: string) =>
     ctx.update(id, { status: 'draft' }),
 })
 
