@@ -49,7 +49,7 @@ const usage = () => {
     seed        Run seed files
 
   Options:
-    --config <path>   Path to config file (default: ./drizzle.config.ts)
+    --config <path>   Path to config file (default: storium.config.ts or drizzle.config.ts)
     --help            Show this help message
 `)
 }
@@ -86,8 +86,12 @@ const main = async () => {
     process.exit(1)
   }
 
-  // Load config once — pass to functions that need it.
-  // --config flag overrides the default drizzle.config.ts path.
+  // Propagate --config to all layers via env var so resolveConfigPath()
+  // picks it up in generate()/push() when shelling out to drizzle-kit.
+  if (configPath) {
+    process.env.STORIUM_CONFIG = configPath
+  }
+
   const config = await loadConfig(configPath)
 
   switch (command) {
