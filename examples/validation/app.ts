@@ -115,13 +115,9 @@ console.log('Description transformed:', JSON.stringify(gadget.description))
 
 console.log('\n=== Validate stage ===')
 
+const invalidProduct = { name: '', slug: '!!!', price: -5, color: 'red' }
 try {
-  await products.create({
-    name: '',
-    slug: '!!!',
-    price: -5,
-    color: 'red',
-  })
+  await products.create(invalidProduct)
 } catch (err) {
   if (err instanceof ValidationError) {
     console.log(`Caught ${err.errors.length} errors:`)
@@ -133,12 +129,9 @@ try {
 
 console.log('\n=== Type checking ===')
 
+const wrongType = { name: 'Good Name', slug: 'good-slug', price: 'not a number' as any }
 try {
-  await products.create({
-    name: 'Good Name',
-    slug: 'good-slug',
-    price: 'not a number' as any,
-  })
+  await products.create(wrongType)
 } catch (err) {
   if (err instanceof ValidationError) {
     console.log('Type error:', err.errors[0]?.message)
@@ -149,9 +142,10 @@ try {
 
 console.log('\n=== Required fields ===')
 
+// @ts-expect-error — intentional: storium validates required fields at runtime
+const missingRequired = { name: 'Only a name' }
 try {
-  // @ts-expect-error — intentional: storium validates required fields at runtime
-  await products.create({ name: 'Only a name' })
+  await products.create(missingRequired)
 } catch (err) {
   if (err instanceof ValidationError) {
     console.log(`Missing ${err.errors.length} required fields:`)
@@ -163,8 +157,9 @@ try {
 
 console.log('\n=== Update validation ===')
 
+const invalidUpdate = { price: -100 }
 try {
-  await products.update(widget.id, { price: -100 })
+  await products.update(widget.id, invalidUpdate)
 } catch (err) {
   if (err instanceof ValidationError) {
     console.log('Update rejected:', err.errors[0]?.message)
@@ -175,15 +170,18 @@ try {
 
 console.log('\n=== Force mode ===')
 
-const forced = await products.update(widget.id, { price: -100 }, { force: true })
+const forceBypass = { price: -100 }
+const forced = await products.update(widget.id, forceBypass, { force: true })
 console.log('Force-updated (pipeline skipped):', forced)
 
 // --- Runtime schemas ---
 
 console.log('\n=== Runtime schemas ===')
 
-const good = products.schemas.insert.tryValidate({ name: 'Lamp', slug: 'lamp', price: 49 })
-const bad = products.schemas.insert.tryValidate({ name: 123, price: 'abc' })
+const validInput = { name: 'Lamp', slug: 'lamp', price: 49 }
+const invalidInput = { name: 123, price: 'abc' }
+const good = products.schemas.insert.tryValidate(validInput)
+const bad = products.schemas.insert.tryValidate(invalidInput)
 const jsonSchema = products.schemas.insert.toJsonSchema()
 const zodSchema = products.schemas.insert.zod
 

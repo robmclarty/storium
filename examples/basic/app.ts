@@ -70,14 +70,16 @@ console.log('After delete:', remaining)
 
 console.log('\n=== Validation ===')
 
+const emptyEmail = { email: '', name: 'Bad' }
 try {
-  await users.create({ email: '', name: 'Bad' })
+  await users.create(emptyEmail)
 } catch (err) {
   console.log('Empty email:', (err as Error).message)
 }
 
+const invalidEmail = { email: 'not-an-email', name: 'Bad' }
 try {
-  await users.create({ email: 'not-an-email', name: 'Bad' })
+  await users.create(invalidEmail)
 } catch (err) {
   console.log('Invalid email:', (err as Error).message)
 }
@@ -99,7 +101,8 @@ console.log('Created in transaction:', txResult.map((u: any) => u.name))
 console.log('\n=== Schemas ===')
 
 const jsonSchema = users.schemas.insert.toJsonSchema()
-const validation = users.schemas.insert.tryValidate({ email: 'valid@example.com' })
+const userInput = { email: 'valid@example.com' }
+const validation = users.schemas.insert.tryValidate(userInput)
 
 console.log('JSON Schema:', JSON.stringify(jsonSchema, null, 2))
 console.log('Validation:', validation)

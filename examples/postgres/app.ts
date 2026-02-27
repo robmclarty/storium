@@ -104,8 +104,9 @@ console.log(`Unpublished: "${unpub.title}" is back to ${unpub.status}`)
 
 console.log('\n=== Validation ===')
 
+const invalidUser = { email: '', name: 'Bad User' }
 try {
-  await users.create({ email: '', name: 'Bad User' })
+  await users.create(invalidUser)
 } catch (err) {
   if (err instanceof ValidationError) {
     console.log('Caught:', err.errors.map(e => `${e.field}: ${e.message}`))
@@ -144,7 +145,8 @@ console.log('Deleted post:', newPost.title, `— ${remainingPosts.length} remain
 console.log('\n=== Schemas ===')
 
 const insertSchema = users.schemas.insert.toJsonSchema()
-const validation = users.schemas.insert.tryValidate({ email: 'test@example.com' })
+const userInput = { email: 'test@example.com' }
+const validation = users.schemas.insert.tryValidate(userInput)
 
 console.log('Insert schema properties:', Object.keys(insertSchema.properties))
 console.log('Validation result:', validation.success ? 'valid' : validation.errors)
