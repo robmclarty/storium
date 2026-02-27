@@ -142,9 +142,9 @@ try {
 
 console.log('\n=== Required fields ===')
 
-// @ts-expect-error — intentional: storium validates required fields at runtime
 const missingRequired = { name: 'Only a name' }
 try {
+  // @ts-expect-error — intentional: storium validates required fields at runtime
   await products.create(missingRequired)
 } catch (err) {
   if (err instanceof ValidationError) {
