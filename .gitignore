@@ -10,6 +10,9 @@ npm-debug.log*
 .DS_Store
 Thumbs.db
 
+# AI
+.claude/
+
 # Output
 dist/
 build/
