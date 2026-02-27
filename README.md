@@ -37,7 +37,7 @@ const users = db.defineStore(usersTable)
 
 const user = await users.create({ email: 'alice@example.com', name: 'Alice' })
 const found = await users.findById(user.id)
-await users.update(user.id, { name: 'Alice B.' })
+const updated = await users.update(user.id, { name: 'Alice B.' })
 ```
 
 ## Features
@@ -323,7 +323,7 @@ const cachedUsers = withCache(users, redisAdapter, {
 ### Transactions
 
 ```typescript
-const result = await db.transaction(async (tx) => {
+const result = await db.transaction(async tx => {
   const user = await users.create({ name: 'Alice' }, { tx })
   const team = await teams.create({ name: 'Alpha', owner_id: user.id }, { tx })
   return { user, team }
@@ -379,7 +379,7 @@ app.post('/users', {
 
 ## Migrations
 
-Storium uses the same `drizzle.config.ts` that drizzle-kit already reads — no separate config file. If you already have a drizzle-kit setup, storium slots right in. Storium-specific keys like `seeds` sit alongside drizzle-kit keys; drizzle-kit ignores what it doesn't recognize.
+Storium can use the same `drizzle.config.ts` that drizzle-kit already reads — no separate config file. If you already have a drizzle-kit setup, storium slots right in. Storium-specific keys like `seeds` sit alongside drizzle-kit keys; drizzle-kit ignores what it doesn't recognize. But you can always name this file whatever you want. If you want to keep things simple, just call it `storium.config.ts` instead (same structure, still works).
 
 ```typescript
 import type { StoriumConfig } from 'storium'
@@ -387,9 +387,10 @@ import type { StoriumConfig } from 'storium'
 export default {
   dialect: 'postgresql',
   dbCredentials: { url: process.env.DATABASE_URL! },
-  schema: ['./src/entities/**/*.schema.ts'],
   out: './migrations',
-  seeds: './seeds',            // storium-only — drizzle-kit ignores this
+  schema: ['./src/entities/**/*.schema.ts'],
+  stores: ['./src/entities/**/*.store.ts'], // storium-only — drizzle-kit ignores this  
+  seeds: './seeds',                         // storium-only — drizzle-kit ignores this
 } satisfies StoriumConfig
 ```
 
