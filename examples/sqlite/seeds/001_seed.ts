@@ -1,22 +1,17 @@
 import { defineSeed } from 'storium/migrate'
-import { sql } from 'drizzle-orm'
 
-export default defineSeed(async ({ drizzle }) => {
-  // Seeds receive the raw Drizzle instance, so we use SQL directly.
-  // In a real app you might import and use your registered stores instead.
+export default defineSeed(async (db) => {
+  const { users, posts } = db.stores
 
-  drizzle.run(sql`
-    INSERT INTO users (id, email, password_hash, name, bio, metadata) VALUES
-      ('a0000000-0000-0000-0000-000000000001', 'alice@example.com', 'hashed_alice_pw', 'Alice', 'Writes about databases.', '{"role": "admin"}'),
-      ('a0000000-0000-0000-0000-000000000002', 'bob@example.com', 'hashed_bob_pw', 'Bob', 'Likes building APIs.', '{"role": "editor"}'),
-      ('a0000000-0000-0000-0000-000000000003', 'carol@example.com', 'hashed_carol_pw', 'Carol', null, '{"role": "viewer"}')
-  `)
+  // Create users with plain objects — no raw SQL needed
+  await users.create({ email: 'alice@example.com', password_hash: 'hashed_alice_pw', name: 'Alice', bio: 'Writes about databases.', metadata: { role: 'admin' } })
+  await users.create({ email: 'bob@example.com', password_hash: 'hashed_bob_pw', name: 'Bob', bio: 'Likes building APIs.', metadata: { role: 'editor' } })
+  await users.create({ email: 'carol@example.com', password_hash: 'hashed_carol_pw', name: 'Carol', metadata: { role: 'viewer' } })
 
-  drizzle.run(sql`
-    INSERT INTO posts (id, title, body, status, author_id, tags, metadata) VALUES
-      ('b0000000-0000-0000-0000-000000000001', 'Getting Started with Storium', 'A quick intro...', 'published', 'a0000000-0000-0000-0000-000000000001', '["tutorial", "storium"]', '{"featured": true}'),
-      ('b0000000-0000-0000-0000-000000000002', 'Advanced Queries', 'Deep dive into custom queries...', 'published', 'a0000000-0000-0000-0000-000000000001', '["advanced", "queries"]', '{"featured": false}'),
-      ('b0000000-0000-0000-0000-000000000003', 'Draft Post', 'Work in progress...', 'draft', 'a0000000-0000-0000-0000-000000000002', '["draft"]', '{}'),
-      ('b0000000-0000-0000-0000-000000000004', 'SQLite Tips', 'JSON functions, lightweight storage...', 'published', 'a0000000-0000-0000-0000-000000000002', '["tutorial", "sqlite"]', '{"featured": true}')
-  `)
+  // Create posts — ref() resolves the author's email to their UUID automatically.
+  // No need to track IDs from the create calls above.
+  await posts.create({ title: 'Getting Started with Storium', body: 'A quick intro...', status: 'published', author_id: users.ref({ email: 'alice@example.com' }), tags: ['tutorial', 'storium'], metadata: { featured: true } })
+  await posts.create({ title: 'Advanced Queries', body: 'Deep dive into custom queries...', status: 'published', author_id: users.ref({ email: 'alice@example.com' }), tags: ['advanced', 'queries'], metadata: { featured: false } })
+  await posts.create({ title: 'Draft Post', body: 'Work in progress...', status: 'draft', author_id: users.ref({ email: 'bob@example.com' }), tags: ['draft'] })
+  await posts.create({ title: 'SQLite Tips', body: 'JSON functions, lightweight storage...', status: 'published', author_id: users.ref({ email: 'bob@example.com' }), tags: ['tutorial', 'sqlite'], metadata: { featured: true } })
 })

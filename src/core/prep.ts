@@ -61,6 +61,34 @@ const TYPE_NAMES: Partial<Record<DslType, string>> = {
 // ---------------------------------------------------- Pipeline Stages --
 
 /**
+ * Stage 0: Resolve promises
+ * If any input values are Promises, resolve them concurrently before
+ * proceeding. Enables patterns like:
+ *   create({ user_id: users.ref({ email: 'alice@example.com' }) })
+ * where ref() returns a Promise but the caller doesn't need to await it.
+ */
+const resolveInput = async (
+  input: Record<string, any>
+): Promise<Record<string, any>> => {
+  const keys = Object.keys(input)
+  const promiseEntries: Array<{ key: string; promise: Promise<any> }> = []
+
+  for (const key of keys) {
+    if (input[key] instanceof Promise) {
+      promiseEntries.push({ key, promise: input[key] })
+    }
+  }
+
+  if (promiseEntries.length === 0) return input
+
+  const resolved = { ...input }
+  const results = await Promise.all(promiseEntries.map(e => e.promise))
+  promiseEntries.forEach((e, i) => { resolved[e.key] = results[i] })
+
+  return resolved
+}
+
+/**
  * Stage 1: Filter
  * Remove keys not defined in the column config. If `onlyMutables` is true,
  * further restrict to mutable columns only.
@@ -237,8 +265,11 @@ export const createPrepFn = (
     // Skip everything if forced
     if (force) return input
 
+    // Stage 0: Resolve any promise values in input
+    const resolved = await resolveInput(input)
+
     // Stage 1: Filter
-    const filtered = filterInput(input, columns, access, onlyMutables)
+    const filtered = filterInput(resolved, columns, access, onlyMutables)
 
     // Stage 2: Transform
     const transformed = await transformInput(filtered, columns)

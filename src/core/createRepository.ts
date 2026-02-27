@@ -274,6 +274,19 @@ const buildDefaultCrud = (
     return result.rowCount ?? result.affectedRows ?? result.changes ?? 0
   }
 
+  const ref = async (filter: Record<string, any>, opts?: PrepOptions) => {
+    const row = await findOne(filter, opts)
+    if (!row) {
+      const filterStr = Object.entries(filter)
+        .map(([k, v]) => `${k} = ${JSON.stringify(v)}`)
+        .join(', ')
+      throw new StoreError(
+        `ref(): no '${tableName}' row where ${filterStr}`
+      )
+    }
+    return (row as any)[primaryKey]
+  }
+
   return {
     prep,
     find,
@@ -285,6 +298,7 @@ const buildDefaultCrud = (
     update,
     destroy,
     destroyAll,
+    ref,
   }
 }
 
@@ -338,6 +352,7 @@ export const createCreateRepository = (
       update: defaults.update,
       destroy: defaults.destroy,
       destroyAll: defaults.destroyAll,
+      ref: defaults.ref,
     }
 
     // Step 3: Invoke each custom query function with ctx to produce

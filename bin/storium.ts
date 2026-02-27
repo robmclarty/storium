@@ -149,7 +149,7 @@ const main = async () => {
       const db = connect(config)
       const seedsDir = config.seeds ?? './seeds'
       try {
-        const result = await seed(seedsDir, db)
+        const result = await seed(seedsDir, db, config)
         console.log(result.message)
         process.exit(result.success ? 0 : 1)
       } finally {

@@ -287,6 +287,7 @@ export type RepositoryContext<
   update: (id: string | number, input: UpdateType<TColumns>, opts?: PrepOptions) => Promise<SelectType<TColumns>>
   destroy: (id: string | number, opts?: PrepOptions) => Promise<void>
   destroyAll: (filters: Record<string, any>, opts?: PrepOptions) => Promise<number>
+  ref: (filter: Record<string, any>, opts?: PrepOptions) => Promise<string | number>
 }
 
 /** Shorthand alias for `RepositoryContext` — use as `ctx: Ctx` in custom queries. */
@@ -314,6 +315,8 @@ export type DefaultCRUD<TColumns extends ColumnsConfig = ColumnsConfig> = {
   update: (id: string | number, input: UpdateType<TColumns>, opts?: PrepOptions) => Promise<SelectType<TColumns>>
   destroy: (id: string | number, opts?: PrepOptions) => Promise<void>
   destroyAll: (filters: Record<string, any>, opts?: PrepOptions) => Promise<number>
+  /** Look up a row by filter and return its primary key value. */
+  ref: (filter: Record<string, any>, opts?: PrepOptions) => Promise<string | number>
 }
 
 /**
@@ -406,6 +409,8 @@ export type ConnectConfig = {
   assertions?: AssertionRegistry
   /** Seeds directory path (storium-specific; drizzle-kit ignores this). */
   seeds?: string
+  /** Glob path(s) to store files (storium-specific; drizzle-kit ignores this). */
+  stores?: string | string[]
 }
 
 /**
