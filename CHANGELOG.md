@@ -4,13 +4,40 @@ All notable changes to Storium are documented here.
 
 This project uses [Semantic Versioning](https://semver.org/). Pre-1.0 releases may include breaking changes in minor versions.
 
-## [Unreleased]
+## [0.8.3] — 2026-02-28
 
 ### Added
-- `dialect.ts` unit tests — all 13 DSL types across all 4 dialects (93 tests).
+- New documentation: `docs/column-naming.md` — explains camelCase/snake_case conventions, `dbName` override, timestamps, and raw columns.
+
+## [0.8.2] — 2026-02-28
+
+### Added
+- Automatic camelCase → snake_case column name mapping: DSL keys like `inStock` produce `in_stock` in the database. Snake_case input is idempotent.
+- `dbName` column property for explicit database column name override, bypassing auto-conversion.
+- `TimestampColumns` type export — lets consumers reference the shape of injected timestamp columns.
+- `ValidatorTest` type export — consumer-friendly alias for the `test` function signature in `validate` callbacks.
+- `QueriesConfig` type export — proper callable constraint replacing `Record<string, Function>` for custom queries.
+- `toSnakeCase()` utility export.
 
 ### Changed
-- Nothing yet.
+- **Timestamps default to enabled (opt-out).** Omitting the `timestamps` option now injects `createdAt` / `updatedAt` columns automatically. Pass `{ timestamps: false }` to opt out.
+- **Timestamp columns use camelCase keys.** `created_at` → `createdAt`, `updated_at` → `updatedAt` in app code (database columns remain `created_at` / `updated_at`).
+- `BoundDefineTable`, `defineTable()`, and `StoriumInstance.defineTable` now use function overloads so the return type includes `TimestampColumns` when timestamps are enabled.
+
+### Fixed
+- `writeOnly` + `mutable` columns were incorrectly excluded from `insertable` and `mutable` runtime access lists. They can now be written via `create()` and `update()` as intended.
+- Replaced all uses of the banned `Function` type with `QueriesConfig` — custom query methods now have a proper callable constraint in `Store`, `Repository`, and `StoreDefinition` types.
+
+## [0.8.1] — 2026-02-28
+
+### Added
+- Composite primary key support.
+- `dialect.ts` unit tests — all 13 DSL types across all 4 dialects (93 tests).
+
+## [0.8.0] — 2026-02-28
+
+### Added
+- `toJsonSchema()` options: `properties`, `required`, `title`, `description`, `$id`.
 
 ## [0.7.10] — 2026-02-27
 
