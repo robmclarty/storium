@@ -358,21 +358,19 @@ Because helpers are plain objects, they compose with each other and with Storium
 
 ## Fastify Integration
 
-Storium's JSON Schema output plugs directly into Fastify's route validation via `toJsonSchema()`. Extend it inline as needed:
+Storium's JSON Schema output plugs directly into Fastify's route validation via `toJsonSchema()`. Extra properties, required fields, and OpenAPI metadata can be passed as options:
 
 ```typescript
-const insertSchema = users.schemas.createSchema.toJsonSchema()
+const { createSchema, selectSchema } = users.schemas
 
 app.post('/users', {
   schema: {
-    body: {
-      ...insertSchema,
-      properties: {
-        ...insertSchema.properties,
-        invite_code: { type: 'string', minLength: 8 },
-      },
-      required: [...(insertSchema.required ?? []), 'invite_code'],
-    },
+    body: createSchema.toJsonSchema({
+      title: 'CreateUser',
+      properties: { invite_code: { type: 'string', minLength: 8 } },
+      required: ['invite_code'],
+    }),
+    response: { 201: selectSchema.toJsonSchema() },
   },
 }, handler)
 ```

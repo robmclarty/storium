@@ -209,8 +209,8 @@ Each schema variant (`createSchema`, `updateSchema`, `selectSchema`, `fullSchema
 |------|-------------|
 | `RuntimeSchema<T>` | Wraps a Zod schema with `validate`, `tryValidate`, `toJsonSchema`, and `zod` properties. |
 | `SchemaSet<TColumns>` | `{ createSchema, updateSchema, selectSchema, fullSchema }` — typed runtime schemas derived from column definitions. |
-| `JsonSchema` | A plain JSON Schema object with `type`, `properties`, `required`, `additionalProperties`. |
-| `JsonSchemaOptions` | Options for `toJsonSchema()`: `{ additionalProperties? }`. |
+| `JsonSchema` | A plain JSON Schema object with `type`, `properties`, `required`, `additionalProperties`, `title?`, `description?`, `$id?`. |
+| `JsonSchemaOptions` | Options for `toJsonSchema()`: `{ additionalProperties?, properties?, required?, title?, description?, $id? }`. |
 | `FieldError` | `{ field: string, message: string }` — a single validation error entry. |
 | `ValidationResult<T>` | `{ success, data?, errors? }` — result from `tryValidate()`. |
 

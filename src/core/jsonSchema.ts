@@ -115,15 +115,30 @@ const buildJsonSchema = (
     properties[key] = columnToJsonSchema(config)
   }
 
+  // Merge extra properties from options
+  if (opts.properties) {
+    Object.assign(properties, opts.properties)
+  }
+
+  // Merge required: base + extras
+  const allRequired = [
+    ...requiredKeys,
+    ...(opts.required ?? []),
+  ]
+
   const schema: JsonSchema = {
     type: 'object',
     properties,
     additionalProperties: opts.additionalProperties ?? false,
   }
 
-  if (requiredKeys.length > 0) {
-    schema.required = requiredKeys
+  if (allRequired.length > 0) {
+    schema.required = allRequired
   }
+
+  if (opts.title) schema.title = opts.title
+  if (opts.description) schema.description = opts.description
+  if (opts.$id) schema.$id = opts.$id
 
   return schema
 }

@@ -204,7 +204,13 @@ const result = createSchema.tryValidate(input)
 
 // Generate JSON Schema object (for Fastify, Ajv, OpenAPI)
 const jsonSchema = createSchema.toJsonSchema()
-const permissive = createSchema.toJsonSchema({ additionalProperties: true })
+
+// Extend with extra properties, required fields, and OpenAPI metadata
+const bodySchema = createSchema.toJsonSchema({
+  title: 'CreateUser',
+  properties: { invite_code: { type: 'string', minLength: 8 } },
+  required: ['invite_code'],
+})
 
 // Escape hatch to the underlying Zod schema
 const extended = createSchema.zod.extend({ invite_code: z.string() })

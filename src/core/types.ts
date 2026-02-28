@@ -156,9 +156,20 @@ export type ValidationResult<T = any> = {
   errors?: FieldError[]
 }
 
-/** JSON Schema options. */
+/** Options for `toJsonSchema()`. */
 export type JsonSchemaOptions = {
+  /** Allow properties not defined in the schema (default: false). */
   additionalProperties?: boolean
+  /** Extra properties to merge into the generated schema. */
+  properties?: Record<string, any>
+  /** Extra required field names to append to the generated required array. */
+  required?: string[]
+  /** Schema title (for OpenAPI / Swagger). */
+  title?: string
+  /** Schema description (for OpenAPI / Swagger). */
+  description?: string
+  /** Schema $id (for Fastify shared schemas via `fastify.addSchema()`). */
+  $id?: string
 }
 
 /** A plain JSON Schema object. */
@@ -167,6 +178,9 @@ export type JsonSchema = {
   properties: Record<string, any>
   required?: string[]
   additionalProperties?: boolean
+  title?: string
+  description?: string
+  $id?: string
 }
 
 /**

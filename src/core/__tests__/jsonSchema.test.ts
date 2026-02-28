@@ -127,4 +127,44 @@ describe('buildJsonSchemas', () => {
       expect(Object.keys(schema.properties)).toContain('raw_col')
     })
   })
+
+  describe('extended options', () => {
+    it('merges extra properties into the schema', () => {
+      const schema = schemas.createSchema({
+        properties: { invite_code: { type: 'string', minLength: 8 } },
+      })
+      expect(schema.properties.invite_code).toEqual({ type: 'string', minLength: 8 })
+      expect(schema.properties.email).toBeDefined()
+    })
+
+    it('appends extra required fields', () => {
+      const schema = schemas.createSchema({
+        required: ['invite_code'],
+      })
+      expect(schema.required).toContain('email')
+      expect(schema.required).toContain('invite_code')
+    })
+
+    it('sets title on the schema', () => {
+      const schema = schemas.createSchema({ title: 'CreateUser' })
+      expect(schema.title).toBe('CreateUser')
+    })
+
+    it('sets description on the schema', () => {
+      const schema = schemas.createSchema({ description: 'Create a new user' })
+      expect(schema.description).toBe('Create a new user')
+    })
+
+    it('sets $id on the schema', () => {
+      const schema = schemas.createSchema({ $id: 'User' })
+      expect(schema.$id).toBe('User')
+    })
+
+    it('omits title/description/$id when not provided', () => {
+      const schema = schemas.createSchema()
+      expect(schema.title).toBeUndefined()
+      expect(schema.description).toBeUndefined()
+      expect(schema.$id).toBeUndefined()
+    })
+  })
 })
