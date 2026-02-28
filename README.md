@@ -140,7 +140,7 @@ indexes: {
 
 The Quick Start uses `db.defineTable()` + `db.defineStore()` — the simplest path. But as a project grows, you may want schema definitions separated from store logic. Three reasons:
 
-- **Migration tooling** — `drizzle-kit` imports schema files at module level, before any database connection exists. Standalone `defineTable()` files work at module scope; `db.defineStore()` can't because it requires a live connection.
+- **Migration tooling** — `drizzle-kit` imports schema files at module level, before any database connection exists. Standalone `defineTable()` files work at module scope; `defineStore()` can't because it requires a live db connection (think of the table as the blueprint, and the store as the actual construction).
 - **Organization** — Schemas, queries, and wiring live in separate files. Easier to navigate when you have 50+ tables.
 - **Testability** — Store definitions are inert DTOs. You can unit-test query functions or compose stores without a live database.
 
