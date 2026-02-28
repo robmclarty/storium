@@ -35,6 +35,9 @@ export type TestFn = (
   customError?: string | ((defaultMessage: string) => string)
 ) => void
 
+/** Consumer-friendly alias for the `test` function signature in `validate` callbacks. */
+export type ValidatorTest = TestFn
+
 // --------------------------------------------------- Column Configuration --
 
 /** Base metadata that applies to ALL column modes (DSL, DSL+custom, raw). */
@@ -71,6 +74,12 @@ export type DslColumnConfig = BaseColumnMeta & {
   default?: 'now' | 'random_uuid' | string | number | boolean | Record<string, unknown> | unknown[]
   /** Element type for array columns (e.g. 'text', 'integer', 'uuid'). */
   items?: DslType
+  /**
+   * Override the database column name. The DSL key becomes the JS property
+   * name while `dbName` is used as the actual SQL column name.
+   * Used internally for timestamp columns (camelCase JS, snake_case DB).
+   */
+  dbName?: string
   /** Modify the auto-built Drizzle column before finalization. */
   custom?: (col: any) => any
 }
@@ -249,8 +258,8 @@ export type PrepOptions = {
    * Each spec is `{ column, direction }` where direction defaults to `'asc'`.
    *
    * @example
-   * await users.findAll({ orderBy: { column: 'created_at', direction: 'desc' } })
-   * await users.findAll({ orderBy: [{ column: 'last_name' }, { column: 'first_name' }] })
+   * await users.findAll({ orderBy: { column: 'createdAt', direction: 'desc' } })
+   * await users.findAll({ orderBy: [{ column: 'lastName' }, { column: 'firstName' }] })
    */
   orderBy?: OrderBySpec | OrderBySpec[]
   /**
@@ -323,6 +332,12 @@ export type Ctx<
 export type CustomQueryFn<T extends TableDef = TableDef> =
   (ctx: RepositoryContext<T>) => (...args: any[]) => any
 
+/**
+ * Constraint type for custom query function records.
+ * Each entry is a factory: receives ctx, returns the actual query function.
+ */
+export type QueriesConfig = Record<string, (ctx: any) => (...args: any[]) => any>
+
 /** Default CRUD operations present on every store/repository. */
 export type DefaultCRUD<TColumns extends ColumnsConfig = ColumnsConfig> = {
   find: (filters: Record<string, any>, opts?: PrepOptions) => Promise<SelectType<TColumns>[]>
@@ -344,7 +359,7 @@ export type DefaultCRUD<TColumns extends ColumnsConfig = ColumnsConfig> = {
  */
 export type Store<
   TColumns extends ColumnsConfig = ColumnsConfig,
-  TQueries extends Record<string, Function> = {}
+  TQueries extends QueriesConfig = {}
 > = DefaultCRUD<TColumns> & {
   schemas: SchemaSet<TColumns>
 } & {
@@ -357,7 +372,7 @@ export type Store<
  * StoreDefinition (which would create a circular dependency with types.ts).
  */
 export type InferStore<T> =
-  T extends { tableDef: TableDef<infer C extends ColumnsConfig>; queries: infer Q extends Record<string, Function> }
+  T extends { tableDef: TableDef<infer C extends ColumnsConfig>; queries: infer Q extends QueriesConfig }
     ? Store<C, Q>
     : Store
 
@@ -366,7 +381,7 @@ export type InferStore<T> =
  */
 export type Repository<
   TTableDef extends TableDef = TableDef,
-  TQueries extends Record<string, Function> = {}
+  TQueries extends QueriesConfig = {}
 > = DefaultCRUD<TTableDef extends TableDef<infer C> ? C : ColumnsConfig> & {
   schemas: SchemaSet<TTableDef extends TableDef<infer C> ? C : ColumnsConfig>
 } & {
@@ -450,18 +465,25 @@ export type StoriumInstance = {
   /** The active dialect. */
   dialect: Dialect
   /** Create a table definition (pre-bound to dialect + assertions). */
-  defineTable: <TColumns extends ColumnsConfig>(
-    name: string,
-    columns: TColumns,
-    options?: TableOptions
-  ) => TableDef<TColumns>
+  defineTable: {
+    <TColumns extends ColumnsConfig>(
+      name: string,
+      columns: TColumns,
+      options: TableOptions & { timestamps: false }
+    ): TableDef<TColumns>
+    <TColumns extends ColumnsConfig>(
+      name: string,
+      columns: TColumns,
+      options?: TableOptions
+    ): TableDef<TColumns & TimestampColumns>
+  }
   /**
    * Create a live store from a table definition (simple path — no register step).
    *
    * @param tableDef - A table from `defineTable()` or `db.defineTable()`
    * @param queries - Optional custom query functions
    */
-  defineStore: <TColumns extends ColumnsConfig, TQueries extends Record<string, Function> = {}>(
+  defineStore: <TColumns extends ColumnsConfig, TQueries extends QueriesConfig = {}>(
     tableDef: TableDef<TColumns>,
     queries?: TQueries
   ) => Store<TColumns, TQueries>
@@ -482,7 +504,14 @@ export type TableOptions = {
   indexes?: IndexesConfig
   constraints?: (table: any) => Record<string, any>
   primaryKey?: string | string[]
+  /** Inject createdAt/updatedAt columns. Default: true. Set to false to opt out. */
   timestamps?: boolean
+}
+
+/** Column configs for auto-injected timestamp columns. */
+export type TimestampColumns = {
+  createdAt: { type: 'timestamp'; notNull: true; default: 'now' }
+  updatedAt: { type: 'timestamp'; notNull: true; default: 'now' }
 }
 
 // ------------------------------------------- Compile-Time Type Utilities --

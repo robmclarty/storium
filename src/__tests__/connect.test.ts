@@ -62,7 +62,7 @@ describe('register', () => {
     const table = db.defineTable('items', {
       id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
       label: { type: 'varchar', maxLength: 255, mutable: true, required: true },
-    })
+    }, { timestamps: false })
 
     const itemStore = defineStore(table)
     const { items } = db.register({ items: itemStore })
@@ -84,7 +84,7 @@ describe('db.defineStore (simple path)', () => {
     const table = db.defineTable('widgets', {
       id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
       name: { type: 'varchar', maxLength: 255, mutable: true, required: true },
-    })
+    }, { timestamps: false })
     const widgets = db.defineStore(table)
 
     expect(typeof widgets.create).toBe('function')
@@ -106,7 +106,7 @@ describe('transaction', () => {
     const table = db.defineTable('tx_items', {
       id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
       label: { type: 'varchar', maxLength: 255, mutable: true, required: true },
-    })
+    }, { timestamps: false })
     db.drizzle.run(sql`
       CREATE TABLE IF NOT EXISTS tx_items (id TEXT PRIMARY KEY, label TEXT NOT NULL)
     `)
@@ -171,7 +171,7 @@ describe('assertions integration', () => {
         required: true,
         validate: (v, test) => { test(v, 'is_slug', 'Invalid slug') },
       },
-    })
+    }, { timestamps: false })
 
     db.drizzle.run(sql`
       CREATE TABLE IF NOT EXISTS slugs (id TEXT PRIMARY KEY, slug TEXT NOT NULL)

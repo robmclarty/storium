@@ -148,8 +148,18 @@ export const getDialectMapping = (dialect: Dialect): DialectMapping => {
 }
 
 /**
+ * Convert a camelCase string to snake_case for database column names.
+ * Idempotent: snake_case input passes through unchanged.
+ */
+export const toSnakeCase = (str: string): string =>
+  str.replace(/([a-z0-9])([A-Z])/g, '$1_$2').toLowerCase()
+
+/**
  * Build a single Drizzle column from a DSL column config.
  * Applies: type → primaryKey → notNull → default → custom
+ *
+ * The JS key (name) is automatically converted to snake_case for the
+ * database column name. Use `config.dbName` to override explicitly.
  */
 export const buildDslColumn = (
   name: string,
@@ -166,7 +176,7 @@ export const buildDslColumn = (
     )
   }
 
-  let col = factory(name, config)
+  let col = factory(config.dbName ?? toSnakeCase(name), config)
 
   if (config.primaryKey) col = col.primaryKey()
   if (config.notNull)    col = col.notNull()

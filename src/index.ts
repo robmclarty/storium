@@ -75,12 +75,14 @@ export type {
   TableDef,
   TableAccess,
   TableOptions,
+  TimestampColumns,
   Store,
   Repository,
   DefaultCRUD,
   RepositoryContext,
   Ctx,
   CustomQueryFn,
+  QueriesConfig,
   OrderBySpec,
   PrepOptions,
 
@@ -96,6 +98,7 @@ export type {
   AssertionFn,
   AssertionRegistry,
   TestFn,
+  ValidatorTest,
 
   // Cache
   CacheAdapter,

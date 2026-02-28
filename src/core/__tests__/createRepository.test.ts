@@ -20,7 +20,7 @@ beforeAll(() => {
     },
     name: { type: 'varchar', maxLength: 255, mutable: true },
     age: { type: 'integer', mutable: true },
-  })
+  }, { timestamps: false })
 
   db.drizzle.run(sql`
     CREATE TABLE IF NOT EXISTS users (
@@ -156,7 +156,7 @@ describe('custom queries', () => {
     const table = db.defineTable('items', {
       id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
       label: { type: 'varchar', maxLength: 255, mutable: true, required: true },
-    })
+    }, { timestamps: false })
 
     db.drizzle.run(sql`
       CREATE TABLE IF NOT EXISTS items (
@@ -186,6 +186,7 @@ describe('composite primary keys', () => {
       group_id: { type: 'uuid', required: true },
       role: { type: 'varchar', maxLength: 50, mutable: true },
     }, {
+      timestamps: false,
       primaryKey: ['user_id', 'group_id'],
     })
 

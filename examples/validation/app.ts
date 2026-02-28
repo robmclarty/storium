@@ -58,7 +58,7 @@ const productsTable = defineTable('memory')('products', {
     mutable: true,
     transform: (v: string) => v.trim(),
   },
-})
+}, { timestamps: false })
 
 const productStore = defineStore(productsTable)
 

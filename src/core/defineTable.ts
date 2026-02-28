@@ -34,6 +34,7 @@ import type {
   TableAccess,
   SchemaSet,
   AssertionRegistry,
+  TimestampColumns,
 } from './types'
 
 // --------------------------------------------------------- Storium Meta --
@@ -67,22 +68,23 @@ import { loadDialectFromConfig } from './configLoader'
 // ------------------------------------------------------------ Helpers --
 
 /**
- * Inject timestamp columns if `timestamps: true` is set in options.
- * Adds `created_at` and `updated_at` unless they're already defined.
+ * Inject timestamp columns unless already defined by the user.
+ * Uses camelCase keys; the general toSnakeCase mechanism in dialect.ts
+ * handles the DB column naming (createdAt → created_at).
  */
 const injectTimestamps = (columns: ColumnsConfig): ColumnsConfig => {
   const result = { ...columns }
 
-  if (!('created_at' in result)) {
-    result.created_at = {
+  if (!('createdAt' in result)) {
+    result.createdAt = {
       type: 'timestamp',
       notNull: true,
       default: 'now',
     }
   }
 
-  if (!('updated_at' in result)) {
-    result.updated_at = {
+  if (!('updatedAt' in result)) {
+    result.updatedAt = {
       type: 'timestamp',
       notNull: true,
       default: 'now',
@@ -124,12 +126,12 @@ const deriveAccess = (columns: ColumnsConfig): TableAccess => {
 
   const writeOnly = allKeys.filter(k => columns[k]?.writeOnly === true)
   const selectable = allKeys.filter(k => !columns[k]?.writeOnly)
-  const mutable = allKeys.filter(k => columns[k]?.mutable === true && !columns[k]?.writeOnly)
+  const mutable = allKeys.filter(k => columns[k]?.mutable === true)
 
   // Insertable: mutable columns + required columns (even if not mutable,
   // a required column must be provided on insert)
   const insertable = allKeys.filter(k =>
-    (columns[k]?.mutable === true || columns[k]?.required === true) && !columns[k]?.writeOnly
+    columns[k]?.mutable === true || columns[k]?.required === true
   )
 
   return { selectable, mutable, insertable, writeOnly }
@@ -220,7 +222,7 @@ export const buildDefineTable = (
     options: TableOptions = {}
   ): TableDef<TColumns> => {
     // Inject timestamp columns if requested
-    const resolvedColumns = options.timestamps
+    const resolvedColumns = options.timestamps !== false
       ? injectTimestamps(columns) as TColumns
       : columns
 
@@ -305,11 +307,18 @@ export const buildDefineTable = (
 
 // -------------------------------------------------------- Public API --
 
-type BoundDefineTable = <TColumns extends ColumnsConfig>(
-  name: string,
-  columns: TColumns,
-  options?: TableOptions
-) => TableDef<TColumns>
+type BoundDefineTable = {
+  <TColumns extends ColumnsConfig>(
+    name: string,
+    columns: TColumns,
+    options: TableOptions & { timestamps: false }
+  ): TableDef<TColumns>
+  <TColumns extends ColumnsConfig>(
+    name: string,
+    columns: TColumns,
+    options?: TableOptions
+  ): TableDef<TColumns & TimestampColumns>
+}
 
 /**
  * Define a database table with co-located column metadata.
@@ -325,8 +334,13 @@ export function defineTable(dialect: Dialect): BoundDefineTable
 export function defineTable<TColumns extends ColumnsConfig>(
   name: string,
   columns: TColumns,
-  options?: TableOptions
+  options: TableOptions & { timestamps: false }
 ): TableDef<TColumns>
+export function defineTable<TColumns extends ColumnsConfig>(
+  name: string,
+  columns: TColumns,
+  options?: TableOptions
+): TableDef<TColumns & TimestampColumns>
 export function defineTable(first?: string, columns?: any, options?: any) {
   // Overload 3: no-arg → auto-load dialect, return bound function
   if (first === undefined) {

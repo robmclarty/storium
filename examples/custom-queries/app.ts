@@ -29,7 +29,7 @@ const articlesTable = defineTable('memory')('articles', {
   status: { type: 'varchar', maxLength: 20, mutable: true, required: true },
   author_id: { type: 'uuid', mutable: true, required: true },
   view_count: { type: 'integer', mutable: true },
-})
+}, { timestamps: false })
 
 // --- Store with custom queries ---
 

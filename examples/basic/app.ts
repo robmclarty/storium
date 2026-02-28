@@ -36,6 +36,7 @@ const usersTable = db.defineTable('users', {
   },
   name: { type: 'varchar', maxLength: 255, mutable: true },
 }, {
+  timestamps: false,
   indexes: { email: { unique: true } },
 })
 

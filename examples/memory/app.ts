@@ -18,8 +18,8 @@ const productsTable = defineTable('memory')('products', {
   id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
   name: { type: 'varchar', maxLength: 255, mutable: true, required: true },
   price: { type: 'integer', mutable: true, required: true },
-  in_stock: { type: 'boolean', mutable: true },
-})
+  inStock: { type: 'boolean', mutable: true },
+}, { timestamps: false })
 
 const productStore = defineStore(productsTable)
 
@@ -49,9 +49,9 @@ const products2 = setupDb(db2)
 
 // --- Populate db1 ---
 
-await products1.create({ name: 'Widget', price: 999, in_stock: true })
-await products1.create({ name: 'Gadget', price: 2499, in_stock: false })
-await products1.create({ name: 'Doohickey', price: 499, in_stock: true })
+await products1.create({ name: 'Widget', price: 999, inStock: true })
+await products1.create({ name: 'Gadget', price: 2499, inStock: false })
+await products1.create({ name: 'Doohickey', price: 499, inStock: true })
 
 // --- Isolation: db2 sees nothing from db1 ---
 
@@ -66,8 +66,8 @@ console.log(`db1: ${db1All.length} products, db2: ${db2All.length} products`)
 
 console.log('\n=== Scratch Pad ===')
 
-const proto = await products2.create({ name: 'Prototype', price: 0, in_stock: false })
-const updated = await products2.update(proto.id, { price: 1299, in_stock: true })
+const proto = await products2.create({ name: 'Prototype', price: 0, inStock: false })
+const updated = await products2.update(proto.id, { price: 1299, inStock: true })
 
 console.log('Created:', proto.name, '— updated price:', updated.price)
 

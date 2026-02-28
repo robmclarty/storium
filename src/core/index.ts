@@ -5,7 +5,7 @@ export { createCreateRepository } from './createRepository'
 export { createPrepFn } from './prep'
 export { createTestFn, createAssertionRegistry, BUILTIN_ASSERTIONS } from './test'
 export { ValidationError, ConfigError, SchemaError, StoreError } from './errors'
-export { getDialectMapping, buildDslColumn } from './dialect'
+export { getDialectMapping, buildDslColumn, toSnakeCase } from './dialect'
 export { buildIndexes } from './indexes'
 export { buildJsonSchemas } from './jsonSchema'
 export { buildZodSchemas } from './zodSchema'
@@ -19,6 +19,7 @@ export type {
   AssertionFn,
   AssertionRegistry,
   TestFn,
+  ValidatorTest,
   DslType,
   DslColumnConfig,
   RawColumnConfig,
@@ -41,6 +42,7 @@ export type {
   RepositoryContext,
   Ctx,
   CustomQueryFn,
+  QueriesConfig,
   DefaultCRUD,
   Store,
   Repository,
@@ -50,6 +52,7 @@ export type {
   FromDrizzleOptions,
   StoriumInstance,
   TableOptions,
+  TimestampColumns,
   PkValue,
   Promisable,
   ResolveColumnType,

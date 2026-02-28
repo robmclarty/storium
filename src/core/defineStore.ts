@@ -16,6 +16,7 @@
 
 import type {
   ColumnsConfig,
+  QueriesConfig,
   TableDef,
 } from './types'
 import { hasMeta } from './defineTable'
@@ -33,7 +34,7 @@ import { ConfigError } from './errors'
  */
 export type StoreDefinition<
   TColumns extends ColumnsConfig = ColumnsConfig,
-  TQueries extends Record<string, Function> = {}
+  TQueries extends QueriesConfig = {}
 > = {
   readonly __storeDefinition: true
   tableDef: TableDef<TColumns>
@@ -60,7 +61,7 @@ export const isStoreDefinition = (value: any): value is StoreDefinition =>
  */
 const makeStoreDefinition = <
   TColumns extends ColumnsConfig,
-  TQueries extends Record<string, Function> = {}
+  TQueries extends QueriesConfig = {}
 >(
   tableDef: TableDef<TColumns>,
   queries: TQueries
@@ -85,7 +86,7 @@ const makeStoreDefinition = <
  */
 export function defineStore<
   TColumns extends ColumnsConfig,
-  TQueries extends Record<string, Function> = {}
+  TQueries extends QueriesConfig = {}
 >(
   tableDef: TableDef<TColumns>,
   queries?: TQueries
