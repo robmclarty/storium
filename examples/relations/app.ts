@@ -5,6 +5,7 @@
  *   - withBelongsTo: LEFT JOIN a related table (posts → authors)
  *   - withMembers: many-to-many via join table (posts ↔ tags)
  *   - Custom JOIN query: raw Drizzle escape hatch
+ *   - Composite primary keys on join tables
  *   - ref(): FK resolution by filter (no manual ID tracking)
  *   - Full migration lifecycle: generate → migrate → seed
  *
@@ -38,7 +39,7 @@ console.log('Generated, migrated, and seeded.')
 
 // --- Register stores ---
 
-const { authors, posts, tags } = db.register({
+const { authors, posts, tags, postTags } = db.register({
   authors: authorStore,
   posts: postStore,
   tags: tagStore,
@@ -110,6 +111,20 @@ console.log('Posts tagged "javascript":', jsPosts.map((p: any) => p.title))
 
 const dbPosts = await tags.findPostsByTag('databases')
 console.log('Posts tagged "databases":', dbPosts.map((p: any) => p.title))
+
+// --- Composite PK: direct join table operations ---
+
+console.log('\n=== Composite PK ===')
+
+// The post_tags join table uses primaryKey: ['post_id', 'tag_id'] — no synthetic id column.
+// findById and destroy accept an array of values matching the PK column order.
+const membership = await postTags.findById([allPosts[0].id, tagJS.id])
+console.log('Find by composite PK:', membership ? 'found' : 'not found')
+
+// Clean up a membership by composite PK
+await postTags.destroy([allPosts[1].id, tagDB.id])
+const afterDestroy = await posts.getMemberCount(allPosts[1].id)
+console.log('Post 2 tags after composite destroy:', afterDestroy)
 
 // --- Teardown ---
 

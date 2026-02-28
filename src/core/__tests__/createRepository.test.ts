@@ -176,3 +176,76 @@ describe('custom queries', () => {
     expect(found.id).toBe(item.id)
   })
 })
+
+describe('composite primary keys', () => {
+  let memberships: any
+
+  beforeAll(() => {
+    const table = db.defineTable('memberships', {
+      user_id: { type: 'uuid', required: true },
+      group_id: { type: 'uuid', required: true },
+      role: { type: 'varchar', maxLength: 50, mutable: true },
+    }, {
+      primaryKey: ['user_id', 'group_id'],
+    })
+
+    db.drizzle.run(sql`
+      CREATE TABLE IF NOT EXISTS memberships (
+        user_id TEXT NOT NULL,
+        group_id TEXT NOT NULL,
+        role TEXT,
+        PRIMARY KEY (user_id, group_id)
+      )
+    `)
+
+    memberships = db.defineStore(table)
+  })
+
+  it('creates a record with composite PK', async () => {
+    const record = await memberships.create(
+      { user_id: 'u1', group_id: 'g1', role: 'admin' },
+      { force: true }
+    )
+    expect(record.user_id).toBe('u1')
+    expect(record.group_id).toBe('g1')
+    expect(record.role).toBe('admin')
+  })
+
+  it('findById with composite PK array', async () => {
+    const found = await memberships.findById(['u1', 'g1'])
+    expect(found).not.toBeNull()
+    expect(found.role).toBe('admin')
+  })
+
+  it('findById returns null for non-existent composite PK', async () => {
+    const found = await memberships.findById(['u1', 'nonexistent'])
+    expect(found).toBeNull()
+  })
+
+  it('update with composite PK', async () => {
+    const updated = await memberships.update(
+      ['u1', 'g1'],
+      { role: 'member' }
+    )
+    expect(updated.role).toBe('member')
+  })
+
+  it('destroy with composite PK', async () => {
+    await memberships.create(
+      { user_id: 'u2', group_id: 'g2', role: 'viewer' },
+      { force: true }
+    )
+    await memberships.destroy(['u2', 'g2'])
+    const found = await memberships.findById(['u2', 'g2'])
+    expect(found).toBeNull()
+  })
+
+  it('findByIdIn throws StoreError for composite PKs', async () => {
+    await expect(memberships.findByIdIn(['u1'])).rejects.toThrow(StoreError)
+  })
+
+  it('ref returns composite PK as array', async () => {
+    const pk = await memberships.ref({ user_id: 'u1', group_id: 'g1' })
+    expect(pk).toEqual(['u1', 'g1'])
+  })
+})

@@ -47,7 +47,7 @@ export type StoriumMeta<TColumns extends ColumnsConfig = ColumnsConfig> = {
   access: TableAccess
   selectColumns: Record<string, any>
   allColumns: Record<string, any>
-  primaryKey: string
+  primaryKey: string | string[]
   name: string
   schemas: SchemaSet<TColumns>
 }
@@ -136,11 +136,25 @@ const deriveAccess = (columns: ColumnsConfig): TableAccess => {
 }
 
 /**
- * Detect the primary key column. Uses the option override, or scans
+ * Detect the primary key column(s). Uses the option override, or scans
  * columns for `primaryKey: true`, or defaults to 'id'.
+ * Returns a string for single PK, or string[] for composite.
  */
-const detectPrimaryKey = (columns: ColumnsConfig, override?: string): string => {
+const detectPrimaryKey = (
+  columns: ColumnsConfig,
+  override?: string | string[]
+): string | string[] => {
   if (override) {
+    if (Array.isArray(override)) {
+      for (const col of override) {
+        if (!(col in columns)) {
+          throw new SchemaError(
+            `Composite primary key references column '${col}' which is not defined in the schema`
+          )
+        }
+      }
+      return override
+    }
     if (!(override in columns)) {
       throw new SchemaError(
         `Primary key '${override}' is not defined in the schema columns`
@@ -150,9 +164,12 @@ const detectPrimaryKey = (columns: ColumnsConfig, override?: string): string => 
   }
 
   // Scan for explicit primaryKey: true
+  const pkColumns: string[] = []
   for (const [key, config] of Object.entries(columns)) {
-    if (!isRawColumn(config) && config.primaryKey) return key
+    if (!isRawColumn(config) && config.primaryKey) pkColumns.push(key)
   }
+  if (pkColumns.length === 1) return pkColumns[0]!
+  if (pkColumns.length > 1) return pkColumns
 
   // Default to 'id' if it exists
   if ('id' in columns) return 'id'
@@ -207,6 +224,11 @@ export const buildDefineTable = (
       ? injectTimestamps(columns) as TColumns
       : columns
 
+    // Detect primary key early so composite PKs can skip .primaryKey() on individual columns
+    const primaryKey = detectPrimaryKey(resolvedColumns, options.primaryKey)
+    const isCompositePk = Array.isArray(primaryKey)
+    const compositePkSet = isCompositePk ? new Set(primaryKey) : null
+
     // Build Drizzle column objects from the DSL
     const drizzleColumns: Record<string, any> = {}
 
@@ -214,18 +236,24 @@ export const buildDefineTable = (
       if (isRawColumn(config)) {
         drizzleColumns[key] = config.raw()
       } else {
-        drizzleColumns[key] = buildDslColumn(key, config, dialect)
+        // For composite PKs, strip primaryKey from individual columns —
+        // the constraint handles it at the table level
+        const effectiveConfig = compositePkSet?.has(key)
+          ? { ...config, primaryKey: false }
+          : config
+        drizzleColumns[key] = buildDslColumn(key, effectiveConfig, dialect)
       }
     }
 
     // Build the third argument for Drizzle's table constructor
-    // (indexes + constraints combined)
+    // (indexes + constraints + composite PK)
     const hasIndexes = options.indexes && Object.keys(options.indexes).length > 0
     const hasConstraints = typeof options.constraints === 'function'
+    const needsExtras = hasIndexes || hasConstraints || isCompositePk
 
     let tableExtras: ((table: any) => Record<string, any>) | undefined
 
-    if (hasIndexes || hasConstraints) {
+    if (needsExtras) {
       tableExtras = (table: any) => {
         const indexDefs = hasIndexes
           ? buildIndexes(name, options.indexes!, resolvedColumns, dialect)(table)
@@ -235,7 +263,14 @@ export const buildDefineTable = (
           ? options.constraints!(table)
           : {}
 
-        return { ...indexDefs, ...constraintDefs }
+        // Add composite PK constraint via Drizzle's primaryKey() function
+        let pkDef: Record<string, any> = {}
+        if (isCompositePk) {
+          const { primaryKey: pkFn } = require(`drizzle-orm/${dialect === 'memory' ? 'sqlite' : dialect}-core`)
+          pkDef = { pk: pkFn({ columns: primaryKey.map(col => table[col]) }) }
+        }
+
+        return { ...indexDefs, ...constraintDefs, ...pkDef }
       }
     }
 
@@ -246,7 +281,6 @@ export const buildDefineTable = (
 
     // Derive metadata
     const access = deriveAccess(resolvedColumns)
-    const primaryKey = detectPrimaryKey(resolvedColumns, options.primaryKey)
     const allKeys = Object.keys(resolvedColumns)
     const selectColumns = buildSelectColumns(drizzleTable, access.selectable)
     const allColumns = buildSelectColumns(drizzleTable, allKeys)

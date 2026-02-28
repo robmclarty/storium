@@ -96,6 +96,39 @@ describe('defineTable (memory dialect)', () => {
   })
 })
 
+describe('composite primary keys', () => {
+  it('accepts primaryKey as an array in options', () => {
+    const table = dt('memberships', {
+      user_id: { type: 'uuid', required: true },
+      group_id: { type: 'uuid', required: true },
+    }, {
+      primaryKey: ['user_id', 'group_id'],
+    })
+
+    expect(table.storium.primaryKey).toEqual(['user_id', 'group_id'])
+  })
+
+  it('detects composite PK from multiple primaryKey: true columns', () => {
+    const table = dt('multi_pk', {
+      a: { type: 'uuid', primaryKey: true },
+      b: { type: 'uuid', primaryKey: true },
+      name: { type: 'varchar', maxLength: 255, mutable: true },
+    })
+
+    expect(Array.isArray(table.storium.primaryKey)).toBe(true)
+    expect(table.storium.primaryKey).toContain('a')
+    expect(table.storium.primaryKey).toContain('b')
+  })
+
+  it('throws SchemaError when composite PK references non-existent column', () => {
+    expect(() => dt('bad', {
+      a: { type: 'uuid' },
+    }, {
+      primaryKey: ['a', 'nonexistent'],
+    })).toThrow()
+  })
+})
+
 describe('hasMeta', () => {
   it('returns true for tables from defineTable', () => {
     const table = dt('test', {

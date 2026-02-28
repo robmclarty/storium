@@ -45,7 +45,7 @@ export const withBelongsTo = (
   const { alias, select: selectFields } = options
   const relatedTable = relatedTableDef
   const meta = relatedTableDef.storium
-  const relatedPk = meta.primaryKey
+  const relatedPk = meta.primaryKey as string // belongs-to always targets a single-column PK
 
   // Capitalize first letter for method name: 'school' → 'findWithSchool'
   const methodName = `findWith${alias.charAt(0).toUpperCase()}${alias.slice(1)}`
@@ -75,7 +75,7 @@ export const withBelongsTo = (
           relatedTable,
           eq(ctx.table[foreignKey], relatedTable[relatedPk])
         )
-        .where(eq(ctx.table[ctx.primaryKey], id))
+        .where(eq(ctx.table[ctx.primaryKey as string], id))
         .limit(1)
 
       return rows[0] ?? null

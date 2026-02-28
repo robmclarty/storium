@@ -188,7 +188,7 @@ Each schema variant (`createSchema`, `updateSchema`, `selectSchema`, `fullSchema
 | `TableDef<TColumns>` | A Drizzle table with `.storium` metadata (columns, access sets, schemas). |
 | `StoriumMeta<TColumns>` | The metadata type attached to Drizzle tables via `.storium`. |
 | `TableAccess` | Derived access sets: `selectable`, `mutable`, `insertable`, `writeOnly`. |
-| `TableOptions` | Options for `defineTable`: `indexes`, `constraints`, `primaryKey`, `timestamps`. |
+| `TableOptions` | Options for `defineTable`: `indexes`, `constraints`, `primaryKey` (string or string[] for composite), `timestamps`. |
 | `StoreDefinition<TColumns, TQueries>` | Inert DTO bundling a `TableDef` with custom queries — materialized via `db.register()`. |
 | `Store<TColumns, TQueries>` | A live store: default CRUD + schemas + materialized custom queries. |
 | `Repository<TTableDef, TQueries>` | Same shape as `Store`, produced by `createRepository()`. |
@@ -238,6 +238,7 @@ Each schema variant (`createSchema`, `updateSchema`, `selectSchema`, `fullSchema
 | `InsertType<TColumns>` | Derive the INSERT input type — `required` fields mandatory, `mutable` fields optional. Values accept `Promise` for `ref()` ergonomics. |
 | `UpdateType<TColumns>` | Derive the UPDATE input type — only `mutable` columns, all optional. |
 | `Promisable<T>` | `T \| Promise<any>` — allows `ref()` values in insert/update input without casts. |
+| `PkValue` | `string \| number \| (string \| number)[]` — primary key value for single or composite PKs. |
 
 ### Migrate Sub-Path Types
 

@@ -120,17 +120,29 @@ const postStore = defineStore(postsTable, {
 })
 ```
 
-### Join Table Requirements
+### Join Table with Composite Primary Key
 
-The join table needs its own primary key (Storium requires every table to have one):
+Join tables are best modeled with a composite primary key — no synthetic `id` column needed:
 
 ```typescript
 const postTagsTable = defineTable('post_tags', {
-  id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
-  post_id: { type: 'uuid', mutable: true, required: true },
-  tag_id: { type: 'uuid', mutable: true, required: true },
+  post_id: { type: 'uuid', required: true },
+  tag_id: { type: 'uuid', required: true },
+}, {
+  primaryKey: ['post_id', 'tag_id'],
 })
 ```
+
+CRUD methods accept an array of values matching the PK column order:
+
+```typescript
+const postTags = db.defineStore(postTagsTable)
+
+await postTags.findById([postId, tagId])
+await postTags.destroy([postId, tagId])
+```
+
+Note: `findByIdIn()` is not supported on composite PK tables — use `find()` with filters instead.
 
 ## FK Resolution with `ref()`
 

@@ -262,6 +262,9 @@ export type PrepOptions = {
   includeWriteOnly?: boolean
 }
 
+/** A primary key value: single column or composite (array of values in PK column order). */
+export type PkValue = string | number | (string | number)[]
+
 // ------------------------------------------------------- Repository / Store --
 
 /**
@@ -287,8 +290,8 @@ export type RepositoryContext<
   selectColumns: Record<string, any>
   /** Full column map including writeOnly columns. */
   allColumns: Record<string, any>
-  /** Primary key column name. */
-  primaryKey: string
+  /** Primary key column name(s). String for single PK, array for composite. */
+  primaryKey: string | string[]
   /** Runtime schemas. */
   schemas: SchemaSet<TColumns>
   /** The filter → transform → validate pipeline. */
@@ -297,13 +300,13 @@ export type RepositoryContext<
   find: (filters: Record<string, any>, opts?: PrepOptions) => Promise<SelectType<TColumns>[]>
   findAll: (opts?: PrepOptions) => Promise<SelectType<TColumns>[]>
   findOne: (filters: Record<string, any>, opts?: PrepOptions) => Promise<SelectType<TColumns> | null>
-  findById: (id: string | number, opts?: PrepOptions) => Promise<SelectType<TColumns> | null>
+  findById: (id: PkValue, opts?: PrepOptions) => Promise<SelectType<TColumns> | null>
   findByIdIn: (ids: (string | number)[], opts?: PrepOptions) => Promise<SelectType<TColumns>[]>
   create: (input: InsertType<TColumns>, opts?: PrepOptions) => Promise<SelectType<TColumns>>
-  update: (id: string | number, input: UpdateType<TColumns>, opts?: PrepOptions) => Promise<SelectType<TColumns>>
-  destroy: (id: string | number, opts?: PrepOptions) => Promise<void>
+  update: (id: PkValue, input: UpdateType<TColumns>, opts?: PrepOptions) => Promise<SelectType<TColumns>>
+  destroy: (id: PkValue, opts?: PrepOptions) => Promise<void>
   destroyAll: (filters: Record<string, any>, opts?: PrepOptions) => Promise<number>
-  ref: (filter: Record<string, any>, opts?: PrepOptions) => Promise<string | number>
+  ref: (filter: Record<string, any>, opts?: PrepOptions) => Promise<PkValue>
 }
 
 /** Shorthand alias for `RepositoryContext` — use as `ctx: Ctx` in custom queries. */
@@ -325,14 +328,14 @@ export type DefaultCRUD<TColumns extends ColumnsConfig = ColumnsConfig> = {
   find: (filters: Record<string, any>, opts?: PrepOptions) => Promise<SelectType<TColumns>[]>
   findAll: (opts?: PrepOptions) => Promise<SelectType<TColumns>[]>
   findOne: (filters: Record<string, any>, opts?: PrepOptions) => Promise<SelectType<TColumns> | null>
-  findById: (id: string | number, opts?: PrepOptions) => Promise<SelectType<TColumns> | null>
+  findById: (id: PkValue, opts?: PrepOptions) => Promise<SelectType<TColumns> | null>
   findByIdIn: (ids: (string | number)[], opts?: PrepOptions) => Promise<SelectType<TColumns>[]>
   create: (input: InsertType<TColumns>, opts?: PrepOptions) => Promise<SelectType<TColumns>>
-  update: (id: string | number, input: UpdateType<TColumns>, opts?: PrepOptions) => Promise<SelectType<TColumns>>
-  destroy: (id: string | number, opts?: PrepOptions) => Promise<void>
+  update: (id: PkValue, input: UpdateType<TColumns>, opts?: PrepOptions) => Promise<SelectType<TColumns>>
+  destroy: (id: PkValue, opts?: PrepOptions) => Promise<void>
   destroyAll: (filters: Record<string, any>, opts?: PrepOptions) => Promise<number>
   /** Look up a row by filter and return its primary key value. */
-  ref: (filter: Record<string, any>, opts?: PrepOptions) => Promise<string | number>
+  ref: (filter: Record<string, any>, opts?: PrepOptions) => Promise<PkValue>
 }
 
 /**
@@ -478,7 +481,7 @@ export type StoriumInstance = {
 export type TableOptions = {
   indexes?: IndexesConfig
   constraints?: (table: any) => Record<string, any>
-  primaryKey?: string
+  primaryKey?: string | string[]
   timestamps?: boolean
 }
 
