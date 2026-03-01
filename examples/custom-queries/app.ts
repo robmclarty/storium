@@ -50,7 +50,7 @@ const articleStore = defineStore(articlesTable).queries({
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-|-$/g, '')
-    return ctx.create({ ...input, slug }, opts)
+    return ctx.create({ ...input, slug } as any, opts)
   },
 
   // Raw Drizzle escape hatch
