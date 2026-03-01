@@ -60,6 +60,12 @@
 let lastTs = 0
 let counter = 0
 
+const rand12 = (): number => {
+  const buf = new Uint16Array(1)
+  crypto.getRandomValues(buf)
+  return buf[0]! & 0xfff
+}
+
 // -- Public API -------------------------------------------------------------
 
 /**
@@ -79,12 +85,12 @@ export function uuidv7(): string {
       // This handles the (extremely unlikely) case of >4096 IDs per ms.
       now = lastTs + 1
       lastTs = now
-      counter = crypto.getRandomValues(new Uint16Array(1))[0] & 0xfff
+      counter = rand12()
     }
   } else {
     // New millisecond — seed counter with random 12-bit value
     lastTs = now
-    counter = crypto.getRandomValues(new Uint16Array(1))[0] & 0xfff
+    counter = rand12()
   }
 
   const bytes = new Uint8Array(16)
@@ -107,7 +113,7 @@ export function uuidv7(): string {
   bytes[7] = counter & 0xff
 
   // Variant 10 → high 2 bits of byte 8 (rand_b remains random)
-  bytes[8] = (bytes[8] & 0x3f) | 0x80
+  bytes[8] = (bytes[8]! & 0x3f) | 0x80
 
   const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('')
   return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`
