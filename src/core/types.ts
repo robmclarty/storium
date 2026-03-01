@@ -359,7 +359,25 @@ export type RepositoryContext<
   ref: (filter: Record<string, any>, opts?: PrepOptions) => Promise<PkValue>
 }
 
-/** Shorthand alias for `RepositoryContext`. Available for explicit typing, but `(ctx) =>` with inference is usually sufficient. */
+/**
+ * Shorthand for `RepositoryContext` — the context object passed to custom
+ * query factories.
+ *
+ * For queries defined **inline** in `defineStore()`, TypeScript infers
+ * the type automatically — just write `(ctx) =>`:
+ * ```typescript
+ * defineStore(usersTable, {
+ *   findByEmail: (ctx) => async (email: string) => ctx.findOne({ email }),
+ * })
+ * ```
+ *
+ * For queries in **separate files**, annotate `ctx` explicitly:
+ * ```typescript
+ * import type { Ctx } from 'storium'
+ * export const findByEmail = (ctx: Ctx) => async (email: string) =>
+ *   ctx.findOne({ email })
+ * ```
+ */
 export type Ctx<
   T extends TableDef = TableDef,
   TColumns extends ColumnsConfig = T extends TableDef<infer C> ? C : ColumnsConfig,

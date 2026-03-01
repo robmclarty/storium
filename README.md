@@ -46,7 +46,7 @@ const updated = await users.update(user.id, { name: 'Alice B.' })
 - **Repository pattern** — default CRUD with extensible custom queries
 - **Three-tier validation** — JSON Schema for the HTTP edge, Zod for runtime, prep pipeline for business rules
 - **Database agnostic** — PostgreSQL, MySQL, and SQLite via Drizzle
-- **Composable helpers** — `withBelongsTo`, `withMembers`, `withCache`, `transaction`
+- **Composable mixins** — `withBelongsTo`, `withMembers`, `withCache`, `transaction`
 - **Fastify integration** — `toJsonSchema()` for route validation
 - **Migration tooling** — thin CLI wrapping drizzle-kit
 - **Stands back** — Storium doesn't try to own your architecture. It gives you tools and gets out of the way.
@@ -150,7 +150,7 @@ The pattern looks like this:
 entities/
 └── users/
     ├── user.schema.ts    ← defineTable (pure schema, no connection)
-    ├── user.helpers.ts   ← reusable query patterns
+    ├── user.mixins.ts    ← reusable query patterns
     ├── user.queries.ts   ← query functions
     └── user.store.ts     ← defineStore (bundles schema + queries)
 database.ts               ← connect + register all stores
@@ -187,10 +187,10 @@ export const usersTable = defineTable('users', {
 
 `transform` runs before `validate` — sanitize first, then check. Built-in assertions like `is_email` and `not_empty` are always available. Custom assertions like `is_slug` are registered at connect time (see database file below).
 
-**Helpers file** — reusable query patterns you define yourself. Same `(ctx) => (...args) => result` shape as any custom query, so they compose naturally with built-in helpers like `withBelongsTo`:
+**Mixins file** — reusable query patterns you define yourself. Same `(ctx) => (...args) => result` shape as any custom query, so they compose naturally with built-in mixins like `withBelongsTo`:
 
 ```typescript
-// entities/users/user.helpers.ts
+// entities/users/user.mixins.ts
 import { eq } from 'drizzle-orm'
 
 export const withSoftDelete = {
@@ -205,13 +205,13 @@ export const withSoftDelete = {
 }
 ```
 
-**Store file** — bundles the schema with queries and helpers into an inert DTO:
+**Store file** — bundles the schema with queries and mixins into an inert DTO:
 
 ```typescript
 // entities/users/user.store.ts
 import { defineStore } from 'storium'
 import { usersTable } from './user.schema'
-import { withSoftDelete } from './user.helpers'
+import { withSoftDelete } from './user.mixins'
 import { eq, ilike } from 'drizzle-orm'
 
 export const userStore = defineStore(usersTable, {
@@ -276,9 +276,9 @@ const usersTable = dt('users', columns)
 const postsTable = dt('posts', columns)
 ```
 
-## Helpers
+## Mixins
 
-Storium ships a small set of composable helpers for common patterns. You can also write your own — a helper is just an object of query functions that you spread into a store definition.
+Storium ships a small set of composable mixins for common patterns. You can also write your own — a mixin is just an object of query functions that you spread into a store definition.
 
 ### withBelongsTo
 
@@ -330,12 +330,12 @@ const result = await db.transaction(async tx => {
 })
 ```
 
-### Your Own Helpers
+### Your Own Mixins
 
-A helper is just a plain object whose values follow the `(ctx) => (...args) => result` pattern. Spread it into any store:
+A mixin is just a plain object whose values follow the `(ctx) => (...args) => result` pattern. Spread it into any store:
 
 ```typescript
-// helpers/withSoftDelete.ts
+// mixins/withSoftDelete.ts
 export const withSoftDelete = {
   destroy: (ctx) => async (id, opts?) =>
     ctx.update(id, { deleted_at: new Date() }, opts),
@@ -354,7 +354,7 @@ const userStore = defineStore(usersTable, {
 })
 ```
 
-Because helpers are plain objects, they compose with each other and with Storium's built-in helpers via spread. No special API — just JavaScript.
+Because mixins are plain objects, they compose with each other and with Storium's built-in mixins via spread. No special API — just JavaScript.
 
 ## Fastify Integration
 

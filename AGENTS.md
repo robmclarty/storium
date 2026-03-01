@@ -25,9 +25,9 @@ storium/
 │       ├── indexes.ts          # Index DSL → Drizzle index builders
 │       ├── errors.ts           # ValidationError, ConfigError, SchemaError
 │       └── test.ts             # createAssertionRegistry(), BUILTIN_ASSERTIONS, createTestFn()
-│   ├── helpers/
-│   │   ├── withBelongsTo.ts    # JOIN helper for belongs-to relationships
-│   │   ├── withMembers.ts      # Many-to-many membership helper
+│   ├── mixins/
+│   │   ├── withBelongsTo.ts    # JOIN mixin for belongs-to relationships
+│   │   ├── withMembers.ts      # Many-to-many membership mixin
 │   │   ├── withCache.ts        # Caching wrapper
 │   │   └── withTransaction.ts  # createWithTransaction() helper
 │   └── migrate/
@@ -211,7 +211,7 @@ or `defineTable('postgresql')('users', {...})` for explicit dialect.
 before any db connection exists.
 
 Storium metadata is accessible via `table.storium.columns`, `table.storium.schemas`, etc.
-The `StoriumMeta` type is exported for advanced users writing custom query helpers.
+The `StoriumMeta` type is exported for advanced users writing custom query mixins.
 
 ### Table creation (dialect differences)
 ```typescript

@@ -36,7 +36,7 @@ Exhaustive list of everything exported from `storium` and `storium/migrate`.
 | `SchemaError` | Thrown when a schema definition is invalid (index references non-existent column, duplicate primary keys). |
 | `StoreError` | Thrown when a store CRUD operation fails at runtime (e.g., `create`/`update` returned no rows, `find`/`destroyAll` called with empty filters). |
 
-### Helpers
+### Mixins
 
 | Export | Description |
 |--------|-------------|
@@ -201,9 +201,9 @@ Each schema variant (`createSchema`, `updateSchema`, `selectSchema`, `fullSchema
 | Type | Description |
 |------|-------------|
 | `RepositoryContext<T, TColumns, D>` | Context passed to custom query functions — contains `drizzle`, `zod`, `table`, `schemas`, `prep`, and all default CRUD methods. `D` controls the type of `ctx.drizzle`. |
-| `Ctx<T, TColumns, D>` | Shorthand alias for `RepositoryContext`. Available if you need explicit typing, but typically you can just use `(ctx) =>` and let TypeScript infer. |
+| `Ctx<T, TColumns, D>` | Shorthand alias for `RepositoryContext`. For inline queries, `(ctx) =>` gets full inference. For queries in separate files, use `(ctx: Ctx) =>`. |
 | `CustomQueryFn<T, D>` | `(ctx: RepositoryContext<T, ..., D>) => (...args) => any` — a custom query factory function. |
-| `QueriesConfig` | `Record<string, (ctx: any) => (...args) => any>` — constraint type for custom query records. Uses `ctx: any` so helpers work across dialects. |
+| `QueriesConfig` | `Record<string, (ctx: any) => (...args) => any>` — constraint type for custom query records. Uses `ctx: any` so mixins work across dialects. |
 | `PrepOptions` | Options for CRUD operations: `force`, `validateRequired`, `onlyWritable`, `tx`, `limit`, `offset`, `orderBy`, `includeHidden`. |
 
 ### Schema & Validation

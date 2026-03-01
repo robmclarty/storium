@@ -165,12 +165,12 @@ transferFunds: (ctx) => async (fromId: string, toId: string, amount: number, opt
 }
 ```
 
-## Reusable Helpers
+## Reusable Mixins
 
-A helper is just a plain object of query functions. Spread it into any store:
+A mixin is just a plain object of query functions. Spread it into any store:
 
 ```typescript
-// helpers/withSoftDelete.ts
+// mixins/withSoftDelete.ts
 export const withSoftDelete = {
   destroy: (ctx) => async (id, opts?) =>
     ctx.update(id, { deleted_at: new Date() }, opts),
@@ -188,11 +188,11 @@ const userStore = defineStore(usersTable, {
 })
 ```
 
-Helpers compose with each other and with Storium's built-in helpers (`withBelongsTo`, `withMembers`) via spread.
+Mixins compose with each other and with Storium's built-in mixins (`withBelongsTo`, `withMembers`) via spread.
 
 ## Tips
 
 - **Use `ctx.selectColumns`** in raw Drizzle selects to exclude `hidden` columns automatically.
 - **Return from `ctx` methods** rather than reimplementing CRUD — you get prep pipeline validation for free.
 - **Pass `{ force: true }`** when calling `ctx.create` or `ctx.update` with pre-validated data to skip the pipeline.
-- **Type the `ctx` parameter** as `Ctx` (imported from `storium`) for autocomplete in your editor.
+- **Typing `ctx` in separate files**: Queries defined inline in `defineStore()` get full `ctx` inference automatically. For queries in separate files, import and annotate: `(ctx: Ctx) =>`. This matches the same pattern as Fastify handlers — inline gets inference, imported gets explicit typing. The same applies to `transform` and `validate` callbacks pulled into separate files (`TestFn` is exported for `validate`'s second parameter).

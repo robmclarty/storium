@@ -1,16 +1,16 @@
 # Relationships
 
-Storium provides two composable helpers for common relationship patterns, plus full Drizzle access for anything more complex.
+Storium provides two composable mixins for common relationship patterns, plus full Drizzle access for anything more complex.
 
 ## Overview
 
-| Pattern | Helper | What it generates |
+| Pattern | Mixin | What it generates |
 |---------|--------|-------------------|
 | Belongs-to (many-to-one) | `withBelongsTo` | `findWith{Alias}(id)` — LEFT JOIN with inlined fields |
 | Many-to-many | `withMembers` | `addMember`, `removeMember`, `getMembers`, `isMember`, `getMemberCount` |
 | Anything else | Custom query | Full Drizzle query builder via `ctx.drizzle` |
 
-Helpers are plain objects of query functions. Spread them into a store definition:
+Mixins are plain objects of query functions. Spread them into a store definition:
 
 ```typescript
 import { defineStore, withBelongsTo, withMembers } from 'storium'
@@ -161,7 +161,7 @@ await posts.create({
 
 ## Custom JOIN Queries
 
-For relationships the helpers don't cover, use `ctx.drizzle` to write raw Drizzle JOINs:
+For relationships the mixins don't cover, use `ctx.drizzle` to write raw Drizzle JOINs:
 
 ```typescript
 import { eq } from 'drizzle-orm'
@@ -190,9 +190,9 @@ Common cases that need custom JOINs:
 - JOINs with complex WHERE conditions
 - Self-referential relationships (e.g., parent/child categories)
 
-## Combining Helpers
+## Combining Mixins
 
-Helpers compose naturally via spread. A single store can use multiple helpers:
+Mixins compose naturally via spread. A single store can use multiple mixins:
 
 ```typescript
 const postStore = defineStore(postsTable, {

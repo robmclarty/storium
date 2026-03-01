@@ -44,7 +44,7 @@ import type { CacheAdapter, CacheMethodConfig } from '../core/types'
 
 type CacheConfig = Record<string, CacheMethodConfig>
 
-// ------------------------------------------------------------ Helpers --
+// ----------------------------------------------------------- Internals --
 
 /**
  * Wrap a read method with cache-aside logic:

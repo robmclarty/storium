@@ -1,7 +1,7 @@
 /**
  * @module withBelongsTo
  *
- * Composable "belongs to" join helper. Generates a `findWith{Alias}` query
+ * Composable "belongs to" join mixin. Generates a `findWith{Alias}` query
  * that LEFT JOINs a related table and returns the entity with inlined
  * related fields.
  *
@@ -20,11 +20,11 @@
  */
 
 import { eq } from 'drizzle-orm'
-import type { TableDef, QueriesConfig } from '../core/types'
+import type { TableDef } from '../core/types'
 
-type BelongsToOptions = {
+type BelongsToOptions<A extends string = string> = {
   /** The alias for the related entity (used in the method name: findWith{Alias}). */
-  alias: string
+  alias: A
   /** Which columns to select from the related table. If omitted, uses all selectable columns. */
   select?: string[]
 }
@@ -37,11 +37,11 @@ type BelongsToOptions = {
  * @param options - Alias and optional column selection
  * @returns A custom query function to spread into queries
  */
-export const withBelongsTo = (
+export const withBelongsTo = <A extends string>(
   relatedTableDef: TableDef,
   foreignKey: string,
-  options: BelongsToOptions
-): QueriesConfig => {
+  options: BelongsToOptions<A>
+): { [K in `findWith${Capitalize<A>}`]: (ctx: any) => (id: string | number) => Promise<any> } => {
   const { alias, select: selectFields } = options
   const relatedTable = relatedTableDef
   const meta = relatedTableDef.storium
@@ -58,7 +58,7 @@ export const withBelongsTo = (
      * Find an entity by ID with the related entity's fields inlined.
      * Uses a LEFT JOIN so the entity is returned even if the relation is null.
      */
-    [methodName]: (ctx) => async (id: string | number) => {
+    [methodName]: (ctx: any) => async (id: string | number) => {
       // Build the select object: entity's selectColumns + prefixed related columns
       const selectObj: Record<string, any> = { ...ctx.selectColumns }
 
@@ -80,5 +80,5 @@ export const withBelongsTo = (
 
       return rows[0] ?? null
     },
-  }
+  } as { [K in `findWith${Capitalize<A>}`]: (ctx: any) => (id: string | number) => Promise<any> }
 }

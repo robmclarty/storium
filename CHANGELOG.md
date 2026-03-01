@@ -4,6 +4,16 @@ All notable changes to Storium are documented here.
 
 This project uses [Semantic Versioning](https://semver.org/). Pre-1.0 releases may include breaking changes in minor versions.
 
+## [0.9.2] — 2026-02-28
+
+### Fixed
+- `withMembers()` methods now appear on `Store` type (removed `QueriesConfig` return annotation that erased literal keys)
+- `withBelongsTo()` `findWith{Alias}` now appears on `Store` type via generic `A extends string` + template literal return type
+
+### Changed
+- Renamed `src/helpers/` → `src/mixins/` (better describes composable query sets that get mixed into stores)
+- Expanded `Ctx` JSDoc with inline vs separate-file guidance
+
 ## [0.9.1] — 2026-02-28
 
 ### Changed

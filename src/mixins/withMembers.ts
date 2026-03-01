@@ -22,7 +22,7 @@
  */
 
 import { eq, and, sql } from 'drizzle-orm'
-import type { TableDef, QueriesConfig } from '../core/types'
+import type { TableDef } from '../core/types'
 
 /**
  * Generate membership query functions for a collection.
@@ -36,7 +36,7 @@ export const withMembers = (
   joinTableDef: TableDef,
   foreignKey: string,
   memberKey: string = 'user_id'
-): QueriesConfig => {
+) => {
   const joinTable = joinTableDef
 
   return {
@@ -46,7 +46,7 @@ export const withMembers = (
      * @param memberId - The member's ID
      * @param extra - Additional fields to set on the join record (e.g., { role: 'captain' })
      */
-    addMember: (ctx) => async (
+    addMember: (ctx: any) => async (
       collectionId: string | number,
       memberId: string | number,
       extra: Record<string, any> = {}
@@ -82,7 +82,7 @@ export const withMembers = (
     /**
      * Remove a member from the collection.
      */
-    removeMember: (ctx) => async (
+    removeMember: (ctx: any) => async (
       collectionId: string | number,
       memberId: string | number
     ) => {
@@ -98,7 +98,7 @@ export const withMembers = (
      * Get all members of a collection. Returns rows from the join table.
      * For richer results (with member details), use a custom query with JOINs.
      */
-    getMembers: (ctx) => async (collectionId: string | number) => {
+    getMembers: (ctx: any) => async (collectionId: string | number) => {
       return ctx.drizzle
         .select()
         .from(joinTable)
@@ -108,7 +108,7 @@ export const withMembers = (
     /**
      * Check if a member belongs to a collection.
      */
-    isMember: (ctx) => async (
+    isMember: (ctx: any) => async (
       collectionId: string | number,
       memberId: string | number
     ): Promise<boolean> => {
@@ -127,7 +127,7 @@ export const withMembers = (
     /**
      * Count the members in a collection.
      */
-    getMemberCount: (ctx) => async (collectionId: string | number): Promise<number> => {
+    getMemberCount: (ctx: any) => async (collectionId: string | number): Promise<number> => {
       const rows = await ctx.drizzle
         .select({ count: sql<number>`cast(count(*) as int)` })
         .from(joinTable)
