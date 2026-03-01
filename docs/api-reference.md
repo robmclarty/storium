@@ -23,8 +23,8 @@ Exhaustive list of everything exported from `storium` and `storium/migrate`.
 
 | Export | Description |
 |--------|-------------|
-| `defineTable` | Define a table schema — 3 overloads: `(name, cols, opts)`, `(dialect)(name, cols, opts)`, `()(name, cols, opts)`. |
-| `defineStore` | Bundle a table (from `defineTable`) + custom queries into a `StoreDefinition`: `defineStore(table, queries)`. |
+| `defineTable` | Define a table schema — 3 overloads: `(name).columns(cols).timestamps(false)`, `(dialect)(name).columns(cols)`, `()(name).columns(cols)`. Chain methods after `.columns()`: `.indexes({})`, `.access({})`, `.primaryKey('a', 'b')`, `.timestamps(false)`. |
+| `defineStore` | Bundle a table (from `defineTable`) + custom queries into a `StoreDefinition`: `defineStore(table)` or `defineStore(table).queries({ ... })`. |
 | `isStoreDefinition(value)` | Type guard: returns `true` if the value is a `StoreDefinition`. |
 
 ### Error Classes
@@ -91,8 +91,8 @@ Migration tooling — heavier dependencies, opt-in import.
 | `db.drizzle` | Raw Drizzle database instance (escape hatch for direct Drizzle queries). |
 | `db.zod` | The Zod namespace (`z`) — convenience accessor. |
 | `db.dialect` | The active dialect string: `'postgresql'`, `'mysql'`, `'sqlite'`, or `'memory'`. |
-| `db.defineTable(name, cols, opts?)` | Create a Drizzle table with `.storium` metadata, pre-bound to this instance's dialect and assertions. |
-| `db.defineStore(tableDef, queries?)` | Create a live store from a table definition (simple path — no `register` step needed). |
+| `db.defineTable(name).columns(cols)` | Create a Drizzle table with `.storium` metadata, pre-bound to this instance's dialect and assertions. Chain methods: `.indexes({})`, `.access({})`, `.primaryKey('a', 'b')`, `.timestamps(false)`. |
+| `db.defineStore(tableDef).queries({...})` | Create a live store from a table definition (simple path — no `register` step needed). Omit `.queries()` for CRUD-only stores. |
 | `db.register(storeDefs)` | Materialize a record of `StoreDefinition` objects into live stores with CRUD + query methods. |
 | `db.transaction(fn)` | Execute an async function within a database transaction. |
 | `db.disconnect()` | Close the database connection pool (idempotent — safe to call multiple times). |
@@ -190,7 +190,7 @@ Each schema variant (`createSchema`, `updateSchema`, `selectSchema`, `fullSchema
 | `TableDef<TColumns>` | A Drizzle table with `.storium` metadata (columns, access sets, schemas). |
 | `StoriumMeta<TColumns>` | The metadata type attached to Drizzle tables via `.storium`. |
 | `TableAccess` | Derived access sets: `selectable`, `writable`, `hidden`, `readonly`. |
-| `TableOptions` | Options for `defineTable`: `indexes`, `constraints`, `primaryKey` (string or string[] for composite), `timestamps`. |
+| `TableOptions` | Options for `defineTable` chain methods: `.indexes({})`, `.access({})`, `.primaryKey('a', 'b')`, `.timestamps(false)`. |
 | `StoreDefinition<TColumns, TQueries>` | Inert DTO bundling a `TableDef` with custom queries — materialized via `db.register()`. |
 | `Store<TColumns, TQueries>` | A live store: default CRUD + schemas + materialized custom queries. |
 | `Repository<TTableDef, TQueries>` | Same shape as `Store`, produced by `createRepository()`. |

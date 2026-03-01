@@ -21,7 +21,7 @@ import { sql } from 'drizzle-orm'
 
 const db = storium.connect({ dialect: 'memory' })
 
-const usersTable = db.defineTable('users', {
+const usersTable = db.defineTable('users').columns({
   id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
   email: {
     type: 'varchar',
@@ -34,10 +34,7 @@ const usersTable = db.defineTable('users', {
     },
   },
   name: { type: 'varchar', maxLength: 255 },
-}, {
-  timestamps: false,
-  indexes: { email: { unique: true } },
-})
+}).timestamps(false).indexes({ email: { unique: true } })
 
 // Normally this would be handled by a migration, but for the sake of simplicity:
 db.drizzle.run(sql`

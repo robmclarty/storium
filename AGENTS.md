@@ -13,8 +13,8 @@ storium/
 │   ├── connect.ts              # Connection factory; dialect-specific Drizzle wiring + register()
 │   └── core/
 │       ├── types.ts            # All shared TypeScript types (Dialect, ColumnConfig, TableDef, etc.)
-│       ├── defineTable.ts      # Schema DSL — defineTable(name, cols, opts); returns Drizzle table + .storium metadata
-│       ├── defineStore.ts      # defineStore(tableDef, queries) — bundles table with custom queries
+│       ├── defineTable.ts      # Schema DSL — defineTable(name).columns(cols).indexes().access(); returns Drizzle table + .storium metadata
+│       ├── defineStore.ts      # defineStore(tableDef).queries({...}) — bundles table with custom queries
 │       ├── configLoader.ts     # loadDialectFromConfig() — reads dialect from drizzle.config.ts
 │       ├── createRepository.ts # CRUD builder + custom query context (ctx)
 │       ├── dialect.ts          # DSL type → Drizzle column builder mappings per dialect
@@ -114,34 +114,44 @@ const db = storium.fromDrizzle(myDrizzle)                     // dialect auto-de
 const db = storium.fromDrizzle(myDrizzle, { assertions: {} }) // with options
 ```
 
-### defineTable (3 overloads)
+### defineTable (3 overloads + chain methods)
 ```typescript
 // Overload 1: Direct call — auto-loads dialect from drizzle.config.ts
-defineTable('users', columns, options) → TableDef
+defineTable('users').columns(columns) → TableDef
 
 // Overload 2: Curried with explicit dialect — returns a bound function
-defineTable('postgresql')('users', columns, options) → TableDef
+defineTable('postgresql')('users').columns(columns) → TableDef
 
 // Overload 3: No-arg — auto-loads dialect, returns bound function for reuse
 const dt = defineTable()
-dt('users', columns, options) → TableDef
+dt('users').columns(columns) → TableDef
+
+// Chain methods (all optional, called after .columns()):
+defineTable('users')
+  .columns(columns)
+  .indexes({...})                       // add index definitions
+  .access({ hidden: [...], readonly: [...] })  // table-level access overrides
+  .primaryKey('a', 'b')                 // composite primary key (variadic params)
+  .timestamps(false)                    // disable auto timestamp columns
 ```
 
-### defineStore (single signature)
+### defineStore (single param + optional .queries() chain)
 ```typescript
 // Bundle a table (from defineTable) with custom queries into a StoreDefinition.
 // Two distinct steps: defineTable defines schema, defineStore adds behavior.
-const userStore = defineStore(usersTable, { search, findByEmail })
+const userStore = defineStore(usersTable).queries({ search, findByEmail })
+// Or without queries:
+const userStore = defineStore(usersTable)
 ```
-Returns a `StoreDefinition` (inert DTO). The DTO surfaces `.table` and `.name`
-so `schemaCollector` can detect store files for migrations.
+Returns a `StoreDefinition` (inert DTO). The DTO surfaces `.table`, `.name`,
+and `.queryFns` so `schemaCollector` can detect store files for migrations.
 
 ### db.defineStore() — simple path (live store, no register)
 ```typescript
 // Create a live store from a table definition — no register step needed.
 const db = storium.connect(config)
-const usersTable = db.defineTable('users', columns, options)
-const users = db.defineStore(usersTable, { search })
+const usersTable = db.defineTable('users').columns(columns).timestamps(false)
+const users = db.defineStore(usersTable).queries({ search })
 await users.findById('123')
 ```
 
@@ -205,8 +215,8 @@ export default {
 ### Schema files (for migrations)
 `defineTable` returns a plain Drizzle table with a non-enumerable `.storium` property.
 drizzle-kit detects these as real Drizzle tables — no re-export workaround needed.
-Use `defineTable('users', {...})` directly (auto-loads dialect from `drizzle.config.ts`)
-or `defineTable('postgresql')('users', {...})` for explicit dialect.
+Use `defineTable('users').columns({...})` directly (auto-loads dialect from `drizzle.config.ts`)
+or `defineTable('postgresql')('users').columns({...})` for explicit dialect.
 `db.defineTable` can't be used because drizzle-kit imports schema files at module level
 before any db connection exists.
 
@@ -245,16 +255,19 @@ project/
 ├── database.ts                    # Plumbing: connect + register all stores
 ├── entities/
 │   └── users/
-│       ├── user.schema.ts         # defineTable('users', columns, options)
+│       ├── user.schema.ts         # defineTable('users').columns(columns).indexes({...})
 │       ├── user.queries.ts        # Custom query functions
-│       └── user.store.ts          # defineStore(usersTable, { ...queries })
+│       └── user.store.ts          # defineStore(usersTable).queries({ ...queries })
 ```
+
+## Design philosophy
+- **Pre-1.0: API design is the priority.** There are no users yet. Breaking changes are welcome if they produce a better API. Do not justify design decisions with "this matches current behavior" — evaluate on merit. The goal is to get the API right before 1.0 so it doesn't need breaking afterward.
 
 ## Example conventions
 - Single `app.ts` — everything in one runnable file
 - `package.json`: `"start": "tsx app.ts"`, `storium: "file:../.."`, `tsx` in devDeps
 - In-memory examples: `dialect: 'memory'`, `db.drizzle.run(sql\`CREATE TABLE...\`)`
-- Multi-file pattern: `defineTable → defineStore → storium.connect → db.register → use stores`
-- Simple pattern: `storium.connect → db.defineTable → db.defineStore → use stores`
+- Multi-file pattern: `defineTable().columns() → defineStore().queries() → storium.connect → db.register → use stores`
+- Simple pattern: `storium.connect → db.defineTable().columns() → db.defineStore().queries() → use stores`
 - Console output: `=== Section name ===` headers matching style of existing examples
 - Always `await db.disconnect()` at end

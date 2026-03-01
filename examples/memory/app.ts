@@ -14,12 +14,12 @@ import { sql } from 'drizzle-orm'
 
 // --- Schema (defined once, reused across connections) ---
 
-const productsTable = defineTable('memory')('products', {
+const productsTable = defineTable('memory')('products').columns({
   id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
   name: { type: 'varchar', maxLength: 255, required: true },
   price: { type: 'integer', required: true },
   inStock: { type: 'boolean' },
-}, { timestamps: false })
+}).timestamps(false)
 
 const productStore = defineStore(productsTable)
 

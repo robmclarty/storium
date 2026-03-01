@@ -7,7 +7,7 @@ Storium automatically maps between camelCase property names in your application 
 Define columns using camelCase keys in your schema:
 
 ```typescript
-const productsTable = defineTable('products', {
+const productsTable = defineTable('products').columns({
   id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
   productName: { type: 'varchar', maxLength: 255, required: true },
   inStock: { type: 'boolean' },
@@ -32,7 +32,7 @@ If you prefer snake_case in your schema definitions, the conversion is idempoten
 
 ```typescript
 // Works — but camelCase is the recommended convention
-const productsTable = defineTable('products', {
+const productsTable = defineTable('products').columns({
   unit_price: { type: 'integer' },
 })
 // DB column: unit_price (unchanged)
@@ -43,7 +43,7 @@ const productsTable = defineTable('products', {
 Use the `dbName` property to set an explicit database column name, bypassing the automatic conversion:
 
 ```typescript
-const usersTable = defineTable('users', {
+const usersTable = defineTable('users').columns({
   id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
   // App key: "email", DB column: "email_address"
   email: { type: 'varchar', maxLength: 255, dbName: 'email_address' },
@@ -64,7 +64,7 @@ When timestamps are enabled (the default), Storium injects `createdAt` and `upda
 
 ```typescript
 // timestamps: true is the default — no need to specify
-const postsTable = defineTable('posts', {
+const postsTable = defineTable('posts').columns({
   id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
   title: { type: 'varchar', maxLength: 255, required: true },
 })
@@ -75,10 +75,12 @@ const postsTable = defineTable('posts', {
 Opt out with `{ timestamps: false }`:
 
 ```typescript
-const logsTable = defineTable('logs', {
-  id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
-  message: { type: 'text', required: true },
-}, { timestamps: false })
+const logsTable = defineTable('logs')
+  .columns({
+    id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
+    message: { type: 'text', required: true },
+  })
+  .timestamps(false)
 // Columns: id, message (no timestamp columns)
 ```
 
@@ -91,7 +93,7 @@ Raw columns bypass the DSL entirely. You control the database column name direct
 ```typescript
 import { text } from 'drizzle-orm/pg-core'
 
-const postsTable = defineTable('posts', {
+const postsTable = defineTable('posts').columns({
   id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
   // Raw column — you specify 'tag_list' explicitly in the Drizzle builder
   tags: { raw: () => text('tag_list').array().default([]) },

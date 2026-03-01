@@ -14,7 +14,7 @@ import { sql } from 'drizzle-orm'
 
 // --- Schema with custom assertions ---
 
-const productsTable = defineTable('memory')('products', {
+const productsTable = defineTable('memory')('products').columns({
   id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
   name: {
     type: 'varchar',
@@ -53,7 +53,7 @@ const productsTable = defineTable('memory')('products', {
     type: 'text',
     transform: (v: string) => v.trim(),
   },
-}, { timestamps: false })
+}).timestamps(false)
 
 const productStore = defineStore(productsTable)
 

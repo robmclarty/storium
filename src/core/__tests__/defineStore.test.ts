@@ -5,10 +5,10 @@ import { ConfigError } from '../errors'
 
 const dt = buildDefineTable('memory')
 
-const usersTable = dt('users', {
+const usersTable = dt('users').columns({
   id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
   email: { type: 'varchar', maxLength: 255, required: true },
-}, { timestamps: false })
+}).timestamps(false)
 
 describe('defineStore', () => {
   it('creates a StoreDefinition from a table', () => {
@@ -26,14 +26,22 @@ describe('defineStore', () => {
     expect(store.name).toBe('users')
   })
 
-  it('defaults queries to empty object when omitted', () => {
+  it('defaults queryFns to empty object when no .queries() called', () => {
     const store = defineStore(usersTable)
-    expect(store.queries).toEqual({})
+    expect(store.queryFns).toEqual({})
   })
 
-  it('stores provided queries', () => {
-    const store = defineStore(usersTable, { myQuery: () => () => 'result' })
-    expect(store.queries).toHaveProperty('myQuery')
+  it('stores provided queries via .queries() chain', () => {
+    const store = defineStore(usersTable).queries({ myQuery: () => () => 'result' })
+    expect(store.queryFns).toHaveProperty('myQuery')
+  })
+
+  it('.queries() is chainable', () => {
+    const store = defineStore(usersTable)
+      .queries({ a: () => () => 'a' })
+      .queries({ b: () => () => 'b' })
+    expect(store.queryFns).toHaveProperty('a')
+    expect(store.queryFns).toHaveProperty('b')
   })
 
   it('throws ConfigError for non-table values', () => {
@@ -46,6 +54,11 @@ describe('defineStore', () => {
 describe('isStoreDefinition', () => {
   it('returns true for valid StoreDefinitions', () => {
     const store = defineStore(usersTable)
+    expect(isStoreDefinition(store)).toBe(true)
+  })
+
+  it('returns true for StoreDefinitions with queries', () => {
+    const store = defineStore(usersTable).queries({ q: () => () => null })
     expect(isStoreDefinition(store)).toBe(true)
   })
 

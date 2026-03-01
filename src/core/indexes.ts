@@ -23,6 +23,7 @@
 import type { Dialect, IndexesConfig, DslIndexConfig, ColumnsConfig } from './types'
 import { isRawIndex } from './types'
 import { SchemaError } from './errors'
+import { toSnakeCase } from './dialect'
 
 // createRequire is used intentionally: buildIndexes() returns a synchronous
 // callback passed to Drizzle's table constructor. Switching to async import()
@@ -36,10 +37,12 @@ const require = createRequire(import.meta.url)
 /**
  * Generate the conventional index name from table name, key name, and uniqueness.
  */
-const autoName = (tableName: string, keyName: string, unique: boolean): string =>
-  unique
-    ? `${tableName}_${keyName}_unique`
-    : `${tableName}_${keyName}_idx`
+const autoName = (tableName: string, keyName: string, unique: boolean): string => {
+  const snakeKey = toSnakeCase(keyName)
+  return unique
+    ? `${tableName}_${snakeKey}_unique`
+    : `${tableName}_${snakeKey}_idx`
+}
 
 /**
  * Resolve which columns an index covers. If `columns` is specified, use those.

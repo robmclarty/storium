@@ -8,17 +8,17 @@ let teams: any
 beforeAll(() => {
   db = storium.connect({ dialect: 'memory' })
 
-  const teamsTable = db.defineTable('teams', {
+  const teamsTable = db.defineTable('teams').columns({
     id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
     name: { type: 'varchar', maxLength: 255, required: true },
-  }, { timestamps: false })
+  }).timestamps(false)
 
-  const membersTable = db.defineTable('team_members', {
+  const membersTable = db.defineTable('team_members').columns({
     id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
     team_id: { type: 'uuid', required: true },
     user_id: { type: 'uuid', required: true },
     role: { type: 'varchar', maxLength: 50 },
-  }, { timestamps: false })
+  }).timestamps(false)
 
   db.drizzle.run(sql`
     CREATE TABLE IF NOT EXISTS teams (
@@ -32,7 +32,7 @@ beforeAll(() => {
     )
   `)
 
-  teams = db.defineStore(teamsTable, {
+  teams = db.defineStore(teamsTable).queries({
     ...withMembers(membersTable, 'team_id'),
   })
 })

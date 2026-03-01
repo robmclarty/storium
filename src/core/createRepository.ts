@@ -71,7 +71,14 @@ const buildDefaultCrud = (
   assertions: AssertionRegistry,
   dialect: Dialect
 ) => {
-  const { selectColumns, allColumns, primaryKey, access, columns, name: tableName } = tableDef.storium
+  const { selectColumns, allColumns, primaryKey: rawPk, access, columns, name: tableName } = tableDef.storium
+  if (rawPk === undefined) {
+    throw new StoreError(
+      `Table '${tableName}' has no primary key. Define a column with ` +
+      '`primaryKey: true`, include an `id` column, or use `.primaryKey()`.'
+    )
+  }
+  const primaryKey: string | string[] = rawPk
   const table = tableDef
   const prep = createPrepFn(columns, access, assertions)
 

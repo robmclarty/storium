@@ -4,8 +4,8 @@ import { tagsTable } from './tag.schema.js'
 import { postTagsTable } from '../post-tags/post-tag.schema.js'
 import { postsTable } from '../posts/post.schema.js'
 
-export const tagStore = defineStore(tagsTable, {
-  // Custom JOIN: raw Drizzle escape hatch for queries the helpers don't cover
+export const tagStore = defineStore(tagsTable).queries({
+  // Custom JOIN: raw Drizzle escape hatch for queries the mixins don't cover
   findPostsByTag: (ctx) => async (tagName: string) =>
     ctx.drizzle
       .select({

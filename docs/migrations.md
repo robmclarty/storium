@@ -51,17 +51,16 @@ Schema files export `defineTable()` results. drizzle-kit imports them at module 
 // entities/users/user.schema.ts
 import { defineTable } from 'storium'
 
-export const usersTable = defineTable('users', {
-  id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
-  email: { type: 'varchar', maxLength: 255, required: true },
-  name: { type: 'varchar', maxLength: 255 },
-}, {
-  timestamps: true,
-  indexes: { email: { unique: true } },
-})
+export const usersTable = defineTable('users')
+  .columns({
+    id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
+    email: { type: 'varchar', maxLength: 255, required: true },
+    name: { type: 'varchar', maxLength: 255 },
+  })
+  .indexes({ email: { unique: true } })
 ```
 
-`defineTable()` auto-detects the dialect from your config file. You can also be explicit: `defineTable('postgresql')('users', ...)`.
+`defineTable()` auto-detects the dialect from your config file. You can also be explicit: `defineTable('postgresql')('users').columns({...})`.
 
 The returned object is a real Drizzle table — drizzle-kit sees it as a standard table definition. The `.storium` metadata is attached as a non-enumerable property so it doesn't interfere.
 
@@ -74,7 +73,7 @@ Store files bundle a table with custom queries into a `StoreDefinition`:
 import { defineStore } from 'storium'
 import { usersTable } from './user.schema'
 
-export const userStore = defineStore(usersTable, {
+export const userStore = defineStore(usersTable).queries({
   findByEmail: (ctx) => async (email) => ctx.findOne({ email }),
 })
 ```

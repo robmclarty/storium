@@ -44,7 +44,7 @@ All CRUD methods on `ctx` are always the **original** built-in versions, even if
 The simplest custom queries delegate to built-in methods:
 
 ```typescript
-const userStore = defineStore(usersTable, {
+const userStore = defineStore(usersTable).queries({
   findByEmail: (ctx) => async (email: string) =>
     ctx.findOne({ email }),
 
@@ -61,7 +61,7 @@ const userStore = defineStore(usersTable, {
 Override a default method by using the same name. The original is still available on `ctx`:
 
 ```typescript
-const userStore = defineStore(usersTable, {
+const userStore = defineStore(usersTable).queries({
   // Override create — hash password before insert
   create: (ctx) => async (input, opts) => {
     const hashed = { ...input, password: await hash(input.password) }
@@ -84,7 +84,7 @@ For anything the built-in methods can't express, use `ctx.drizzle` directly:
 ```typescript
 import { like, desc, eq, sql } from 'drizzle-orm'
 
-const articleStore = defineStore(articlesTable, {
+const articleStore = defineStore(articlesTable).queries({
   // Full-text search
   search: (ctx) => async (term: string) =>
     ctx.drizzle
@@ -118,7 +118,7 @@ Use `ctx.selectColumns` in `.select()` to get the same column set as the default
 Custom queries don't have to be "queries" — they can represent any domain operation:
 
 ```typescript
-const articleStore = defineStore(articlesTable, {
+const articleStore = defineStore(articlesTable).queries({
   publish: (ctx) => async (id: string) =>
     ctx.update(id, { status: 'published', published_at: new Date() }),
 
@@ -135,7 +135,7 @@ const articleStore = defineStore(articlesTable, {
 Custom queries that delegate to built-in methods automatically support transactions via the `opts` parameter:
 
 ```typescript
-const orderStore = defineStore(ordersTable, {
+const orderStore = defineStore(ordersTable).queries({
   createWithItems: (ctx) => async (order: any, items: any[]) => {
     // Use db.transaction() from outside, then pass { tx } through opts
     const created = await ctx.create(order)
@@ -182,7 +182,7 @@ export const withSoftDelete = {
 }
 
 // user.store.ts
-const userStore = defineStore(usersTable, {
+const userStore = defineStore(usersTable).queries({
   ...withSoftDelete,
   findByEmail: (ctx) => async (email) => ctx.findOne({ email }),
 })

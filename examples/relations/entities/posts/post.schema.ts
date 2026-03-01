@@ -1,6 +1,6 @@
 import { defineTable } from 'storium'
 
-export const postsTable = defineTable('posts', {
+export const postsTable = defineTable('posts').columns({
   id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
   title: { type: 'varchar', maxLength: 255, required: true },
   body: { type: 'text' },

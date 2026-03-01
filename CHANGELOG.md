@@ -4,6 +4,30 @@ All notable changes to Storium are documented here.
 
 This project uses [Semantic Versioning](https://semver.org/). Pre-1.0 releases may include breaking changes in minor versions.
 
+## [0.10.0] — 2026-02-28
+
+### Breaking
+- **`defineTable` now uses chain API.** Positional params replaced by named chain methods:
+  - Old: `defineTable('users', columns, { timestamps: false, indexes: {...} })`
+  - New: `defineTable('users').columns(columns).timestamps(false).indexes({...})`
+  - All three overloads updated (direct, curried dialect, no-arg)
+  - New chain methods: `.indexes()`, `.access()`, `.primaryKey()`, `.timestamps(false)`
+- **`defineStore` now uses `.queries()` chain.** Queries moved from second param to chain method:
+  - Old: `defineStore(usersTable, { search, findByEmail })`
+  - New: `defineStore(usersTable).queries({ search, findByEmail })`
+  - `defineStore(usersTable)` without queries remains unchanged
+- **`db.defineTable()` and `db.defineStore()`** follow the same chain patterns
+- **`StoreDefinition.queries`** renamed to **`StoreDefinition.queryFns`** to avoid collision with `.queries()` chain method
+- **`InferStore`** now reads `queryFns` instead of `queries`
+- **`TableOptions`** deprecated in favor of chain methods; kept as `TableBuilderConfig` alias
+
+### Added
+- `AccessConfig` type for table-level access overrides (`.access({ hidden: [...], readonly: [...] })`)
+- `.access()` chain method unions with per-column `hidden`/`readonly` settings
+- `.queries()` chain method provides full `ctx` contextual typing — no more ts7006/ts7044 warnings on inline `(ctx) =>` callbacks
+- Index auto-names now use snake_case: `schoolId: {}` → `users_school_id_idx`
+- Tables without a primary key are now allowed (deferred to `.primaryKey()` chain or repository creation)
+
 ## [0.9.2] — 2026-02-28
 
 ### Fixed

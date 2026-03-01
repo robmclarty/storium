@@ -257,12 +257,25 @@ export type SchemaSet<TColumns extends ColumnsConfig = ColumnsConfig> = {
  * A table definition: a plain Drizzle table object with storium metadata
  * attached as a non-enumerable `.storium` property.
  *
- * Returned by `defineTable()`. Compatible with drizzle-kit (which sees a
- * real Drizzle table) and storium (which reads `table.storium.*`).
+ * Returned by `defineTable().columns()` (or its chain variants).
+ * Compatible with drizzle-kit (which sees a real Drizzle table) and
+ * storium (which reads `table.storium.*`).
+ *
+ * Chain methods (`.indexes()`, `.access()`, etc.) are non-enumerable at
+ * runtime so drizzle-kit's `is(value, Table)` check ignores them.
+ * TypeScript declares them here for autocomplete.
  */
 export type TableDef<TColumns extends ColumnsConfig = ColumnsConfig> = {
   /** Storium metadata (columns, access sets, schemas, etc.). */
   storium: StoriumMeta<TColumns>
+  /** Add indexes to this table. Returns a new TableDef (rebuilt). */
+  indexes(config: IndexesConfig): TableDef<TColumns>
+  /** Set table-level access overrides (union with per-column hidden/readonly). */
+  access(config: AccessConfig): TableDef<TColumns>
+  /** Set a composite primary key. Returns a new TableDef (rebuilt). */
+  primaryKey(...columns: string[]): TableDef<TColumns>
+  /** Disable automatic timestamp columns. Returns a new TableDef (rebuilt). */
+  timestamps(enabled: false): TableDef<TColumns>
   /** Drizzle column access — any other property is a Drizzle column. */
   [key: string]: any
 }
@@ -363,10 +376,10 @@ export type RepositoryContext<
  * Shorthand for `RepositoryContext` — the context object passed to custom
  * query factories.
  *
- * For queries defined **inline** in `defineStore()`, TypeScript infers
+ * For queries defined **inline** in `.queries()`, TypeScript infers
  * the type automatically — just write `(ctx) =>`:
  * ```typescript
- * defineStore(usersTable, {
+ * defineStore(usersTable).queries({
  *   findByEmail: (ctx) => async (email: string) => ctx.findOne({ email }),
  * })
  * ```
@@ -427,12 +440,12 @@ export type Store<
 }
 
 /**
- * Infer `Store<C, Q>` from any object with `tableDef` and `queries` fields.
+ * Infer `Store<C, Q>` from any object with `tableDef` and `queryFns` fields.
  * Used by `register()` to preserve generic parameters without importing
  * StoreDefinition (which would create a circular dependency with types.ts).
  */
 export type InferStore<T> =
-  T extends { tableDef: TableDef<infer C extends ColumnsConfig>; queries: infer Q extends QueriesConfig }
+  T extends { tableDef: TableDef<infer C extends ColumnsConfig>; queryFns: infer Q extends QueriesConfig }
     ? Store<C, Q>
     : Store
 
@@ -530,29 +543,33 @@ export type StoriumInstance<D extends Dialect = Dialect> = {
   zod: typeof ZodNamespace
   /** The active dialect. */
   dialect: D
-  /** Create a table definition (pre-bound to dialect + assertions). */
-  defineTable: {
-    <TColumns extends ColumnsConfig>(
-      name: string,
-      columns: TColumns,
-      options: TableOptions & { timestamps: false }
-    ): TableDef<TColumns>
-    <TColumns extends ColumnsConfig>(
-      name: string,
-      columns: TColumns,
-      options?: TableOptions
-    ): TableDef<TColumns & TimestampColumns>
+  /**
+   * Create a table definition (pre-bound to dialect + assertions).
+   * Returns a builder with `.columns()` to start the chain.
+   *
+   * @example
+   * const users = db.defineTable('users')
+   *   .columns({ id: { type: 'uuid', primaryKey: true }, email: { type: 'varchar' } })
+   *   .indexes({ email: { unique: true } })
+   */
+  defineTable: (name: string) => {
+    columns: <TColumns extends ColumnsConfig>(columns: TColumns) => TableDef<TColumns & TimestampColumns>
   }
   /**
    * Create a live store from a table definition (simple path — no register step).
+   * Optionally chain `.queries()` to add custom query functions with full ctx inference.
    *
-   * @param tableDef - A table from `defineTable()` or `db.defineTable()`
-   * @param queries - Optional custom query functions
+   * @example
+   * const users = db.defineStore(usersTable)
+   * const users = db.defineStore(usersTable).queries({ findByEmail: (ctx) => ... })
    */
-  defineStore: <TColumns extends ColumnsConfig, TQueries extends QueriesConfig = {}>(
-    tableDef: TableDef<TColumns>,
-    queries?: TQueries
-  ) => Store<TColumns, TQueries>
+  defineStore: <TColumns extends ColumnsConfig>(
+    tableDef: TableDef<TColumns>
+  ) => Store<TColumns> & {
+    queries: <TKeys extends string>(
+      queryFns: Record<TKeys, (ctx: RepositoryContext<TableDef<TColumns>, TColumns, D>) => (...args: any[]) => any>
+    ) => Store<TColumns, Record<TKeys, (ctx: RepositoryContext<TableDef<TColumns>, TColumns, D>) => (...args: any[]) => any>>
+  }
   /** Materialize StoreDefinitions into live stores with CRUD + queries. */
   register: <T extends Record<string, any>>(
     storeDefs: T
@@ -565,14 +582,34 @@ export type StoriumInstance<D extends Dialect = Dialect> = {
 
 // --------------------------------------------------------- Options Types --
 
-/** Options for `defineTable()`. */
-export type TableOptions = {
+/**
+ * Table-level access overrides: union with per-column hidden/readonly.
+ * Used by `.access()` chain method or `access` in table builder config.
+ */
+export type AccessConfig = {
+  hidden?: string[]
+  readonly?: string[]
+}
+
+/**
+ * Internal accumulated config for the table chain builder.
+ * Each chain method clones this, updates one field, and rebuilds the table.
+ */
+export type TableBuilderConfig = {
   indexes?: IndexesConfig
   constraints?: (table: any) => Record<string, any>
   primaryKey?: string | string[]
   /** Inject createdAt/updatedAt columns. Default: true. Set to false to opt out. */
   timestamps?: boolean
+  /** Table-level access overrides (union with per-column settings). */
+  access?: AccessConfig
 }
+
+/**
+ * @deprecated Use chain API instead: `defineTable('name').columns({...}).indexes({...})`
+ * Kept for internal use and backward compatibility during migration.
+ */
+export type TableOptions = TableBuilderConfig
 
 /** Column configs for auto-injected timestamp columns. */
 export type TimestampColumns = {

@@ -9,17 +9,17 @@ let posts: any
 beforeAll(() => {
   db = storium.connect({ dialect: 'memory' })
 
-  const authorsTable = db.defineTable('authors', {
+  const authorsTable = db.defineTable('authors').columns({
     id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
     name: { type: 'varchar', maxLength: 255, required: true },
     email: { type: 'varchar', maxLength: 255, required: true },
-  }, { timestamps: false })
+  }).timestamps(false)
 
-  const postsTable = db.defineTable('posts', {
+  const postsTable = db.defineTable('posts').columns({
     id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
     title: { type: 'varchar', maxLength: 255, required: true },
     author_id: { type: 'uuid', required: true },
-  }, { timestamps: false })
+  }).timestamps(false)
 
   db.drizzle.run(sql`
     CREATE TABLE IF NOT EXISTS authors (
@@ -35,7 +35,7 @@ beforeAll(() => {
 
   authors = db.defineStore(authorsTable)
 
-  posts = db.defineStore(postsTable, {
+  posts = db.defineStore(postsTable).queries({
     ...withBelongsTo(authorsTable, 'author_id', {
       alias: 'author',
       select: ['name', 'email'],

@@ -20,7 +20,7 @@ import { sql, eq, like, desc } from 'drizzle-orm'
 
 // --- Schema ---
 
-const articlesTable = defineTable('memory')('articles', {
+const articlesTable = defineTable('memory')('articles').columns({
   id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
   title: { type: 'varchar', maxLength: 255, required: true },
   slug: { type: 'varchar', maxLength: 255, required: true },
@@ -28,11 +28,11 @@ const articlesTable = defineTable('memory')('articles', {
   status: { type: 'varchar', maxLength: 20, required: true },
   author_id: { type: 'uuid', required: true },
   view_count: { type: 'integer' },
-}, { timestamps: false })
+}).timestamps(false)
 
 // --- Store with custom queries ---
 
-const articleStore = defineStore(articlesTable, {
+const articleStore = defineStore(articlesTable).queries({
   // Compose with built-in CRUD
   findBySlug: (ctx) => async (slug: string) =>
     ctx.findOne({ slug }),

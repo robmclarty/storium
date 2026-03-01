@@ -74,6 +74,8 @@ export type {
   // Table & repository
   TableDef,
   TableAccess,
+  AccessConfig,
+  TableBuilderConfig,
   TableOptions,
   TimestampColumns,
   Store,

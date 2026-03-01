@@ -15,7 +15,7 @@ Mixins are plain objects of query functions. Spread them into a store definition
 ```typescript
 import { defineStore, withBelongsTo, withMembers } from 'storium'
 
-const postStore = defineStore(postsTable, {
+const postStore = defineStore(postsTable).queries({
   ...withBelongsTo(authorsTable, 'author_id', { alias: 'author' }),
   ...withMembers(postTagsTable, 'post_id', 'tag_id'),
   // your own queries too:
@@ -43,7 +43,7 @@ withBelongsTo(relatedTableDef, foreignKey, options)
 ### Example
 
 ```typescript
-const postStore = defineStore(postsTable, {
+const postStore = defineStore(postsTable).queries({
   ...withBelongsTo(authorsTable, 'author_id', {
     alias: 'author',
     select: ['name', 'email'],
@@ -96,7 +96,7 @@ withMembers(joinTableDef, foreignKey, memberKey?)
 ### Example
 
 ```typescript
-const teamStore = defineStore(teamsTable, {
+const teamStore = defineStore(teamsTable).queries({
   ...withMembers(teamMembersTable, 'team_id'),
 })
 
@@ -115,7 +115,7 @@ The default `memberKey` is `'user_id'`. Override it when your join table uses a 
 
 ```typescript
 // posts ↔ tags via post_tags (post_id, tag_id)
-const postStore = defineStore(postsTable, {
+const postStore = defineStore(postsTable).queries({
   ...withMembers(postTagsTable, 'post_id', 'tag_id'),
 })
 ```
@@ -125,12 +125,12 @@ const postStore = defineStore(postsTable, {
 Join tables are best modeled with a composite primary key — no synthetic `id` column needed:
 
 ```typescript
-const postTagsTable = defineTable('post_tags', {
-  post_id: { type: 'uuid', required: true },
-  tag_id: { type: 'uuid', required: true },
-}, {
-  primaryKey: ['post_id', 'tag_id'],
-})
+const postTagsTable = defineTable('post_tags')
+  .columns({
+    post_id: { type: 'uuid', required: true },
+    tag_id: { type: 'uuid', required: true },
+  })
+  .primaryKey('post_id', 'tag_id')
 ```
 
 CRUD methods accept an array of values matching the PK column order:
@@ -166,7 +166,7 @@ For relationships the mixins don't cover, use `ctx.drizzle` to write raw Drizzle
 ```typescript
 import { eq } from 'drizzle-orm'
 
-const tagStore = defineStore(tagsTable, {
+const tagStore = defineStore(tagsTable).queries({
   // Three-way JOIN: tags → post_tags → posts
   findPostsByTag: (ctx) => async (tagName: string) =>
     ctx.drizzle
@@ -195,7 +195,7 @@ Common cases that need custom JOINs:
 Mixins compose naturally via spread. A single store can use multiple mixins:
 
 ```typescript
-const postStore = defineStore(postsTable, {
+const postStore = defineStore(postsTable).queries({
   // Belongs-to: posts → authors
   ...withBelongsTo(authorsTable, 'author_id', {
     alias: 'author',

@@ -7,7 +7,7 @@ For database-specific types that aren't in the DSL — `text[]` arrays, `tsvecto
 ## Syntax
 
 ```typescript
-const posts = defineTable('postgresql')('posts', {
+const posts = defineTable('postgresql')('posts').columns({
   id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
   title: { type: 'varchar', maxLength: 255, required: true },
 
@@ -56,23 +56,22 @@ When writing custom queries that involve raw column types, use `ctx.drizzle` wit
 ```typescript
 import { sql } from 'drizzle-orm'
 
-const posts = db.defineStore('posts', columns, {
-  queries: {
-    findByTag: (ctx) => async (tag: string) => {
-      return ctx.drizzle
-        .select(ctx.selectColumns)
-        .from(ctx.table)
-        .where(sql`${tag} = ANY(${ctx.table.tags})`)
-    },
+const postsTable = db.defineTable('posts').columns(columns)
+const posts = db.defineStore(postsTable).queries({
+  findByTag: (ctx) => async (tag: string) => {
+    return ctx.drizzle
+      .select(ctx.selectColumns)
+      .from(ctx.table)
+      .where(sql`${tag} = ANY(${ctx.table.tags})`)
+  },
 
-    addTag: (ctx) => async (id: string, tag: string) => {
-      return ctx.drizzle
-        .update(ctx.table)
-        .set({ tags: sql`array_append(tags, ${tag})` })
-        .where(eq(ctx.table.id, id))
-        .returning(ctx.selectColumns)
-        .then(rows => rows[0])
-    },
+  addTag: (ctx) => async (id: string, tag: string) => {
+    return ctx.drizzle
+      .update(ctx.table)
+      .set({ tags: sql`array_append(tags, ${tag})` })
+      .where(eq(ctx.table.id, id))
+      .returning(ctx.selectColumns)
+      .then(rows => rows[0])
   },
 })
 ```

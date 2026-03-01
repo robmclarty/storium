@@ -1,6 +1,6 @@
 {
   "name": "storium-examples-relations",
-  "description": "Modeling relationships between tables using withBelongsTo and withMembers helpers",
+  "description": "Modeling relationships between tables using withBelongsTo and withMembers mixins",
   "private": true,
   "type": "module",
   "scripts": {

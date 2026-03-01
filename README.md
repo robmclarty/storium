@@ -27,7 +27,7 @@ const db = storium.connect({
   url: process.env.DATABASE_URL,
 })
 
-const usersTable = db.defineTable('users', {
+const usersTable = db.defineTable('users').columns({
   id:    { type: 'uuid', primaryKey: true, default: 'random_uuid' },
   email: { type: 'varchar', maxLength: 255, required: true },
   name:  { type: 'varchar', maxLength: 255 },
@@ -75,9 +75,9 @@ Column metadata (`readonly`, `hidden`, `required`, `transform`, `validate`) work
 This is where Storium really earns its keep. Custom queries receive `ctx` with the database handle and all default CRUD operations. You can override defaults by name. `ctx` always has the originals, so you can compose on top of them rather than starting from scratch:
 
 ```typescript
-const usersTable = db.defineTable('users', columns)
+const usersTable = db.defineTable('users').columns(columns)
 
-const users = db.defineStore(usersTable, {
+const users = db.defineStore(usersTable).queries({
   // Override create — hash password before insert
   create: (ctx) => async (input, opts) => {
     const hashed = { ...input, password: await hash(input.password) }
@@ -162,7 +162,7 @@ database.ts               ← connect + register all stores
 // entities/users/user.schema.ts
 import { defineTable } from 'storium'
 
-export const usersTable = defineTable('users', {
+export const usersTable = defineTable('users').columns({
   id:    { type: 'uuid', primaryKey: true, default: 'random_uuid' },
   email: {
     type: 'varchar', maxLength: 255, required: true,
@@ -180,9 +180,7 @@ export const usersTable = defineTable('users', {
       test(v, 'is_slug', 'Slug must be lowercase letters, numbers, and hyphens')
     },
   },
-}, {
-  indexes: { email: { unique: true } },
-})
+}).indexes({ email: { unique: true } })
 ```
 
 `transform` runs before `validate` — sanitize first, then check. Built-in assertions like `is_email` and `not_empty` are always available. Custom assertions like `is_slug` are registered at connect time (see database file below).
@@ -214,7 +212,7 @@ import { usersTable } from './user.schema'
 import { withSoftDelete } from './user.mixins'
 import { eq, ilike } from 'drizzle-orm'
 
-export const userStore = defineStore(usersTable, {
+export const userStore = defineStore(usersTable).queries({
   ...withSoftDelete,
 
   findByEmail: (ctx) => async (email: string) =>
@@ -265,15 +263,15 @@ Database drivers (`pg`, `mysql2`, `better-sqlite3`) are optional peers — insta
 
 ```typescript
 // Explicit dialect (curried) — no config file needed
-const usersTable = defineTable('postgresql')('users', columns, options)
+const usersTable = defineTable('postgresql')('users').columns(columns).indexes({...})
 
 // Auto-detect dialect from drizzle.config.ts
-const usersTable = defineTable('users', columns, options)
+const usersTable = defineTable('users').columns(columns)
 
 // Bound function for reuse across multiple tables
 const dt = defineTable('postgresql')
-const usersTable = dt('users', columns)
-const postsTable = dt('posts', columns)
+const usersTable = dt('users').columns(columns)
+const postsTable = dt('posts').columns(columns)
 ```
 
 ## Mixins
@@ -285,7 +283,7 @@ Storium ships a small set of composable mixins for common patterns. You can also
 ```typescript
 import { withBelongsTo } from 'storium'
 
-const userStore = defineStore(usersTable, {
+const userStore = defineStore(usersTable).queries({
   ...withBelongsTo(schools, 'school_id', { alias: 'school', select: ['name'] }),
 })
 
@@ -298,7 +296,7 @@ const user = await users.findWithSchool(userId)
 ```typescript
 import { withMembers } from 'storium'
 
-const teamStore = defineStore(teamsTable, {
+const teamStore = defineStore(teamsTable).queries({
   ...withMembers(teamMembers, 'team_id'),
 })
 
@@ -347,7 +345,7 @@ export const withSoftDelete = {
 }
 
 // user.store.ts
-const userStore = defineStore(usersTable, {
+const userStore = defineStore(usersTable).queries({
   ...withSoftDelete,
   ...withBelongsTo(schools, 'school_id'),
   findByEmail: (ctx) => async (email) => { ... },

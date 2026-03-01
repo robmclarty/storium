@@ -59,10 +59,10 @@ describe('fromDrizzle', () => {
 describe('register', () => {
   it('materializes StoreDefinitions into live stores', () => {
     const db = storium.connect({ dialect: 'memory' })
-    const table = db.defineTable('items', {
+    const table = db.defineTable('items').columns({
       id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
       label: { type: 'varchar', maxLength: 255, required: true },
-    }, { timestamps: false })
+    }).timestamps(false)
 
     const itemStore = defineStore(table)
     const { items } = db.register({ items: itemStore })
@@ -81,10 +81,10 @@ describe('register', () => {
 describe('db.defineStore (simple path)', () => {
   it('creates a live store from a table definition', () => {
     const db = storium.connect({ dialect: 'memory' })
-    const table = db.defineTable('widgets', {
+    const table = db.defineTable('widgets').columns({
       id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
       name: { type: 'varchar', maxLength: 255, required: true },
-    }, { timestamps: false })
+    }).timestamps(false)
     const widgets = db.defineStore(table)
 
     expect(typeof widgets.create).toBe('function')
@@ -103,10 +103,10 @@ describe('transaction', () => {
 
   beforeAll(() => {
     db = storium.connect({ dialect: 'memory' })
-    const table = db.defineTable('tx_items', {
+    const table = db.defineTable('tx_items').columns({
       id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
       label: { type: 'varchar', maxLength: 255, required: true },
-    }, { timestamps: false })
+    }).timestamps(false)
     db.drizzle.run(sql`
       CREATE TABLE IF NOT EXISTS tx_items (id TEXT PRIMARY KEY, label TEXT NOT NULL)
     `)
@@ -162,7 +162,7 @@ describe('assertions integration', () => {
       },
     })
 
-    const table = db.defineTable('slugs', {
+    const table = db.defineTable('slugs').columns({
       id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
       slug: {
         type: 'varchar',
@@ -170,7 +170,7 @@ describe('assertions integration', () => {
         required: true,
         validate: (v, test) => { test(v, 'is_slug', 'Invalid slug') },
       },
-    }, { timestamps: false })
+    }).timestamps(false)
 
     db.drizzle.run(sql`
       CREATE TABLE IF NOT EXISTS slugs (id TEXT PRIMARY KEY, slug TEXT NOT NULL)

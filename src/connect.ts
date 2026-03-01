@@ -17,7 +17,6 @@ import type {
   StoriumInstance,
   TableDef,
   ColumnsConfig,
-  QueriesConfig,
   Store,
   InferStore,
   Dialect,
@@ -250,10 +249,10 @@ const buildInstance = <D extends Dialect>(
       if (!isStoreDefinition(def)) {
         throw new ConfigError(
           `register(): '${key}' is not a valid StoreDefinition. ` +
-          'Use defineStore(tableDef, { queries }) to create one.'
+          'Use defineStore(tableDef) to create one.'
         )
       }
-      result[key] = createRepository(applyAssertions(def.tableDef), def.queries)
+      result[key] = createRepository(applyAssertions(def.tableDef), def.queryFns)
     }
 
     return result as { [K in keyof T]: InferStore<T[K]> }
@@ -261,18 +260,29 @@ const buildInstance = <D extends Dialect>(
 
   /**
    * Create a live store from a table definition (simple path — no register step).
+   * Returns a Store with a non-enumerable `.queries()` chain method for adding
+   * custom queries with full ctx inference.
    */
-  const instanceDefineStore = <TColumns extends ColumnsConfig, TQueries extends QueriesConfig = {}>(
+  const instanceDefineStore = <TColumns extends ColumnsConfig>(
     tableDef: TableDef<TColumns>,
-    queries?: TQueries
-  ): Store<TColumns, TQueries> => {
+  ) => {
     if (!hasMeta(tableDef)) {
       throw new ConfigError(
         'db.defineStore(): first argument must be a table from defineTable().'
       )
     }
     const applied = applyAssertions(tableDef)
-    return createRepository(applied, queries ?? {}) as unknown as Store<TColumns, TQueries>
+    const baseStore = createRepository(applied, {})
+
+    // Attach non-enumerable .queries() that creates a new store with queries
+    Object.defineProperty(baseStore, 'queries', {
+      value: (queryFns: Record<string, any>) => createRepository(applied, queryFns),
+      enumerable: false,
+      configurable: true,
+      writable: false,
+    })
+
+    return baseStore as unknown as Store<TColumns>
   }
 
   let disconnected = false

@@ -9,7 +9,7 @@ let users: any
 beforeAll(() => {
   db = storium.connect({ dialect: 'memory' })
 
-  const usersTable = db.defineTable('users', {
+  const usersTable = db.defineTable('users').columns({
     id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
     email: {
       type: 'varchar',
@@ -19,7 +19,7 @@ beforeAll(() => {
     },
     name: { type: 'varchar', maxLength: 255 },
     age: { type: 'integer' },
-  }, { timestamps: false })
+  }).timestamps(false)
 
   db.drizzle.run(sql`
     CREATE TABLE IF NOT EXISTS users (
@@ -152,10 +152,10 @@ describe('prep pipeline integration', () => {
 
 describe('custom queries', () => {
   it('receives ctx with original CRUD methods', async () => {
-    const table = db.defineTable('items', {
+    const table = db.defineTable('items').columns({
       id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
       label: { type: 'varchar', maxLength: 255, required: true },
-    }, { timestamps: false })
+    }).timestamps(false)
 
     db.drizzle.run(sql`
       CREATE TABLE IF NOT EXISTS items (
@@ -164,7 +164,7 @@ describe('custom queries', () => {
       )
     `)
 
-    const items = db.defineStore(table, {
+    const items = db.defineStore(table).queries({
       findByLabel: (ctx: any) => async (label: string) =>
         ctx.findOne({ label }),
     })
@@ -180,14 +180,11 @@ describe('composite primary keys', () => {
   let memberships: any
 
   beforeAll(() => {
-    const table = db.defineTable('memberships', {
+    const table = db.defineTable('memberships').columns({
       user_id: { type: 'uuid', required: true },
       group_id: { type: 'uuid', required: true },
       role: { type: 'varchar', maxLength: 50 },
-    }, {
-      timestamps: false,
-      primaryKey: ['user_id', 'group_id'],
-    })
+    }).timestamps(false).primaryKey('user_id', 'group_id')
 
     db.drizzle.run(sql`
       CREATE TABLE IF NOT EXISTS memberships (

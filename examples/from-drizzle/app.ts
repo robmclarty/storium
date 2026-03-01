@@ -63,7 +63,7 @@ console.log('Same Drizzle instance:', db.drizzle === myDrizzle)
 
 // --- 3. Define schema + store ---
 
-const articlesTable = defineTable('sqlite')('articles', {
+const articlesTable = defineTable('sqlite')('articles').columns({
   id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
   title: { type: 'varchar', maxLength: 255, required: true },
   slug: {
@@ -76,9 +76,9 @@ const articlesTable = defineTable('sqlite')('articles', {
     },
   },
   body: { type: 'text' },
-}, { timestamps: false })
+}).timestamps(false)
 
-const articleStore = defineStore(articlesTable, {
+const articleStore = defineStore(articlesTable).queries({
   findBySlug: (ctx) => async (slug: string) =>
     ctx.findOne({ slug }),
 })
