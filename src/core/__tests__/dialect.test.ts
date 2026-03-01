@@ -66,8 +66,13 @@ describe('buildDslColumn', () => {
         expect(col).toBeDefined()
       })
 
-      it('applies "random_uuid" default', () => {
-        const col = buildDslColumn('id', { type: 'uuid', default: 'random_uuid' }, dialect)
+      it('applies "uuid:v4" default', () => {
+        const col = buildDslColumn('id', { type: 'uuid', default: 'uuid:v4' }, dialect)
+        expect(col).toBeDefined()
+      })
+
+      it('applies "uuid:v7" default', () => {
+        const col = buildDslColumn('id', { type: 'uuid', default: 'uuid:v7' }, dialect)
         expect(col).toBeDefined()
       })
 
@@ -90,7 +95,7 @@ describe('buildDslColumn', () => {
       type: 'uuid',
       primaryKey: true,
       notNull: true,
-      default: 'random_uuid',
+      default: 'uuid:v4',
       custom: (c) => { customCalled = true; return c },
     }, 'memory')
     expect(col).toBeDefined()

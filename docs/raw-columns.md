@@ -8,7 +8,7 @@ For database-specific types that aren't in the DSL — `text[]` arrays, `tsvecto
 
 ```typescript
 const posts = defineTable('postgresql')('posts').columns({
-  id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
+  id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
   title: { type: 'varchar', maxLength: 255, required: true },
 
   // Raw column: PostgreSQL text array

@@ -3,7 +3,7 @@ import { createPrepFn } from '../prep'
 import type { ColumnsConfig, TableAccess } from '../types'
 
 const columns: ColumnsConfig = {
-  id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
+  id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
   email: {
     type: 'varchar',
     maxLength: 255,

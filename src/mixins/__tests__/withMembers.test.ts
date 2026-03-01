@@ -9,12 +9,12 @@ beforeAll(() => {
   db = storium.connect({ dialect: 'memory' })
 
   const teamsTable = db.defineTable('teams').columns({
-    id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
+    id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
     name: { type: 'varchar', maxLength: 255, required: true },
   }).timestamps(false)
 
   const membersTable = db.defineTable('team_members').columns({
-    id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
+    id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
     team_id: { type: 'uuid', required: true },
     user_id: { type: 'uuid', required: true },
     role: { type: 'varchar', maxLength: 50 },

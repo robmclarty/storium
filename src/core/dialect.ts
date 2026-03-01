@@ -12,6 +12,7 @@
 
 import type { Dialect, DslType, DslColumnConfig } from './types'
 import { ConfigError } from './errors'
+import { uuidv7 } from './uuidv7'
 
 // createRequire is used intentionally: dialect mappings are loaded lazily and
 // synchronously inside defineTable()/buildDslColumn(). Switching to async
@@ -184,12 +185,14 @@ export const buildDslColumn = (
   // Defaults
   if (config.default === 'now') {
     col = col.defaultNow()
-  } else if (config.default === 'random_uuid') {
+  } else if (config.default === 'uuid:v4') {
     if (typeof col.defaultRandom === 'function') {
       col = col.defaultRandom()
     } else {
       col = col.$defaultFn(() => crypto.randomUUID())
     }
+  } else if (config.default === 'uuid:v7') {
+    col = col.$defaultFn(() => uuidv7())
   } else if (config.default !== undefined) {
     col = col.default(config.default)
   }

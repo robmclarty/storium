@@ -108,7 +108,7 @@ export type DslColumnConfig = BaseColumnMeta & {
   primaryKey?: boolean
   notNull?: boolean
   maxLength?: number
-  default?: 'now' | 'random_uuid' | string | number | boolean | Record<string, unknown> | unknown[]
+  default?: 'now' | 'uuid:v4' | 'uuid:v7' | string | number | boolean | Record<string, unknown> | unknown[]
   /** Element type for array columns (e.g. 'text', 'integer', 'uuid'). */
   items?: DslType
   /**

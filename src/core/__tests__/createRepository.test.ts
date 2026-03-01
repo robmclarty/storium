@@ -10,7 +10,7 @@ beforeAll(() => {
   db = storium.connect({ dialect: 'memory' })
 
   const usersTable = db.defineTable('users').columns({
-    id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
+    id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
     email: {
       type: 'varchar',
       maxLength: 255,
@@ -150,10 +150,42 @@ describe('prep pipeline integration', () => {
   })
 })
 
+describe('uuid:v7 primary key', () => {
+  let events: any
+
+  beforeAll(() => {
+    const eventsTable = db.defineTable('events').columns({
+      id: { type: 'uuid', primaryKey: true, default: 'uuid:v7' },
+      kind: { type: 'varchar', maxLength: 100, required: true },
+    }).timestamps(false)
+
+    db.drizzle.run(sql`
+      CREATE TABLE IF NOT EXISTS events (
+        id TEXT PRIMARY KEY,
+        kind TEXT NOT NULL
+      )
+    `)
+
+    events = db.defineStore(eventsTable)
+  })
+
+  it('auto-generates a valid UUIDv7 on create', async () => {
+    const event = await events.create({ kind: 'click' })
+    expect(event.id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/)
+  })
+
+  it('produces temporally sortable IDs', async () => {
+    const a = await events.create({ kind: 'first' })
+    await new Promise((r) => setTimeout(r, 2))
+    const b = await events.create({ kind: 'second' })
+    expect(a.id < b.id).toBe(true)
+  })
+})
+
 describe('custom queries', () => {
   it('receives ctx with original CRUD methods', async () => {
     const table = db.defineTable('items').columns({
-      id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
+      id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
       label: { type: 'varchar', maxLength: 255, required: true },
     }).timestamps(false)
 

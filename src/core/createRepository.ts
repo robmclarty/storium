@@ -38,6 +38,7 @@ import type {
 import { isRawColumn } from './types'
 import { StoreError } from './errors'
 import { createPrepFn } from './prep'
+import { uuidv7 } from './uuidv7'
 
 // -------------------------------------------------------------- Helpers --
 
@@ -221,8 +222,9 @@ const buildDefaultCrud = (
 
     // Single PK: resolve via prepared value, client-side UUID, or insertId
     const pkColumn = columns[primaryKey]
-    if (!prepared[primaryKey] && pkColumn && !isRawColumn(pkColumn) && pkColumn.default === 'random_uuid') {
-      prepared[primaryKey] = crypto.randomUUID()
+    if (!prepared[primaryKey] && pkColumn && !isRawColumn(pkColumn)) {
+      if (pkColumn.default === 'uuid:v4') prepared[primaryKey] = crypto.randomUUID()
+      else if (pkColumn.default === 'uuid:v7') prepared[primaryKey] = uuidv7()
     }
 
     const result = await getDb(opts).insert(table).values(prepared)

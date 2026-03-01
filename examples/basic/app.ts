@@ -22,7 +22,7 @@ import { sql } from 'drizzle-orm'
 const db = storium.connect({ dialect: 'memory' })
 
 const usersTable = db.defineTable('users').columns({
-  id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
+  id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
   email: {
     type: 'varchar',
     maxLength: 255,

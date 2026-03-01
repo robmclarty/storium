@@ -30,7 +30,7 @@ Every column (DSL or raw) can use these properties:
 | `primaryKey` | `boolean` | Mark as the table's primary key. |
 | `notNull` | `boolean` | Add a NOT NULL constraint. |
 | `maxLength` | `number` | For `varchar` — sets max character length. |
-| `default` | `'now'` \| `'random_uuid'` \| literal | Default value. `'now'` = current timestamp, `'random_uuid'` = auto-generated UUID. |
+| `default` | `'now'` \| `'uuid:v4'` \| literal | Default value. `'now'` = current timestamp, `'uuid:v4'` = auto-generated UUID. |
 | `readonly` | `boolean` | Exclude from create AND update schemas (e.g., computed columns). `primaryKey: true` is always implicitly readonly. |
 | `required` | `boolean` | Must this column be provided on create? Enforced by the prep pipeline. |
 | `hidden` | `boolean` | Exclude from SELECT results (e.g., password hashes). Still writable. |
@@ -62,7 +62,7 @@ Invalid combinations (throw `SchemaError`):
 | Value | Behavior |
 |-------|----------|
 | `'now'` | PostgreSQL/MySQL: `defaultNow()`. SQLite: `sql\`(CURRENT_TIMESTAMP)\``. |
-| `'random_uuid'` | PostgreSQL: `defaultRandom()`. MySQL/SQLite: client-side `crypto.randomUUID()`. |
+| `'uuid:v4'` | PostgreSQL: `defaultRandom()`. MySQL/SQLite: client-side `crypto.randomUUID()`. |
 | Any literal | Passed to Drizzle's `.default(value)`. |
 
 ## Three Column Modes

@@ -21,7 +21,7 @@ import { sql, eq, like, desc } from 'drizzle-orm'
 // --- Schema ---
 
 const articlesTable = defineTable('memory')('articles').columns({
-  id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
+  id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
   title: { type: 'varchar', maxLength: 255, required: true },
   slug: { type: 'varchar', maxLength: 255, required: true },
   body: { type: 'text' },

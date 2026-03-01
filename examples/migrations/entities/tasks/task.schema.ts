@@ -3,7 +3,7 @@ import { defineTable } from 'storium'
 // defineTable auto-detects the dialect from storium.config.ts
 export const tasksTable = defineTable('tasks')
   .columns({
-    id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
+    id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
     title: { type: 'varchar', maxLength: 255, required: true },
     description: { type: 'text' },
     status: { type: 'varchar', maxLength: 20, default: 'pending' },

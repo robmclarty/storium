@@ -8,7 +8,7 @@ Define columns using camelCase keys in your schema:
 
 ```typescript
 const productsTable = defineTable('products').columns({
-  id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
+  id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
   productName: { type: 'varchar', maxLength: 255, required: true },
   inStock: { type: 'boolean' },
   unitPrice: { type: 'integer', required: true },
@@ -44,7 +44,7 @@ Use the `dbName` property to set an explicit database column name, bypassing the
 
 ```typescript
 const usersTable = defineTable('users').columns({
-  id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
+  id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
   // App key: "email", DB column: "email_address"
   email: { type: 'varchar', maxLength: 255, dbName: 'email_address' },
   // App key: "displayName", DB column: "display_name" (auto — same as default)
@@ -65,7 +65,7 @@ When timestamps are enabled (the default), Storium injects `createdAt` and `upda
 ```typescript
 // timestamps: true is the default — no need to specify
 const postsTable = defineTable('posts').columns({
-  id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
+  id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
   title: { type: 'varchar', maxLength: 255, required: true },
 })
 // Columns: id, title, createdAt, updatedAt
@@ -77,7 +77,7 @@ Opt out with `{ timestamps: false }`:
 ```typescript
 const logsTable = defineTable('logs')
   .columns({
-    id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
+    id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
     message: { type: 'text', required: true },
   })
   .timestamps(false)
@@ -94,7 +94,7 @@ Raw columns bypass the DSL entirely. You control the database column name direct
 import { text } from 'drizzle-orm/pg-core'
 
 const postsTable = defineTable('posts').columns({
-  id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
+  id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
   // Raw column — you specify 'tag_list' explicitly in the Drizzle builder
   tags: { raw: () => text('tag_list').array().default([]) },
 })

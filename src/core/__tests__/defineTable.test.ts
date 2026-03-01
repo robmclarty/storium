@@ -8,7 +8,7 @@ const dt = buildDefineTable('memory')
 describe('defineTable (memory dialect)', () => {
   it('creates a table with storium metadata', () => {
     const table = dt('users').columns({
-      id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
+      id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
       email: { type: 'varchar', maxLength: 255, required: true },
     }).timestamps(false)
 
@@ -19,7 +19,7 @@ describe('defineTable (memory dialect)', () => {
 
   it('attaches .storium as non-enumerable (drizzle-kit compat)', () => {
     const table = dt('test_enum').columns({
-      id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
+      id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
     }).timestamps(false)
 
     const descriptor = Object.getOwnPropertyDescriptor(table, 'storium')
@@ -28,7 +28,7 @@ describe('defineTable (memory dialect)', () => {
 
   it('attaches chain methods as non-enumerable', () => {
     const table = dt('chain_enum').columns({
-      id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
+      id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
     }).timestamps(false)
 
     for (const method of ['indexes', 'access', 'primaryKey', 'timestamps']) {
@@ -45,7 +45,7 @@ describe('defineTable (memory dialect)', () => {
 
   it('derives access sets correctly', () => {
     const table = dt('items').columns({
-      id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
+      id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
       name: { type: 'varchar', maxLength: 255, required: true },
       secret: { type: 'text', hidden: true },
     }).timestamps(false)
@@ -63,7 +63,7 @@ describe('defineTable (memory dialect)', () => {
 
   it('injects timestamps by default (opt-out)', () => {
     const table = dt('posts_default').columns({
-      id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
+      id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
       title: { type: 'varchar', maxLength: 255 },
     })
 
@@ -75,7 +75,7 @@ describe('defineTable (memory dialect)', () => {
 
   it('does not inject timestamps when timestamps: false', () => {
     const table = dt('posts_no_ts').columns({
-      id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
+      id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
       title: { type: 'varchar', maxLength: 255 },
     }).timestamps(false)
 
@@ -85,7 +85,7 @@ describe('defineTable (memory dialect)', () => {
 
   it('timestamps map to snake_case DB column names', () => {
     const table = dt('posts_dbname').columns({
-      id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
+      id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
     })
 
     expect('createdAt' in table).toBe(true)
@@ -96,7 +96,7 @@ describe('defineTable (memory dialect)', () => {
 
   it('detects primary key from column config', () => {
     const table = dt('custom_pk').columns({
-      custom_id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
+      custom_id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
       name: { type: 'varchar', maxLength: 255 },
     }).timestamps(false)
 
@@ -105,7 +105,7 @@ describe('defineTable (memory dialect)', () => {
 
   it('builds schemas on the table metadata', () => {
     const table = dt('with_schemas').columns({
-      id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
+      id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
       email: { type: 'varchar', maxLength: 255, required: true },
     }).timestamps(false)
 
@@ -117,7 +117,7 @@ describe('defineTable (memory dialect)', () => {
 
   it('supports raw columns alongside DSL columns', () => {
     const table = dt('mixed').columns({
-      id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
+      id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
       tags: { raw: () => text('tags') },
     }).timestamps(false)
 
@@ -127,7 +127,7 @@ describe('defineTable (memory dialect)', () => {
 
   it('wires indexes into the table via chain method', () => {
     const table = dt('indexed').columns({
-      id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
+      id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
       email: { type: 'varchar', maxLength: 255 },
     }).timestamps(false).indexes({ email: { unique: true } })
 
@@ -138,24 +138,24 @@ describe('defineTable (memory dialect)', () => {
 
   it('throws SchemaError when required + readonly', () => {
     expect(() => dt('bad_required_readonly').columns({
-      id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
+      id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
       stuck: { type: 'varchar', maxLength: 255, required: true, readonly: true },
     }).timestamps(false)).toThrow(SchemaError)
 
     expect(() => dt('bad_required_readonly2').columns({
-      id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
+      id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
       stuck: { type: 'varchar', maxLength: 255, required: true, readonly: true },
     }).timestamps(false)).toThrow(/lost in the abyss/)
   })
 
   it('throws SchemaError when readonly + hidden', () => {
     expect(() => dt('bad_readonly_hidden').columns({
-      id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
+      id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
       ghost: { type: 'varchar', maxLength: 255, readonly: true, hidden: true },
     }).timestamps(false)).toThrow(SchemaError)
 
     expect(() => dt('bad_readonly_hidden2').columns({
-      id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
+      id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
       ghost: { type: 'varchar', maxLength: 255, readonly: true, hidden: true },
     }).timestamps(false)).toThrow(/inaccessible/)
   })
@@ -193,7 +193,7 @@ describe('composite primary keys', () => {
 describe('.access() chain method', () => {
   it('unions with per-column hidden/readonly settings', () => {
     const table = dt('access_test').columns({
-      id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
+      id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
       name: { type: 'varchar', maxLength: 255 },
       secret: { type: 'text', hidden: true },
       role: { type: 'varchar', maxLength: 50 },
@@ -208,7 +208,7 @@ describe('.access() chain method', () => {
 
   it('adds hidden columns via access override', () => {
     const table = dt('access_hidden').columns({
-      id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
+      id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
       internal: { type: 'text' },
     }).timestamps(false).access({ hidden: ['internal'] })
 
@@ -218,13 +218,13 @@ describe('.access() chain method', () => {
 
   it('throws SchemaError when access references non-existent column', () => {
     expect(() => dt('access_bad').columns({
-      id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
+      id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
     }).timestamps(false).access({ hidden: ['nonexistent'] })).toThrow(SchemaError)
   })
 
   it('throws SchemaError when access creates hidden+readonly conflict', () => {
     expect(() => dt('access_conflict').columns({
-      id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
+      id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
       field: { type: 'text', readonly: true },
     }).timestamps(false).access({ hidden: ['field'] })).toThrow(SchemaError)
   })
@@ -233,7 +233,7 @@ describe('.access() chain method', () => {
 describe('hasMeta', () => {
   it('returns true for tables from defineTable', () => {
     const table = dt('test').columns({
-      id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
+      id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
     }).timestamps(false)
     expect(hasMeta(table)).toBe(true)
   })

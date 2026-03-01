@@ -10,13 +10,13 @@ beforeAll(() => {
   db = storium.connect({ dialect: 'memory' })
 
   const authorsTable = db.defineTable('authors').columns({
-    id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
+    id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
     name: { type: 'varchar', maxLength: 255, required: true },
     email: { type: 'varchar', maxLength: 255, required: true },
   }).timestamps(false)
 
   const postsTable = db.defineTable('posts').columns({
-    id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
+    id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
     title: { type: 'varchar', maxLength: 255, required: true },
     author_id: { type: 'uuid', required: true },
   }).timestamps(false)

@@ -11,7 +11,7 @@
  * @example
  * // 1. Direct call — auto-loads dialect from drizzle.config.ts
  * const users = defineTable('users').columns({
- *   id:    { type: 'uuid', primaryKey: true, default: 'random_uuid' },
+ *   id:    { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
  *   email: { type: 'varchar', maxLength: 255, notNull: true },
  * })
  *

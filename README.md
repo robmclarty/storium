@@ -28,7 +28,7 @@ const db = storium.connect({
 })
 
 const usersTable = db.defineTable('users').columns({
-  id:    { type: 'uuid', primaryKey: true, default: 'random_uuid' },
+  id:    { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
   email: { type: 'varchar', maxLength: 255, required: true },
   name:  { type: 'varchar', maxLength: 255 },
 })
@@ -163,7 +163,7 @@ database.ts               ← connect + register all stores
 import { defineTable } from 'storium'
 
 export const usersTable = defineTable('users').columns({
-  id:    { type: 'uuid', primaryKey: true, default: 'random_uuid' },
+  id:    { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
   email: {
     type: 'varchar', maxLength: 255, required: true,
     transform: (v) => String(v).trim().toLowerCase(),

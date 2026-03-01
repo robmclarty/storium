@@ -15,7 +15,7 @@ import { sql } from 'drizzle-orm'
 // --- Schema with custom assertions ---
 
 const productsTable = defineTable('memory')('products').columns({
-  id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
+  id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
   name: {
     type: 'varchar',
     maxLength: 100,

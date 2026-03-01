@@ -60,7 +60,7 @@ describe('register', () => {
   it('materializes StoreDefinitions into live stores', () => {
     const db = storium.connect({ dialect: 'memory' })
     const table = db.defineTable('items').columns({
-      id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
+      id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
       label: { type: 'varchar', maxLength: 255, required: true },
     }).timestamps(false)
 
@@ -82,7 +82,7 @@ describe('db.defineStore (simple path)', () => {
   it('creates a live store from a table definition', () => {
     const db = storium.connect({ dialect: 'memory' })
     const table = db.defineTable('widgets').columns({
-      id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
+      id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
       name: { type: 'varchar', maxLength: 255, required: true },
     }).timestamps(false)
     const widgets = db.defineStore(table)
@@ -104,7 +104,7 @@ describe('transaction', () => {
   beforeAll(() => {
     db = storium.connect({ dialect: 'memory' })
     const table = db.defineTable('tx_items').columns({
-      id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
+      id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
       label: { type: 'varchar', maxLength: 255, required: true },
     }).timestamps(false)
     db.drizzle.run(sql`
@@ -163,7 +163,7 @@ describe('assertions integration', () => {
     })
 
     const table = db.defineTable('slugs').columns({
-      id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
+      id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
       slug: {
         type: 'varchar',
         maxLength: 255,

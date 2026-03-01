@@ -138,7 +138,7 @@ This project uses [Semantic Versioning](https://semver.org/). Pre-1.0 releases m
 
 ### Fixed
 - README Quick Start showed incorrect single-step `db.defineStore('name', columns)` — corrected to two-step `db.defineTable()` + `db.defineStore()`.
-- MySQL `create()` now generates UUIDs client-side for columns with `default: 'random_uuid'` (needed because MySQL lacks `RETURNING`).
+- MySQL `create()` now generates UUIDs client-side for columns with `default: 'uuid:v4'` (needed because MySQL lacks `RETURNING`).
 
 ## [0.7.7] — 2026-02-25
 

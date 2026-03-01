@@ -2,7 +2,7 @@ import { defineTable } from 'storium'
 
 export const tasksTable = defineTable('tasks')
   .columns({
-    id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
+    id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
     title: {
       type: 'varchar',
       maxLength: 255,

@@ -64,7 +64,7 @@ console.log('Same Drizzle instance:', db.drizzle === myDrizzle)
 // --- 3. Define schema + store ---
 
 const articlesTable = defineTable('sqlite')('articles').columns({
-  id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
+  id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
   title: { type: 'varchar', maxLength: 255, required: true },
   slug: {
     type: 'varchar',

@@ -3,7 +3,7 @@ import { buildJsonSchemas } from '../jsonSchema'
 import type { ColumnsConfig, TableAccess } from '../types'
 
 const columns: ColumnsConfig = {
-  id: { type: 'uuid', primaryKey: true, notNull: true, default: 'random_uuid' },
+  id: { type: 'uuid', primaryKey: true, notNull: true, default: 'uuid:v4' },
   email: { type: 'varchar', maxLength: 255, required: true, notNull: true },
   name: { type: 'varchar', maxLength: 100 },
   age: { type: 'integer' },

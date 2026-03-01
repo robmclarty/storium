@@ -3,7 +3,7 @@ import { buildZodSchemas } from '../zodSchema'
 import type { ColumnsConfig, TableAccess } from '../types'
 
 const columns: ColumnsConfig = {
-  id: { type: 'uuid', primaryKey: true, notNull: true, default: 'random_uuid' },
+  id: { type: 'uuid', primaryKey: true, notNull: true, default: 'uuid:v4' },
   email: {
     type: 'varchar',
     maxLength: 10,

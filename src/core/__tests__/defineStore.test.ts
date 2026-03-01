@@ -6,7 +6,7 @@ import { ConfigError } from '../errors'
 const dt = buildDefineTable('memory')
 
 const usersTable = dt('users').columns({
-  id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
+  id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
   email: { type: 'varchar', maxLength: 255, required: true },
 }).timestamps(false)
 
