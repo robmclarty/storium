@@ -4,6 +4,15 @@ All notable changes to Storium are documented here.
 
 This project uses [Semantic Versioning](https://semver.org/). Pre-1.0 releases may include breaking changes in minor versions.
 
+## [0.9.1] — 2026-02-28
+
+### Changed
+- `DrizzleDatabase<D>` falls back to `any` when `D` is the full `Dialect` union, so `StoriumInstance` and `Ctx` work without specifying a dialect param.
+- Removed `ctx: Ctx` type annotations from all examples — plain `(ctx) =>` with inference is the recommended pattern. `Ctx` is still exported for users who want explicit typing.
+
+### Added
+- `from-drizzle` example: demonstrates `storium.fromDrizzle()` with `@libsql/client` — a different SQLite driver than the `better-sqlite3` Storium uses internally — proving driver-agnostic behavior.
+
 ## [0.9.0] — 2026-02-28
 
 ### Breaking
