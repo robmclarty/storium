@@ -18,7 +18,7 @@ The context object contains everything you need:
 
 | Property | Description |
 |----------|-------------|
-| `ctx.drizzle` | Raw Drizzle database instance — full query builder access. |
+| `ctx.drizzle` | Drizzle database instance (`DrizzleDatabase<D>`) — typed to the concrete Drizzle class when dialect is known. Full query builder access. |
 | `ctx.zod` | The Zod namespace (`z`) — convenience accessor. |
 | `ctx.table` | The Drizzle table object (column references for `.where()`, `.select()`, etc.). |
 | `ctx.selectColumns` | Pre-built column map for SELECT (excludes `hidden` columns). |

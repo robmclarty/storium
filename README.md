@@ -413,10 +413,10 @@ Storium is not trying to be a walled garden. Every abstraction has a way out.
 Direct Drizzle access is always available. If you need to drop down a level, nothing is stopping you:
 
 ```typescript
-// Raw Drizzle instance
+// Typed Drizzle instance — dialect inferred from config, full autocomplete
 db.drizzle.execute(sql`SELECT 1`)
 
-// Bring your own Drizzle (dialect auto-detected)
+// Bring your own Drizzle (dialect auto-detected from instance type)
 import { storium } from 'storium'
 const db = storium.fromDrizzle(myDrizzleInstance)
 

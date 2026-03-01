@@ -158,9 +158,11 @@ Each schema variant (`createSchema`, `updateSchema`, `selectSchema`, `fullSchema
 | Type | Description |
 |------|-------------|
 | `Dialect` | `'postgresql' \| 'mysql' \| 'sqlite' \| 'memory'` |
-| `StoriumConfig` | Configuration for `storium.connect()` — accepts storium inline shape or drizzle-kit config shape. |
+| `StoriumConfig<D>` | Configuration for `storium.connect()` — accepts storium inline shape or drizzle-kit config shape. Generic `D` preserves the literal dialect type. |
 | `FromDrizzleOptions` | Options for `storium.fromDrizzle()` — currently just `{ assertions? }`. |
-| `StoriumInstance` | The instance returned by `connect` or `fromDrizzle`. |
+| `StoriumInstance<D>` | The instance returned by `connect` or `fromDrizzle`. When `D` is a specific dialect, `db.drizzle` resolves to the concrete Drizzle class. |
+| `DrizzleDatabase<D>` | Maps a dialect to its Drizzle database type (`PgDatabase`, `MySqlDatabase`, `BaseSQLiteDatabase`). Resolves to a concrete type when `D` is specific. |
+| `InferDialect<DB>` | Reverse mapping: infers the dialect string from a Drizzle database type. Used by `fromDrizzle()`. |
 
 ### Column Definition
 
@@ -198,9 +200,10 @@ Each schema variant (`createSchema`, `updateSchema`, `selectSchema`, `fullSchema
 
 | Type | Description |
 |------|-------------|
-| `RepositoryContext<T>` | Context passed to custom query functions — contains `drizzle`, `zod`, `table`, `schemas`, `prep`, and all default CRUD methods. |
-| `Ctx<T>` | Shorthand alias for `RepositoryContext<T>` — use as `ctx: Ctx` in custom queries. |
-| `CustomQueryFn<T>` | `(ctx: RepositoryContext<T>) => (...args) => any` — a custom query factory function. |
+| `RepositoryContext<T, TColumns, D>` | Context passed to custom query functions — contains `drizzle`, `zod`, `table`, `schemas`, `prep`, and all default CRUD methods. `D` controls the type of `ctx.drizzle`. |
+| `Ctx<T, TColumns, D>` | Shorthand alias for `RepositoryContext` — use as `ctx: Ctx` in custom queries. |
+| `CustomQueryFn<T, D>` | `(ctx: RepositoryContext<T, ..., D>) => (...args) => any` — a custom query factory function. |
+| `QueriesConfig` | `Record<string, (ctx: any) => (...args) => any>` — constraint type for custom query records. Uses `ctx: any` so helpers work across dialects. |
 | `PrepOptions` | Options for CRUD operations: `force`, `validateRequired`, `onlyWritable`, `tx`, `limit`, `offset`, `orderBy`, `includeHidden`. |
 
 ### Schema & Validation
@@ -238,6 +241,7 @@ Each schema variant (`createSchema`, `updateSchema`, `selectSchema`, `fullSchema
 | `InsertType<TColumns>` | Derive the INSERT input type — `required` fields mandatory, writable fields optional. Values accept `Promise` for `ref()` ergonomics. |
 | `UpdateType<TColumns>` | Derive the UPDATE input type — only writable columns (excludes `readonly`), all optional. |
 | `Promisable<T>` | `T \| Promise<any>` — allows `ref()` values in insert/update input without casts. |
+| `InferStore<T>` | Infers `Store<C, Q>` from a `StoreDefinition` — used by `register()` to preserve type parameters. |
 | `PkValue` | `string \| number \| (string \| number)[]` — primary key value for single or composite PKs. |
 
 ### Migrate Sub-Path Types

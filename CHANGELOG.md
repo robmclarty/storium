@@ -4,6 +4,31 @@ All notable changes to Storium are documented here.
 
 This project uses [Semantic Versioning](https://semver.org/). Pre-1.0 releases may include breaking changes in minor versions.
 
+## [0.9.0] — 2026-02-28
+
+### Breaking
+- **Column access model redesigned.** Three orthogonal flags replace the old `writeOnly` / `mutable` system:
+  - `hidden` — excludes from SELECT results. Implies writable (e.g., password hashes). Replaces `writeOnly`.
+  - `readonly` — excludes from INSERT and UPDATE. Always true for `primaryKey` columns. Replaces `mutable` with inverted semantics (columns are now writable by default — no flag needed).
+  - `required` — must be provided on create. Unchanged.
+  - Invalid combinations (`readonly + required`, `readonly + hidden`) now throw `SchemaError`.
+- **`TableAccess` simplified.** Old `insertable` / `mutable` / `writeOnly` sets replaced with `selectable`, `writable`, `hidden`, `readonly`.
+- **`PrepOptions` renamed.** `includeWriteOnly` → `includeHidden`, `onlyMutables` → `onlyWritable`.
+
+### Added
+- `DrizzleDatabase<D>` — generic type that resolves to the concrete Drizzle class (`PgDatabase`, `MySqlDatabase`, `BaseSQLiteDatabase`) when dialect `D` is known.
+- `InferDialect<DB>` — reverse mapping from Drizzle instance type to dialect string.
+- `StoriumInstance<D>` — now generic on dialect. `db.drizzle` resolves to the correct Drizzle type automatically.
+- `StoriumConfig<D>` — preserves the literal dialect type for inference.
+- `RepositoryContext<T, TColumns, D>` and `Ctx<T, TColumns, D>` — carry dialect generic for typed `ctx.drizzle`.
+- `InferStore<T>` type — used by `register()` to preserve generic parameters on returned stores.
+- Custom query methods now appear on the `Store` type with proper autocomplete.
+
+### Changed
+- `withBelongsTo` and `withMembers` helpers return `QueriesConfig` instead of `Record<string, CustomQueryFn>` (dialect-agnostic helpers don't need typed `ctx.drizzle`).
+- `connect()` infers dialect from config literal: `storium.connect({ dialect: 'postgresql', ... })` → `StoriumInstance<'postgresql'>`.
+- `fromDrizzle()` infers dialect from Drizzle instance type via `InferDialect<DB>`.
+
 ## [0.8.3] — 2026-02-28
 
 ### Added

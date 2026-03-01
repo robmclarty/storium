@@ -56,8 +56,8 @@ storium/
 // Named exports
 import { storium, defineTable, defineStore, ValidationError, withBelongsTo, ... } from 'storium'
 
-storium.connect(config)          // StoriumConfig → StoriumInstance
-storium.fromDrizzle(drizzleDb)   // Auto-detects dialect from Drizzle instance
+storium.connect(config)          // StoriumConfig<D> → StoriumInstance<D> (dialect inferred from config literal)
+storium.fromDrizzle(drizzleDb)   // Auto-detects dialect from Drizzle instance type via InferDialect<DB>
 storium.fromDrizzle(drizzleDb, { assertions }) // With storium options
 
 // Sub-path (migration tooling — heavy deps, opt-in)
@@ -76,11 +76,11 @@ import { generate, migrate, push, status, seed, defineSeed, collectSchemas } fro
 
 npm auto-installs non-optional peer deps when you `npm install storium`.
 
-### StoriumInstance (returned by connect() / fromDrizzle())
+### StoriumInstance<D> (returned by connect() / fromDrizzle())
 ```typescript
-db.drizzle           // Raw Drizzle instance (escape hatch)
+db.drizzle           // Typed Drizzle instance — DrizzleDatabase<D> resolves to PgDatabase/MySqlDatabase/BaseSQLiteDatabase
 db.zod               // Zod namespace (convenience accessor matching db.drizzle)
-db.dialect           // Resolved dialect string
+db.dialect           // Resolved dialect string (literal type D)
 db.defineTable()     // Dialect-bound schema definition (no CRUD)
 db.defineStore()     // Create a live store directly (simple path — no register step)
 db.register()        // Materialize StoreDefinitions into live stores (multi-file pattern)
@@ -155,7 +155,7 @@ await users.findById('123')
 
 ### Custom query context (ctx)
 ```typescript
-ctx.drizzle         // Raw Drizzle instance
+ctx.drizzle         // DrizzleDatabase<D> — typed when dialect is known, union when generic
 ctx.zod             // Zod namespace (convenience accessor)
 ctx.table           // Drizzle table object
 ctx.selectColumns   // Pre-built column map for SELECT
