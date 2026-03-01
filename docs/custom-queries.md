@@ -21,8 +21,8 @@ The context object contains everything you need:
 | `ctx.drizzle` | Raw Drizzle database instance — full query builder access. |
 | `ctx.zod` | The Zod namespace (`z`) — convenience accessor. |
 | `ctx.table` | The Drizzle table object (column references for `.where()`, `.select()`, etc.). |
-| `ctx.selectColumns` | Pre-built column map for SELECT (excludes `writeOnly` columns). |
-| `ctx.allColumns` | Full column map including `writeOnly` columns. |
+| `ctx.selectColumns` | Pre-built column map for SELECT (excludes `hidden` columns). |
+| `ctx.allColumns` | Full column map including `hidden` columns. |
 | `ctx.primaryKey` | Primary key column name (string). |
 | `ctx.schemas` | `SchemaSet` with `createSchema`, `updateSchema`, `selectSchema`, `fullSchema`. |
 | `ctx.prep()` | The validation/transform pipeline function. |
@@ -111,7 +111,7 @@ const articleStore = defineStore(articlesTable, {
 })
 ```
 
-Use `ctx.selectColumns` in `.select()` to get the same column set as the default CRUD methods (respecting `writeOnly`).
+Use `ctx.selectColumns` in `.select()` to get the same column set as the default CRUD methods (respecting `hidden`).
 
 ## Domain Actions
 
@@ -192,7 +192,7 @@ Helpers compose with each other and with Storium's built-in helpers (`withBelong
 
 ## Tips
 
-- **Use `ctx.selectColumns`** in raw Drizzle selects to exclude `writeOnly` columns automatically.
+- **Use `ctx.selectColumns`** in raw Drizzle selects to exclude `hidden` columns automatically.
 - **Return from `ctx` methods** rather than reimplementing CRUD — you get prep pipeline validation for free.
 - **Pass `{ force: true }`** when calling `ctx.create` or `ctx.update` with pre-validated data to skip the pipeline.
 - **Type the `ctx` parameter** as `Ctx` (imported from `storium`) for autocomplete in your editor.

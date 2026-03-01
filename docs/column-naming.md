@@ -9,9 +9,9 @@ Define columns using camelCase keys in your schema:
 ```typescript
 const productsTable = defineTable('products', {
   id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
-  productName: { type: 'varchar', maxLength: 255, mutable: true, required: true },
-  inStock: { type: 'boolean', mutable: true },
-  unitPrice: { type: 'integer', mutable: true, required: true },
+  productName: { type: 'varchar', maxLength: 255, required: true },
+  inStock: { type: 'boolean' },
+  unitPrice: { type: 'integer', required: true },
 })
 ```
 
@@ -33,7 +33,7 @@ If you prefer snake_case in your schema definitions, the conversion is idempoten
 ```typescript
 // Works — but camelCase is the recommended convention
 const productsTable = defineTable('products', {
-  unit_price: { type: 'integer', mutable: true },
+  unit_price: { type: 'integer' },
 })
 // DB column: unit_price (unchanged)
 ```
@@ -46,9 +46,9 @@ Use the `dbName` property to set an explicit database column name, bypassing the
 const usersTable = defineTable('users', {
   id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
   // App key: "email", DB column: "email_address"
-  email: { type: 'varchar', maxLength: 255, mutable: true, dbName: 'email_address' },
+  email: { type: 'varchar', maxLength: 255, dbName: 'email_address' },
   // App key: "displayName", DB column: "display_name" (auto — same as default)
-  displayName: { type: 'varchar', maxLength: 100, mutable: true },
+  displayName: { type: 'varchar', maxLength: 100 },
 })
 ```
 
@@ -66,7 +66,7 @@ When timestamps are enabled (the default), Storium injects `createdAt` and `upda
 // timestamps: true is the default — no need to specify
 const postsTable = defineTable('posts', {
   id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
-  title: { type: 'varchar', maxLength: 255, mutable: true, required: true },
+  title: { type: 'varchar', maxLength: 255, required: true },
 })
 // Columns: id, title, createdAt, updatedAt
 // DB columns: id, title, created_at, updated_at
@@ -94,7 +94,7 @@ import { text } from 'drizzle-orm/pg-core'
 const postsTable = defineTable('posts', {
   id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
   // Raw column — you specify 'tag_list' explicitly in the Drizzle builder
-  tags: { raw: () => text('tag_list').array().default([]), mutable: true },
+  tags: { raw: () => text('tag_list').array().default([]) },
 })
 // App key: "tags", DB column: "tag_list" (from the raw builder, not from toSnakeCase)
 ```

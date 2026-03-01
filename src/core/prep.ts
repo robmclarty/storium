@@ -4,7 +4,7 @@
  * The `prep` pipeline processes input data before database operations.
  * It runs four stages in order:
  *
- * 1. Filter — remove unknown keys; optionally restrict to mutable keys
+ * 1. Filter — remove unknown keys; optionally restrict to writable keys
  * 2. Transform — run column transform fns (sanitization, enrichment, or any pre-save logic)
  * 3. Validate — run type checks + custom validate callbacks; collect ALL errors
  * 4. Required — ensure all required columns have defined values
@@ -90,17 +90,17 @@ const resolveInput = async (
 
 /**
  * Stage 1: Filter
- * Remove keys not defined in the column config. If `onlyMutables` is true,
- * further restrict to mutable columns only.
+ * Remove keys not defined in the column config. If `onlyWritable` is true,
+ * further restrict to writable columns only.
  */
 const filterInput = (
   input: Record<string, any>,
   columns: ColumnsConfig,
   access: TableAccess,
-  onlyMutables: boolean
+  onlyWritable: boolean
 ): Record<string, any> => {
   const allowedKeys = new Set(
-    onlyMutables ? access.mutable : Object.keys(columns)
+    onlyWritable ? access.writable : Object.keys(columns)
   )
 
   const result: Record<string, any> = {}
@@ -259,7 +259,7 @@ export const createPrepFn = (
     const {
       force = false,
       validateRequired = true,
-      onlyMutables = false,
+      onlyWritable = false,
     } = options
 
     // Skip everything if forced
@@ -269,7 +269,7 @@ export const createPrepFn = (
     const resolved = await resolveInput(input)
 
     // Stage 1: Filter
-    const filtered = filterInput(resolved, columns, access, onlyMutables)
+    const filtered = filterInput(resolved, columns, access, onlyWritable)
 
     // Stage 2: Transform
     const transformed = await transformInput(filtered, columns)

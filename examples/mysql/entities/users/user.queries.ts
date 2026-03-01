@@ -15,7 +15,7 @@ export const search = (ctx: Ctx) => async (term: string) =>
     ))
 
 export const authenticate = (ctx: Ctx) => async (email: string, password: string) => {
-  const user = await ctx.findOne({ email }, { includeWriteOnly: true })
+  const user = await ctx.findOne({ email }, { includeHidden: true })
   if (!user) return null
 
   const matches = password === user.password_hash

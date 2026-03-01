@@ -111,7 +111,7 @@ Migration tooling — heavier dependencies, opt-in import.
 | `store.findById(id, opts?)` | Find a single row by primary key, or `null` if not found. |
 | `store.findByIdIn(ids, opts?)` | Find all rows whose primary key is in the given array. |
 | `store.create(input, opts?)` | Insert a new row; runs the prep pipeline (filter, transform, validate, required); throws `StoreError` if no row is returned. |
-| `store.update(id, input, opts?)` | Update a row by primary key; only mutable columns are accepted; throws `StoreError` if no row is matched. |
+| `store.update(id, input, opts?)` | Update a row by primary key; only writable columns are accepted; throws `StoreError` if no row is matched. |
 | `store.destroy(id, opts?)` | Delete a single row by primary key. |
 | `store.destroyAll(filters, opts?)` | Delete all rows matching filters (requires at least one filter to prevent accidental full-table deletion). |
 | `store.ref(filter, opts?)` | Look up a row by filter and return its primary key value. Throws `StoreError` if not found. |
@@ -129,9 +129,9 @@ Storium metadata is attached as a non-enumerable `.storium` property on the Driz
 | Property | Description |
 |----------|-------------|
 | `table.storium.columns` | The original `ColumnsConfig` record (storium DSL definitions). |
-| `table.storium.access` | Derived access sets: `selectable`, `mutable`, `insertable`, `writeOnly`. |
+| `table.storium.access` | Derived access sets: `selectable`, `writable`, `hidden`, `readonly`. |
 | `table.storium.selectColumns` | Pre-built Drizzle column map for SELECT queries. |
-| `table.storium.allColumns` | Full Drizzle column map including writeOnly columns. |
+| `table.storium.allColumns` | Full Drizzle column map including hidden columns. |
 | `table.storium.primaryKey` | Name of the primary key column. |
 | `table.storium.name` | Table name string. |
 | `table.storium.schemas` | `SchemaSet` with `createSchema`, `updateSchema`, `selectSchema`, and `fullSchema` `RuntimeSchema` objects. |
@@ -187,7 +187,7 @@ Each schema variant (`createSchema`, `updateSchema`, `selectSchema`, `fullSchema
 |------|-------------|
 | `TableDef<TColumns>` | A Drizzle table with `.storium` metadata (columns, access sets, schemas). |
 | `StoriumMeta<TColumns>` | The metadata type attached to Drizzle tables via `.storium`. |
-| `TableAccess` | Derived access sets: `selectable`, `mutable`, `insertable`, `writeOnly`. |
+| `TableAccess` | Derived access sets: `selectable`, `writable`, `hidden`, `readonly`. |
 | `TableOptions` | Options for `defineTable`: `indexes`, `constraints`, `primaryKey` (string or string[] for composite), `timestamps`. |
 | `StoreDefinition<TColumns, TQueries>` | Inert DTO bundling a `TableDef` with custom queries — materialized via `db.register()`. |
 | `Store<TColumns, TQueries>` | A live store: default CRUD + schemas + materialized custom queries. |
@@ -201,7 +201,7 @@ Each schema variant (`createSchema`, `updateSchema`, `selectSchema`, `fullSchema
 | `RepositoryContext<T>` | Context passed to custom query functions — contains `drizzle`, `zod`, `table`, `schemas`, `prep`, and all default CRUD methods. |
 | `Ctx<T>` | Shorthand alias for `RepositoryContext<T>` — use as `ctx: Ctx` in custom queries. |
 | `CustomQueryFn<T>` | `(ctx: RepositoryContext<T>) => (...args) => any` — a custom query factory function. |
-| `PrepOptions` | Options for CRUD operations: `force`, `validateRequired`, `onlyMutables`, `tx`, `limit`, `offset`, `orderBy`, `includeWriteOnly`. |
+| `PrepOptions` | Options for CRUD operations: `force`, `validateRequired`, `onlyWritable`, `tx`, `limit`, `offset`, `orderBy`, `includeHidden`. |
 
 ### Schema & Validation
 
@@ -234,9 +234,9 @@ Each schema variant (`createSchema`, `updateSchema`, `selectSchema`, `fullSchema
 | Type | Description |
 |------|-------------|
 | `ResolveColumnType<C>` | Map a single `ColumnConfig` to its TypeScript type (raw columns resolve to `any`). |
-| `SelectType<TColumns>` | Derive the SELECT result type — excludes `writeOnly` columns. |
-| `InsertType<TColumns>` | Derive the INSERT input type — `required` fields mandatory, `mutable` fields optional. Values accept `Promise` for `ref()` ergonomics. |
-| `UpdateType<TColumns>` | Derive the UPDATE input type — only `mutable` columns, all optional. |
+| `SelectType<TColumns>` | Derive the SELECT result type — excludes `hidden` columns. |
+| `InsertType<TColumns>` | Derive the INSERT input type — `required` fields mandatory, writable fields optional. Values accept `Promise` for `ref()` ergonomics. |
+| `UpdateType<TColumns>` | Derive the UPDATE input type — only writable columns (excludes `readonly`), all optional. |
 | `Promisable<T>` | `T \| Promise<any>` — allows `ref()` values in insert/update input without casts. |
 | `PkValue` | `string \| number \| (string \| number)[]` — primary key value for single or composite PKs. |
 

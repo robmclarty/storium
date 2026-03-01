@@ -5,10 +5,10 @@ import type { ColumnsConfig } from '../types'
 
 const schemaColumns: ColumnsConfig = {
   id: { type: 'uuid', primaryKey: true },
-  email: { type: 'varchar', maxLength: 255, mutable: true },
-  name: { type: 'varchar', maxLength: 255, mutable: true },
-  school_id: { type: 'uuid', mutable: true },
-  role: { type: 'varchar', maxLength: 50, mutable: true },
+  email: { type: 'varchar', maxLength: 255 },
+  name: { type: 'varchar', maxLength: 255 },
+  school_id: { type: 'uuid' },
+  role: { type: 'varchar', maxLength: 50 },
 }
 
 // Minimal mock table object that has column-named properties

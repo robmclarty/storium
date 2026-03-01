@@ -7,11 +7,39 @@
  */
 
 import type { ZodType, z as ZodNamespace } from 'zod'
+import type { PgDatabase } from 'drizzle-orm/pg-core'
+import type { MySqlDatabase } from 'drizzle-orm/mysql-core'
+import type { BaseSQLiteDatabase } from 'drizzle-orm/sqlite-core'
 import type { StoriumMeta } from './defineTable'
 
 // ---------------------------------------------------------------- Dialect --
 
 export type Dialect = 'postgresql' | 'mysql' | 'sqlite' | 'memory'
+
+// -------------------------------------------------------- Drizzle Database --
+
+/**
+ * Maps a Storium dialect to its Drizzle database type.
+ * When `D` is a specific dialect literal, resolves to the concrete Drizzle class.
+ * When `D` is the full `Dialect` union, resolves to the union of all classes.
+ *
+ * Imported from the `drizzle-orm` peer dep (type-only, zero runtime coupling).
+ */
+export type DrizzleDatabase<D extends Dialect = Dialect> =
+  D extends 'postgresql' ? PgDatabase<any, any, any> :
+  D extends 'mysql' ? MySqlDatabase<any, any, any, any> :
+  D extends 'sqlite' | 'memory' ? BaseSQLiteDatabase<any, any, any, any> :
+  PgDatabase<any, any, any> | MySqlDatabase<any, any, any, any> | BaseSQLiteDatabase<any, any, any, any>
+
+/**
+ * Infer the Storium dialect from a Drizzle database type.
+ * Used by `fromDrizzle()` to auto-detect dialect at the type level.
+ */
+export type InferDialect<DB> =
+  DB extends PgDatabase<any, any, any> ? 'postgresql' :
+  DB extends MySqlDatabase<any, any, any, any> ? 'mysql' :
+  DB extends BaseSQLiteDatabase<any, any, any, any> ? 'sqlite' :
+  Dialect
 
 // ------------------------------------------------------------- Assertions --
 
@@ -42,8 +70,11 @@ export type ValidatorTest = TestFn
 
 /** Base metadata that applies to ALL column modes (DSL, DSL+custom, raw). */
 type BaseColumnMeta = {
-  mutable?: boolean
-  writeOnly?: boolean
+  /** Exclude from write operations (create + update). Always true for primaryKey columns. */
+  readonly?: boolean
+  /** Exclude from SELECT results. Implies writable (e.g., password hashes). */
+  hidden?: boolean
+  /** Must be provided on create. */
   required?: boolean
   transform?: (value: any) => unknown | Promise<unknown>
   validate?: (value: any, test: TestFn) => void
@@ -77,7 +108,6 @@ export type DslColumnConfig = BaseColumnMeta & {
   /**
    * Override the database column name. The DSL key becomes the JS property
    * name while `dbName` is used as the actual SQL column name.
-   * Used internally for timestamp columns (camelCase JS, snake_case DB).
    */
   dbName?: string
   /** Modify the auto-built Drizzle column before finalization. */
@@ -140,14 +170,14 @@ export type IndexesConfig = Record<string, IndexConfig>
 
 /** Derived access sets for a table. */
 export type TableAccess = {
-  /** Columns included in SELECT (all except writeOnly). */
+  /** Columns included in SELECT (all except hidden). */
   selectable: string[]
-  /** Columns allowed in UPDATE input. */
-  mutable: string[]
-  /** Columns allowed in INSERT input (mutable + required). */
-  insertable: string[]
-  /** Columns excluded from SELECT (present in INSERT/UPDATE input only). */
-  writeOnly: string[]
+  /** Columns allowed in CREATE/UPDATE input (all except readonly/primaryKey). */
+  writable: string[]
+  /** Columns excluded from SELECT (hidden). */
+  hidden: string[]
+  /** Columns excluded from CREATE/UPDATE (readonly + primaryKey). */
+  readonly: string[]
 }
 
 // --------------------------------------------------------- Runtime Schema --
@@ -245,8 +275,8 @@ export type PrepOptions = {
   force?: boolean
   /** Enforce required fields. Default: true for create, false for update. */
   validateRequired?: boolean
-  /** Strip non-mutable keys from input. Default: false for create, true for update. */
-  onlyMutables?: boolean
+  /** Strip non-writable keys from input. Default: false for create, true for update. */
+  onlyWritable?: boolean
   /** Participate in an external transaction. */
   tx?: any
   /** Limit the number of rows returned (find, findAll). */
@@ -263,12 +293,12 @@ export type PrepOptions = {
    */
   orderBy?: OrderBySpec | OrderBySpec[]
   /**
-   * Include writeOnly columns in the result. Default: false.
+   * Include hidden columns in the result. Default: false.
    * Use this for specific operations that need sensitive data (e.g. password
    * hash comparison during authentication). The flag is intentionally verbose
    * so it stands out in code review.
    */
-  includeWriteOnly?: boolean
+  includeHidden?: boolean
 }
 
 /** A primary key value: single column or composite (array of values in PK column order). */
@@ -283,21 +313,26 @@ export type PkValue = string | number | (string | number)[]
  */
 export type RepositoryContext<
   T extends TableDef = TableDef,
-  TColumns extends ColumnsConfig = T extends TableDef<infer C> ? C : ColumnsConfig
+  TColumns extends ColumnsConfig = T extends TableDef<infer C> ? C : ColumnsConfig,
+  D extends Dialect = Dialect
 > = {
-  /** The raw Drizzle database instance (escape hatch). */
-  drizzle: any
+  /**
+   * The Drizzle database instance (escape hatch).
+   * When `D` is a specific dialect, resolves to the concrete Drizzle class
+   * with full autocomplete. Falls back to the union when dialect is unknown.
+   */
+  drizzle: DrizzleDatabase<D>
   /** The Zod namespace (convenience accessor matching ctx.drizzle). */
   zod: typeof ZodNamespace
   /** The active dialect. */
-  dialect: Dialect
+  dialect: D
   /** The Drizzle table object (same as tableDef — it IS the Drizzle table). */
   table: T
   /** The Drizzle table with `.storium` metadata. */
   tableDef: T
-  /** Pre-built column map for select() (excludes writeOnly). */
+  /** Pre-built column map for select() (excludes hidden columns). */
   selectColumns: Record<string, any>
-  /** Full column map including writeOnly columns. */
+  /** Full column map including hidden columns. */
   allColumns: Record<string, any>
   /** Primary key column name(s). String for single PK, array for composite. */
   primaryKey: string | string[]
@@ -321,16 +356,17 @@ export type RepositoryContext<
 /** Shorthand alias for `RepositoryContext` — use as `ctx: Ctx` in custom queries. */
 export type Ctx<
   T extends TableDef = TableDef,
-  TColumns extends ColumnsConfig = T extends TableDef<infer C> ? C : ColumnsConfig
-> = RepositoryContext<T, TColumns>
+  TColumns extends ColumnsConfig = T extends TableDef<infer C> ? C : ColumnsConfig,
+  D extends Dialect = Dialect
+> = RepositoryContext<T, TColumns, D>
 
 /**
  * A custom query function receives the repository context and returns
  * the actual query function. This enables closure over `ctx` and
  * composition with default CRUD operations.
  */
-export type CustomQueryFn<T extends TableDef = TableDef> =
-  (ctx: RepositoryContext<T>) => (...args: any[]) => any
+export type CustomQueryFn<T extends TableDef = TableDef, D extends Dialect = Dialect> =
+  (ctx: RepositoryContext<T, T extends TableDef<infer C> ? C : ColumnsConfig, D>) => (...args: any[]) => any
 
 /**
  * Constraint type for custom query function records.
@@ -415,8 +451,8 @@ export type CacheMethodConfig = {
  * Storium-specific keys (assertions, pool, seeds) are ignored by drizzle-kit,
  * so a single config object can be shared between both.
  */
-export type StoriumConfig = {
-  dialect: Dialect
+export type StoriumConfig<D extends Dialect = Dialect> = {
+  dialect: D
   /** Connection URL (storium inline style). */
   url?: string
   host?: string
@@ -457,13 +493,19 @@ export type FromDrizzleOptions = {
 }
 
 /** The Storium instance returned by `connect()` or `fromDrizzle()`. */
-export type StoriumInstance = {
-  /** Raw Drizzle instance (escape hatch). */
-  drizzle: any
+export type StoriumInstance<D extends Dialect = Dialect> = {
+  /**
+   * The Drizzle database instance (escape hatch).
+   * When `D` is a specific dialect (inferred from config or `fromDrizzle`),
+   * this resolves to the concrete Drizzle class with full autocomplete.
+   * When `D` is the full `Dialect` union (e.g., in generic code), this
+   * resolves to the union of all Drizzle classes.
+   */
+  drizzle: DrizzleDatabase<D>
   /** The Zod namespace (convenience accessor matching db.drizzle). */
   zod: typeof ZodNamespace
   /** The active dialect. */
-  dialect: Dialect
+  dialect: D
   /** Create a table definition (pre-bound to dialect + assertions). */
   defineTable: {
     <TColumns extends ColumnsConfig>(
@@ -510,7 +552,7 @@ export type TableOptions = {
 
 /** Column configs for auto-injected timestamp columns. */
 export type TimestampColumns = {
-  createdAt: { type: 'timestamp'; notNull: true; default: 'now' }
+  createdAt: { type: 'timestamp'; notNull: true; default: 'now'; readonly: true }
   updatedAt: { type: 'timestamp'; notNull: true; default: 'now' }
 }
 
@@ -549,37 +591,42 @@ export type ResolveColumnType<C extends ColumnConfig> =
  */
 export type Promisable<T> = T | Promise<any>
 
-/**
- * Derive the SELECT result type from a columns config.
- * Excludes writeOnly columns.
- */
+// ---- Column access helpers (used by SelectType, InsertType, UpdateType) ----
+
+/** Column is excluded from write operations (create + update). */
+type IsReadonly<C> =
+  C extends { readonly: true } ? true :
+  C extends { primaryKey: true } ? true :
+  false
+
+/** Column must be provided on create. */
+type IsRequired<C> = C extends { required: true } ? true : false
+
+/** Column is excluded from read operations (select). */
+type IsHidden<C> = C extends { hidden: true } ? true : false
+
+/** SELECT result — all columns except hidden. */
 export type SelectType<TColumns extends ColumnsConfig> = {
-  [K in keyof TColumns as TColumns[K] extends { writeOnly: true } ? never : K]:
+  [K in keyof TColumns as IsHidden<TColumns[K]> extends true ? never : K]:
     ResolveColumnType<TColumns[K]>
 }
 
-/**
- * Derive the INSERT input type from a columns config.
- * Includes required fields as mandatory, mutable fields as optional.
- * Excludes non-insertable columns (no mutable, no required).
- */
+/** CREATE input — writable columns. Required ones are mandatory, rest optional. */
 export type InsertType<TColumns extends ColumnsConfig> =
-  // Required fields (required: true)
-  { [K in keyof TColumns as TColumns[K] extends { required: true } ? K : never]:
-      Promisable<ResolveColumnType<TColumns[K]>> }
-  &
-  // Optional mutable fields (mutable: true, not required)
   { [K in keyof TColumns as
-      TColumns[K] extends { mutable: true }
-        ? TColumns[K] extends { required: true } ? never : K
-        : never
+      IsReadonly<TColumns[K]> extends true ? never
+      : IsRequired<TColumns[K]> extends true ? K
+      : never
+    ]: Promisable<ResolveColumnType<TColumns[K]>> }
+  &
+  { [K in keyof TColumns as
+      IsReadonly<TColumns[K]> extends true ? never
+      : IsRequired<TColumns[K]> extends true ? never
+      : K
     ]?: Promisable<ResolveColumnType<TColumns[K]>> }
 
-/**
- * Derive the UPDATE input type from a columns config.
- * Only mutable columns, all optional.
- */
+/** UPDATE input — writable columns, all optional. */
 export type UpdateType<TColumns extends ColumnsConfig> = {
-  [K in keyof TColumns as TColumns[K] extends { mutable: true } ? K : never]?:
+  [K in keyof TColumns as IsReadonly<TColumns[K]> extends true ? never : K]?:
     Promisable<ResolveColumnType<TColumns[K]>>
 }

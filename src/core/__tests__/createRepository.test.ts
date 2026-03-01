@@ -14,12 +14,11 @@ beforeAll(() => {
     email: {
       type: 'varchar',
       maxLength: 255,
-      mutable: true,
       required: true,
       transform: (v: string) => v.trim().toLowerCase(),
     },
-    name: { type: 'varchar', maxLength: 255, mutable: true },
-    age: { type: 'integer', mutable: true },
+    name: { type: 'varchar', maxLength: 255 },
+    age: { type: 'integer' },
   }, { timestamps: false })
 
   db.drizzle.run(sql`
@@ -155,7 +154,7 @@ describe('custom queries', () => {
   it('receives ctx with original CRUD methods', async () => {
     const table = db.defineTable('items', {
       id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
-      label: { type: 'varchar', maxLength: 255, mutable: true, required: true },
+      label: { type: 'varchar', maxLength: 255, required: true },
     }, { timestamps: false })
 
     db.drizzle.run(sql`
@@ -184,7 +183,7 @@ describe('composite primary keys', () => {
     const table = db.defineTable('memberships', {
       user_id: { type: 'uuid', required: true },
       group_id: { type: 'uuid', required: true },
-      role: { type: 'varchar', maxLength: 50, mutable: true },
+      role: { type: 'varchar', maxLength: 50 },
     }, {
       timestamps: false,
       primaryKey: ['user_id', 'group_id'],

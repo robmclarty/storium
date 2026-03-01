@@ -2,14 +2,14 @@ import { defineTable } from 'storium'
 
 export const postsTable = defineTable('posts', {
   id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
-  title: { type: 'varchar', maxLength: 255, mutable: true, required: true },
-  body: { type: 'text', mutable: true },
-  status: { type: 'varchar', maxLength: 20, mutable: true, default: 'draft' },
-  author_id: { type: 'uuid', mutable: true, required: true },
+  title: { type: 'varchar', maxLength: 255, required: true },
+  body: { type: 'text' },
+  status: { type: 'varchar', maxLength: 20, default: 'draft' },
+  author_id: { type: 'uuid', required: true },
   // SQLite: arrays stored as JSON text under the hood
-  tags: { type: 'array', items: 'text', mutable: true, default: [] },
+  tags: { type: 'array', items: 'text', default: [] },
   // SQLite: jsonb maps to text(mode: 'json')
-  metadata: { type: 'jsonb', mutable: true },
+  metadata: { type: 'jsonb' },
 }, {
   timestamps: true,
   indexes: {

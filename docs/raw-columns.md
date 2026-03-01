@@ -9,17 +9,16 @@ For database-specific types that aren't in the DSL — `text[]` arrays, `tsvecto
 ```typescript
 const posts = defineTable('postgresql')('posts', {
   id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
-  title: { type: 'varchar', maxLength: 255, mutable: true, required: true },
+  title: { type: 'varchar', maxLength: 255, required: true },
 
   // Raw column: PostgreSQL text array
   tags: {
     raw: () => text('tags').array().default([]),
-    mutable: true,
   },
 })
 ```
 
-The `raw` key takes a zero-argument function that returns a Drizzle column builder. All other `BaseColumnMeta` properties (`mutable`, `writeOnly`, `required`, `transform`, `validate`) still apply.
+The `raw` key takes a zero-argument function that returns a Drizzle column builder. All other `BaseColumnMeta` properties (`readonly`, `hidden`, `required`, `transform`, `validate`) still apply.
 
 ## What You Lose
 
@@ -41,7 +40,6 @@ Use the `validate` callback to add explicit checks:
 ```typescript
 tags: {
   raw: () => text('tags').array().default([]),
-  mutable: true,
   validate: (value, test) => {
     test(value, (v) => Array.isArray(v), 'tags must be an array')
     test(value, (v) => (v as any[]).every(t => typeof t === 'string'), 'tags must be strings')
@@ -84,7 +82,7 @@ const posts = db.defineStore('posts', columns, {
 ### PostgreSQL text array
 
 ```typescript
-tags: { raw: () => text('tags').array().default([]), mutable: true }
+tags: { raw: () => text('tags').array().default([]) }
 ```
 
 ### PostgreSQL JSONB with specific shape
@@ -94,7 +92,6 @@ tags: { raw: () => text('tags').array().default([]), mutable: true }
 // Raw is only needed if you want Postgres-specific options like notNull with a complex default.
 settings: {
   raw: () => jsonb('settings').notNull().default({ theme: 'light', notifications: true }),
-  mutable: true,
 }
 ```
 
@@ -109,7 +106,7 @@ const tsvector = customType<{ data: string }>({
 
 search_vector: {
   raw: () => tsvector('search_vector'),
-  writeOnly: true, // populated by a trigger; never returned in SELECT
+  hidden: true, // populated by a trigger; never returned in SELECT
 }
 ```
 
@@ -122,7 +119,6 @@ export const statusEnum = pgEnum('status', ['draft', 'published', 'archived'])
 
 status: {
   raw: () => statusEnum('status').default('draft'),
-  mutable: true,
   validate: (value, test) => {
     test(value, (v) => ['draft', 'published', 'archived'].includes(v as string), 'invalid status')
   },

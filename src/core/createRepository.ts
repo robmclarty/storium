@@ -28,7 +28,7 @@ import { z } from 'zod'
 import type {
   Dialect,
   TableDef,
-  CustomQueryFn,
+  QueriesConfig,
   PrepOptions,
   OrderBySpec,
   Repository,
@@ -83,11 +83,11 @@ const buildDefaultCrud = (
 
   /**
    * Return the column map for SELECT/RETURNING clauses.
-   * Normally returns selectColumns (excludes writeOnly); when
-   * `includeWriteOnly` is set, returns the full column map.
+   * Normally returns selectColumns (excludes hidden); when
+   * `includeHidden` is set, returns the full column map.
    */
   const getCols = (opts?: PrepOptions) =>
-    opts?.includeWriteOnly ? allColumns : selectColumns
+    opts?.includeHidden ? allColumns : selectColumns
 
   /**
    * Apply orderBy clauses to a query builder.
@@ -172,7 +172,7 @@ const buildDefaultCrud = (
     const prepared = await prep(input, {
       force: opts?.force ?? false,
       validateRequired: true,
-      onlyMutables: false,
+      onlyWritable: false,
     })
 
     if (dialect === 'postgresql' || dialect === 'sqlite' || dialect === 'memory') {
@@ -244,7 +244,7 @@ const buildDefaultCrud = (
     const prepared = await prep(input, {
       force: opts?.force ?? false,
       validateRequired: false,
-      onlyMutables: true,
+      onlyWritable: true,
     })
 
     if (dialect === 'postgresql' || dialect === 'sqlite' || dialect === 'memory') {
@@ -361,7 +361,7 @@ export const createCreateRepository = (
    */
   const createRepository = <
     TTableDef extends TableDef,
-    TQueries extends Record<string, CustomQueryFn> = {}
+    TQueries extends QueriesConfig = {}
   >(
     tableDef: TTableDef,
     queries: TQueries = {} as TQueries

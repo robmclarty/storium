@@ -100,18 +100,18 @@ export const migrate = async (db: StoriumInstance, config?: StoriumConfig): Prom
     switch (cfg.dialect) {
       case 'postgresql': {
         const { migrate: pgMigrate } = await import('drizzle-orm/node-postgres/migrator')
-        await pgMigrate(drizzle, { migrationsFolder })
+        await pgMigrate(drizzle as any, { migrationsFolder })
         break
       }
       case 'mysql': {
         const { migrate: mysqlMigrate } = await import('drizzle-orm/mysql2/migrator')
-        await mysqlMigrate(drizzle, { migrationsFolder })
+        await mysqlMigrate(drizzle as any, { migrationsFolder })
         break
       }
       case 'sqlite':
       case 'memory': {
         const { migrate: sqliteMigrate } = await import('drizzle-orm/better-sqlite3/migrator')
-        sqliteMigrate(drizzle, { migrationsFolder })
+        sqliteMigrate(drizzle as any, { migrationsFolder })
         break
       }
       default:

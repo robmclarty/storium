@@ -7,23 +7,22 @@ const columns: ColumnsConfig = {
   email: {
     type: 'varchar',
     maxLength: 10,
-    mutable: true,
     required: true,
     transform: (v: string) => v.trim().toLowerCase(),
   },
-  name: { type: 'varchar', maxLength: 255, mutable: true },
-  age: { type: 'integer', mutable: true },
-  active: { type: 'boolean', mutable: true },
-  bio: { type: 'text', mutable: true },
-  score: { type: 'real', mutable: true },
-  raw_col: { raw: () => null, mutable: true },
+  name: { type: 'varchar', maxLength: 255 },
+  age: { type: 'integer' },
+  active: { type: 'boolean' },
+  bio: { type: 'text' },
+  score: { type: 'real' },
+  raw_col: { raw: () => null },
 }
 
 const access: TableAccess = {
   selectable: ['id', 'email', 'name', 'age', 'active', 'bio', 'score'],
-  mutable: ['email', 'name', 'age', 'active', 'bio', 'score', 'raw_col'],
-  insertable: ['email', 'name', 'age', 'active', 'bio', 'score', 'raw_col'],
-  writeOnly: [],
+  writable: ['email', 'name', 'age', 'active', 'bio', 'score', 'raw_col'],
+  hidden: [],
+  readonly: ['id'],
 }
 
 describe('buildZodSchemas', () => {
@@ -112,7 +111,6 @@ describe('validate callbacks', () => {
       slug: {
         type: 'varchar',
         maxLength: 255,
-        mutable: true,
         required: true,
         validate: (v, test) => {
           test(v, (val: any) => /^[a-z0-9-]+$/.test(val), 'Must be a valid slug')
@@ -121,9 +119,9 @@ describe('validate callbacks', () => {
     }
     const acc: TableAccess = {
       selectable: ['slug'],
-      mutable: ['slug'],
-      insertable: ['slug'],
-      writeOnly: [],
+      writable: ['slug'],
+      hidden: [],
+      readonly: [],
     }
     const schemas = buildZodSchemas(cols, acc)
     const result = schemas.createSchema.safeParse({ slug: 'INVALID SLUG' })

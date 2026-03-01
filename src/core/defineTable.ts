@@ -12,7 +12,7 @@
  * // 1. Direct call — auto-loads dialect from drizzle.config.ts
  * const users = defineTable('users', {
  *   id:    { type: 'uuid', primaryKey: true, default: 'random_uuid' },
- *   email: { type: 'varchar', maxLength: 255, notNull: true, mutable: true },
+ *   email: { type: 'varchar', maxLength: 255, notNull: true },
  * })
  *
  * @example
@@ -80,6 +80,7 @@ const injectTimestamps = (columns: ColumnsConfig): ColumnsConfig => {
       type: 'timestamp',
       notNull: true,
       default: 'now',
+      readonly: true,
     }
   }
 
@@ -104,37 +105,32 @@ const deriveAccess = (columns: ColumnsConfig): TableAccess => {
   for (const key of allKeys) {
     const col = columns[key]
 
-    // required + mutable:false is a contradiction. A required column
-    // that can never be written is impossible to satisfy. Use required:true
-    // alone (omit mutable) for insert-only fields.
-    if (col?.required === true && col?.mutable === false) {
+    if (col?.readonly === true && col?.required === true) {
       throw new SchemaError(
-        `Column '${key}': a column cannot be both \`required: true\` and \`mutable: false\`. ` +
-        'Use `required: true` alone (omit `mutable`) for insert-only fields.'
+        `Column '${key}': cannot be both \`readonly\` and \`required\` ` +
+        '(a required value that can never be written is lost in the abyss).'
       )
     }
 
-    // required + writeOnly is a contradiction. A write-only column is excluded
-    // from SELECT results entirely — it has no meaningful "required" presence.
-    if (col?.required === true && col?.writeOnly === true) {
+    if (col?.readonly === true && col?.hidden === true) {
       throw new SchemaError(
-        `Column '${key}': a column cannot be both \`required: true\` and \`writeOnly: true\`. ` +
-        'A write-only column is excluded from SELECT results and cannot be meaningfully required.'
+        `Column '${key}': cannot be both \`readonly\` and \`hidden\` ` +
+        '(column would be inaccessible — excluded from both reads and writes).'
       )
     }
   }
 
-  const writeOnly = allKeys.filter(k => columns[k]?.writeOnly === true)
-  const selectable = allKeys.filter(k => !columns[k]?.writeOnly)
-  const mutable = allKeys.filter(k => columns[k]?.mutable === true)
+  const isReadonly = (k: string) => {
+    const col = columns[k]
+    return col?.readonly === true || (!isRawColumn(col) && (col as any)?.primaryKey === true)
+  }
 
-  // Insertable: mutable columns + required columns (even if not mutable,
-  // a required column must be provided on insert)
-  const insertable = allKeys.filter(k =>
-    columns[k]?.mutable === true || columns[k]?.required === true
-  )
+  const hidden = allKeys.filter(k => columns[k]?.hidden === true)
+  const readonly = allKeys.filter(k => isReadonly(k))
+  const selectable = allKeys.filter(k => !columns[k]?.hidden)
+  const writable = allKeys.filter(k => !isReadonly(k))
 
-  return { selectable, mutable, insertable, writeOnly }
+  return { selectable, writable, hidden, readonly }
 }
 
 /**

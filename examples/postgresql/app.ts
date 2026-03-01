@@ -6,7 +6,7 @@
  *  - Migration generation and application
  *  - Seed data
  *  - CRUD: create, find, update, destroy, findByIdIn, orderBy
- *  - writeOnly columns + includeWriteOnly for authentication
+ *  - hidden columns + includeHidden for authentication
  *  - Custom queries (search, domain actions, Postgres-specific)
  *  - Postgres-specific features: jsonb, text[], array containment, ILIKE
  *  - Transactions
@@ -49,14 +49,14 @@ console.log('Updated bio:', updated.bio)
 console.log('Batch lookup:', twoUsers.map(u => u.name))
 console.log('Sorted desc:', sorted.map(u => u.name))
 
-// --- writeOnly columns ---
+// --- hidden columns ---
 
-console.log('\n=== writeOnly Columns ===')
+console.log('\n=== Hidden Columns ===')
 
-// password_hash is writeOnly — excluded from normal queries
+// password_hash is hidden — excluded from normal queries
 console.log('Normal findAll keys:', Object.keys(allUsers[0]))
 
-// authenticate uses includeWriteOnly internally to read the hash
+// authenticate uses includeHidden internally to read the hash
 const authed = await users.authenticate('alice@example.com', 'hashed_alice_pw')
 const badAuth = await users.authenticate('alice@example.com', 'wrong_password')
 

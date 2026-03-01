@@ -20,7 +20,7 @@
  */
 
 import { eq } from 'drizzle-orm'
-import type { TableDef, CustomQueryFn } from '../core/types'
+import type { TableDef, QueriesConfig } from '../core/types'
 
 type BelongsToOptions = {
   /** The alias for the related entity (used in the method name: findWith{Alias}). */
@@ -41,7 +41,7 @@ export const withBelongsTo = (
   relatedTableDef: TableDef,
   foreignKey: string,
   options: BelongsToOptions
-): Record<string, CustomQueryFn> => {
+): QueriesConfig => {
   const { alias, select: selectFields } = options
   const relatedTable = relatedTableDef
   const meta = relatedTableDef.storium

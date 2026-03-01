@@ -168,20 +168,20 @@ ctx.find/findOne/findById/findByIdIn/create/update/destroy/destroyAll  // origin
 ### Column modes
 ```typescript
 // DSL (most common)
-email: { type: 'varchar', maxLength: 255, mutable: true, required: true }
+email: { type: 'varchar', maxLength: 255, required: true }
 
 // DSL + custom (Drizzle tweak)
 email: { type: 'varchar', maxLength: 255, custom: col => col.unique() }
 
 // Raw (full Drizzle control — for types not in DSL, e.g. text[])
-tags: { raw: () => text('tags').array().default([]), mutable: true }
+tags: { raw: () => text('tags').array().default([]) }
 ```
 
 ### DSL column types
 `uuid` | `varchar` | `text` | `integer` | `bigint` | `serial` | `real` | `numeric` | `boolean` | `timestamp` | `date` | `jsonb`
 
 ### Column metadata
-`type`, `primaryKey`, `notNull`, `maxLength`, `default` (`'now'`|`'random_uuid'`|literal), `mutable`, `writeOnly`, `required`, `transform`, `validate`, `custom`, `raw`
+`type`, `primaryKey`, `notNull`, `maxLength`, `default` (`'now'`|`'random_uuid'`|literal), `readonly`, `hidden`, `required`, `transform`, `validate`, `custom`, `raw`
 
 ### Config file (drizzle.config.ts)
 ```typescript

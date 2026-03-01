@@ -10,14 +10,14 @@ beforeAll(() => {
 
   const teamsTable = db.defineTable('teams', {
     id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
-    name: { type: 'varchar', maxLength: 255, mutable: true, required: true },
+    name: { type: 'varchar', maxLength: 255, required: true },
   }, { timestamps: false })
 
   const membersTable = db.defineTable('team_members', {
     id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
-    team_id: { type: 'uuid', mutable: true, required: true },
-    user_id: { type: 'uuid', mutable: true, required: true },
-    role: { type: 'varchar', maxLength: 50, mutable: true },
+    team_id: { type: 'uuid', required: true },
+    user_id: { type: 'uuid', required: true },
+    role: { type: 'varchar', maxLength: 50 },
   }, { timestamps: false })
 
   db.drizzle.run(sql`

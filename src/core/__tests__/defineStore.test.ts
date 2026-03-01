@@ -7,7 +7,7 @@ const dt = buildDefineTable('memory')
 
 const usersTable = dt('users', {
   id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
-  email: { type: 'varchar', maxLength: 255, mutable: true, required: true },
+  email: { type: 'varchar', maxLength: 255, required: true },
 }, { timestamps: false })
 
 describe('defineStore', () => {

@@ -1,7 +1,7 @@
 /**
  * Storium's prep pipeline processes every create/update through four stages:
  *
- *   1. Filter    — strip unknown keys (and non-mutable keys on update)
+ *   1. Filter    — strip unknown keys (and readonly keys on update)
  *   2. Transform — run column transform functions (sanitize, normalize)
  *   3. Validate  — type checks + custom validate callbacks (collects ALL errors)
  *   4. Required  — ensure required fields are present
@@ -19,7 +19,6 @@ const productsTable = defineTable('memory')('products', {
   name: {
     type: 'varchar',
     maxLength: 100,
-    mutable: true,
     required: true,
     validate: (v, test) => {
       test(v, 'not_empty', 'Product name cannot be empty')
@@ -29,7 +28,6 @@ const productsTable = defineTable('memory')('products', {
   slug: {
     type: 'varchar',
     maxLength: 100,
-    mutable: true,
     required: true,
     transform: (v: string) => v.trim().toLowerCase().replace(/\s+/g, '-'),
     validate: (v, test) => {
@@ -38,7 +36,6 @@ const productsTable = defineTable('memory')('products', {
   },
   price: {
     type: 'integer',
-    mutable: true,
     required: true,
     validate: (v, test) => {
       test(v, (val) => (val as number) > 0, 'Price must be positive')
@@ -48,14 +45,12 @@ const productsTable = defineTable('memory')('products', {
   color: {
     type: 'varchar',
     maxLength: 7,
-    mutable: true,
     validate: (v, test) => {
       test(v, 'is_hex_color', 'Color must be a hex color code (e.g., #ff0000)')
     },
   },
   description: {
     type: 'text',
-    mutable: true,
     transform: (v: string) => v.trim(),
   },
 }, { timestamps: false })

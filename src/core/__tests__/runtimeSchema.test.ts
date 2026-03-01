@@ -5,15 +5,15 @@ import type { ColumnsConfig, TableAccess } from '../types'
 
 const columns: ColumnsConfig = {
   id: { type: 'uuid', primaryKey: true, notNull: true, default: 'random_uuid' },
-  email: { type: 'varchar', maxLength: 255, mutable: true, required: true, notNull: true },
-  name: { type: 'varchar', maxLength: 255, mutable: true },
+  email: { type: 'varchar', maxLength: 255, required: true, notNull: true },
+  name: { type: 'varchar', maxLength: 255 },
 }
 
 const access: TableAccess = {
   selectable: ['id', 'email', 'name'],
-  mutable: ['email', 'name'],
-  insertable: ['email', 'name'],
-  writeOnly: [],
+  writable: ['email', 'name'],
+  hidden: [],
+  readonly: ['id'],
 }
 
 describe('buildSchemaSet', () => {

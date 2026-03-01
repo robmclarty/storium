@@ -13,9 +13,9 @@ export const search = (ctx: Ctx) => async (term: string) =>
       ilike(ctx.table.name, `%${term}%`),
     ))
 
-// Uses includeWriteOnly to read password_hash (normally excluded from SELECTs)
+// Uses includeHidden to read password_hash (normally excluded from SELECTs)
 export const authenticate = (ctx: Ctx) => async (email: string, password: string) => {
-  const user = await ctx.findOne({ email }, { includeWriteOnly: true })
+  const user = await ctx.findOne({ email }, { includeHidden: true })
   if (!user) return null
 
   // In a real app: await bcrypt.compare(password, user.password_hash)

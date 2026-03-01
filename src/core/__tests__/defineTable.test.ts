@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { buildDefineTable, hasMeta } from '../defineTable'
+import { SchemaError } from '../errors'
 import { text } from 'drizzle-orm/sqlite-core'
 
 const dt = buildDefineTable('memory')
@@ -8,7 +9,7 @@ describe('defineTable (memory dialect)', () => {
   it('creates a table with storium metadata', () => {
     const table = dt('users', {
       id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
-      email: { type: 'varchar', maxLength: 255, mutable: true, required: true },
+      email: { type: 'varchar', maxLength: 255, required: true },
     }, { timestamps: false })
 
     expect(table.storium).toBeDefined()
@@ -28,24 +29,25 @@ describe('defineTable (memory dialect)', () => {
   it('derives access sets correctly', () => {
     const table = dt('items', {
       id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
-      name: { type: 'varchar', maxLength: 255, mutable: true, required: true },
-      secret: { type: 'text', mutable: true, writeOnly: true },
+      name: { type: 'varchar', maxLength: 255, required: true },
+      secret: { type: 'text', hidden: true },
     }, { timestamps: false })
 
     const { access } = table.storium
     expect(access.selectable).toContain('id')
     expect(access.selectable).toContain('name')
     expect(access.selectable).not.toContain('secret')
-    expect(access.writeOnly).toContain('secret')
-    expect(access.mutable).toContain('name')
-    expect(access.mutable).toContain('secret') // writeOnly columns with mutable: true are writable
-    expect(access.insertable).toContain('secret')
+    expect(access.hidden).toContain('secret')
+    expect(access.writable).toContain('name')
+    expect(access.writable).toContain('secret') // hidden columns are writable
+    expect(access.writable).not.toContain('id') // primaryKey columns are readonly
+    expect(access.readonly).toContain('id')
   })
 
   it('injects timestamps by default (opt-out)', () => {
     const table = dt('posts_default', {
       id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
-      title: { type: 'varchar', maxLength: 255, mutable: true },
+      title: { type: 'varchar', maxLength: 255 },
     })
 
     expect(table.storium.columns).toHaveProperty('createdAt')
@@ -57,7 +59,7 @@ describe('defineTable (memory dialect)', () => {
   it('does not inject timestamps when timestamps: false', () => {
     const table = dt('posts_no_ts', {
       id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
-      title: { type: 'varchar', maxLength: 255, mutable: true },
+      title: { type: 'varchar', maxLength: 255 },
     }, { timestamps: false })
 
     expect(table.storium.columns).not.toHaveProperty('createdAt')
@@ -78,7 +80,7 @@ describe('defineTable (memory dialect)', () => {
   it('detects primary key from column config', () => {
     const table = dt('custom_pk', {
       custom_id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
-      name: { type: 'varchar', maxLength: 255, mutable: true },
+      name: { type: 'varchar', maxLength: 255 },
     }, { timestamps: false })
 
     expect(table.storium.primaryKey).toBe('custom_id')
@@ -87,7 +89,7 @@ describe('defineTable (memory dialect)', () => {
   it('builds schemas on the table metadata', () => {
     const table = dt('with_schemas', {
       id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
-      email: { type: 'varchar', maxLength: 255, mutable: true, required: true },
+      email: { type: 'varchar', maxLength: 255, required: true },
     }, { timestamps: false })
 
     expect(table.storium.schemas).toHaveProperty('createSchema')
@@ -99,17 +101,17 @@ describe('defineTable (memory dialect)', () => {
   it('supports raw columns alongside DSL columns', () => {
     const table = dt('mixed', {
       id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
-      tags: { raw: () => text('tags'), mutable: true },
+      tags: { raw: () => text('tags') },
     }, { timestamps: false })
 
     expect(table.storium.columns).toHaveProperty('tags')
-    expect(table.storium.access.mutable).toContain('tags')
+    expect(table.storium.access.writable).toContain('tags')
   })
 
   it('wires indexes into the table', () => {
     const table = dt('indexed', {
       id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
-      email: { type: 'varchar', maxLength: 255, mutable: true },
+      email: { type: 'varchar', maxLength: 255 },
     }, {
       timestamps: false,
       indexes: { email: { unique: true } },
@@ -118,6 +120,30 @@ describe('defineTable (memory dialect)', () => {
     // The table should be created without errors — indexes are wired into
     // the Drizzle table constructor callback
     expect(table.storium).toBeDefined()
+  })
+
+  it('throws SchemaError when required + readonly', () => {
+    expect(() => dt('bad_required_readonly', {
+      id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
+      stuck: { type: 'varchar', maxLength: 255, required: true, readonly: true },
+    }, { timestamps: false })).toThrow(SchemaError)
+
+    expect(() => dt('bad_required_readonly2', {
+      id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
+      stuck: { type: 'varchar', maxLength: 255, required: true, readonly: true },
+    }, { timestamps: false })).toThrow(/lost in the abyss/)
+  })
+
+  it('throws SchemaError when readonly + hidden', () => {
+    expect(() => dt('bad_readonly_hidden', {
+      id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
+      ghost: { type: 'varchar', maxLength: 255, readonly: true, hidden: true },
+    }, { timestamps: false })).toThrow(SchemaError)
+
+    expect(() => dt('bad_readonly_hidden2', {
+      id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
+      ghost: { type: 'varchar', maxLength: 255, readonly: true, hidden: true },
+    }, { timestamps: false })).toThrow(/inaccessible/)
   })
 })
 
@@ -138,7 +164,7 @@ describe('composite primary keys', () => {
     const table = dt('multi_pk', {
       a: { type: 'uuid', primaryKey: true },
       b: { type: 'uuid', primaryKey: true },
-      name: { type: 'varchar', maxLength: 255, mutable: true },
+      name: { type: 'varchar', maxLength: 255 },
     }, { timestamps: false })
 
     expect(Array.isArray(table.storium.primaryKey)).toBe(true)

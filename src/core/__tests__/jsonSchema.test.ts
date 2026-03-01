@@ -4,25 +4,25 @@ import type { ColumnsConfig, TableAccess } from '../types'
 
 const columns: ColumnsConfig = {
   id: { type: 'uuid', primaryKey: true, notNull: true, default: 'random_uuid' },
-  email: { type: 'varchar', maxLength: 255, mutable: true, required: true, notNull: true },
-  name: { type: 'varchar', maxLength: 100, mutable: true },
-  age: { type: 'integer', mutable: true },
-  score: { type: 'real', mutable: true },
-  bio: { type: 'text', mutable: true },
-  active: { type: 'boolean', mutable: true },
-  created_at: { type: 'timestamp', notNull: true, default: 'now' },
-  birthday: { type: 'date', mutable: true },
-  metadata: { type: 'jsonb', mutable: true },
-  counter: { type: 'bigint', mutable: true },
-  tags: { type: 'array', items: 'text', mutable: true },
-  raw_col: { raw: () => null, mutable: true },
+  email: { type: 'varchar', maxLength: 255, required: true, notNull: true },
+  name: { type: 'varchar', maxLength: 100 },
+  age: { type: 'integer' },
+  score: { type: 'real' },
+  bio: { type: 'text' },
+  active: { type: 'boolean' },
+  created_at: { type: 'timestamp', notNull: true, default: 'now', readonly: true },
+  birthday: { type: 'date' },
+  metadata: { type: 'jsonb' },
+  counter: { type: 'bigint' },
+  tags: { type: 'array', items: 'text' },
+  raw_col: { raw: () => null },
 }
 
 const access: TableAccess = {
   selectable: ['id', 'email', 'name', 'age', 'score', 'bio', 'active', 'created_at', 'birthday', 'metadata', 'counter', 'tags', 'raw_col'],
-  mutable: ['email', 'name', 'age', 'score', 'bio', 'active', 'birthday', 'metadata', 'counter', 'tags', 'raw_col'],
-  insertable: ['email', 'name', 'age', 'score', 'bio', 'active', 'birthday', 'metadata', 'counter', 'tags', 'raw_col'],
-  writeOnly: [],
+  writable: ['email', 'name', 'age', 'score', 'bio', 'active', 'birthday', 'metadata', 'counter', 'tags', 'raw_col'],
+  hidden: [],
+  readonly: ['id', 'created_at'],
 }
 
 describe('buildJsonSchemas', () => {

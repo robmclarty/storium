@@ -5,15 +5,14 @@ export const tasksTable = defineTable('tasks', {
   title: {
     type: 'varchar',
     maxLength: 255,
-    mutable: true,
     required: true,
     validate: (value, test) => {
       test(value, (v: any) => typeof v === 'string' && v.trim().length > 0, 'Title cannot be empty')
     },
   },
-  description: { type: 'text', mutable: true },
-  status: { type: 'varchar', maxLength: 20, mutable: true, default: 'pending' },
-  priority: { type: 'integer', mutable: true, default: 0 },
+  description: { type: 'text' },
+  status: { type: 'varchar', maxLength: 20, default: 'pending' },
+  priority: { type: 'integer', default: 0 },
 }, {
   timestamps: true,
   indexes: {

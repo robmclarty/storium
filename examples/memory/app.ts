@@ -16,9 +16,9 @@ import { sql } from 'drizzle-orm'
 
 const productsTable = defineTable('memory')('products', {
   id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
-  name: { type: 'varchar', maxLength: 255, mutable: true, required: true },
-  price: { type: 'integer', mutable: true, required: true },
-  inStock: { type: 'boolean', mutable: true },
+  name: { type: 'varchar', maxLength: 255, required: true },
+  price: { type: 'integer', required: true },
+  inStock: { type: 'boolean' },
 }, { timestamps: false })
 
 const productStore = defineStore(productsTable)

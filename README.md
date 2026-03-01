@@ -29,8 +29,8 @@ const db = storium.connect({
 
 const usersTable = db.defineTable('users', {
   id:    { type: 'uuid', primaryKey: true, default: 'random_uuid' },
-  email: { type: 'varchar', maxLength: 255, mutable: true, required: true },
-  name:  { type: 'varchar', maxLength: 255, mutable: true },
+  email: { type: 'varchar', maxLength: 255, required: true },
+  name:  { type: 'varchar', maxLength: 255 },
 })
 
 const users = db.defineStore(usersTable)
@@ -59,7 +59,7 @@ Three modes for every column, depending on how much control you need:
 
 ```typescript
 // DSL (90% of cases — just declare what it is)
-email: { type: 'varchar', maxLength: 255, mutable: true }
+email: { type: 'varchar', maxLength: 255 }
 
 // DSL + custom (one Drizzle tweak on top)
 email: { type: 'varchar', maxLength: 255, custom: col => col.unique() }
@@ -68,7 +68,7 @@ email: { type: 'varchar', maxLength: 255, custom: col => col.unique() }
 meta: { raw: () => jsonb('meta').default({}) }
 ```
 
-Column metadata (`mutable`, `writeOnly`, `required`, `transform`, `validate`) works with all modes. The `transform` callback runs before validation and is where you'd put sanitization (trim, lowercase), enrichment, or any other pre-save logic. Basically anything you'd otherwise scatter across your route handlers ;)
+Column metadata (`readonly`, `hidden`, `required`, `transform`, `validate`) works with all modes. The `transform` callback runs before validation and is where you'd put sanitization (trim, lowercase), enrichment, or any other pre-save logic. Basically anything you'd otherwise scatter across your route handlers ;)
 
 ### Custom Queries
 
@@ -165,16 +165,16 @@ import { defineTable } from 'storium'
 export const usersTable = defineTable('users', {
   id:    { type: 'uuid', primaryKey: true, default: 'random_uuid' },
   email: {
-    type: 'varchar', maxLength: 255, mutable: true, required: true,
+    type: 'varchar', maxLength: 255, required: true,
     transform: (v) => String(v).trim().toLowerCase(),
     validate: (v, test) => {
       test(v, 'not_empty', 'Email cannot be empty')
       test(v, 'is_email')
     },
   },
-  name:  { type: 'varchar', maxLength: 255, mutable: true },
+  name:  { type: 'varchar', maxLength: 255 },
   slug:  {
-    type: 'varchar', maxLength: 100, mutable: true, required: true,
+    type: 'varchar', maxLength: 100, required: true,
     transform: (v) => String(v).trim().toLowerCase().replace(/\s+/g, '-'),
     validate: (v, test) => {
       test(v, 'is_slug', 'Slug must be lowercase letters, numbers, and hyphens')

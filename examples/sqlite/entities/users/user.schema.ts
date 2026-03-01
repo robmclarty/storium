@@ -6,15 +6,14 @@ export const usersTable = defineTable('users', {
   email: {
     type: 'varchar',
     maxLength: 255,
-    mutable: true,
     required: true,
     transform: (v: string) => v.trim().toLowerCase(),
   },
-  password_hash: { type: 'varchar', maxLength: 255, mutable: true, writeOnly: true },
-  name: { type: 'varchar', maxLength: 100, mutable: true },
-  bio: { type: 'text', mutable: true },
+  password_hash: { type: 'varchar', maxLength: 255, hidden: true },
+  name: { type: 'varchar', maxLength: 100 },
+  bio: { type: 'text' },
   // SQLite: no native jsonb — stored as JSON text
-  metadata: { type: 'jsonb', mutable: true },
+  metadata: { type: 'jsonb' },
 }, {
   timestamps: true,
   indexes: {

@@ -22,7 +22,7 @@
  */
 
 import { eq, and, sql } from 'drizzle-orm'
-import type { TableDef, CustomQueryFn } from '../core/types'
+import type { TableDef, QueriesConfig } from '../core/types'
 
 /**
  * Generate membership query functions for a collection.
@@ -36,7 +36,7 @@ export const withMembers = (
   joinTableDef: TableDef,
   foreignKey: string,
   memberKey: string = 'user_id'
-): Record<string, CustomQueryFn> => {
+): QueriesConfig => {
   const joinTable = joinTableDef
 
   return {

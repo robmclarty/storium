@@ -11,14 +11,14 @@ beforeAll(() => {
 
   const authorsTable = db.defineTable('authors', {
     id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
-    name: { type: 'varchar', maxLength: 255, mutable: true, required: true },
-    email: { type: 'varchar', maxLength: 255, mutable: true, required: true },
+    name: { type: 'varchar', maxLength: 255, required: true },
+    email: { type: 'varchar', maxLength: 255, required: true },
   }, { timestamps: false })
 
   const postsTable = db.defineTable('posts', {
     id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
-    title: { type: 'varchar', maxLength: 255, mutable: true, required: true },
-    author_id: { type: 'uuid', mutable: true, required: true },
+    title: { type: 'varchar', maxLength: 255, required: true },
+    author_id: { type: 'uuid', required: true },
   }, { timestamps: false })
 
   db.drizzle.run(sql`

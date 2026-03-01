@@ -16,9 +16,14 @@ import type {
   FromDrizzleOptions,
   StoriumInstance,
   TableDef,
-  CustomQueryFn,
+  ColumnsConfig,
+  QueriesConfig,
+  Store,
+  InferStore,
   Dialect,
   AssertionRegistry,
+  DrizzleDatabase,
+  InferDialect,
 } from './core/types'
 import { ConfigError } from './core/errors'
 import { buildDefineTable, hasMeta } from './core/defineTable'
@@ -208,12 +213,12 @@ const inferDialect = (drizzleDb: any): Exclude<Dialect, 'memory'> => {
  * Build a StoriumInstance from a Drizzle db, dialect, and assertions.
  * Used by both `connect()` and `fromDrizzle()`.
  */
-const buildInstance = (
-  db: any,
-  dialect: Dialect,
+const buildInstance = <D extends Dialect>(
+  db: DrizzleDatabase<D>,
+  dialect: D,
   assertions: AssertionRegistry,
   teardown: () => Promise<void>
-): StoriumInstance => {
+): StoriumInstance<D> => {
   const drizzleDialect = resolveDialect(dialect)
   const registry = createAssertionRegistry(assertions)
   const createRepository = createCreateRepository(db, registry, dialect)
@@ -238,7 +243,7 @@ const buildInstance = (
 
   const register = <T extends Record<string, any>>(
     storeDefs: T
-  ): { [K in keyof T]: any } => {
+  ): { [K in keyof T]: InferStore<T[K]> } => {
     const result: Record<string, any> = {}
 
     for (const [key, def] of Object.entries(storeDefs)) {
@@ -251,20 +256,23 @@ const buildInstance = (
       result[key] = createRepository(applyAssertions(def.tableDef), def.queries)
     }
 
-    return result as { [K in keyof T]: any }
+    return result as { [K in keyof T]: InferStore<T[K]> }
   }
 
   /**
    * Create a live store from a table definition (simple path — no register step).
    */
-  const instanceDefineStore = (tableDef: TableDef, queries?: Record<string, CustomQueryFn>) => {
+  const instanceDefineStore = <TColumns extends ColumnsConfig, TQueries extends QueriesConfig = {}>(
+    tableDef: TableDef<TColumns>,
+    queries?: TQueries
+  ): Store<TColumns, TQueries> => {
     if (!hasMeta(tableDef)) {
       throw new ConfigError(
         'db.defineStore(): first argument must be a table from defineTable().'
       )
     }
     const applied = applyAssertions(tableDef)
-    return createRepository(applied, queries ?? {})
+    return createRepository(applied, queries ?? {}) as unknown as Store<TColumns, TQueries>
   }
 
   let disconnected = false
@@ -279,11 +287,11 @@ const buildInstance = (
     zod: z,
     dialect,
     defineTable: boundDefineTable,
-    defineStore: instanceDefineStore as StoriumInstance['defineStore'],
+    defineStore: instanceDefineStore,
     register,
-    transaction: createWithTransaction(db, drizzleDialect),
+    transaction: createWithTransaction(db as any, drizzleDialect),
     disconnect,
-  }
+  } as StoriumInstance<D>
 }
 
 // -------------------------------------------------------- Public API --
@@ -306,15 +314,15 @@ const buildInstance = (
  * import config from './drizzle.config'
  * const db = storium.connect({ ...config, assertions: { ... } })
  */
-export const connect = (config: StoriumConfig): StoriumInstance => {
+export const connect = <D extends Dialect>(config: StoriumConfig<D>): StoriumInstance<D> => {
   if (!config?.dialect) {
     throw new ConfigError('`dialect` is required in connection config')
   }
 
-  const { db, teardown } = createDrizzleInstance(config)
+  const { db, teardown } = createDrizzleInstance(config as StoriumConfig)
 
-  return buildInstance(
-    db,
+  return buildInstance<D>(
+    db as DrizzleDatabase<D>,
     config.dialect,
     config.assertions ?? {},
     teardown
@@ -335,14 +343,14 @@ export const connect = (config: StoriumConfig): StoriumInstance => {
  * const db = storium.fromDrizzle(myDrizzle)
  * const db = storium.fromDrizzle(myDrizzle, { assertions: { ... } })
  */
-export const fromDrizzle = (
-  drizzleDb: any,
+export const fromDrizzle = <DB extends DrizzleDatabase>(
+  drizzleDb: DB,
   options: FromDrizzleOptions = {}
-): StoriumInstance => {
-  const dialect = inferDialect(drizzleDb)
+): StoriumInstance<InferDialect<DB>> => {
+  const dialect = inferDialect(drizzleDb) as InferDialect<DB>
 
-  return buildInstance(
-    drizzleDb,
+  return buildInstance<InferDialect<DB>>(
+    drizzleDb as DrizzleDatabase<InferDialect<DB>>,
     dialect,
     options.assertions ?? {},
     async () => {} // No-op teardown — user manages their own connection

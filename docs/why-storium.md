@@ -16,7 +16,7 @@ For every table you need to:
 - Keep those schemas in sync as the table evolves.
 - Decide where input sanitization and validation live.
 - Write CRUD boilerplate that respects which fields are writable, which are
-  read-only, and which should never leave the server.
+  readonly, and which are hidden from output.
 
 None of these are hard individually. But they're decisions made *repeatedly*,
 *inconsistently*, and *silently wrong* when someone forgets. The cost compounds
@@ -25,7 +25,7 @@ with every table you add.
 ## What Storium Does
 
 A single `defineTable()` call replaces all of the above. You describe each
-column once with its type and access metadata — `mutable`, `writeOnly`,
+column once with its type and access metadata — `readonly`, `hidden`,
 `required` — and Storium derives everything else:
 
 - A **Drizzle table** ready for migrations and queries.
@@ -39,8 +39,8 @@ column once with its type and access metadata — `mutable`, `writeOnly`,
 
 The DSL isn't really an abstraction over Drizzle and Zod — it's a **policy
 language** for data access patterns. You're not learning "how to make a
-column." You're declaring "this field is write-once" or "this field never
-leaves the server." That's a higher-level concern that Drizzle and Zod don't
+column." You're declaring "this field is readonly" or "this field is hidden
+from output." That's a higher-level concern that Drizzle and Zod don't
 address on their own.
 
 ## Convenience Without Lock-In
@@ -49,8 +49,8 @@ Storium is designed with escape hatches at every level so you're never painted
 into a corner:
 
 - **Column-level**: Use `custom` to tweak the auto-built Drizzle column, or
-  `raw` to bypass the DSL entirely while keeping metadata like `mutable` and
-  `validate`.
+  `raw` to bypass the DSL entirely while keeping metadata like `readonly`,
+  `hidden`, and `validate`.
 - **Index-level**: Use the index DSL for common cases, or `raw` for full
   Drizzle index control (e.g., GIN indexes).
 - **Query-level**: Custom queries receive a `ctx` with full Drizzle access
@@ -75,7 +75,7 @@ write without you having to remember to wire them up. The schema sync problem
 — where your Zod schemas drift from your Drizzle table after a migration —
 goes away entirely.
 
-The cognitive load of learning `mutable`, `writeOnly`, `required`, and the custom
+The cognitive load of learning `readonly`, `hidden`, `required`, and the custom
 query pattern is paid once. The cognitive load of manually maintaining schema
 parity across Drizzle and Zod is paid forever.
 
@@ -98,7 +98,7 @@ use `ctx`," then:
 
 - Validation **always** lives in column definitions.
 - Transforms **always** run before writes.
-- Write-only fields **never** leak into API responses.
+- Hidden fields **never** leak into API responses.
 - There's **one pattern** to learn, one pattern to code review, one pattern to
   grep for when something goes wrong.
 

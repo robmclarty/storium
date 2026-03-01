@@ -53,8 +53,8 @@ import { defineTable } from 'storium'
 
 export const usersTable = defineTable('users', {
   id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
-  email: { type: 'varchar', maxLength: 255, mutable: true, required: true },
-  name: { type: 'varchar', maxLength: 255, mutable: true },
+  email: { type: 'varchar', maxLength: 255, required: true },
+  name: { type: 'varchar', maxLength: 255 },
 }, {
   timestamps: true,
   indexes: { email: { unique: true } },

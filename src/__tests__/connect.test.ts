@@ -61,7 +61,7 @@ describe('register', () => {
     const db = storium.connect({ dialect: 'memory' })
     const table = db.defineTable('items', {
       id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
-      label: { type: 'varchar', maxLength: 255, mutable: true, required: true },
+      label: { type: 'varchar', maxLength: 255, required: true },
     }, { timestamps: false })
 
     const itemStore = defineStore(table)
@@ -83,7 +83,7 @@ describe('db.defineStore (simple path)', () => {
     const db = storium.connect({ dialect: 'memory' })
     const table = db.defineTable('widgets', {
       id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
-      name: { type: 'varchar', maxLength: 255, mutable: true, required: true },
+      name: { type: 'varchar', maxLength: 255, required: true },
     }, { timestamps: false })
     const widgets = db.defineStore(table)
 
@@ -105,7 +105,7 @@ describe('transaction', () => {
     db = storium.connect({ dialect: 'memory' })
     const table = db.defineTable('tx_items', {
       id: { type: 'uuid', primaryKey: true, default: 'random_uuid' },
-      label: { type: 'varchar', maxLength: 255, mutable: true, required: true },
+      label: { type: 'varchar', maxLength: 255, required: true },
     }, { timestamps: false })
     db.drizzle.run(sql`
       CREATE TABLE IF NOT EXISTS tx_items (id TEXT PRIMARY KEY, label TEXT NOT NULL)
@@ -167,7 +167,6 @@ describe('assertions integration', () => {
       slug: {
         type: 'varchar',
         maxLength: 255,
-        mutable: true,
         required: true,
         validate: (v, test) => { test(v, 'is_slug', 'Invalid slug') },
       },

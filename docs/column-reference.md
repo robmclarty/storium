@@ -31,9 +31,9 @@ Every column (DSL or raw) can use these properties:
 | `notNull` | `boolean` | Add a NOT NULL constraint. |
 | `maxLength` | `number` | For `varchar` — sets max character length. |
 | `default` | `'now'` \| `'random_uuid'` \| literal | Default value. `'now'` = current timestamp, `'random_uuid'` = auto-generated UUID. |
-| `mutable` | `boolean` | Can this column be updated after creation? Determines inclusion in update schemas. |
+| `readonly` | `boolean` | Exclude from create AND update schemas (e.g., computed columns). `primaryKey: true` is always implicitly readonly. |
 | `required` | `boolean` | Must this column be provided on create? Enforced by the prep pipeline. |
-| `writeOnly` | `boolean` | Exclude from SELECT results (e.g., password hashes). Still writable. |
+| `hidden` | `boolean` | Exclude from SELECT results (e.g., password hashes). Still writable. |
 | `transform` | `(value) => value` | Sanitization function that runs before validation (can be async). |
 | `validate` | `(value, test) => void` | Custom validation function using the `test()` API. |
 | `custom` | `(col) => col` | Modify the auto-built Drizzle column (e.g., `.unique()`, `.references()`). |
@@ -42,17 +42,20 @@ Every column (DSL or raw) can use these properties:
 
 ## Access Rules
 
-Column metadata drives how each field behaves across the system:
+Columns are writable by default. Three orthogonal flags control access: `required`, `readonly`, `hidden`.
 
 | Metadata | In SELECT? | In INSERT schema? | In UPDATE schema? | Prep pipeline |
 |----------|-----------|-------------------|-------------------|---------------|
-| (default) | Yes | No | No | Ignored |
-| `mutable: true` | Yes | Yes (optional) | Yes (optional) | Filtered/transformed/validated |
-| `required: true` | Yes | Yes (mandatory) | No | Required check on create |
-| `mutable + required` | Yes | Yes (mandatory) | Yes (optional) | Full pipeline |
-| `writeOnly: true` | No | No | No | Invisible |
-| `mutable + writeOnly` | No | Yes (optional) | No | Filtered/transformed/validated, excluded from SELECT |
-| `primaryKey: true` | Yes | No (auto-generated) | No | Not writable |
+| (default) | Yes | Yes (optional) | Yes (optional) | Filtered/transformed/validated |
+| `required: true` | Yes | Yes (mandatory) | Yes (optional) | Full pipeline + required check on create |
+| `readonly: true` | Yes | No | No | Not writable |
+| `hidden: true` | No | Yes (optional) | Yes (optional) | Filtered/transformed/validated, excluded from SELECT |
+| `hidden + required` | No | Yes (mandatory) | Yes (optional) | Full pipeline, excluded from SELECT |
+| `primaryKey: true` | Yes | No (auto-generated) | No | Implicitly readonly |
+
+Invalid combinations (throw `SchemaError`):
+- `readonly: true` + `required: true`
+- `readonly: true` + `hidden: true`
 
 ## Default Values
 
@@ -66,13 +69,13 @@ Column metadata drives how each field behaves across the system:
 
 ```typescript
 // DSL — 90% of cases
-email: { type: 'varchar', maxLength: 255, mutable: true, required: true }
+email: { type: 'varchar', maxLength: 255, required: true }
 
 // DSL + custom — one Drizzle tweak on top
-email: { type: 'varchar', maxLength: 255, mutable: true, custom: col => col.unique() }
+email: { type: 'varchar', maxLength: 255, custom: col => col.unique() }
 
 // Raw — full Drizzle control (for types not in the DSL)
-tags: { raw: () => text('tags').array().default([]), mutable: true }
+tags: { raw: () => text('tags').array().default([]) }
 ```
 
 Raw columns resolve to `any` in TypeScript types and `z.any()` in Zod schemas. See [raw-columns.md](./raw-columns.md) for details.

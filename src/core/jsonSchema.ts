@@ -158,7 +158,7 @@ export const buildJsonSchemas = (
   // Determine which columns are required for insert.
   // A column is required in the insert schema if it has `required: true`
   // or if it has `notNull: true` and no default value.
-  const insertRequired = access.insertable.filter(key => {
+  const insertRequired = access.writable.filter(key => {
     const col = columns[key]
     if (col?.required) return true
     if (!isRawColumn(col) && (col as DslColumnConfig)?.notNull && !(col as DslColumnConfig)?.default) return true
@@ -177,10 +177,10 @@ export const buildJsonSchemas = (
       buildJsonSchema(columns, access.selectable, selectRequired, opts),
 
     createSchema: (opts?: JsonSchemaOptions) =>
-      buildJsonSchema(columns, access.insertable, insertRequired, opts),
+      buildJsonSchema(columns, access.writable, insertRequired, opts),
 
     updateSchema: (opts?: JsonSchemaOptions) =>
-      buildJsonSchema(columns, access.mutable, [], opts), // all optional for updates
+      buildJsonSchema(columns, access.writable, [], opts), // all optional for updates
 
     fullSchema: (opts?: JsonSchemaOptions) =>
       buildJsonSchema(

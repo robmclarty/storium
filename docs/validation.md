@@ -29,7 +29,7 @@ await posts.create({
 
 ### Stage 1: Filter
 
-Unknown keys are stripped silently. If `onlyMutables` is true (the default for `update`), non-mutable columns are also removed.
+Unknown keys are stripped silently. If `onlyWritable` is true (the default for `update`), readonly columns are also removed.
 
 ```typescript
 await users.create({ email: 'alice@example.com', unknown_field: 'ignored' })
@@ -42,7 +42,7 @@ Each column's `transform` callback runs on its value. Transforms run before vali
 
 ```typescript
 email: {
-  type: 'varchar', maxLength: 255, mutable: true, required: true,
+  type: 'varchar', maxLength: 255, required: true,
   transform: (v) => String(v).trim().toLowerCase(),
 }
 ```
@@ -51,7 +51,7 @@ Transforms can be async:
 
 ```typescript
 password: {
-  type: 'varchar', maxLength: 255, mutable: true, required: true, writeOnly: true,
+  type: 'varchar', maxLength: 255, required: true, hidden: true,
   transform: async (v) => await bcrypt.hash(v, 10),
 }
 ```
@@ -66,7 +66,7 @@ Two checks happen here:
 
 ```typescript
 slug: {
-  type: 'varchar', maxLength: 100, mutable: true, required: true,
+  type: 'varchar', maxLength: 100, required: true,
   transform: (v) => String(v).trim().toLowerCase().replace(/\s+/g, '-'),
   validate: (v, test) => {
     test(v, 'not_empty', 'Slug cannot be empty')
@@ -85,7 +85,7 @@ If `validateRequired` is true (the default for `create`), columns with `required
 |--------|-------------------|-------------------|-------------|
 | `force` | `false` | `false` | Skip entire pipeline — pass input through raw. |
 | `validateRequired` | `true` | `false` | Enforce required field checks. |
-| `onlyMutables` | `false` | `true` | Strip non-mutable columns from input. |
+| `onlyWritable` | `false` | `true` | Strip readonly columns from input. |
 
 ## The `test()` Function
 
@@ -158,14 +158,14 @@ Then use them by name in `validate` callbacks:
 
 ```typescript
 slug: {
-  type: 'varchar', maxLength: 100, mutable: true, required: true,
+  type: 'varchar', maxLength: 100, required: true,
   validate: (v, test) => {
     test(v, 'is_slug', 'Slug must be lowercase letters, numbers, and hyphens')
   },
 }
 
 theme_color: {
-  type: 'varchar', maxLength: 7, mutable: true,
+  type: 'varchar', maxLength: 7,
   validate: (v, test) => {
     test(v, 'is_hex_color', 'Must be a hex color like #ff0000')
   },
@@ -188,8 +188,8 @@ const { createSchema, updateSchema, selectSchema, fullSchema } = users.schemas
 
 | Schema | Includes | Required fields | Use case |
 |--------|----------|-----------------|----------|
-| `createSchema` | Insertable columns | `required: true` columns | Validating create input |
-| `updateSchema` | Mutable columns | None (all optional) | Validating update input |
+| `createSchema` | Writable columns | `required: true` columns | Validating create input |
+| `updateSchema` | Writable columns | None (all optional) | Validating update input |
 | `selectSchema` | Selectable columns | `notNull` columns | Validating query results |
 | `fullSchema` | All columns | `notNull` columns | Internal / testing |
 

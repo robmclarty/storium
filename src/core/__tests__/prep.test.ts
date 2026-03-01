@@ -7,21 +7,20 @@ const columns: ColumnsConfig = {
   email: {
     type: 'varchar',
     maxLength: 255,
-    mutable: true,
     required: true,
     transform: (v: string) => v.trim().toLowerCase(),
     validate: (v, test) => {
       test(v, 'not_empty', 'Email cannot be empty')
     },
   },
-  name: { type: 'varchar', maxLength: 255, mutable: true },
+  name: { type: 'varchar', maxLength: 255 },
 }
 
 const access: TableAccess = {
   selectable: ['id', 'email', 'name'],
-  mutable: ['email', 'name'],
-  insertable: ['email', 'name'],
-  writeOnly: [],
+  writable: ['email', 'name'],
+  hidden: [],
+  readonly: ['id'],
 }
 
 describe('prep pipeline', () => {
@@ -82,10 +81,10 @@ describe('prep pipeline', () => {
     expect(result.email).toBe('async@example.com')
   })
 
-  it('strips non-mutable columns when onlyMutables is true', async () => {
+  it('strips non-writable columns when onlyWritable is true', async () => {
     const result = await prep(
       { id: 'should-be-removed', email: 'test@example.com' },
-      { validateRequired: false, onlyMutables: true }
+      { validateRequired: false, onlyWritable: true }
     )
 
     expect(result).not.toHaveProperty('id')
@@ -95,14 +94,14 @@ describe('prep pipeline', () => {
   it('accumulates multiple validation errors in a single throw', async () => {
     // Use columns without transforms so type checks run and accumulate
     const plainColumns: ColumnsConfig = {
-      a: { type: 'varchar', maxLength: 255, mutable: true },
-      b: { type: 'integer', mutable: true },
+      a: { type: 'varchar', maxLength: 255 },
+      b: { type: 'integer' },
     }
     const plainAccess: TableAccess = {
       selectable: ['a', 'b'],
-      mutable: ['a', 'b'],
-      insertable: ['a', 'b'],
-      writeOnly: [],
+      writable: ['a', 'b'],
+      hidden: [],
+      readonly: [],
     }
     const plainPrep = createPrepFn(plainColumns, plainAccess)
     const { ValidationError } = await import('../errors')
@@ -125,7 +124,6 @@ describe('prep with custom assertions', () => {
     slug: {
       type: 'varchar',
       maxLength: 255,
-      mutable: true,
       required: true,
       validate: (v, test) => {
         test(v, 'is_slug', 'Must be a valid slug')
@@ -135,9 +133,9 @@ describe('prep with custom assertions', () => {
 
   const slugAccess: TableAccess = {
     selectable: ['slug'],
-    mutable: ['slug'],
-    insertable: ['slug'],
-    writeOnly: [],
+    writable: ['slug'],
+    hidden: [],
+    readonly: [],
   }
 
   it('uses custom assertions from the registry', async () => {

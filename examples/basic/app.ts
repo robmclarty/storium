@@ -26,7 +26,6 @@ const usersTable = db.defineTable('users', {
   email: {
     type: 'varchar',
     maxLength: 255,
-    mutable: true,
     required: true,
     transform: (v: string) => v.trim().toLowerCase(),
     validate: (v, test) => {
@@ -34,7 +33,7 @@ const usersTable = db.defineTable('users', {
       test(v, 'is_email', 'Must be a valid email address')
     },
   },
-  name: { type: 'varchar', maxLength: 255, mutable: true },
+  name: { type: 'varchar', maxLength: 255 },
 }, {
   timestamps: false,
   indexes: { email: { unique: true } },
