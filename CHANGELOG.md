@@ -4,6 +4,15 @@ All notable changes to Storium are documented here.
 
 This project uses [Semantic Versioning](https://semver.org/). Pre-1.0 releases may include breaking changes in minor versions.
 
+## [0.11.0] — 2026-02-28
+
+### Breaking
+- **`default: 'random_uuid'` renamed to `default: 'uuid:v4'`.** The colon convention distinguishes dynamic generators from literal default values. Update all column definitions accordingly.
+
+### Added
+- **UUIDv7 support** — `default: 'uuid:v7'` generates RFC 9562 UUIDv7 values with temporal sortability and better B-tree index performance (append-mostly inserts, fewer page splits). Includes a monotonic counter (§6.2) for strict ordering within the same millisecond.
+- PostgreSQL example updated to use `uuid:v7` for primary keys.
+
 ## [0.10.0] — 2026-02-28
 
 ### Breaking
