@@ -1,20 +1,19 @@
 import { sql } from 'drizzle-orm'
-import type { Ctx } from 'storium'
 
-export const findByAuthor = (ctx: Ctx) => async (authorId: string) =>
+export const findByAuthor = (ctx) => async (authorId: string) =>
   ctx.find({ author_id: authorId })
 
-export const findPublished = (ctx: Ctx) => async () =>
+export const findPublished = (ctx) => async () =>
   ctx.find({ status: 'published' })
 
-export const publish = (ctx: Ctx) => async (id: string) =>
+export const publish = (ctx) => async (id: string) =>
   ctx.update(id, { status: 'published' })
 
-export const unpublish = (ctx: Ctx) => async (id: string) =>
+export const unpublish = (ctx) => async (id: string) =>
   ctx.update(id, { status: 'draft' })
 
 // SQLite: no @> operator — use json_each() to search within JSON array
-export const findByTag = (ctx: Ctx) => async (tag: string) =>
+export const findByTag = (ctx) => async (tag: string) =>
   ctx.drizzle
     .select(ctx.selectColumns)
     .from(ctx.table)
@@ -24,7 +23,7 @@ export const findByTag = (ctx: Ctx) => async (tag: string) =>
 // json_extract('{"a":true}','$.a') returns integer 1, and
 // json_extract('"hello"','$') returns text 'hello' — so both
 // sides go through the same type coercion.
-export const findByMetadata = (ctx: Ctx) => async (key: string, value: string) =>
+export const findByMetadata = (ctx) => async (key: string, value: string) =>
   ctx.drizzle
     .select(ctx.selectColumns)
     .from(ctx.table)

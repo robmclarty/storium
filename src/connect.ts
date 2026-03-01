@@ -350,7 +350,7 @@ export const fromDrizzle = <DB extends DrizzleDatabase>(
   const dialect = inferDialect(drizzleDb) as InferDialect<DB>
 
   return buildInstance<InferDialect<DB>>(
-    drizzleDb as DrizzleDatabase<InferDialect<DB>>,
+    drizzleDb as unknown as DrizzleDatabase<InferDialect<DB>>,
     dialect,
     options.assertions ?? {},
     async () => {} // No-op teardown — user manages their own connection

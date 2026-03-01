@@ -39,6 +39,7 @@ storium/
 │   ├── custom-queries/         # Complete: custom query patterns, raw Drizzle, overrides
 │   ├── validation/             # Complete: validation pipeline, assertions, transforms
 │   ├── memory/                 # Complete: multiple isolated in-memory databases
+│   ├── from-drizzle/           # Complete: bring your own Drizzle instance via fromDrizzle()
 │   ├── postgres/               # Stub — plan at ~/.claude/plans/temporal-finding-frog.md
 │   ├── mysql/                  # Stub
 │   ├── sqlite/                 # Stub

@@ -1,11 +1,10 @@
 import { like, or } from 'drizzle-orm'
-import type { Ctx } from 'storium'
 
-export const findByEmail = (ctx: Ctx) => async (email: string) =>
+export const findByEmail = (ctx) => async (email: string) =>
   ctx.findOne({ email })
 
 // MySQL: LIKE is case-insensitive by default (no ILIKE needed)
-export const search = (ctx: Ctx) => async (term: string) =>
+export const search = (ctx) => async (term: string) =>
   ctx.drizzle
     .select(ctx.selectColumns)
     .from(ctx.table)
@@ -14,7 +13,7 @@ export const search = (ctx: Ctx) => async (term: string) =>
       like(ctx.table.name, `%${term}%`),
     ))
 
-export const authenticate = (ctx: Ctx) => async (email: string, password: string) => {
+export const authenticate = (ctx) => async (email: string, password: string) => {
   const user = await ctx.findOne({ email }, { includeHidden: true })
   if (!user) return null
 

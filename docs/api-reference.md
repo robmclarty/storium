@@ -201,7 +201,7 @@ Each schema variant (`createSchema`, `updateSchema`, `selectSchema`, `fullSchema
 | Type | Description |
 |------|-------------|
 | `RepositoryContext<T, TColumns, D>` | Context passed to custom query functions — contains `drizzle`, `zod`, `table`, `schemas`, `prep`, and all default CRUD methods. `D` controls the type of `ctx.drizzle`. |
-| `Ctx<T, TColumns, D>` | Shorthand alias for `RepositoryContext` — use as `ctx: Ctx` in custom queries. |
+| `Ctx<T, TColumns, D>` | Shorthand alias for `RepositoryContext`. Available if you need explicit typing, but typically you can just use `(ctx) =>` and let TypeScript infer. |
 | `CustomQueryFn<T, D>` | `(ctx: RepositoryContext<T, ..., D>) => (...args) => any` — a custom query factory function. |
 | `QueriesConfig` | `Record<string, (ctx: any) => (...args) => any>` — constraint type for custom query records. Uses `ctx: any` so helpers work across dialects. |
 | `PrepOptions` | Options for CRUD operations: `force`, `validateRequired`, `onlyWritable`, `tx`, `limit`, `offset`, `orderBy`, `includeHidden`. |

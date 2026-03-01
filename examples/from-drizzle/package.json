@@ -1,0 +1,17 @@
+{
+  "name": "storium-examples-from-drizzle",
+  "description": "Bring your own Drizzle instance — storium.fromDrizzle() wraps an existing connection",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "tsx app.ts"
+  },
+  "devDependencies": {
+    "tsx": "4.21.0"
+  },
+  "dependencies": {
+    "storium": "file:../..",
+    "@libsql/client": "^0.14.0",
+    "drizzle-orm": "^0.45.1"
+  }
+}

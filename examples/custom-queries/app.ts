@@ -16,7 +16,6 @@
  */
 
 import { storium, defineTable, defineStore } from 'storium'
-import type { Ctx } from 'storium'
 import { sql, eq, like, desc } from 'drizzle-orm'
 
 // --- Schema ---
@@ -35,18 +34,18 @@ const articlesTable = defineTable('memory')('articles', {
 
 const articleStore = defineStore(articlesTable, {
   // Compose with built-in CRUD
-  findBySlug: (ctx: Ctx) => async (slug: string) =>
+  findBySlug: (ctx) => async (slug: string) =>
     ctx.findOne({ slug }),
 
-  findByAuthor: (ctx: Ctx) => async (authorId: string) =>
+  findByAuthor: (ctx) => async (authorId: string) =>
     ctx.find({ author_id: authorId }),
 
-  findPublished: (ctx: Ctx) => async () =>
+  findPublished: (ctx) => async () =>
     ctx.find({ status: 'published' }),
 
   // Override create — auto-generate slug from title.
   // ctx.create still refers to the original, so no infinite recursion.
-  create: (ctx: Ctx) => async (input: Record<string, any>, opts?: any) => {
+  create: (ctx) => async (input: Record<string, any>, opts?: any) => {
     const slug = input.slug ?? input.title
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
@@ -55,13 +54,13 @@ const articleStore = defineStore(articlesTable, {
   },
 
   // Raw Drizzle escape hatch
-  search: (ctx: Ctx) => async (term: string) =>
+  search: (ctx) => async (term: string) =>
     ctx.drizzle
       .select(ctx.selectColumns)
       .from(ctx.table)
       .where(like(ctx.table.title, `%${term}%`)),
 
-  mostViewed: (ctx: Ctx) => async (limit = 5) =>
+  mostViewed: (ctx) => async (limit = 5) =>
     ctx.drizzle
       .select(ctx.selectColumns)
       .from(ctx.table)
@@ -70,7 +69,7 @@ const articleStore = defineStore(articlesTable, {
       .limit(limit),
 
   // Raw SQL for atomic operations
-  incrementViews: (ctx: Ctx) => async (id: string) => {
+  incrementViews: (ctx) => async (id: string) => {
     ctx.drizzle.run(
       sql`UPDATE articles SET view_count = COALESCE(view_count, 0) + 1 WHERE id = ${id}`
     )
@@ -78,10 +77,10 @@ const articleStore = defineStore(articlesTable, {
   },
 
   // Domain actions
-  publish: (ctx: Ctx) => async (id: string) =>
+  publish: (ctx) => async (id: string) =>
     ctx.update(id, { status: 'published' }),
 
-  unpublish: (ctx: Ctx) => async (id: string) =>
+  unpublish: (ctx) => async (id: string) =>
     ctx.update(id, { status: 'draft' }),
 })
 

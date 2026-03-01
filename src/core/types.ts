@@ -21,15 +21,21 @@ export type Dialect = 'postgresql' | 'mysql' | 'sqlite' | 'memory'
 /**
  * Maps a Storium dialect to its Drizzle database type.
  * When `D` is a specific dialect literal, resolves to the concrete Drizzle class.
- * When `D` is the full `Dialect` union, resolves to the union of all classes.
+ * When `D` is the full `Dialect` union (the default), resolves to `any` so that
+ * dialect-agnostic code (helpers, custom queries) can call
+ * methods like `.select()` and `.run()` without narrowing first.
  *
  * Imported from the `drizzle-orm` peer dep (type-only, zero runtime coupling).
  */
 export type DrizzleDatabase<D extends Dialect = Dialect> =
-  D extends 'postgresql' ? PgDatabase<any, any, any> :
-  D extends 'mysql' ? MySqlDatabase<any, any, any, any> :
-  D extends 'sqlite' | 'memory' ? BaseSQLiteDatabase<any, any, any, any> :
-  PgDatabase<any, any, any> | MySqlDatabase<any, any, any, any> | BaseSQLiteDatabase<any, any, any, any>
+  [D] extends [Dialect]
+    ? Dialect extends D
+      ? any  // D is the full union — fall back to any for usability
+      : D extends 'postgresql' ? PgDatabase<any, any, any>
+      : D extends 'mysql' ? MySqlDatabase<any, any, any, any>
+      : D extends 'sqlite' | 'memory' ? BaseSQLiteDatabase<any, any, any, any>
+      : any
+    : any
 
 /**
  * Infer the Storium dialect from a Drizzle database type.
@@ -353,7 +359,7 @@ export type RepositoryContext<
   ref: (filter: Record<string, any>, opts?: PrepOptions) => Promise<PkValue>
 }
 
-/** Shorthand alias for `RepositoryContext` — use as `ctx: Ctx` in custom queries. */
+/** Shorthand alias for `RepositoryContext`. Available for explicit typing, but `(ctx) =>` with inference is usually sufficient. */
 export type Ctx<
   T extends TableDef = TableDef,
   TColumns extends ColumnsConfig = T extends TableDef<infer C> ? C : ColumnsConfig,
