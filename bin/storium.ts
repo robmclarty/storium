@@ -1,5 +1,17 @@
 #!/usr/bin/env node
 
+// If we're under Node but Bun is available, re-exec with Bun
+// so that bun:-protocol imports (bun:sqlite, etc.) resolve.
+if (!('Bun' in globalThis)) {
+  const { execFileSync } = await import('node:child_process')
+  try {
+    execFileSync('bun', process.argv.slice(1), { stdio: 'inherit' })
+    process.exit(0)
+  } catch {
+    // Bun not installed — fall through to Node path
+  }
+}
+
 /**
  * Storium CLI
  *
