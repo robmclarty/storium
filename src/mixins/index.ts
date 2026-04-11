@@ -1,3 +1,3 @@
 export { withMembers } from './withMembers'
-export { withBelongsTo } from './withBelongsTo'
+export { belongsTo } from './belongsTo'
 export { withCache } from './withCache'

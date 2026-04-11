@@ -1,5 +1,5 @@
 /**
- * @module withBelongsTo
+ * @module belongsTo
  *
  * Composable "belongs to" join mixin. Generates a `findWith{Alias}` query
  * that LEFT JOINs a related table and returns the entity with inlined
@@ -8,7 +8,7 @@
  * @example
  * const users = db.defineStore('users', columns, {
  *   queries: {
- *     ...withBelongsTo(schools, 'school_id', {
+ *     ...belongsTo(schools, 'school_id', {
  *       alias: 'school',
  *       select: ['name', 'slug'],
  *     }),
@@ -37,7 +37,7 @@ type BelongsToOptions<A extends string = string> = {
  * @param options - Alias and optional column selection
  * @returns A custom query function to spread into queries
  */
-export const withBelongsTo = <A extends string>(
+export const belongsTo = <A extends string>(
   relatedTableDef: TableDef,
   foreignKey: string,
   options: BelongsToOptions<A>

@@ -36,7 +36,7 @@ export {
 
 export {
   withMembers,
-  withBelongsTo,
+  belongsTo,
   withCache,
 } from './mixins'
 

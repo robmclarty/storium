@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll } from 'vitest'
-import { storium, withBelongsTo } from 'storium'
+import { storium, belongsTo } from 'storium'
 import { sql } from 'drizzle-orm'
 
 let db: any
@@ -36,14 +36,14 @@ beforeAll(() => {
   authors = db.defineStore(authorsTable)
 
   posts = db.defineStore(postsTable).queries({
-    ...withBelongsTo(authorsTable, 'author_id', {
+    ...belongsTo(authorsTable, 'author_id', {
       alias: 'author',
       select: ['name', 'email'],
     }),
   })
 })
 
-describe('withBelongsTo', () => {
+describe('belongsTo', () => {
   it('generates a findWith{Alias} method', () => {
     expect(typeof posts.findWithAuthor).toBe('function')
   })
