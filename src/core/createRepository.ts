@@ -23,7 +23,7 @@
  * })
  */
 
-import { eq, and, inArray, asc, desc } from 'drizzle-orm'
+import { eq, and, inArray, asc, desc, sql, count as drizzleCount } from 'drizzle-orm'
 import { z } from 'zod'
 import type {
   Dialect,
@@ -108,23 +108,38 @@ const buildDefaultCrud = (
     return q.orderBy(...clauses)
   }
 
+  /**
+   * Build a combined WHERE clause from equality filters and an optional
+   * `where` callback in opts. Returns undefined if no conditions exist.
+   */
+  const buildWhere = (filters: Record<string, any>, opts?: PrepOptions) => {
+    const conditions: any[] = []
+
+    for (const [key, value] of Object.entries(filters)) {
+      conditions.push(eq(table[key], value))
+    }
+
+    if (opts?.where) {
+      conditions.push(opts.where(table))
+    }
+
+    if (conditions.length === 0) return undefined
+    return conditions.length === 1 ? conditions[0] : and(...conditions)
+  }
+
   const find = async (filters: Record<string, any>, opts?: PrepOptions) => {
     const entries = Object.entries(filters)
 
-    if (entries.length === 0) {
+    if (entries.length === 0 && !opts?.where) {
       throw new StoreError(
-        'find() requires at least one filter. Use findAll() to retrieve all rows.'
+        'find() requires at least one filter or a where clause. Use findAll() to retrieve all rows.'
       )
     }
-
-    const whereConditions = entries.map(
-      ([key, value]) => eq(table[key], value)
-    )
 
     let q = getDb(opts)
       .select(getCols(opts))
       .from(table)
-      .where(whereConditions.length === 1 ? whereConditions[0] : and(...whereConditions))
+      .where(buildWhere(filters, opts))
 
     if (opts?.orderBy) q = applyOrderBy(q, opts.orderBy)
     if (opts?.limit !== undefined) q = q.limit(opts.limit)
@@ -136,6 +151,7 @@ const buildDefaultCrud = (
   const findAll = async (opts?: PrepOptions) => {
     let q = getDb(opts).select(getCols(opts)).from(table)
 
+    if (opts?.where) q = q.where(opts.where(table))
     if (opts?.orderBy) q = applyOrderBy(q, opts.orderBy)
     if (opts?.limit !== undefined) q = q.limit(opts.limit)
     if (opts?.offset !== undefined) q = q.offset(opts.offset)
@@ -302,19 +318,15 @@ const buildDefaultCrud = (
   const destroyAll = async (filters: Record<string, any>, opts?: PrepOptions) => {
     const entries = Object.entries(filters)
 
-    if (entries.length === 0) {
+    if (entries.length === 0 && !opts?.where) {
       throw new StoreError(
-        'destroyAll() requires at least one filter to prevent accidental deletion of all rows.'
+        'destroyAll() requires at least one filter or a where clause to prevent accidental deletion of all rows.'
       )
     }
 
-    const whereConditions = entries.map(
-      ([key, value]) => eq(table[key], value)
-    )
-
     const result = await getDb(opts)
       .delete(table)
-      .where(whereConditions.length === 1 ? whereConditions[0] : and(...whereConditions))
+      .where(buildWhere(filters, opts))
 
     return result.rowCount ?? result.affectedRows ?? result.changes ?? 0
   }
@@ -335,6 +347,145 @@ const buildDefaultCrud = (
     return (row as any)[primaryKey]
   }
 
+  const count = async (filters: Record<string, any> = {}, opts?: PrepOptions) => {
+    const where = buildWhere(filters, opts)
+
+    let q = getDb(opts)
+      .select({ count: drizzleCount() })
+      .from(table)
+
+    if (where) q = q.where(where)
+
+    const rows = await q
+    return rows[0]?.count ?? 0
+  }
+
+  const exists = async (filters: Record<string, any>, opts?: PrepOptions) => {
+    const entries = Object.entries(filters)
+
+    if (entries.length === 0 && !opts?.where) {
+      throw new StoreError(
+        'exists() requires at least one filter or a where clause.'
+      )
+    }
+
+    const rows = await getDb(opts)
+      .select({ exists: sql<number>`1` })
+      .from(table)
+      .where(buildWhere(filters, opts))
+      .limit(1)
+
+    return rows.length > 0
+  }
+
+  const createMany = async (inputs: Record<string, any>[], opts?: PrepOptions) => {
+    if (inputs.length === 0) return []
+
+    const preparedRows = await Promise.all(
+      inputs.map(input => prep(input, {
+        force: opts?.force ?? false,
+        validateRequired: true,
+        onlyWritable: false,
+      }))
+    )
+
+    if (dialect === 'postgresql' || dialect === 'sqlite' || dialect === 'memory') {
+      return getDb(opts)
+        .insert(table)
+        .values(preparedRows)
+        .returning(getCols(opts))
+    }
+
+    // MySQL: no RETURNING — insert then select back by PKs
+    const pkColumn = columns[primaryKey as string]
+    for (const prepared of preparedRows) {
+      if (!prepared[primaryKey as string] && pkColumn && !isRawColumn(pkColumn)) {
+        if (pkColumn.default === 'uuid:v4') prepared[primaryKey as string] = crypto.randomUUID()
+        else if (pkColumn.default === 'uuid:v7') prepared[primaryKey as string] = uuidv7()
+      }
+    }
+
+    await getDb(opts).insert(table).values(preparedRows)
+
+    const pkValues = preparedRows.map(r => r[primaryKey as string]).filter(Boolean)
+    if (pkValues.length === 0) return []
+
+    return getDb(opts)
+      .select(getCols(opts))
+      .from(table)
+      .where(inArray(table[primaryKey as string], pkValues))
+  }
+
+  const upsert = async (input: Record<string, any>, opts?: PrepOptions) => {
+    const prepared = await prep(input, {
+      force: opts?.force ?? false,
+      validateRequired: true,
+      onlyWritable: false,
+    })
+
+    // Determine conflict target columns
+    const target = opts?.conflictTarget
+      ? opts.conflictTarget.map(col => table[col])
+      : Array.isArray(primaryKey)
+        ? primaryKey.map(col => table[col])
+        : [table[primaryKey]]
+
+    // Build the SET clause: all writable columns except the conflict target
+    const targetNames = new Set(opts?.conflictTarget ?? (Array.isArray(primaryKey) ? primaryKey : [primaryKey]))
+    const setFields: Record<string, any> = {}
+    for (const key of access.writable) {
+      if (!targetNames.has(key) && key in prepared) {
+        setFields[key] = prepared[key]
+      }
+    }
+
+    // Handle updatedAt if present and using timestamps
+    if ('updatedAt' in columns && !targetNames.has('updatedAt')) {
+      setFields.updatedAt = new Date()
+    }
+
+    if (dialect === 'postgresql' || dialect === 'sqlite' || dialect === 'memory') {
+      const rows = await getDb(opts)
+        .insert(table)
+        .values(prepared)
+        .onConflictDoUpdate({ target, set: setFields })
+        .returning(getCols(opts))
+
+      if (!rows[0]) {
+        throw new StoreError(
+          `upsert(): INSERT OR UPDATE on '${tableName}' returned no rows.`
+        )
+      }
+
+      return rows[0]
+    }
+
+    // MySQL: ON DUPLICATE KEY UPDATE
+    await getDb(opts)
+      .insert(table)
+      .values(prepared)
+      .onDuplicateKeyUpdate({ set: setFields })
+
+    // Select back by conflict target values
+    const lookupFilters: Record<string, any> = {}
+    for (const col of targetNames) {
+      lookupFilters[col] = prepared[col]
+    }
+    const rows = await getDb(opts)
+      .select(getCols(opts))
+      .from(table)
+      .where(buildWhere(lookupFilters))
+      .limit(1)
+
+    if (!rows[0]) {
+      throw new StoreError(
+        `upsert(): INSERT OR UPDATE on '${tableName}' succeeded but the follow-up SELECT found no row.`
+      )
+    }
+
+    return rows[0]
+  }
+
   return {
     prep,
     find,
@@ -343,9 +494,13 @@ const buildDefaultCrud = (
     findById,
     findByIdIn,
     create,
+    createMany,
     update,
+    upsert,
     destroy,
     destroyAll,
+    count,
+    exists,
     ref,
   }
 }
@@ -387,7 +542,6 @@ export const createCreateRepository = (
       zod: z,
       dialect,
       table: tableDef,
-      tableDef,
       selectColumns: meta.selectColumns,
       allColumns: meta.allColumns,
       primaryKey: meta.primaryKey,
@@ -399,9 +553,13 @@ export const createCreateRepository = (
       findById: defaults.findById,
       findByIdIn: defaults.findByIdIn,
       create: defaults.create,
+      createMany: defaults.createMany,
       update: defaults.update,
+      upsert: defaults.upsert,
       destroy: defaults.destroy,
       destroyAll: defaults.destroyAll,
+      count: defaults.count,
+      exists: defaults.exists,
       ref: defaults.ref,
     }
 

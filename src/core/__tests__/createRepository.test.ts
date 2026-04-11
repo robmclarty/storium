@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll } from 'vitest'
 import { storium } from 'storium'
-import { sql } from 'drizzle-orm'
+import { sql, gt, like } from 'drizzle-orm'
 import { StoreError } from '../errors'
 
 let db: any
@@ -276,5 +276,180 @@ describe('composite primary keys', () => {
   it('ref returns composite PK as array', async () => {
     const pk = await memberships.ref({ user_id: 'u1', group_id: 'g1' })
     expect(pk).toEqual(['u1', 'g1'])
+  })
+})
+
+describe('where clause', () => {
+  beforeAll(async () => {
+    await users.create({ email: 'where1@test.com', name: 'WhereTest', age: 25 })
+    await users.create({ email: 'where2@test.com', name: 'WhereTest', age: 30 })
+    await users.create({ email: 'where3@test.com', name: 'WhereTest', age: 35 })
+  })
+
+  it('find supports where callback with Drizzle expressions', async () => {
+    const results = await users.find(
+      { name: 'WhereTest' },
+      { where: (t: any) => gt(t.age, 28) }
+    )
+    expect(results.length).toBe(2)
+    expect(results.every((r: any) => r.age > 28)).toBe(true)
+  })
+
+  it('find allows where-only (no equality filters)', async () => {
+    const results = await users.find(
+      {},
+      { where: (t: any) => like(t.email, '%where%@test.com') }
+    )
+    expect(results.length).toBeGreaterThanOrEqual(3)
+  })
+
+  it('findAll supports where callback', async () => {
+    const results = await users.findAll({
+      where: (t: any) => gt(t.age, 30),
+    })
+    expect(results.length).toBeGreaterThanOrEqual(1)
+    expect(results.every((r: any) => r.age > 30)).toBe(true)
+  })
+
+  it('destroyAll supports where callback', async () => {
+    await users.create({ email: 'wd1@test.com', name: 'WhereDestroy', age: 99 })
+    await users.create({ email: 'wd2@test.com', name: 'WhereDestroy', age: 99 })
+    const count = await users.destroyAll(
+      {},
+      { where: (t: any) => gt(t.age, 90) }
+    )
+    expect(count).toBeGreaterThanOrEqual(2)
+  })
+})
+
+describe('count', () => {
+  beforeAll(async () => {
+    await users.create({ email: 'count1@test.com', name: 'CountTest' })
+    await users.create({ email: 'count2@test.com', name: 'CountTest' })
+  })
+
+  it('counts all rows when no filters', async () => {
+    const total = await users.count()
+    expect(total).toBeGreaterThanOrEqual(2)
+  })
+
+  it('counts rows matching equality filters', async () => {
+    const n = await users.count({ name: 'CountTest' })
+    expect(n).toBeGreaterThanOrEqual(2)
+  })
+
+  it('counts rows matching where callback', async () => {
+    const n = await users.count({}, {
+      where: (t: any) => like(t.email, '%count%@test.com'),
+    })
+    expect(n).toBeGreaterThanOrEqual(2)
+  })
+})
+
+describe('exists', () => {
+  it('returns true when a matching row exists', async () => {
+    await users.create({ email: 'exists@test.com', name: 'ExistsTest' })
+    const result = await users.exists({ name: 'ExistsTest' })
+    expect(result).toBe(true)
+  })
+
+  it('returns false when no matching row exists', async () => {
+    const result = await users.exists({ name: 'NoSuchName_' + Date.now() })
+    expect(result).toBe(false)
+  })
+
+  it('supports where callback', async () => {
+    const result = await users.exists({}, {
+      where: (t: any) => like(t.email, '%exists@test.com'),
+    })
+    expect(result).toBe(true)
+  })
+
+  it('throws StoreError with no filters and no where', async () => {
+    await expect(users.exists({})).rejects.toThrow(StoreError)
+  })
+})
+
+describe('createMany', () => {
+  it('inserts multiple rows and returns them', async () => {
+    const rows = await users.createMany([
+      { email: 'batch1@test.com', name: 'Batch' },
+      { email: 'batch2@test.com', name: 'Batch' },
+      { email: 'batch3@test.com', name: 'Batch' },
+    ])
+    expect(rows).toHaveLength(3)
+    expect(rows.every((r: any) => r.id && r.name === 'Batch')).toBe(true)
+  })
+
+  it('returns empty array for empty input', async () => {
+    const rows = await users.createMany([])
+    expect(rows).toEqual([])
+  })
+
+  it('applies prep pipeline to each row', async () => {
+    const rows = await users.createMany([
+      { email: '  UPPER1@TEST.COM  ' },
+      { email: '  UPPER2@TEST.COM  ' },
+    ])
+    expect(rows[0].email).toBe('upper1@test.com')
+    expect(rows[1].email).toBe('upper2@test.com')
+  })
+})
+
+describe('upsert', () => {
+  let products: any
+
+  beforeAll(() => {
+    const productsTable = db.defineTable('products').columns({
+      id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
+      sku: { type: 'varchar', maxLength: 100, required: true },
+      name: { type: 'varchar', maxLength: 255 },
+      price: { type: 'integer' },
+    }).timestamps(false)
+
+    db.drizzle.run(sql`
+      CREATE TABLE IF NOT EXISTS products (
+        id TEXT PRIMARY KEY,
+        sku TEXT NOT NULL UNIQUE,
+        name TEXT,
+        price INTEGER
+      )
+    `)
+
+    products = db.defineStore(productsTable)
+  })
+
+  it('inserts a new row when no conflict', async () => {
+    const row = await products.upsert({
+      sku: 'SKU-001',
+      name: 'Widget',
+      price: 100,
+    }, { conflictTarget: ['sku'] })
+
+    expect(row.sku).toBe('SKU-001')
+    expect(row.name).toBe('Widget')
+    expect(row.price).toBe(100)
+  })
+
+  it('updates an existing row on conflict', async () => {
+    const row = await products.upsert({
+      sku: 'SKU-001',
+      name: 'Updated Widget',
+      price: 200,
+    }, { conflictTarget: ['sku'] })
+
+    expect(row.sku).toBe('SKU-001')
+    expect(row.name).toBe('Updated Widget')
+    expect(row.price).toBe(200)
+
+    // Verify only one row exists
+    const count = await products.count({ sku: 'SKU-001' })
+    expect(count).toBe(1)
+  })
+})
+
+describe('store name', () => {
+  it('exposes the table name on the store', () => {
+    expect(users.name).toBe('users')
   })
 })

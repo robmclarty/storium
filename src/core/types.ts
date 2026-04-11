@@ -318,6 +318,23 @@ export type PrepOptions = {
    * so it stands out in code review.
    */
   includeHidden?: boolean
+  /**
+   * Additional Drizzle WHERE clause. Receives the table for column references.
+   * AND'd with any equality filters from `find()`.
+   *
+   * @example
+   * await users.findAll({ where: (t) => gt(t.age, 18) })
+   * await users.find({ status: 'active' }, { where: (t) => like(t.name, '%alice%') })
+   */
+  where?: (table: any) => any
+  /**
+   * Columns to target for conflict detection in `upsert()`.
+   * Defaults to the primary key. Pass column names for unique constraint targets.
+   *
+   * @example
+   * await users.upsert(input, { conflictTarget: ['email'] })
+   */
+  conflictTarget?: string[]
 }
 
 /** A primary key value: single column or composite (array of values in PK column order). */
@@ -345,10 +362,8 @@ export type RepositoryContext<
   zod: typeof ZodNamespace
   /** The active dialect. */
   dialect: D
-  /** The Drizzle table object (same as tableDef — it IS the Drizzle table). */
+  /** The Drizzle table object with `.storium` metadata. */
   table: T
-  /** The Drizzle table with `.storium` metadata. */
-  tableDef: T
   /** Pre-built column map for select() (excludes hidden columns). */
   selectColumns: Record<string, any>
   /** Full column map including hidden columns. */
@@ -366,9 +381,13 @@ export type RepositoryContext<
   findById: (id: PkValue, opts?: PrepOptions) => Promise<SelectType<TColumns> | null>
   findByIdIn: (ids: (string | number)[], opts?: PrepOptions) => Promise<SelectType<TColumns>[]>
   create: (input: InsertType<TColumns>, opts?: PrepOptions) => Promise<SelectType<TColumns>>
+  createMany: (inputs: InsertType<TColumns>[], opts?: PrepOptions) => Promise<SelectType<TColumns>[]>
   update: (id: PkValue, input: UpdateType<TColumns>, opts?: PrepOptions) => Promise<SelectType<TColumns>>
+  upsert: (input: InsertType<TColumns>, opts?: PrepOptions) => Promise<SelectType<TColumns>>
   destroy: (id: PkValue, opts?: PrepOptions) => Promise<void>
   destroyAll: (filters: Record<string, any>, opts?: PrepOptions) => Promise<number>
+  count: (filters?: Record<string, any>, opts?: PrepOptions) => Promise<number>
+  exists: (filters: Record<string, any>, opts?: PrepOptions) => Promise<boolean>
   ref: (filter: Record<string, any>, opts?: PrepOptions) => Promise<PkValue>
 }
 
@@ -419,9 +438,15 @@ export type DefaultCRUD<TColumns extends ColumnsConfig = ColumnsConfig> = {
   findById: (id: PkValue, opts?: PrepOptions) => Promise<SelectType<TColumns> | null>
   findByIdIn: (ids: (string | number)[], opts?: PrepOptions) => Promise<SelectType<TColumns>[]>
   create: (input: InsertType<TColumns>, opts?: PrepOptions) => Promise<SelectType<TColumns>>
+  createMany: (inputs: InsertType<TColumns>[], opts?: PrepOptions) => Promise<SelectType<TColumns>[]>
   update: (id: PkValue, input: UpdateType<TColumns>, opts?: PrepOptions) => Promise<SelectType<TColumns>>
+  upsert: (input: InsertType<TColumns>, opts?: PrepOptions) => Promise<SelectType<TColumns>>
   destroy: (id: PkValue, opts?: PrepOptions) => Promise<void>
   destroyAll: (filters: Record<string, any>, opts?: PrepOptions) => Promise<number>
+  /** Count rows matching filters and/or a where clause. */
+  count: (filters?: Record<string, any>, opts?: PrepOptions) => Promise<number>
+  /** Check if any row matches the filters and/or where clause. */
+  exists: (filters: Record<string, any>, opts?: PrepOptions) => Promise<boolean>
   /** Look up a row by filter and return its primary key value. */
   ref: (filter: Record<string, any>, opts?: PrepOptions) => Promise<PkValue>
 }

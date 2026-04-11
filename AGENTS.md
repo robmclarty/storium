@@ -168,12 +168,95 @@ await users.findById('123')
 ```typescript
 ctx.drizzle         // DrizzleDatabase<D> — typed when dialect is known, union when generic
 ctx.zod             // Zod namespace (convenience accessor)
-ctx.table           // Drizzle table object
+ctx.table           // Drizzle table object with .storium metadata
 ctx.selectColumns   // Pre-built column map for SELECT
 ctx.primaryKey      // PK column name
 ctx.schemas         // { createSchema, updateSchema, selectSchema, fullSchema } RuntimeSchema
 ctx.prep()          // Validation/transform pipeline
-ctx.find/findOne/findById/findByIdIn/create/update/destroy/destroyAll  // originals
+// Default CRUD (always originals, even if overridden by custom queries):
+ctx.find/findOne/findById/findByIdIn/create/createMany/update/upsert/destroy/destroyAll/count/exists/ref
+```
+
+### Default store methods
+Every store (from `db.defineStore()` or `db.register()`) exposes:
+```typescript
+store.name                           // Table name (string)
+store.schemas                        // { createSchema, updateSchema, selectSchema, fullSchema }
+
+// Read
+store.find(filters, opts?)           // Equality filters, returns array
+store.findAll(opts?)                 // All rows
+store.findOne(filters, opts?)        // First match or null
+store.findById(id, opts?)            // PK lookup
+store.findByIdIn(ids, opts?)         // IN query (single-PK tables only)
+store.count(filters?, opts?)         // Row count (number)
+store.exists(filters, opts?)         // Boolean existence check
+store.ref(filter, opts?)             // Returns PK value, throws if not found
+
+// Write
+store.create(input, opts?)           // Insert one row
+store.createMany(inputs[], opts?)    // Bulk insert, returns all inserted rows
+store.update(id, input, opts?)       // Update by PK, returns updated row
+store.upsert(input, opts?)           // Insert or update on conflict
+store.destroy(id, opts?)             // Delete by PK
+store.destroyAll(filters, opts?)     // Delete matching rows, returns count
+```
+
+### Query opts
+All read/write methods accept an `opts` object with:
+```typescript
+{
+  tx?: any                           // Transaction handle
+  limit?: number                     // Limit rows (find, findAll)
+  offset?: number                    // Skip rows (find, findAll)
+  orderBy?: OrderBySpec | OrderBySpec[]  // Sort: { column, direction? }
+  includeHidden?: boolean            // Include hidden columns in results
+  force?: boolean                    // Bypass prep pipeline (create, update)
+  where?: (table) => SQL             // Drizzle WHERE clause (see below)
+  conflictTarget?: string[]          // Upsert conflict columns (default: PK)
+}
+```
+
+### where callback
+Pass Drizzle expressions via `opts.where` for conditions beyond equality:
+```typescript
+import { gt, like, and, isNull } from 'drizzle-orm'
+
+// Combined with equality filters (AND'd together)
+await users.find({ status: 'active' }, { where: (t) => gt(t.age, 18) })
+
+// where-only (no equality filters needed)
+await users.find({}, { where: (t) => like(t.name, '%alice%') })
+await users.findAll({ where: (t) => isNull(t.deletedAt) })
+await users.count({}, { where: (t) => gt(t.age, 21) })
+await users.destroyAll({}, { where: (t) => gt(t.age, 90) })
+```
+The callback receives the Drizzle table so you get column references without
+importing the schema file. For complex queries beyond what `find()` + `where`
+can express, use custom query functions with `ctx.drizzle`.
+
+### upsert (insert or update on conflict)
+```typescript
+// Default: conflict on primary key
+await users.upsert({ id: '123', email: 'new@example.com', name: 'Alice' })
+
+// Conflict on a unique column
+await products.upsert(
+  { sku: 'SKU-001', name: 'Widget', price: 100 },
+  { conflictTarget: ['sku'] }
+)
+```
+On conflict, all writable columns (except the conflict target) are updated.
+`updatedAt` is automatically refreshed if timestamps are enabled.
+
+### createMany (bulk insert)
+```typescript
+const rows = await users.createMany([
+  { email: 'alice@example.com', name: 'Alice' },
+  { email: 'bob@example.com', name: 'Bob' },
+])
+// Each row passes through the prep pipeline (transform, validate, required)
+// Returns all inserted rows
 ```
 
 ### Column modes
@@ -253,11 +336,15 @@ export default defineSeed(async ({ drizzle }) => {
 project/
 ├── drizzle.config.ts              # Single config for drizzle-kit + storium
 ├── database.ts                    # Plumbing: connect + register all stores
-├── entities/
+├── entities/                      # Domain entities (own a PK)
 │   └── users/
 │       ├── user.schema.ts         # defineTable('users').columns(columns).indexes({...})
-│       ├── user.queries.ts        # Custom query functions
+│       ├── user.queries.ts        # Custom query functions (plain Drizzle for complex queries)
 │       └── user.store.ts          # defineStore(usersTable).queries({ ...queries })
+├── collections/                   # Join tables / many-to-many (composite PKs)
+│   └── user-roles/
+│       ├── user-role.schema.ts    # defineTable('user_roles').columns({...}).primaryKey('userId','roleId')
+│       └── user-role.store.ts     # defineStore(table).queries({ ...withMembers(...) })
 ```
 
 ## Design philosophy
