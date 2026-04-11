@@ -4,6 +4,26 @@ All notable changes to Storium are documented here.
 
 This project uses [Semantic Versioning](https://semver.org/). Pre-1.0 releases may include breaking changes in minor versions.
 
+## [0.12.0] — 2026-04-11
+
+### Breaking
+- **`ctx.tableDef` removed.** Use `ctx.table` instead (they were identical references). `StoreDefinition.tableDef` is unchanged.
+
+### Added
+- **`count(filters?, opts?)`** — returns row count matching filters and/or `where` callback.
+- **`exists(filters, opts?)`** — returns boolean existence check.
+- **`createMany(inputs[], opts?)`** — bulk insert with per-row prep pipeline (transform, validate, required). Returns all inserted rows.
+- **`upsert(input, opts?)`** — insert or update on conflict. Defaults to primary key; use `{ conflictTarget: ['email'] }` for unique columns. Automatically refreshes `updatedAt` when timestamps are enabled.
+- **`where` callback on opts** — pass Drizzle expressions for conditions beyond equality: `find({}, { where: (t) => gt(t.age, 18) })`. Works on `find`, `findAll`, `findOne`, `destroyAll`, `count`, `exists`. AND'd with equality filters when both are present. `find({}, { where: ... })` is now valid (relaxes the "at least one filter" rule when `where` is provided).
+- **`store.name`** — every store and repository now exposes its table name as a string property.
+- **`conflictTarget` option** on `PrepOptions` for `upsert()` conflict column selection.
+
+### Fixed
+- **`withMembers.getMemberCount`** used raw `cast(count(*) as int)` SQL — PostgreSQL-only. Now uses drizzle-orm's dialect-agnostic `count()` function.
+- **`withCache`** read `store.name` for cache invalidation prefix, but `Store` type had no `name` property — silently produced `unknown:*` as the prefix. Fixed by adding `name` to `Store` and `Repository` types and including it in repository output.
+- **MySQL `array` type** silently fell back to JSON with no warning and `items` was ignored. Now emits a `console.warn` explaining the fallback.
+- **CLI `require` in ESM** — the Bun re-exec block used bare `require('node:child_process')` which fails under `tsx`/ESM. Now uses `createRequire()` for ESM compatibility.
+
 ## [0.11.0] — 2026-02-28
 
 ### Breaking
