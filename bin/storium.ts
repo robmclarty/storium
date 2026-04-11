@@ -1,10 +1,13 @@
 #!/usr/bin/env node
 
+import { createRequire, register } from 'node:module'
+
 // If we're under Node but Bun is available, re-exec with Bun
 // so that bun:-protocol imports (bun:sqlite, etc.) resolve.
 if (!('Bun' in globalThis)) {
-  const { execFileSync } = require('node:child_process')
   try {
+    const require = createRequire(import.meta.url)
+    const { execFileSync } = require('node:child_process')
     execFileSync('bun', process.argv.slice(1), { stdio: 'inherit' })
     process.exit(0)
   } catch {
@@ -25,8 +28,6 @@ if (!('Bun' in globalThis)) {
  * Reads configuration from drizzle.config.ts in the project root,
  * or a path specified via --config.
  */
-
-import { register } from 'node:module'
 
 // Register tsx as a loader so we can import .ts config and schema files.
 // tsx is expected as a devDependency in the user's project.
