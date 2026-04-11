@@ -419,6 +419,7 @@ export const createCreateRepository = (
     const { prep: _prep, ...crudMethods } = defaults
 
     const repository = {
+      name: meta.name,
       schemas: meta.schemas,
 
       // Default CRUD (overridden by customs where names match)

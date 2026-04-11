@@ -434,6 +434,8 @@ export type Store<
   TColumns extends ColumnsConfig = ColumnsConfig,
   TQueries extends QueriesConfig = {}
 > = DefaultCRUD<TColumns> & {
+  /** The table name this store operates on. */
+  name: string
   schemas: SchemaSet<TColumns>
 } & {
   [K in keyof TQueries]: TQueries[K] extends (ctx: any) => infer R ? R : never
@@ -456,6 +458,8 @@ export type Repository<
   TTableDef extends TableDef = TableDef,
   TQueries extends QueriesConfig = {}
 > = DefaultCRUD<TTableDef extends TableDef<infer C> ? C : ColumnsConfig> & {
+  /** The table name this repository operates on. */
+  name: string
   schemas: SchemaSet<TTableDef extends TableDef<infer C> ? C : ColumnsConfig>
 } & {
   [K in keyof TQueries]: TQueries[K] extends (ctx: any) => infer R ? R : never

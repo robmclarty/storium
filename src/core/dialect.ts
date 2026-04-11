@@ -90,7 +90,13 @@ const getMysqlMapping = (): DialectMapping => {
       timestamp: (name) => mysql.timestamp(name),
       date:      (name) => mysql.date(name),
       jsonb:     (name) => mysql.json(name),
-      array:     (name) => mysql.json(name),
+      array:     (name) => {
+        console.warn(
+          `[storium] Column '${name}': MySQL does not support native arrays. ` +
+          `Falling back to JSON column. The 'items' option will be ignored.`
+        )
+        return mysql.json(name)
+      },
     },
   }
 

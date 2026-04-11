@@ -21,7 +21,7 @@
  * await teams.getMemberCount(teamId)
  */
 
-import { eq, and, sql } from 'drizzle-orm'
+import { eq, and, sql, count } from 'drizzle-orm'
 import type { TableDef } from '../core/types'
 
 /**
@@ -129,7 +129,7 @@ export const withMembers = (
      */
     getMemberCount: (ctx: any) => async (collectionId: string | number): Promise<number> => {
       const rows = await ctx.drizzle
-        .select({ count: sql<number>`cast(count(*) as int)` })
+        .select({ count: count() })
         .from(joinTable)
         .where(eq(joinTable[foreignKey], collectionId))
 
