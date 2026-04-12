@@ -4,6 +4,21 @@ All notable changes to Storium are documented here.
 
 This project uses [Semantic Versioning](https://semver.org/). Pre-1.0 releases may include breaking changes in minor versions.
 
+## 0.14.0 - 11 Apr 2026
+
+- **BREAKING:** Remove `defineTable` DSL — users define tables with native Drizzle syntax (`pgTable`, `sqliteTable`, `mysqlTable`)
+- **BREAKING:** `defineStore(drizzleTable, config?)` is now the sole entry point for storium metadata
+- **BREAKING:** Remove `db.defineTable()` from StoriumInstance; `db.defineStore()` accepts raw Drizzle tables
+- **BREAKING:** `StoriumMeta` uses `.annotations` instead of `.columns`; remove `DslType`, `DslColumnConfig`, `ColumnsConfig`, and related types
+- **BREAKING:** Timestamps and indexes are no longer auto-injected — define them in Drizzle table definitions
+- **BREAKING:** Soft delete requires user-defined `deletedAt` column in Drizzle table
+- Add `ColumnAnnotation` and `StoreConfig` types for storium-specific column metadata
+- Add `src/core/introspect.ts` — maps Drizzle column metadata (`.dataType`, `.columnType`, `.length`) to Zod and JSON Schema types
+- Remove `dialect.ts`, `indexes.ts`, `defineTable.ts`, and `loadDialectFromConfig()`
+- `schemaCollector` now detects raw Drizzle table exports alongside StoreDefinitions
+- Add `coverage` script to package.json
+- Rewrite all 11 examples and 21 test files for the new API
+
 ## 0.13.5 - 11 Apr 2026
 
 - Add `defineTable(drizzleTable)` overload for wrapping existing Drizzle tables with Storium metadata
