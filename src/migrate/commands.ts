@@ -51,6 +51,7 @@ const run = (cmd: string, args: string[]): Promise<{ stdout: string; stderr: str
     let stderr = ''
     child.stdout.on('data', (d: Buffer) => { stdout += d })
     child.stderr.on('data', (d: Buffer) => { stderr += d })
+    child.on('error', reject)
     child.on('close', (code) => {
       if (code === 0) resolve({ stdout, stderr })
       else reject(Object.assign(new Error(`Exit code ${code}`), { stdout, stderr }))
