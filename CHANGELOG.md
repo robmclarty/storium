@@ -4,6 +4,21 @@ All notable changes to Storium are documented here.
 
 This project uses [Semantic Versioning](https://semver.org/). Pre-1.0 releases may include breaking changes in minor versions.
 
+## 0.14.8
+
+- Add multi-dialect integration tests for soft-delete, upsert, relationships, withMembers, and pagination
+- Add concurrency smoke tests (parallel creates, concurrent reads/writes, transaction isolation)
+- Add migration config loader unit tests and migrate() integration tests
+- Add connection lifecycle tests and pool configuration coverage
+- Add generate/push command smoke tests
+- Extend crud tests with createMany composite PK, complex WHERE clauses, and bulk findByIdIn
+- Extend transaction tests with UPDATE+SELECT within transaction scope
+- Add test table definitions for soft-delete users, profiles, and team members (all 3 dialects)
+- Document MySQL UPDATE+SELECT race condition on `updateAndReturn` with `{ tx }` recommendation
+- Document MySQL pool asymmetry (`pool.min` not supported by mysql2)
+- Add `@experimental` JSDoc tag to `withCache` export
+- Fix composite PK tests passing plain strings to UUID columns on PostgreSQL
+
 ## 0.14.7
 
 - Add `tsconfig.check.json` to include test files in typecheck, catching errors the build tsconfig missed
