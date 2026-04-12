@@ -4,6 +4,12 @@ All notable changes to Storium are documented here.
 
 This project uses [Semantic Versioning](https://semver.org/). Pre-1.0 releases may include breaking changes in minor versions.
 
+## 0.14.2
+
+- Rename `.schema.ts` files to `.table.ts` across examples and test fixtures — better reflects that these files hold Drizzle table definitions and drive migrations
+- Update all imports, config globs, and test expectations for the new `.table.ts` convention
+- Update documentation (README, AGENTS.md, migrations guide) for `.table.ts` file naming
+
 ## 0.14.1 - 11 Apr 2026
 
 - Fix TS2339 error on `.storium` access in from-drizzle example (cast to `any` for runtime-attached property)
