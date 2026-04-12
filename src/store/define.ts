@@ -43,6 +43,7 @@ import { SchemaError } from '../errors'
 import { buildSchemaSet } from '../schema/zod'
 import { isTable, getTableName } from 'drizzle-orm/table'
 import { getTableColumns } from 'drizzle-orm/utils'
+import type { Column } from 'drizzle-orm'
 
 // --------------------------------------------------------------- Types --
 
@@ -89,7 +90,7 @@ export const hasMeta = (value: unknown): boolean =>
  * that no column has conflicting readonly + hidden flags.
  */
 const validateAnnotations = (
-  drizzleCols: Record<string, any>,
+  drizzleCols: Record<string, Column>,
   annotations: ColumnAnnotations
 ) => {
   for (const [key, ann] of Object.entries(annotations)) {
@@ -118,7 +119,7 @@ const validateAnnotations = (
  * Derive access sets from Drizzle column metadata + storium annotations.
  */
 const deriveAccess = (
-  drizzleCols: Record<string, any>,
+  drizzleCols: Record<string, Column>,
   annotations: ColumnAnnotations
 ): TableAccess => {
   const allKeys = Object.keys(drizzleCols)
@@ -146,7 +147,7 @@ const deriveAccess = (
  */
 const detectPrimaryKey = (
   drizzleTable: any,
-  drizzleCols: Record<string, any>
+  drizzleCols: Record<string, Column>
 ): string | string[] | undefined => {
   // Check per-column .primary flag (single-column PKs defined inline)
   const pkColumns: string[] = []
