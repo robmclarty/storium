@@ -1,8 +1,8 @@
 import { defineStore } from 'storium'
 import { eq } from 'drizzle-orm'
-import { tagsTable } from './tag.schema.js'
-import { postTagsTable } from '../post-tags/post-tag.schema.js'
-import { postsTable } from '../posts/post.schema.js'
+import { tagsTable } from './tag.table.js'
+import { postTagsTable } from '../post-tags/post-tag.table.js'
+import { postsTable } from '../posts/post.table.js'
 
 export const tagStore = defineStore(tagsTable, {
   columns: {

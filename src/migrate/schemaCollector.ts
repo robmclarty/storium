@@ -11,8 +11,8 @@
  *
  * @example
  * const tables = await collectSchemas([
- *   './src/entities/**\/*.schema.ts',
- *   './src/collections/**\/*.schema.ts',
+ *   './src/entities/**\/*.table.ts',
+ *   './src/collections/**\/*.table.ts',
  * ])
  * // { users: <DrizzleTable>, teams: <DrizzleTable>, ... }
  */

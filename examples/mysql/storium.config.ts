@@ -13,7 +13,7 @@ import type { StoriumConfig } from 'storium'
 export default {
   dialect: 'mysql',
   dbCredentials: { url: process.env.DATABASE_URL! },
-  schema: ['./entities/**/*.schema.ts'],
+  schema: ['./entities/**/*.table.ts'],
   stores: ['./entities/**/*.store.ts'],
   out: './migrations',
   seeds: './seeds',

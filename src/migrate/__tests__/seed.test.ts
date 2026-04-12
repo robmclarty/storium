@@ -39,7 +39,7 @@ describe('seed runner', () => {
 
     const result = await seed(db, {
       dialect: 'memory',
-      schema: [path.join(fixturesDir, 'entities/*.schema.ts')],
+      schema: [path.join(fixturesDir, 'entities/*.table.ts')],
       stores: [path.join(fixturesDir, 'entities/*.store.ts')],
       seeds: path.join(fixturesDir, 'seeds'),
     })

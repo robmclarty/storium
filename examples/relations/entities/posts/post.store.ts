@@ -1,7 +1,7 @@
 import { defineStore, belongsTo, withMembers } from 'storium'
-import { postsTable } from './post.schema.js'
-import { authorsTable } from '../authors/author.schema.js'
-import { postTagsTable } from '../post-tags/post-tag.schema.js'
+import { postsTable } from './post.table.js'
+import { authorsTable } from '../authors/author.table.js'
+import { postTagsTable } from '../post-tags/post-tag.table.js'
 
 export const postStore = defineStore(postsTable, {
   columns: {

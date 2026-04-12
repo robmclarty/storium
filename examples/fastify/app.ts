@@ -19,7 +19,7 @@ import Fastify from 'fastify'
 import { storium } from 'storium'
 import { generate, migrate, seed, loadConfig } from 'storium/migrate'
 import { taskRoutes } from './routes/tasks.js'
-import { tasksTable } from './entities/tasks/task.schema.js'
+import { tasksTable } from './entities/tasks/task.table.js'
 
 // --- Setup: database + migrations + Fastify ---
 

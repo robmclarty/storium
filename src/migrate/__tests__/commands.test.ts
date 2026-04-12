@@ -21,10 +21,10 @@ describe('status', () => {
     const result = await status({
       dialect: 'memory',
       out: './no-such-migrations',
-      schema: [path.join(fixturesDir, 'entities/*.schema.ts')],
+      schema: [path.join(fixturesDir, 'entities/*.table.ts')],
     })
 
     expect(result.success).toBe(true)
-    expect(result.message).toContain('widget.schema.ts')
+    expect(result.message).toContain('widget.table.ts')
   })
 })

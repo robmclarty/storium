@@ -1,5 +1,5 @@
 import { defineStore } from 'storium'
-import { postTagsTable } from './post-tag.schema.js'
+import { postTagsTable } from './post-tag.table.js'
 
 export const postTagStore = defineStore(postTagsTable, {
   columns: {

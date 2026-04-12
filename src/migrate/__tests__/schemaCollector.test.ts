@@ -7,7 +7,7 @@ const fixturesDir = path.resolve(__dirname, 'fixtures')
 describe('collectSchemas', () => {
   it('collects Drizzle tables from schema files', async () => {
     const schemas = await collectSchemas(
-      path.join(fixturesDir, 'entities/*.schema.ts')
+      path.join(fixturesDir, 'entities/*.table.ts')
     )
 
     expect(schemas).toHaveProperty('widgets')
@@ -23,7 +23,7 @@ describe('collectSchemas', () => {
 
   it('handles multiple glob patterns', async () => {
     const schemas = await collectSchemas([
-      path.join(fixturesDir, 'entities/*.schema.ts'),
+      path.join(fixturesDir, 'entities/*.table.ts'),
       path.join(fixturesDir, 'entities/*.store.ts'),
     ])
 
@@ -37,7 +37,7 @@ describe('collectSchemas', () => {
 
   it('deduplicates tables by name', async () => {
     const schemas = await collectSchemas([
-      path.join(fixturesDir, 'entities/*.schema.ts'),
+      path.join(fixturesDir, 'entities/*.table.ts'),
       path.join(fixturesDir, 'entities/*.store.ts'),
     ])
 

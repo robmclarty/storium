@@ -1,5 +1,5 @@
 import { defineStore } from 'storium'
-import { authorsTable } from './author.schema.js'
+import { authorsTable } from './author.table.js'
 
 export const authorStore = defineStore(authorsTable, {
   columns: {

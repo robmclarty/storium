@@ -1,5 +1,5 @@
 import { defineStore } from 'storium'
-import { postsTable } from './post.schema.js'
+import { postsTable } from './post.table.js'
 import {
   findByAuthor,
   findPublished,
