@@ -83,7 +83,7 @@ If `validateRequired` is true (the default for `create`), columns with `required
 
 | Option | Default (create) | Default (update) | Description |
 |--------|-------------------|-------------------|-------------|
-| `force` | `false` | `false` | Skip entire pipeline — pass input through raw. |
+| `skipPrep` | `false` | `false` | Skip entire pipeline — pass input through unprocessed. |
 | `validateRequired` | `true` | `false` | Enforce required field checks. |
 | `onlyWritable` | `false` | `true` | Strip readonly columns from input. |
 
@@ -236,13 +236,25 @@ try {
 
 The `.errors` array contains all field-level errors — multiple problems are reported in a single throw, not one at a time.
 
-## Bypassing Validation
+## Pipeline Stages
 
-Pass `{ force: true }` to skip the entire prep pipeline:
+The prep pipeline runs five stages in order on every write operation:
+
+1. **Resolve** — Await any Promise values in the input (e.g., from `ref()`)
+2. **Filter** — Remove unknown keys; optionally restrict to writable columns only
+3. **Transform** — Run column `transform` functions (sanitization, hashing, enrichment)
+4. **Validate** — Type checks + custom `validate` callbacks; accumulates all errors before throwing
+5. **Required** — Ensure all `required` columns have defined values
+
+All errors from stages 3–5 are collected into a single `ValidationError` with a `.errors` array, so consumers see every problem in one round trip.
+
+## Bypassing the Pipeline
+
+Pass `{ skipPrep: true }` to skip all five stages:
 
 ```typescript
 // Skip all validation, transforms, and required checks
-await users.create({ id: 'custom', email: 'raw' }, { force: true })
+await users.create({ id: 'custom', email: 'raw' }, { skipPrep: true })
 ```
 
-Use this for seeding, migrations, or internal operations where you trust the input.
+Use this for seeding, migrations, or internal operations where you trust the input. Note that `skipPrep` is only available inside custom queries (via `ctx` methods), not on the public store API.

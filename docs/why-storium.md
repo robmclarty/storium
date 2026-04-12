@@ -59,7 +59,7 @@ into a corner:
   the underlying Zod schema for composition, extension, or override.
 - **Instance-level**: Access the raw Drizzle instance via `db.drizzle`, or
   bring your own with `fromDrizzle()`.
-- **Pipeline-level**: Pass `force: true` to any write operation to skip the
+- **Pipeline-level**: Pass `skipPrep: true` to any write operation to skip the
   entire prep pipeline.
 
 The goal is that ~80% of your work stays in Storium's DSL, ~15% uses custom
@@ -120,7 +120,7 @@ scattered across service files.
 The prep pipeline — filter, transform, validate, required — isn't just
 convenient, it's an opinion about correctness that every write path follows. A
 new engineer can't accidentally skip validation because the pipeline runs
-automatically. They have to opt out with `force: true`, which is grep-able and
+automatically. They have to opt out with `skipPrep: true`, which is grep-able and
 reviewable.
 
 Making the wrong thing hard to do silently is exactly what team infrastructure

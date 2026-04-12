@@ -65,7 +65,7 @@ const userStore = defineStore(usersTable).queries({
   // Override create — hash password before insert
   create: (ctx) => async (input, opts) => {
     const hashed = { ...input, password: await hash(input.password) }
-    return ctx.create(hashed, { ...opts, force: true })
+    return ctx.create(hashed, { ...opts, skipPrep: true })
   },
 
   // Override update — set updated_at automatically
@@ -194,5 +194,5 @@ Mixins compose with each other and with Storium's built-in mixins (`withBelongsT
 
 - **Use `ctx.selectColumns`** in raw Drizzle selects to exclude `hidden` columns automatically.
 - **Return from `ctx` methods** rather than reimplementing CRUD — you get prep pipeline validation for free.
-- **Pass `{ force: true }`** when calling `ctx.create` or `ctx.update` with pre-validated data to skip the pipeline.
+- **Pass `{ skipPrep: true }`** when calling `ctx.create` or `ctx.update` with pre-validated data to skip the pipeline.
 - **Typing `ctx` in separate files**: Queries defined inline in `defineStore()` get full `ctx` inference automatically. For queries in separate files, import and annotate: `(ctx: Ctx) =>`. This matches the same pattern as Fastify handlers — inline gets inference, imported gets explicit typing. The same applies to `transform` and `validate` callbacks pulled into separate files (`TestFn` is exported for `validate`'s second parameter).

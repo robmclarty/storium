@@ -121,7 +121,7 @@ Migration tooling — heavier dependencies, opt-in import.
 | `store.destroyAll(filters, opts?)` | Delete all rows matching filters (requires at least one filter to prevent accidental full-table deletion). |
 | `store.count(filters?, opts?)` | Count rows matching filters. Supports `where` callback. |
 | `store.exists(filters, opts?)` | Check if any row matches filters. Returns `boolean`. |
-| `store.ref(filter, opts?)` | Look up a row by filter and return its primary key value. Throws `StoreError` if not found. |
+| `store.ref(filter, opts?)` | Look up a row by filter and return its primary key value as a Promise. Throws `StoreError` if not found. Designed for foreign key resolution — embed directly in `create()` calls: `await posts.create({ author_id: users.ref({ email: 'alice@example.com' }) })`. The prep pipeline's Resolve stage automatically awaits the Promise. |
 
 ### Soft Delete Methods
 
@@ -224,7 +224,7 @@ Each schema variant (`createSchema`, `updateSchema`, `selectSchema`, `fullSchema
 | `Ctx<T, TColumns, D>` | Shorthand alias for `RepositoryContext`. For inline queries, `(ctx) =>` gets full inference. For queries in separate files, use `(ctx: Ctx) =>`. |
 | `CustomQueryFn<T, D>` | `(ctx: RepositoryContext<T, ..., D>) => (...args) => any` — a custom query factory function. |
 | `QueriesConfig` | `Record<string, (ctx: any) => (...args) => any>` — constraint type for custom query records. Uses `ctx: any` so mixins work across dialects. |
-| `PrepOptions` | Options for CRUD operations: `force`, `validateRequired`, `onlyWritable`, `tx`, `limit`, `offset`, `orderBy`, `includeHidden`. |
+| `PrepOptions` | Options for CRUD operations: `skipPrep`, `validateRequired`, `onlyWritable`, `tx`, `limit`, `offset`, `orderBy`, `includeHidden`. |
 
 ### Schema & Validation
 

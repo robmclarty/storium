@@ -165,13 +165,13 @@ try {
   }
 }
 
-// --- force: true skips the entire pipeline ---
+// --- skipPrep: true skips the entire pipeline ---
 
-console.log('\n=== Force mode ===')
+console.log('\n=== Skip prep mode ===')
 
 const forceBypass = { price: -100 }
-const forced = await products.update(widget.id, forceBypass, { force: true })
-console.log('Force-updated (pipeline skipped):', forced)
+const forced = await products.update(widget.id, forceBypass, { skipPrep: true })
+console.log('Updated (pipeline skipped):', forced)
 
 // --- Runtime schemas ---
 
