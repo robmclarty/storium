@@ -343,7 +343,7 @@ export const fromDrizzle = <DB extends DrizzleDatabase>(
   drizzleDb: DB,
   options: FromDrizzleOptions = {}
 ): StoriumInstance<InferDialect<DB>> => {
-  const dialect = inferDialect(drizzleDb) as InferDialect<DB>
+  const dialect = (options.dialect ?? inferDialect(drizzleDb)) as InferDialect<DB>
 
   return buildInstance<InferDialect<DB>>(
     drizzleDb as unknown as DrizzleDatabase<InferDialect<DB>>,

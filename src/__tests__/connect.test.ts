@@ -44,6 +44,16 @@ describe('fromDrizzle', () => {
     expect(() => storium.fromDrizzle(null)).toThrow(ConfigError)
   })
 
+  it('uses explicit dialect when provided, bypassing inference', () => {
+    const sqlite = new Database(':memory:')
+    const drizzleDb = drizzle(sqlite)
+
+    const db = storium.fromDrizzle(drizzleDb, { dialect: 'sqlite' })
+    expect(db.dialect).toBe('sqlite')
+
+    sqlite.close()
+  })
+
   it('accepts assertions option', () => {
     const sqlite = new Database(':memory:')
     const drizzleDb = drizzle(sqlite)
