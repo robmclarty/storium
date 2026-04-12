@@ -4,6 +4,16 @@ All notable changes to Storium are documented here.
 
 This project uses [Semantic Versioning](https://semver.org/). Pre-1.0 releases may include breaking changes in minor versions.
 
+## 0.14.3
+
+- Remove orphaned `uuidv7` module (Drizzle's `$defaultFn` handles UUID generation)
+- Rename `test.ts` → `assertions.ts` to avoid naming collision with test frameworks
+- Merge `runtime.schema.ts` and `zod.schema.ts` into single `schema.ts` module
+- Dissolve `introspect.ts` — inlined into `schema.ts`, `json.schema.ts`, and `prep.ts`
+- Fold `relatedQuery.ts` into `hasMany.ts` (shared helpers exported for `hasOne`)
+- Move `configLoader.ts` from `src/core/` to `src/migrate/` (only used by CLI/migrations)
+- Rename camelCase files to dot notation convention
+
 ## 0.14.2
 
 - Rename `.schema.ts` files to `.table.ts` across examples and test fixtures — better reflects that these files hold Drizzle table definitions and drive migrations
