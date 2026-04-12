@@ -24,7 +24,7 @@ import type {
   DrizzleColumn,
 } from '../types'
 import { ValidationError } from '../errors'
-import { createTestFn } from './assertions'
+import { createTestFn } from '../assertions'
 import { getTableColumns } from 'drizzle-orm/utils'
 
 // -------------------------------------------------------- Data Type Checks --

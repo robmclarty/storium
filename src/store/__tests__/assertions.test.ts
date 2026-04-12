@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from 'vitest'
-import { createTestFn, createAssertionRegistry, BUILTIN_ASSERTIONS } from '../assertions'
+import { createTestFn, createAssertionRegistry, BUILTIN_ASSERTIONS } from '../../assertions'
 
 describe('built-in assertions', () => {
   const errors: Array<{ field: string; message: string }> = []
