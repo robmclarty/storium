@@ -4,6 +4,14 @@ All notable changes to Storium are documented here.
 
 This project uses [Semantic Versioning](https://semver.org/). Pre-1.0 releases may include breaking changes in minor versions.
 
+## [0.13.3] — 2026-04-11
+
+- Fix all fallow dead code, duplication, and complexity issues (41 → 0)
+- Remove 14 dead re-exports from core barrel, unexport internal-only types
+- Extract shared helpers to deduplicate mixins and createRepository
+- Refactor `deriveAccess` and `buildConnectionUrl` to reduce cyclomatic complexity
+- Switch `lint:fallow` from `--fail-on-regression` to `--fail-on-issues`
+
 ## [0.13.2] — 2026-04-11
 
 - Add fallow for dead code, duplication, and complexity analysis with regression baseline
