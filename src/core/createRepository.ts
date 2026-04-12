@@ -23,7 +23,7 @@
  * })
  */
 
-import { eq, and, inArray, asc, desc, sql, count as drizzleCount } from 'drizzle-orm'
+import { eq, and, inArray, asc, desc, sql, count as drizzleCount, isNull } from 'drizzle-orm'
 import { z } from 'zod'
 import type {
   Dialect,
@@ -73,6 +73,7 @@ const buildDefaultCrud = (
   dialect: Dialect
 ) => {
   const { selectColumns, allColumns, primaryKey: rawPk, access, columns, name: tableName } = tableDef.storium
+  const softDelete = tableDef.storium.softDelete === true
   if (rawPk === undefined) {
     throw new StoreError(
       `Table '${tableName}' has no primary key. Define a column with ` +
@@ -111,9 +112,16 @@ const buildDefaultCrud = (
   /**
    * Build a combined WHERE clause from equality filters and an optional
    * `where` callback in opts. Returns undefined if no conditions exist.
+   * When soft delete is enabled, automatically adds `deletedAt IS NULL`
+   * unless `skipSoftDelete` is true.
    */
-  const buildWhere = (filters: Record<string, any>, opts?: PrepOptions) => {
+  const buildWhere = (filters: Record<string, any>, opts?: PrepOptions, skipSoftDelete = false) => {
     const conditions: any[] = []
+
+    // Auto-filter soft-deleted rows unless explicitly skipped
+    if (softDelete && !skipSoftDelete) {
+      conditions.push(isNull(table.deletedAt))
+    }
 
     for (const [key, value] of Object.entries(filters)) {
       conditions.push(eq(table[key], value))
@@ -151,7 +159,12 @@ const buildDefaultCrud = (
   const findAll = async (opts?: PrepOptions) => {
     let q = getDb(opts).select(getCols(opts)).from(table)
 
-    if (opts?.where) q = q.where(opts.where(table))
+    const conditions: any[] = []
+    if (softDelete) conditions.push(isNull(table.deletedAt))
+    if (opts?.where) conditions.push(opts.where(table))
+    if (conditions.length > 0) {
+      q = q.where(conditions.length === 1 ? conditions[0] : and(...conditions))
+    }
     if (opts?.orderBy) q = applyOrderBy(q, opts.orderBy)
     if (opts?.limit !== undefined) q = q.limit(opts.limit)
     if (opts?.offset !== undefined) q = q.offset(opts.offset)
@@ -165,10 +178,15 @@ const buildDefaultCrud = (
   }
 
   const findById = async (id: PkValue, opts?: PrepOptions) => {
+    const pkCondition = buildPkWhere(table, primaryKey, id)
+    const where = softDelete
+      ? and(pkCondition, isNull(table.deletedAt))
+      : pkCondition
+
     const rows = await getDb(opts)
       .select(getCols(opts))
       .from(table)
-      .where(buildPkWhere(table, primaryKey, id))
+      .where(where)
       .limit(1)
 
     return rows[0] ?? null
@@ -182,10 +200,15 @@ const buildDefaultCrud = (
     }
     if (ids.length === 0) return []
 
+    const inCondition = inArray(table[primaryKey], ids)
+    const where = softDelete
+      ? and(inCondition, isNull(table.deletedAt))
+      : inCondition
+
     let q = getDb(opts)
       .select(getCols(opts))
       .from(table)
-      .where(inArray(table[primaryKey], ids))
+      .where(where)
 
     if (opts?.orderBy) q = applyOrderBy(q, opts.orderBy)
 
@@ -484,6 +507,117 @@ const buildDefaultCrud = (
     }
 
     return rows[0]
+  }
+
+  // Soft delete overrides
+  if (softDelete) {
+    const hardDestroy = destroy
+    const hardDestroyAll = destroyAll
+
+    const softDestroy = async (id: PkValue, opts?: PrepOptions) => {
+      await getDb(opts)
+        .update(table)
+        .set({ deletedAt: new Date() })
+        .where(buildPkWhere(table, primaryKey, id))
+    }
+
+    const softDestroyAll = async (filters: Record<string, any>, opts?: PrepOptions) => {
+      const entries = Object.entries(filters)
+
+      if (entries.length === 0 && !opts?.where) {
+        throw new StoreError(
+          'destroyAll() requires at least one filter or a where clause to prevent accidental deletion of all rows.'
+        )
+      }
+
+      const result = await getDb(opts)
+        .update(table)
+        .set({ deletedAt: new Date() })
+        .where(buildWhere(filters, opts))
+
+      return result.rowCount ?? result.affectedRows ?? result.changes ?? 0
+    }
+
+    const restore = async (id: PkValue, opts?: PrepOptions) => {
+      if (dialect === 'postgresql' || dialect === 'sqlite' || dialect === 'memory') {
+        const rows = await getDb(opts)
+          .update(table)
+          .set({ deletedAt: null })
+          .where(buildPkWhere(table, primaryKey, id))
+          .returning(getCols(opts))
+
+        if (!rows[0]) {
+          throw new StoreError(
+            `restore(): no '${tableName}' row with ${primaryKey} = ${id}.`
+          )
+        }
+        return rows[0]
+      }
+
+      // MySQL: update then select
+      await getDb(opts)
+        .update(table)
+        .set({ deletedAt: null })
+        .where(buildPkWhere(table, primaryKey, id))
+
+      const rows = await getDb(opts)
+        .select(getCols(opts))
+        .from(table)
+        .where(buildPkWhere(table, primaryKey, id))
+        .limit(1)
+
+      if (!rows[0]) {
+        throw new StoreError(
+          `restore(): no '${tableName}' row with ${primaryKey} = ${id}.`
+        )
+      }
+      return rows[0]
+    }
+
+    const findWithDeleted = async (filters?: Record<string, any>, opts?: PrepOptions) => {
+      if (!filters || Object.keys(filters).length === 0) {
+        // findAll variant — no filters
+        let q = getDb(opts).select(getCols(opts)).from(table)
+        if (opts?.where) q = q.where(opts.where(table))
+        if (opts?.orderBy) q = applyOrderBy(q, opts.orderBy)
+        if (opts?.limit !== undefined) q = q.limit(opts.limit)
+        if (opts?.offset !== undefined) q = q.offset(opts.offset)
+        return q
+      }
+
+      // find variant — with filters, but no soft delete filter
+      let q = getDb(opts)
+        .select(getCols(opts))
+        .from(table)
+        .where(buildWhere(filters, opts, true))
+
+      if (opts?.orderBy) q = applyOrderBy(q, opts.orderBy)
+      if (opts?.limit !== undefined) q = q.limit(opts.limit)
+      if (opts?.offset !== undefined) q = q.offset(opts.offset)
+      return q
+    }
+
+    return {
+      prep,
+      find,
+      findAll,
+      findOne,
+      findById,
+      findByIdIn,
+      create,
+      createMany,
+      update,
+      upsert,
+      destroy: softDestroy,
+      destroyAll: softDestroyAll,
+      count,
+      exists,
+      ref,
+      restore,
+      forceDestroy: hardDestroy,
+      forceDestroyAll: hardDestroyAll,
+      findWithDeleted,
+    }
   }
 
   return {
