@@ -31,8 +31,8 @@
       "**/__tests__/**",
       "src/mixins/hasMany.ts",
       "src/mixins/hasOne.ts",
-      "src/core/schema.ts",
-      "src/core/json.schema.ts"
+      "src/schema/zod.ts",
+      "src/schema/json.ts"
     ]
   },
   "health": {
