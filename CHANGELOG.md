@@ -4,6 +4,14 @@ All notable changes to Storium are documented here.
 
 This project uses [Semantic Versioning](https://semver.org/). Pre-1.0 releases may include breaking changes in minor versions.
 
+## 0.14.12
+
+- Replace `inferDialect()` constructor name matching with Drizzle's stable `is()` utility (entityKind symbol) — survives bundlers/minifiers
+- Fix MySQL `create`, `createMany`, and `upsert`: resolve `$defaultFn` for PK columns before INSERT so the follow-up SELECT finds the row
+- Fix MySQL `destroyAll` and `softDestroyAll`: read `affectedRows` from MySQL's `[ResultSetHeader, FieldPacket[]]` tuple result
+- Fix `withMembers.removeMember` MySQL result parsing (same tuple issue)
+- Fix integration test config: add `hookTimeout` for container startup, fix `storium/migrate` alias
+
 ## 0.14.11
 
 - Type ctx CRUD methods with PrepOptions instead of QueryOptions so custom query factories can pass escape hatches (includeHidden, skipPrep) without casting
