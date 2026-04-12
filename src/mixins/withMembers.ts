@@ -23,6 +23,7 @@
 
 import { eq, and, sql, count } from 'drizzle-orm'
 import type { TableDef } from '../types'
+import { StoreError } from '../errors'
 import { supportsReturning } from '../store/repository'
 
 /**
@@ -50,8 +51,10 @@ export const withMembers = (
     addMember: (ctx: any) => async (
       collectionId: string | number,
       memberId: string | number,
-      extra: Record<string, any> = {}
+      extra: Record<string, any> = {},
+      opts?: { tx?: any }
     ) => {
+      const db = opts?.tx ?? ctx.drizzle
       const values = {
         [foreignKey]: collectionId,
         [memberKey]: memberId,
@@ -59,7 +62,7 @@ export const withMembers = (
       }
 
       if (supportsReturning(ctx.dialect)) {
-        const rows = await ctx.drizzle
+        const rows = await db
           .insert(joinTable)
           .values(values)
           .returning()
@@ -68,8 +71,8 @@ export const withMembers = (
       }
 
       // MySQL: no RETURNING — insert then select back
-      await ctx.drizzle.insert(joinTable).values(values)
-      const rows = await ctx.drizzle
+      await db.insert(joinTable).values(values)
+      const rows = await db
         .select()
         .from(joinTable)
         .where(and(
@@ -78,30 +81,56 @@ export const withMembers = (
         ))
         .limit(1)
 
+      if (!rows[0]) {
+        throw new StoreError(
+          `addMember(): INSERT into join table succeeded but the follow-up SELECT found no matching row.`
+        )
+      }
+
       return rows[0]
     },
 
     /**
      * Remove a member from the collection.
+     * Throws StoreError if no membership row was found.
      */
     removeMember: (ctx: any) => async (
       collectionId: string | number,
-      memberId: string | number
+      memberId: string | number,
+      opts?: { tx?: any }
     ) => {
-      await ctx.drizzle
-        .delete(joinTable)
-        .where(and(
-          eq(joinTable[foreignKey], collectionId),
-          eq(joinTable[memberKey], memberId),
-        ))
+      const db = opts?.tx ?? ctx.drizzle
+      const condition = and(
+        eq(joinTable[foreignKey], collectionId),
+        eq(joinTable[memberKey], memberId),
+      )
+
+      if (supportsReturning(ctx.dialect)) {
+        const rows = await db.delete(joinTable).where(condition).returning()
+        if (!rows[0]) {
+          throw new StoreError(
+            `removeMember(): no membership row found for ${foreignKey}=${collectionId}, ${memberKey}=${memberId}.`
+          )
+        }
+        return
+      }
+
+      // MySQL: check affected rows
+      const result = await db.delete(joinTable).where(condition)
+      if ((result.affectedRows ?? 0) === 0) {
+        throw new StoreError(
+          `removeMember(): no membership row found for ${foreignKey}=${collectionId}, ${memberKey}=${memberId}.`
+        )
+      }
     },
 
     /**
      * Get all members of a collection. Returns rows from the join table.
      * For richer results (with member details), use a custom query with JOINs.
      */
-    getMembers: (ctx: any) => async (collectionId: string | number) => {
-      return ctx.drizzle
+    getMembers: (ctx: any) => async (collectionId: string | number, opts?: { tx?: any }) => {
+      const db = opts?.tx ?? ctx.drizzle
+      return db
         .select()
         .from(joinTable)
         .where(eq(joinTable[foreignKey], collectionId))
@@ -112,9 +141,11 @@ export const withMembers = (
      */
     isMember: (ctx: any) => async (
       collectionId: string | number,
-      memberId: string | number
+      memberId: string | number,
+      opts?: { tx?: any }
     ): Promise<boolean> => {
-      const rows = await ctx.drizzle
+      const db = opts?.tx ?? ctx.drizzle
+      const rows = await db
         .select({ exists: sql<number>`1` })
         .from(joinTable)
         .where(and(
@@ -129,8 +160,9 @@ export const withMembers = (
     /**
      * Count the members in a collection.
      */
-    getMemberCount: (ctx: any) => async (collectionId: string | number): Promise<number> => {
-      const rows = await ctx.drizzle
+    getMemberCount: (ctx: any) => async (collectionId: string | number, opts?: { tx?: any }): Promise<number> => {
+      const db = opts?.tx ?? ctx.drizzle
+      const rows = await db
         .select({ count: count() })
         .from(joinTable)
         .where(eq(joinTable[foreignKey], collectionId))

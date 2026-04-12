@@ -17,8 +17,9 @@
  * introducing circular imports between mixins and types.ts.
  */
 
-import { eq, and, asc, desc, type SQL, type Column } from 'drizzle-orm'
+import { eq, and, asc, desc, isNull, type SQL, type Column } from 'drizzle-orm'
 import type { TableDef, OrderBySpec } from '../types'
+import { StoreError } from '../errors'
 
 // -------------------------------------------------- Shared Relation Helpers --
 
@@ -31,9 +32,13 @@ export function buildRelatedSelect(
 ): Record<string, Column> {
   const selectObj: Record<string, Column> = {}
   for (const col of columns) {
-    if (col in relatedTable) {
-      selectObj[col] = relatedTable[col]
+    if (!(col in relatedTable)) {
+      throw new StoreError(
+        `Unknown column '${col}' on related table '${relatedTable.storium.name}'. ` +
+        `Valid columns: ${relatedTable.storium.access.selectable.join(', ')}`
+      )
     }
+    selectObj[col] = relatedTable[col]
   }
   return selectObj
 }
@@ -49,6 +54,9 @@ export function buildRelatedWhere(
   opts?: { where?: (t: any) => SQL | undefined }
 ) {
   const conditions = [eq(relatedTable[foreignKey], id)]
+  if (relatedTable.storium?.softDelete && 'deletedAt' in relatedTable) {
+    conditions.push(isNull(relatedTable.deletedAt))
+  }
   if (opts?.where) {
     const clause = opts.where(relatedTable)
     if (clause) conditions.push(clause)

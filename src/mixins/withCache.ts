@@ -92,14 +92,20 @@ const wrapWithCache = (
 const wrapWithInvalidation = (
   originalFn: (...args: unknown[]) => Promise<unknown>,
   cache: CacheAdapter,
-  tableName: string
+  tableName: string,
+  onError?: (err: unknown) => void
 ) => {
   return async (...args: unknown[]) => {
     const result = await originalFn(...args)
 
     // Invalidate all cache entries for this table
     // Convention: all keys for a table share a common prefix
-    await cache.delPattern(`${tableName}:*`)
+    try {
+      await cache.delPattern(`${tableName}:*`)
+    } catch (err) {
+      // DB write already succeeded — don't throw on cache invalidation failure
+      if (onError) onError(err)
+    }
 
     return result
   }
@@ -124,7 +130,8 @@ const wrapWithInvalidation = (
 export const withCache = <T extends Record<string, any>>(
   store: T,
   cache: CacheAdapter,
-  config: CacheConfig
+  config: CacheConfig,
+  opts?: { onError?: (err: unknown) => void }
 ): T => {
   const tableName = store.name ?? 'unknown'
   const result = { ...store }
@@ -151,7 +158,8 @@ export const withCache = <T extends Record<string, any>>(
     ;(result as any)[method] = wrapWithInvalidation(
       original.bind(store),
       cache,
-      tableName
+      tableName,
+      opts?.onError
     )
   }
 

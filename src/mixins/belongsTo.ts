@@ -23,8 +23,9 @@
  * introducing circular imports between mixins and types.ts.
  */
 
-import { eq, type Column } from 'drizzle-orm'
+import { eq, and, isNull, type Column } from 'drizzle-orm'
 import type { TableDef } from '../types'
+import { StoreError } from '../errors'
 
 type BelongsToOptions<A extends string = string> = {
   /** The alias for the related entity (used in the method name: findWith{Alias}). */
@@ -67,18 +68,25 @@ export const belongsTo = <A extends string>(
       const selectObj: Record<string, Column> = { ...ctx.selectColumns }
 
       for (const col of relatedColumns) {
-        if (col in relatedTable) {
-          selectObj[`${alias}_${col}`] = relatedTable[col]
+        if (!(col in relatedTable)) {
+          throw new StoreError(
+            `Unknown column '${col}' on related table '${meta.name}'. ` +
+            `Valid columns: ${meta.access.selectable.join(', ')}`
+          )
         }
+        selectObj[`${alias}_${col}`] = relatedTable[col]
+      }
+
+      // Add soft-delete filter to JOIN ON when the related table uses soft delete
+      let joinCondition: any = eq(ctx.table[foreignKey], relatedTable[relatedPk])
+      if (meta.softDelete && 'deletedAt' in relatedTable) {
+        joinCondition = and(joinCondition, isNull(relatedTable.deletedAt))
       }
 
       const rows = await ctx.drizzle
         .select(selectObj)
         .from(ctx.table)
-        .leftJoin(
-          relatedTable,
-          eq(ctx.table[foreignKey], relatedTable[relatedPk])
-        )
+        .leftJoin(relatedTable, joinCondition)
         .where(eq(ctx.table[ctx.primaryKey as string], id))
         .limit(1)
 
