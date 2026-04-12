@@ -25,7 +25,16 @@
  * const users = dt('users').columns({ ... }).indexes({ email: { unique: true } })
  *
  * @example
- * // 4. Chain methods — indexes, access, primaryKey, timestamps
+ * // 4. Wrap existing Drizzle table — no DSL, full Drizzle control
+ * import { pgTable, uuid, varchar } from 'drizzle-orm/pg-core'
+ * const drizzleUsers = pgTable('users', {
+ *   id: uuid('id').primaryKey(),
+ *   email: varchar('email', { length: 255 }).notNull(),
+ * })
+ * const users = defineTable(drizzleUsers).access({ readonly: ['email'] })
+ *
+ * @example
+ * // 5. Chain methods — indexes, access, primaryKey, timestamps
  * const posts = defineTable('posts')
  *   .columns({ id: { type: 'uuid', primaryKey: true }, title: { type: 'varchar' } })
  *   .indexes({ title: {} })
@@ -40,6 +49,7 @@
 import type {
   Dialect,
   ColumnsConfig,
+  RawColumnConfig,
   TableBuilderConfig,
   TableDef,
   TableAccess,
@@ -80,6 +90,8 @@ import { getDialectMapping, buildDslColumn } from './dialect'
 import { buildIndexes } from './indexes'
 import { buildSchemaSet } from './runtimeSchema'
 import { loadDialectFromConfig } from './configLoader'
+import { isTable, getTableName } from 'drizzle-orm/table'
+import { getTableColumns } from 'drizzle-orm/utils'
 
 // ------------------------------------------------------------ Helpers --
 
@@ -403,6 +415,101 @@ const attachChainMethods = (table: any, config: BuildConfig) => {
   )
 }
 
+// ------------------------------------------------------ Table Wrapping --
+
+/**
+ * Options for wrapping an existing Drizzle table with Storium metadata.
+ */
+type WrapTableOptions = {
+  /** Table-level access overrides. */
+  access?: AccessConfig
+}
+
+/**
+ * Wrap an existing Drizzle table with Storium metadata.
+ * Does NOT rebuild the table — uses it as-is, attaching `.storium`
+ * as a non-enumerable property.
+ *
+ * Each Drizzle column becomes a `{ raw: () => column }` entry in
+ * ColumnsConfig, so Zod schemas default to `z.any()`. For typed
+ * validation, use the DSL via `defineTable('name').columns({...})`.
+ */
+const wrapTable = (
+  drizzleTable: any,
+  options: WrapTableOptions = {}
+): TableDef<ColumnsConfig> => {
+  if (!isTable(drizzleTable)) {
+    throw new SchemaError(
+      'defineTable(): expected a Drizzle table (from pgTable/sqliteTable/mysqlTable). ' +
+      `Got: ${typeof drizzleTable}`
+    )
+  }
+
+  const name = getTableName(drizzleTable)
+  const drizzleCols = getTableColumns(drizzleTable)
+
+  // Build ColumnsConfig: each Drizzle column becomes a raw entry
+  const columns: ColumnsConfig = {}
+  const pkColumns: string[] = []
+
+  for (const [key, col] of Object.entries(drizzleCols) as [string, any][]) {
+    const colRef = col
+    columns[key] = { raw: () => colRef } as RawColumnConfig
+    if (col.primary) pkColumns.push(key)
+  }
+
+  // Detect primary key
+  const primaryKey = pkColumns.length === 1
+    ? pkColumns[0]!
+    : pkColumns.length > 1
+      ? pkColumns
+      : ('id' in columns ? 'id' : undefined)
+
+  // Derive access and build schemas
+  const access = deriveAccess(columns, options.access)
+  const allKeys = Object.keys(columns)
+  const selectColumns = buildSelectColumns(drizzleTable, access.selectable)
+  const allColumns = buildSelectColumns(drizzleTable, allKeys)
+  const schemas = buildSchemaSet(columns, access) as SchemaSet<ColumnsConfig>
+
+  // Attach storium metadata (non-enumerable, same pattern as buildTable)
+  Object.defineProperty(drizzleTable, 'storium', {
+    value: { columns, access, selectColumns, allColumns, primaryKey, name, schemas, softDelete: false },
+    enumerable: false,
+    configurable: true,
+    writable: false,
+  })
+
+  // .access() re-wraps with updated config
+  const define = (propName: string, fn: (...args: any[]) => any) => {
+    Object.defineProperty(drizzleTable, propName, {
+      value: fn,
+      enumerable: false,
+      configurable: true,
+      writable: false,
+    })
+  }
+
+  define('access', (accessConfig: AccessConfig) =>
+    wrapTable(drizzleTable, { ...options, access: accessConfig })
+  )
+
+  // Unsupported chain methods throw clear errors
+  const unsupported = (method: string) => () => {
+    throw new SchemaError(
+      `${method}() cannot be used on a wrapped Drizzle table. ` +
+      'Define indexes, primary keys, timestamps, and soft delete ' +
+      'directly in your Drizzle table definition.'
+    )
+  }
+  define('indexes', unsupported('indexes'))
+  define('primaryKey', unsupported('primaryKey'))
+  define('timestamps', unsupported('timestamps'))
+  define('softDelete', unsupported('softDelete'))
+
+  return drizzleTable as unknown as TableDef<ColumnsConfig>
+}
+
 // -------------------------------------------------------- Internal API --
 
 const DIALECTS = new Set<string>(['postgresql', 'mysql', 'sqlite', 'memory'])
@@ -459,16 +566,23 @@ type BoundDefineTable = (name: string) => {
 /**
  * Define a database table with co-located column metadata.
  *
- * Three call signatures:
+ * Four call signatures:
  *
  * 1. `defineTable('users').columns({ ... })` — auto-loads dialect from drizzle.config.ts
  * 2. `defineTable('postgresql')('users').columns({ ... })` — explicit dialect
  * 3. `defineTable()` — auto-loads dialect, returns reusable bound function
+ * 4. `defineTable(drizzleTable)` — wraps an existing Drizzle table with storium metadata
  */
 export function defineTable(): BoundDefineTable
 export function defineTable(dialect: Dialect): BoundDefineTable
 export function defineTable(name: string): { columns: <TColumns extends ColumnsConfig>(columns: TColumns) => TableDef<TColumns & TimestampColumns> }
-export function defineTable(first?: string) {
+export function defineTable(table: object): TableDef<ColumnsConfig>
+export function defineTable(first?: string | object) {
+  // Overload 4: Drizzle table object → wrap with storium metadata
+  if (first !== undefined && typeof first === 'object') {
+    return wrapTable(first)
+  }
+
   // Overload 3: no-arg → auto-load dialect, return bound function
   if (first === undefined) {
     return buildDefineTable(loadDialectFromConfig())

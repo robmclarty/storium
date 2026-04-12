@@ -1,32 +1,20 @@
 /**
- * Bring your own Drizzle instance.
+ * Bring your own Drizzle instance + Drizzle-native table definitions.
  *
- * If you already have a Drizzle database — created with whatever driver
- * your runtime supports (@libsql/client, bun:sqlite, node-postgres,
- * mysql2, etc.) — storium.fromDrizzle() wraps it without creating a
- * second connection. Dialect is auto-detected from the Drizzle instance.
+ * This example shows two things:
+ * 1. storium.fromDrizzle() wraps an existing Drizzle connection
+ * 2. defineTable(drizzleTable) wraps an existing Drizzle table with
+ *    Storium metadata — no DSL column definitions needed
  *
- * This example uses @libsql/client (Turso/libSQL) — a completely
- * different SQLite driver than the better-sqlite3 that Storium uses
- * internally. This proves Storium is driver-agnostic: it only cares
- * about the Drizzle instance, not how you created it.
+ * Use this when you have complex Drizzle schemas you don't want to
+ * rewrite, or when you need full control over column types, defaults,
+ * and constraints using Drizzle's native API. Storium's DSL is a
+ * convenience layer — but sometimes you want the real thing.
  *
- * This is useful when:
- *   - You manage the connection pool yourself
- *   - You use a runtime-specific driver (e.g. Bun's built-in SQLite)
- *   - You want Drizzle for raw queries AND Storium for structured CRUD
- *   - You're integrating Storium into an existing Drizzle codebase
- *
- * Note: Storium's CRUD methods (create, findById, etc.) work identically
- * regardless of driver. But when you use db.drizzle directly for raw
- * queries, the available methods depend on which Drizzle adapter you
- * used. For example:
- *   - libsql:         db.drizzle.run(), db.drizzle.all(), db.drizzle.get()
- *   - better-sqlite3:  db.drizzle.run(), db.drizzle.all(), db.drizzle.get()
- *   - node-postgres:   db.drizzle.execute()
- *   - mysql2:          db.drizzle.execute()
- * This is standard Drizzle behavior — Storium just passes through your
- * instance as-is.
+ * Note: Wrapped columns produce z.any() Zod schemas — Storium does
+ * not attempt to reverse-engineer Drizzle column types. DB-level
+ * constraints (NOT NULL, UNIQUE, etc.) still apply. For typed
+ * validation, use defineTable('name').columns({...}) instead.
  *
  * Run: npm start
  */
@@ -34,102 +22,117 @@
 import { createClient } from '@libsql/client'
 import { drizzle } from 'drizzle-orm/libsql'
 import { sql } from 'drizzle-orm'
+import { sqliteTable, text, integer, uniqueIndex } from 'drizzle-orm/sqlite-core'
 import { storium, defineTable, defineStore } from 'storium'
 
-// --- 1. Create the Drizzle instance yourself ---
+// --- 1. Define tables the Drizzle way ---
 //
-// Here we use @libsql/client with an in-memory database.
-// In production you'd point this at a Turso URL or a local .db file.
-// The point is: Storium doesn't care which driver you use.
+// Standard Drizzle table definitions — columns, indexes, defaults,
+// everything you'd normally write. Storium doesn't interfere.
+
+const articlesTable = sqliteTable('articles', {
+  id: text('id').primaryKey(),
+  title: text('title').notNull(),
+  slug: text('slug').notNull(),
+  body: text('body'),
+  views: integer('views').notNull().default(0),
+}, (table) => [
+  uniqueIndex('articles_slug_unique').on(table.slug),
+])
+
+// --- 2. Wrap with Storium ---
+//
+// defineTable(drizzleTable) detects columns and primary key from
+// the Drizzle table object. Use .access() to control which columns
+// are readonly or hidden — the only chain method for wrapped tables.
+
+const articles = defineTable(articlesTable).access({
+  readonly: ['views'],
+})
+
+console.log('=== Table Metadata ===')
+console.log('Name:', articles.storium.name)
+console.log('Primary key:', articles.storium.primaryKey)
+console.log('Selectable:', articles.storium.access.selectable)
+console.log('Writable:', articles.storium.access.writable)
+console.log('Readonly:', articles.storium.access.readonly)
+
+// --- 3. Create Drizzle connection + Storium instance ---
+//
+// fromDrizzle() auto-detects the dialect from the Drizzle instance.
+// No dialect string needed.
 
 const client = createClient({ url: ':memory:' })
 const myDrizzle = drizzle(client)
 
-// --- 2. Wrap it with Storium ---
-//
-// fromDrizzle() auto-detects the dialect from the Drizzle instance.
-// No dialect string needed — Storium reads it from Drizzle's internals.
-// You can also pass assertions here.
+// drop it like it's hot
+const db = storium.fromDrizzle(myDrizzle)
 
-const db = storium.fromDrizzle(myDrizzle, {
-  assertions: {
-    is_slug: (v) => typeof v === 'string' && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(v),
-  },
-})
-
-console.log('=== Setup ===')
+console.log('\n=== Setup ===')
 console.log('Dialect auto-detected:', db.dialect)
 console.log('Same Drizzle instance:', db.drizzle === myDrizzle)
 
-// --- 3. Define schema + store ---
+// --- 4. Create store with custom queries ---
 
-const articlesTable = defineTable('sqlite')('articles').columns({
-  id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
-  title: { type: 'varchar', maxLength: 255, required: true },
-  slug: {
-    type: 'varchar',
-    maxLength: 255,
-    required: true,
-    transform: (v: string) => v.trim().toLowerCase().replace(/\s+/g, '-'),
-    validate: (v, test) => {
-      test(v, 'is_slug', 'Slug must be lowercase with hyphens')
-    },
-  },
-  body: { type: 'text' },
-}).timestamps(false)
-
-const articleStore = defineStore(articlesTable).queries({
+const articleStore = defineStore(articles).queries({
   findBySlug: (ctx) => async (slug: string) =>
     ctx.findOne({ slug }),
 })
 
-const { articles } = db.register({ articles: articleStore })
+const { articles: store } = db.register({ articles: articleStore })
 
 // Create the table (normally handled by migrations)
 await db.drizzle.run(sql`
   CREATE TABLE IF NOT EXISTS articles (
     id TEXT PRIMARY KEY,
     title TEXT NOT NULL,
-    slug TEXT NOT NULL,
-    body TEXT
+    slug TEXT NOT NULL UNIQUE,
+    body TEXT,
+    views INTEGER NOT NULL DEFAULT 0
   )
 `)
 
-// --- 4. Use Storium CRUD ---
+// --- 5. Use Storium CRUD ---
 
 console.log('\n=== CRUD via Storium ===')
 
-const a1 = await articles.create({ title: 'Hello World', slug: 'Hello World', body: 'First post.' })
-const a2 = await articles.create({ title: 'From Drizzle', slug: 'From Drizzle', body: 'BYOD.' })
+const a1 = await store.create({
+  id: crypto.randomUUID(),
+  title: 'Hello World',
+  slug: 'hello-world',
+  body: 'First post.',
+})
+const a2 = await store.create({
+  id: crypto.randomUUID(),
+  title: 'From Drizzle',
+  slug: 'from-drizzle',
+  body: 'BYOD.',
+})
 
 console.log('Created:', a1.title, '→', a1.slug)
 console.log('Created:', a2.title, '→', a2.slug)
 
-const found = await articles.findBySlug('hello-world')
+const found = await store.findBySlug('hello-world')
 console.log('Found by slug:', found?.title)
 
-// --- 5. Use raw Drizzle alongside Storium ---
+const byId = await store.findById(a1.id)
+console.log('Found by id:', byId?.title)
+
+// --- 6. Raw Drizzle alongside Storium ---
 //
 // db.drizzle is your original instance — use it for anything Storium
-// doesn't cover. Both share the same connection, so they see the same data.
+// doesn't cover. Both share the same connection.
 
 console.log('\n=== Raw Drizzle alongside Storium ===')
 
-const rawResult = await db.drizzle.all(sql`SELECT COUNT(*) as count FROM articles`)
-console.log('Raw SQL count:', rawResult[0])
+// Bump views using raw SQL (views is readonly in Storium)
+await db.drizzle.run(sql`UPDATE articles SET views = views + 1 WHERE id = ${a1.id}`)
 
-const allArticles = await articles.findAll()
-console.log('Storium findAll:', allArticles.map(a => a.title))
+const rawResult = await db.drizzle.all(sql`SELECT title, views FROM articles ORDER BY title`)
+console.log('Raw SQL results:', rawResult)
 
-// --- 6. Validation still works ---
-
-console.log('\n=== Validation ===')
-
-try {
-  await articles.create({ title: 'Bad Slug', slug: '!!!invalid!!!' })
-} catch (err) {
-  console.log('Rejected:', (err as Error).message)
-}
+const allArticles = await store.findAll()
+console.log('Storium findAll:', allArticles.map((a: any) => `${a.title} (${a.views} views)`))
 
 // --- Teardown ---
 //
