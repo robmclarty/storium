@@ -4,6 +4,15 @@ All notable changes to Storium are documented here.
 
 This project uses [Semantic Versioning](https://semver.org/). Pre-1.0 releases may include breaking changes in minor versions.
 
+## 0.14.13
+
+- Harden connection lifecycle: clean up pool on init errors, allow disconnect retry on failure, preserve original error when SQLite ROLLBACK fails
+- Add `child.on('error')` handler to spawned migration processes to prevent hanging promises
+- Use `Promise.allSettled` in `resolveInput` for field-level error accumulation (matches transform stage pattern)
+- Wrap relationship query errors (`hasMany`, `hasOne`, `belongsTo`) as `StoreError` for consistency with CRUD methods
+- Add SIGTERM/SIGINT signal handlers to CLI `migrate` and `seed` commands for graceful shutdown
+- Fix lint: merge duplicate drizzle-orm import, move `enc()` to module scope
+
 ## 0.14.12
 
 - Replace `inferDialect()` constructor name matching with Drizzle's stable `is()` utility (entityKind symbol) — survives bundlers/minifiers
