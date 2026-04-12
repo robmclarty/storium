@@ -16,6 +16,12 @@ Thumbs.db
 # Analysis
 .fallow/
 
+# Worktrees
+.worktrees/
+
+# Generated docs
+docs/superpowers/
+
 # Output
 dist/
 build/
