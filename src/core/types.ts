@@ -2,7 +2,7 @@
  * @module types
  *
  * This module defines all shared TypeScript types for the Storium library.
- * It includes column config types, table definition types, repository types,
+ * It includes column annotation types, table definition types, repository types,
  * runtime schema types, and compile-time generic type utilities.
  */
 
@@ -10,7 +10,6 @@ import type { ZodType, z as ZodNamespace } from 'zod'
 import type { PgDatabase } from 'drizzle-orm/pg-core'
 import type { MySqlDatabase } from 'drizzle-orm/mysql-core'
 import type { BaseSQLiteDatabase } from 'drizzle-orm/sqlite-core'
-import type { StoriumMeta } from './defineTable'
 
 // ---------------------------------------------------------------- Dialect --
 
@@ -72,10 +71,15 @@ export type TestFn = (
 /** Consumer-friendly alias for the `test` function signature in `validate` callbacks. */
 export type ValidatorTest = TestFn
 
-// --------------------------------------------------- Column Configuration --
+// ------------------------------------------------- Column Annotations --
 
-/** Base metadata that applies to ALL column modes (DSL, DSL+custom, raw). */
-type BaseColumnMeta = {
+/**
+ * Storium-specific column annotation. These are metadata properties that
+ * Drizzle does not provide — validation, access control, and transforms.
+ * Annotations are optional; columns without annotations still get
+ * auto-generated Zod/JSON Schema from Drizzle column introspection.
+ */
+export type ColumnAnnotation = {
   /** Exclude from write operations (create + update). Always true for primaryKey columns. */
   readonly?: boolean
   /** Exclude from SELECT results. Implies writable (e.g., password hashes). */
@@ -86,91 +90,21 @@ type BaseColumnMeta = {
   validate?: (value: any, test: TestFn) => void
 }
 
-/** Supported DSL type strings. */
-export type DslType =
-  | 'uuid'
-  | 'varchar'
-  | 'text'
-  | 'integer'
-  | 'bigint'
-  | 'serial'
-  | 'real'
-  | 'numeric'
-  | 'boolean'
-  | 'timestamp'
-  | 'date'
-  | 'jsonb'
-  | 'array'
+/** A record of column names to their annotations. */
+export type ColumnAnnotations = Record<string, ColumnAnnotation>
 
-/** DSL-managed column — type string drives the Drizzle builder automatically. */
-export type DslColumnConfig = BaseColumnMeta & {
-  type: DslType
-  primaryKey?: boolean
-  notNull?: boolean
-  maxLength?: number
-  default?: 'now' | 'uuid:v4' | 'uuid:v7' | string | number | boolean | Record<string, unknown> | unknown[]
-  /** Element type for array columns (e.g. 'text', 'integer', 'uuid'). */
-  items?: DslType
-  /**
-   * Override the database column name. The DSL key becomes the JS property
-   * name while `dbName` is used as the actual SQL column name.
-   */
-  dbName?: string
-  /** Modify the auto-built Drizzle column before finalization. */
-  custom?: (col: any) => any
+// ----------------------------------------------------------- Store Config --
+
+/**
+ * Configuration for `defineStore()`. Contains storium-specific metadata
+ * to layer on top of a raw Drizzle table.
+ */
+export type StoreConfig = {
+  /** Per-column annotations (validation, access control, transforms). */
+  columns?: ColumnAnnotations
+  /** Enable soft delete. The Drizzle table must have a `deletedAt` column. */
+  softDelete?: boolean
 }
-
-/** Raw Drizzle column — caller provides the builder directly. */
-export type RawColumnConfig = BaseColumnMeta & {
-  /** Provide a raw Drizzle column builder, bypassing the DSL entirely. */
-  raw: () => any
-}
-
-/** A column config is either DSL-managed or raw. */
-export type ColumnConfig = DslColumnConfig | RawColumnConfig
-
-/** Type guard: is this a raw column config? */
-export const isRawColumn = (config: ColumnConfig | undefined): config is RawColumnConfig =>
-  !!config && 'raw' in config && typeof (config as any).raw === 'function'
-
-/** A record of column names to their configs. */
-export type ColumnsConfig = Record<string, ColumnConfig>
-
-// --------------------------------------------------- Index Configuration --
-
-/** DSL index definition. */
-export type DslIndexConfig = {
-  /**
-   * Columns in the index, in order. If absent, uses the key name as a
-   * single-column reference.
-   */
-  columns?: string[]
-  /** Create a unique index. Default: false. */
-  unique?: boolean
-  /**
-   * Explicit index name. If absent, auto-generated:
-   * - Regular: `{table}_{keyName}_idx`
-   * - Unique: `{table}_{keyName}_unique`
-   */
-  name?: string
-  /** Partial index condition (PostgreSQL). */
-  where?: (table: any) => any
-}
-
-/** Raw Drizzle index — caller provides the full index definition. */
-export type RawIndexConfig = {
-  raw: (table: any) => any
-}
-
-/** An index config is either DSL-managed or raw. */
-export type IndexConfig = DslIndexConfig | RawIndexConfig
-
-/** Type guard: is this a raw index config? */
-export const isRawIndex = (config: IndexConfig): config is RawIndexConfig =>
-  'raw' in config && typeof (config as any).raw === 'function'
-
-/** A record of index labels to their configs. */
-export type IndexesConfig = Record<string, IndexConfig>
 
 // ----------------------------------------------------------- Table Access --
 
@@ -184,6 +118,14 @@ export type TableAccess = {
   hidden: string[]
   /** Columns excluded from CREATE/UPDATE (readonly + primaryKey). */
   readonly: string[]
+}
+
+/**
+ * Table-level access overrides: union with per-column hidden/readonly.
+ */
+export type AccessConfig = {
+  hidden?: string[]
+  readonly?: string[]
 }
 
 // --------------------------------------------------------- Runtime Schema --
@@ -244,41 +186,52 @@ export type RuntimeSchema<T = any> = {
 }
 
 /** The full set of runtime schemas derived from a table definition. */
-export type SchemaSet<TColumns extends ColumnsConfig = ColumnsConfig> = {
-  selectSchema: RuntimeSchema<SelectType<TColumns>>
-  createSchema: RuntimeSchema<InsertType<TColumns>>
-  updateSchema: RuntimeSchema<UpdateType<TColumns>>
-  fullSchema: RuntimeSchema<{ [K in keyof TColumns]: ResolveColumnType<TColumns[K]> }>
+export type SchemaSet = {
+  selectSchema: RuntimeSchema
+  createSchema: RuntimeSchema
+  updateSchema: RuntimeSchema
+  fullSchema: RuntimeSchema
+}
+
+// ------------------------------------------------------------ StoriumMeta --
+
+/**
+ * Storium metadata attached to every Drizzle table via `defineStore()`.
+ * Accessed via `table.storium.annotations`, `table.storium.schemas`, etc.
+ */
+export type StoriumMeta = {
+  /** Per-column storium annotations (hidden, readonly, required, validate, transform). */
+  annotations: ColumnAnnotations
+  /** Derived access sets for the table. */
+  access: TableAccess
+  /** Pre-built column map for SELECT (excludes hidden). */
+  selectColumns: Record<string, any>
+  /** Full column map including hidden columns. */
+  allColumns: Record<string, any>
+  /** Primary key column(s). String for single PK, array for composite. */
+  primaryKey: string | string[] | undefined
+  /** Table name. */
+  name: string
+  /** Runtime schemas (Zod + JSON Schema). */
+  schemas: SchemaSet
+  /** Whether this table uses soft delete. */
+  softDelete: boolean
 }
 
 // ------------------------------------------------------------ Table Def --
 
 /**
- * A table definition: a plain Drizzle table object with storium metadata
+ * A table definition: a Drizzle table object with storium metadata
  * attached as a non-enumerable `.storium` property.
  *
- * Returned by `defineTable().columns()` (or its chain variants).
+ * Produced by `defineStore()` when building a StoreDefinition.
  * Compatible with drizzle-kit (which sees a real Drizzle table) and
  * storium (which reads `table.storium.*`).
- *
- * Chain methods (`.indexes()`, `.access()`, etc.) are non-enumerable at
- * runtime so drizzle-kit's `is(value, Table)` check ignores them.
- * TypeScript declares them here for autocomplete.
  */
-export type TableDef<TColumns extends ColumnsConfig = ColumnsConfig> = {
-  /** Storium metadata (columns, access sets, schemas, etc.). */
-  storium: StoriumMeta<TColumns>
-  /** Add indexes to this table. Returns a new TableDef (rebuilt). */
-  indexes(config: IndexesConfig): TableDef<TColumns>
-  /** Set table-level access overrides (union with per-column hidden/readonly). */
-  access(config: AccessConfig): TableDef<TColumns>
-  /** Set a composite primary key. Returns a new TableDef (rebuilt). */
-  primaryKey(...columns: string[]): TableDef<TColumns>
-  /** Disable automatic timestamp columns. Returns a new TableDef (rebuilt). */
-  timestamps(enabled: false): TableDef<TColumns>
-  /** Enable soft delete. Injects deletedAt column, auto-filters reads, soft destroy. */
-  softDelete(enabled?: boolean): TableDef<TColumns>
-  /** Drizzle column access — any other property is a Drizzle column. */
+export type TableDef = {
+  /** Storium metadata (annotations, access sets, schemas, etc.). */
+  storium: StoriumMeta
+  /** Drizzle column access — any property is a Drizzle column. */
   [key: string]: any
 }
 
@@ -307,10 +260,6 @@ export type PrepOptions = {
   /**
    * Sort results. Accepts a single spec or array of specs.
    * Each spec is `{ column, direction }` where direction defaults to `'asc'`.
-   *
-   * @example
-   * await users.findAll({ orderBy: { column: 'createdAt', direction: 'desc' } })
-   * await users.findAll({ orderBy: [{ column: 'lastName' }, { column: 'firstName' }] })
    */
   orderBy?: OrderBySpec | OrderBySpec[]
   /**
@@ -323,18 +272,11 @@ export type PrepOptions = {
   /**
    * Additional Drizzle WHERE clause. Receives the table for column references.
    * AND'd with any equality filters from `find()`.
-   *
-   * @example
-   * await users.findAll({ where: (t) => gt(t.age, 18) })
-   * await users.find({ status: 'active' }, { where: (t) => like(t.name, '%alice%') })
    */
   where?: (table: any) => any
   /**
    * Columns to target for conflict detection in `upsert()`.
    * Defaults to the primary key. Pass column names for unique constraint targets.
-   *
-   * @example
-   * await users.upsert(input, { conflictTarget: ['email'] })
    */
   conflictTarget?: string[]
 }
@@ -349,11 +291,7 @@ export type PkValue = string | number | (string | number)[]
  * Contains the database handle, table metadata, default CRUD operations,
  * and the prep pipeline.
  */
-export type RepositoryContext<
-  T extends TableDef = TableDef,
-  TColumns extends ColumnsConfig = T extends TableDef<infer C> ? C : ColumnsConfig,
-  D extends Dialect = Dialect
-> = {
+export type RepositoryContext<D extends Dialect = Dialect> = {
   /**
    * The Drizzle database instance (escape hatch).
    * When `D` is a specific dialect, resolves to the concrete Drizzle class
@@ -365,7 +303,7 @@ export type RepositoryContext<
   /** The active dialect. */
   dialect: D
   /** The Drizzle table object with `.storium` metadata. */
-  table: T
+  table: TableDef
   /** Pre-built column map for select() (excludes hidden columns). */
   selectColumns: Record<string, any>
   /** Full column map including hidden columns. */
@@ -373,43 +311,24 @@ export type RepositoryContext<
   /** Primary key column name(s). String for single PK, array for composite. */
   primaryKey: string | string[]
   /** Runtime schemas. */
-  schemas: SchemaSet<TColumns>
+  schemas: SchemaSet
   /** The filter → transform → validate pipeline. */
   prep: (input: Record<string, any>, opts?: PrepOptions) => Promise<Record<string, any>>
-} & DefaultCRUD<TColumns>
+} & DefaultCRUD
 
 /**
  * Shorthand for `RepositoryContext` — the context object passed to custom
  * query factories.
- *
- * For queries defined **inline** in `.queries()`, TypeScript infers
- * the type automatically — just write `(ctx) =>`:
- * ```typescript
- * defineStore(usersTable).queries({
- *   findByEmail: (ctx) => async (email: string) => ctx.findOne({ email }),
- * })
- * ```
- *
- * For queries in **separate files**, annotate `ctx` explicitly:
- * ```typescript
- * import type { Ctx } from 'storium'
- * export const findByEmail = (ctx: Ctx) => async (email: string) =>
- *   ctx.findOne({ email })
- * ```
  */
-export type Ctx<
-  T extends TableDef = TableDef,
-  TColumns extends ColumnsConfig = T extends TableDef<infer C> ? C : ColumnsConfig,
-  D extends Dialect = Dialect
-> = RepositoryContext<T, TColumns, D>
+export type Ctx<D extends Dialect = Dialect> = RepositoryContext<D>
 
 /**
  * A custom query function receives the repository context and returns
  * the actual query function. This enables closure over `ctx` and
  * composition with default CRUD operations.
  */
-export type CustomQueryFn<T extends TableDef = TableDef, D extends Dialect = Dialect> =
-  (ctx: RepositoryContext<T, T extends TableDef<infer C> ? C : ColumnsConfig, D>) => (...args: any[]) => any
+export type CustomQueryFn<D extends Dialect = Dialect> =
+  (ctx: RepositoryContext<D>) => (...args: any[]) => any
 
 /**
  * Constraint type for custom query function records.
@@ -418,16 +337,16 @@ export type CustomQueryFn<T extends TableDef = TableDef, D extends Dialect = Dia
 export type QueriesConfig = Record<string, (ctx: any) => (...args: any[]) => any>
 
 /** Default CRUD operations present on every store/repository. */
-export type DefaultCRUD<TColumns extends ColumnsConfig = ColumnsConfig> = {
-  find: (filters: Record<string, any>, opts?: PrepOptions) => Promise<SelectType<TColumns>[]>
-  findAll: (opts?: PrepOptions) => Promise<SelectType<TColumns>[]>
-  findOne: (filters: Record<string, any>, opts?: PrepOptions) => Promise<SelectType<TColumns> | null>
-  findById: (id: PkValue, opts?: PrepOptions) => Promise<SelectType<TColumns> | null>
-  findByIdIn: (ids: (string | number)[], opts?: PrepOptions) => Promise<SelectType<TColumns>[]>
-  create: (input: InsertType<TColumns>, opts?: PrepOptions) => Promise<SelectType<TColumns>>
-  createMany: (inputs: InsertType<TColumns>[], opts?: PrepOptions) => Promise<SelectType<TColumns>[]>
-  update: (id: PkValue, input: UpdateType<TColumns>, opts?: PrepOptions) => Promise<SelectType<TColumns>>
-  upsert: (input: InsertType<TColumns>, opts?: PrepOptions) => Promise<SelectType<TColumns>>
+export type DefaultCRUD = {
+  find: (filters: Record<string, any>, opts?: PrepOptions) => Promise<any[]>
+  findAll: (opts?: PrepOptions) => Promise<any[]>
+  findOne: (filters: Record<string, any>, opts?: PrepOptions) => Promise<any | null>
+  findById: (id: PkValue, opts?: PrepOptions) => Promise<any | null>
+  findByIdIn: (ids: (string | number)[], opts?: PrepOptions) => Promise<any[]>
+  create: (input: Record<string, any>, opts?: PrepOptions) => Promise<any>
+  createMany: (inputs: Record<string, any>[], opts?: PrepOptions) => Promise<any[]>
+  update: (id: PkValue, input: Record<string, any>, opts?: PrepOptions) => Promise<any>
+  upsert: (input: Record<string, any>, opts?: PrepOptions) => Promise<any>
   destroy: (id: PkValue, opts?: PrepOptions) => Promise<void>
   destroyAll: (filters: Record<string, any>, opts?: PrepOptions) => Promise<number>
   /** Count rows matching filters and/or a where clause. */
@@ -442,37 +361,31 @@ export type DefaultCRUD<TColumns extends ColumnsConfig = ColumnsConfig> = {
  * A Store is a live object with CRUD operations, custom queries, and
  * runtime schemas. Produced by `db.defineStore()` or `db.register()`.
  */
-export type Store<
-  TColumns extends ColumnsConfig = ColumnsConfig,
-  TQueries extends QueriesConfig = {}
-> = DefaultCRUD<TColumns> & {
+export type Store<TQueries extends QueriesConfig = {}> = DefaultCRUD & {
   /** The table name this store operates on. */
   name: string
-  schemas: SchemaSet<TColumns>
+  schemas: SchemaSet
 } & {
   [K in keyof TQueries]: TQueries[K] extends (ctx: any) => infer R ? R : never
 }
 
 /**
- * Infer `Store<C, Q>` from any object with `tableDef` and `queryFns` fields.
+ * Infer `Store<Q>` from any object with `tableDef` and `queryFns` fields.
  * Used by `register()` to preserve generic parameters without importing
  * StoreDefinition (which would create a circular dependency with types.ts).
  */
 export type InferStore<T> =
-  T extends { tableDef: TableDef<infer C extends ColumnsConfig>; queryFns: infer Q extends QueriesConfig }
-    ? Store<C, Q>
+  T extends { tableDef: TableDef; queryFns: infer Q extends QueriesConfig }
+    ? Store<Q>
     : Store
 
 /**
  * A Repository is the same shape as a Store, produced by `createRepository()`.
  */
-export type Repository<
-  TTableDef extends TableDef = TableDef,
-  TQueries extends QueriesConfig = {}
-> = DefaultCRUD<TTableDef extends TableDef<infer C> ? C : ColumnsConfig> & {
+export type Repository<TQueries extends QueriesConfig = {}> = DefaultCRUD & {
   /** The table name this repository operates on. */
   name: string
-  schemas: SchemaSet<TTableDef extends TableDef<infer C> ? C : ColumnsConfig>
+  schemas: SchemaSet
 } & {
   [K in keyof TQueries]: TQueries[K] extends (ctx: any) => infer R ? R : never
 }
@@ -570,10 +483,6 @@ export type FromDrizzleOptions = {
 export type StoriumInstance<D extends Dialect = Dialect> = {
   /**
    * The Drizzle database instance (escape hatch).
-   * When `D` is a specific dialect (inferred from config or `fromDrizzle`),
-   * this resolves to the concrete Drizzle class with full autocomplete.
-   * When `D` is the full `Dialect` union (e.g., in generic code), this
-   * resolves to the union of all Drizzle classes.
    */
   drizzle: DrizzleDatabase<D>
   /** The Zod namespace (convenience accessor matching db.drizzle). */
@@ -581,31 +490,21 @@ export type StoriumInstance<D extends Dialect = Dialect> = {
   /** The active dialect. */
   dialect: D
   /**
-   * Create a table definition (pre-bound to dialect + assertions).
-   * Returns a builder with `.columns()` to start the chain.
-   *
-   * @example
-   * const users = db.defineTable('users')
-   *   .columns({ id: { type: 'uuid', primaryKey: true }, email: { type: 'varchar' } })
-   *   .indexes({ email: { unique: true } })
-   */
-  defineTable: (name: string) => {
-    columns: <TColumns extends ColumnsConfig>(columns: TColumns) => TableDef<TColumns & TimestampColumns>
-  }
-  /**
-   * Create a live store from a table definition (simple path — no register step).
+   * Create a live store from a Drizzle table (simple path — no register step).
    * Optionally chain `.queries()` to add custom query functions with full ctx inference.
    *
    * @example
    * const users = db.defineStore(usersTable)
+   * const users = db.defineStore(usersTable, { columns: { email: { required: true } } })
    * const users = db.defineStore(usersTable).queries({ findByEmail: (ctx) => ... })
    */
-  defineStore: <TColumns extends ColumnsConfig>(
-    tableDef: TableDef<TColumns>
-  ) => Store<TColumns> & {
+  defineStore: (
+    drizzleTable: any,
+    config?: StoreConfig
+  ) => Store & {
     queries: <TKeys extends string>(
-      queryFns: Record<TKeys, (ctx: RepositoryContext<TableDef<TColumns>, TColumns, D>) => (...args: any[]) => any>
-    ) => Store<TColumns, Record<TKeys, (ctx: RepositoryContext<TableDef<TColumns>, TColumns, D>) => (...args: any[]) => any>>
+      queryFns: Record<TKeys, (ctx: RepositoryContext<D>) => (...args: any[]) => any>
+    ) => Store<Record<TKeys, (ctx: RepositoryContext<D>) => (...args: any[]) => any>>
   }
   /** Materialize StoreDefinitions into live stores with CRUD + queries. */
   register: <T extends Record<string, any>>(
@@ -617,116 +516,7 @@ export type StoriumInstance<D extends Dialect = Dialect> = {
   disconnect: () => Promise<void>
 }
 
-// --------------------------------------------------------- Options Types --
-
-/**
- * Table-level access overrides: union with per-column hidden/readonly.
- * Used by `.access()` chain method or `access` in table builder config.
- */
-export type AccessConfig = {
-  hidden?: string[]
-  readonly?: string[]
-}
-
-/**
- * Internal accumulated config for the table chain builder.
- * Each chain method clones this, updates one field, and rebuilds the table.
- */
-export type TableBuilderConfig = {
-  indexes?: IndexesConfig
-  constraints?: (table: any) => Record<string, any>
-  primaryKey?: string | string[]
-  /** Inject createdAt/updatedAt columns. Default: true. Set to false to opt out. */
-  timestamps?: boolean
-  /** Table-level access overrides (union with per-column settings). */
-  access?: AccessConfig
-  /** Enable soft delete (injects deletedAt column, auto-filters reads, soft destroy). */
-  softDelete?: boolean
-}
-
-/**
- * @deprecated Use chain API instead: `defineTable('name').columns({...}).indexes({...})`
- * Kept for internal use and backward compatibility during migration.
- */
-export type TableOptions = TableBuilderConfig
-
-/** Column configs for auto-injected timestamp columns. */
-export type TimestampColumns = {
-  createdAt: { type: 'timestamp'; notNull: true; default: 'now'; readonly: true }
-  updatedAt: { type: 'timestamp'; notNull: true; default: 'now' }
-}
-
-// ------------------------------------------- Compile-Time Type Utilities --
-
-/**
- * Map DSL type strings to TypeScript types.
- * Used by SelectType, InsertType, and UpdateType to infer types from columns.
- */
-type DslTypeToTs = {
-  uuid: string
-  varchar: string
-  text: string
-  integer: number
-  bigint: bigint
-  serial: number
-  real: number
-  numeric: number
-  boolean: boolean
-  timestamp: Date
-  date: Date
-  jsonb: Record<string, unknown>
-  array: unknown[]
-}
-
-/** Resolve the TypeScript type for a single column config. */
-export type ResolveColumnType<C extends ColumnConfig> =
-  C extends RawColumnConfig ? any :
-  C extends { type: infer T extends keyof DslTypeToTs } ? DslTypeToTs[T] :
-  never
-
 /**
  * A value or a Promise of it. Matches the prep pipeline's Stage 0 (Promise resolution).
- * The Promise branch accepts `any` because `ref()` returns `Promise<string | number>`
- * and should be assignable to any field type without explicit narrowing.
  */
 export type Promisable<T> = T | Promise<any>
-
-// ---- Column access helpers (used by SelectType, InsertType, UpdateType) ----
-
-/** Column is excluded from write operations (create + update). */
-type IsReadonly<C> =
-  C extends { readonly: true } ? true :
-  C extends { primaryKey: true } ? true :
-  false
-
-/** Column must be provided on create. */
-type IsRequired<C> = C extends { required: true } ? true : false
-
-/** Column is excluded from read operations (select). */
-type IsHidden<C> = C extends { hidden: true } ? true : false
-
-/** SELECT result — all columns except hidden. */
-export type SelectType<TColumns extends ColumnsConfig> = {
-  [K in keyof TColumns as IsHidden<TColumns[K]> extends true ? never : K]:
-    ResolveColumnType<TColumns[K]>
-}
-
-/** CREATE input — writable columns. Required ones are mandatory, rest optional. */
-export type InsertType<TColumns extends ColumnsConfig> =
-  { [K in keyof TColumns as
-      IsReadonly<TColumns[K]> extends true ? never
-      : IsRequired<TColumns[K]> extends true ? K
-      : never
-    ]: Promisable<ResolveColumnType<TColumns[K]>> }
-  &
-  { [K in keyof TColumns as
-      IsReadonly<TColumns[K]> extends true ? never
-      : IsRequired<TColumns[K]> extends true ? never
-      : K
-    ]?: Promisable<ResolveColumnType<TColumns[K]>> }
-
-/** UPDATE input — writable columns, all optional. */
-export type UpdateType<TColumns extends ColumnsConfig> = {
-  [K in keyof TColumns as IsReadonly<TColumns[K]> extends true ? never : K]?:
-    Promisable<ResolveColumnType<TColumns[K]>>
-}
