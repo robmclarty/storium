@@ -590,6 +590,19 @@ const buildDefaultCrud = (
       return updateAndReturn({ deletedAt: null }, id, 'restore()', opts)
     }
 
+    const countWithDeleted = async (filters: Record<string, any> = {}, opts?: PrepOptions) => {
+      const where = buildWhere(filters, opts, true)
+
+      let q = getDb(opts)
+        .select({ count: drizzleCount() })
+        .from(table)
+
+      if (where) q = q.where(where)
+
+      const rows = await q
+      return rows[0]?.count ?? 0
+    }
+
     const findWithDeleted = async (filters?: Record<string, any>, opts?: PrepOptions) => {
       if (!filters || Object.keys(filters).length === 0) {
         let q = getDb(opts).select(getCols(opts)).from(table)
@@ -625,6 +638,7 @@ const buildDefaultCrud = (
       forceDestroy: hardDestroy,
       forceDestroyAll: hardDestroyAll,
       findWithDeleted,
+      countWithDeleted,
     }
   }
 

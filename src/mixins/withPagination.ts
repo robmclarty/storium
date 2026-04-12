@@ -4,6 +4,10 @@
  * Adds a `paginate()` method to any store. Wraps the store (same pattern
  * as withCache) — all original methods are passed through.
  *
+ * If the underlying store has soft delete enabled (i.e., exposes
+ * `findWithDeleted` and `countWithDeleted`), a `paginateWithDeleted`
+ * method is also added.
+ *
  * @example
  * import { withPagination } from 'storium'
  *
@@ -16,17 +20,12 @@
  * // { data: [...], meta: { page: 2, pageSize: 25, total: 142, totalPages: 6 } }
  */
 
-import type { SQL } from 'drizzle-orm'
 import { StoreError } from '../errors'
-import type { OrderBySpec } from '../types'
+import type { QueryOptions } from '../types'
 
-type PaginateOpts = {
+type PaginateOpts = QueryOptions & {
   page: number
   pageSize?: number
-  orderBy?: OrderBySpec | OrderBySpec[]
-  where?: (table: any) => SQL | undefined
-  tx?: any
-  includeHidden?: boolean
 }
 
 type PaginateResult<T = any> = {
@@ -45,13 +44,16 @@ type PaginationDefaults = {
 
 const DEFAULT_PAGE_SIZE = 25
 
-export const withPagination = <T extends Record<string, any>>(
-  store: T,
-  defaults?: PaginationDefaults
-): T & { paginate: (filters: Record<string, any>, opts: PaginateOpts) => Promise<PaginateResult> } => {
-  const defaultPageSize = defaults?.pageSize ?? DEFAULT_PAGE_SIZE
-
-  const paginate = async (
+/**
+ * Shared pagination logic used by both `paginate` and `paginateWithDeleted`.
+ */
+const buildPaginate = (
+  store: Record<string, any>,
+  defaultPageSize: number,
+  findFn: 'find' | 'findWithDeleted',
+  countFn: 'count' | 'countWithDeleted'
+) => {
+  return async (
     filters: Record<string, any>,
     opts: PaginateOpts
   ): Promise<PaginateResult> => {
@@ -68,27 +70,22 @@ export const withPagination = <T extends Record<string, any>>(
     const sharedOpts: Record<string, any> = {}
     if (restOpts.where) sharedOpts.where = restOpts.where
     if (restOpts.tx) sharedOpts.tx = restOpts.tx
-    if (restOpts.includeHidden) sharedOpts.includeHidden = restOpts.includeHidden
 
     const hasFilters = Object.keys(filters).length > 0
+    const queryOpts = {
+      ...sharedOpts,
+      limit: pageSize,
+      offset: (page - 1) * pageSize,
+      orderBy: restOpts.orderBy,
+    }
 
     const [total, data] = await Promise.all([
+      store[countFn](hasFilters ? filters : {}, sharedOpts),
       hasFilters
-        ? store.count(filters, sharedOpts)
-        : store.count({}, sharedOpts),
-      hasFilters
-        ? store.find(filters, {
-            ...sharedOpts,
-            limit: pageSize,
-            offset: (page - 1) * pageSize,
-            orderBy: restOpts.orderBy,
-          })
-        : store.findAll({
-            ...sharedOpts,
-            limit: pageSize,
-            offset: (page - 1) * pageSize,
-            orderBy: restOpts.orderBy,
-          }),
+        ? store[findFn](filters, queryOpts)
+        : findFn === 'find'
+          ? store.findAll(queryOpts)
+          : store[findFn]({}, queryOpts),
     ])
 
     const totalPages = total === 0 ? 0 : Math.ceil(total / pageSize)
@@ -98,6 +95,25 @@ export const withPagination = <T extends Record<string, any>>(
       meta: { page, pageSize, total, totalPages },
     }
   }
+}
 
-  return { ...store, paginate }
+export const withPagination = <T extends Record<string, any>>(
+  store: T,
+  defaults?: PaginationDefaults
+): T & {
+  paginate: (filters: Record<string, any>, opts: PaginateOpts) => Promise<PaginateResult>
+  paginateWithDeleted?: (filters: Record<string, any>, opts: PaginateOpts) => Promise<PaginateResult>
+} => {
+  const defaultPageSize = defaults?.pageSize ?? DEFAULT_PAGE_SIZE
+
+  const paginate = buildPaginate(store, defaultPageSize, 'find', 'count')
+
+  const result: Record<string, any> = { ...store, paginate }
+
+  // Add paginateWithDeleted only for soft-delete stores
+  if (typeof store.findWithDeleted === 'function' && typeof store.countWithDeleted === 'function') {
+    result.paginateWithDeleted = buildPaginate(store, defaultPageSize, 'findWithDeleted', 'countWithDeleted')
+  }
+
+  return result as any
 }

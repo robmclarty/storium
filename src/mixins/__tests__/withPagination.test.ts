@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll } from 'vitest'
+import { describe, it, expect, beforeAll, beforeEach } from 'vitest'
 import { storium, defineStore, withPagination } from 'storium'
 import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core'
 import { sql, gt } from 'drizzle-orm'
@@ -146,5 +146,79 @@ describe('withPagination', () => {
       total: 0,
       totalPages: 0,
     })
+  })
+
+  it('does not add paginateWithDeleted for non-soft-delete stores', () => {
+    expect(paginatedUsers.paginateWithDeleted).toBeUndefined()
+  })
+})
+
+describe('withPagination + softDelete', () => {
+  const tasksTable = sqliteTable('sd_tasks', {
+    id: text('id').primaryKey(),
+    title: text('title').notNull(),
+    deletedAt: integer('deleted_at', { mode: 'timestamp' }),
+  })
+
+  let sdDb: any
+  let tasks: any
+  let paginatedTasks: any
+
+  beforeAll(async () => {
+    sdDb = storium.connect({ dialect: 'memory' })
+
+    sdDb.drizzle.run(sql`
+      CREATE TABLE IF NOT EXISTS sd_tasks (
+        id TEXT PRIMARY KEY, title TEXT NOT NULL, deleted_at INTEGER
+      )
+    `)
+
+    const taskStore = defineStore(tasksTable, { softDelete: true })
+    tasks = sdDb.register({ tasks: taskStore }).tasks
+    paginatedTasks = withPagination(tasks)
+
+    // Create 10 tasks, soft-delete 3 of them
+    for (let i = 1; i <= 10; i++) {
+      await tasks.create({ id: `task-${i}`, title: `Task ${i}` })
+    }
+    await tasks.destroy('task-1')
+    await tasks.destroy('task-2')
+    await tasks.destroy('task-3')
+  })
+
+  it('adds paginateWithDeleted for soft-delete stores', () => {
+    expect(typeof paginatedTasks.paginateWithDeleted).toBe('function')
+  })
+
+  it('paginate excludes soft-deleted rows', async () => {
+    const result = await paginatedTasks.paginate({}, { page: 1, pageSize: 100 })
+    expect(result.meta.total).toBe(7)
+    expect(result.data).toHaveLength(7)
+  })
+
+  it('paginateWithDeleted includes soft-deleted rows', async () => {
+    const result = await paginatedTasks.paginateWithDeleted({}, { page: 1, pageSize: 100 })
+    expect(result.meta.total).toBe(10)
+    expect(result.data).toHaveLength(10)
+  })
+
+  it('paginateWithDeleted respects pagination opts', async () => {
+    const result = await paginatedTasks.paginateWithDeleted({}, { page: 1, pageSize: 4 })
+    expect(result.data).toHaveLength(4)
+    expect(result.meta).toEqual({
+      page: 1,
+      pageSize: 4,
+      total: 10,
+      totalPages: 3,
+    })
+  })
+
+  it('paginateWithDeleted supports filters', async () => {
+    const result = await paginatedTasks.paginateWithDeleted(
+      { title: 'Task 1' },
+      { page: 1, pageSize: 10 }
+    )
+    expect(result.data).toHaveLength(1)
+    expect(result.meta.total).toBe(1)
   })
 })
