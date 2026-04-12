@@ -21,11 +21,38 @@ import type {
   PrepOptions,
   AssertionRegistry,
   FieldError,
+  DrizzleColumn,
 } from './types'
-import { DATA_TYPE_CHECKS, DATA_TYPE_NAMES, type DrizzleColumn } from './introspect'
 import { ValidationError } from './errors'
-import { createTestFn } from './test'
+import { createTestFn } from './assertions'
 import { getTableColumns } from 'drizzle-orm/utils'
+
+// -------------------------------------------------------- Data Type Checks --
+
+/**
+ * Runtime type checks keyed by Drizzle dataType.
+ * Used by the prep pipeline to validate input values before DB operations.
+ */
+const DATA_TYPE_CHECKS: Record<string, (value: unknown) => boolean> = {
+  string:  (v) => typeof v === 'string',
+  number:  (v) => typeof v === 'number',
+  boolean: (v) => typeof v === 'boolean',
+  date:    (v) => v instanceof Date || typeof v === 'string' || typeof v === 'number',
+  json:    (v) => typeof v === 'object' && v !== null,
+  array:   (v) => Array.isArray(v),
+  bigint:  (v) => typeof v === 'bigint',
+}
+
+/** Human-readable type names for error messages, keyed by Drizzle dataType. */
+const DATA_TYPE_NAMES: Record<string, string> = {
+  string: 'string',
+  number: 'number',
+  boolean: 'boolean',
+  date: 'Date or date string',
+  json: 'object',
+  array: 'array',
+  bigint: 'bigint',
+}
 
 // ---------------------------------------------------- Pipeline Stages --
 
