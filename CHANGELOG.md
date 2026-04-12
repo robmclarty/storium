@@ -4,6 +4,10 @@ All notable changes to Storium are documented here.
 
 This project uses [Semantic Versioning](https://semver.org/). Pre-1.0 releases may include breaking changes in minor versions.
 
+## 0.14.15
+
+- Add Mermaid diagrams to README and docs for visual technical documentation: architecture overview, validation pipeline, relationship patterns, ctx resolution, migration workflow, seed discovery, and single-source-of-truth derivation
+
 ## 0.14.14
 
 - Rewrite README and docs to reflect current `defineStore` + native Drizzle API (removed all `defineTable` DSL references)
