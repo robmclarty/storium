@@ -1,7 +1,7 @@
 import { defineStore, belongsTo, withMembers } from 'storium'
 import { postsTable } from './post.table.js'
-import { authorsTable } from '../authors/author.table.js'
-import { postTagsTable } from '../post-tags/post-tag.table.js'
+import { authorStore } from '../authors/author.store.js'
+import { postTagStore } from '../post-tags/post-tag.store.js'
 
 export const postStore = defineStore(postsTable, {
   columns: {
@@ -11,10 +11,10 @@ export const postStore = defineStore(postsTable, {
   },
 }).queries({
   // Belongs-to: generates findWithAuthor(postId) via LEFT JOIN
-  ...belongsTo(authorsTable, 'author_id', {
+  ...belongsTo(authorStore.table, 'author_id', {
     alias: 'author',
     select: ['name', 'email'],
   }),
   // Many-to-many: generates addMember, removeMember, getMembers, isMember, getMemberCount
-  ...withMembers(postTagsTable, 'post_id', 'tag_id'),
+  ...withMembers(postTagStore.table, 'post_id', 'tag_id'),
 })

@@ -60,8 +60,8 @@ export type StoreDefinition<TTable extends Table = Table, TQueries extends Queri
   readonly __storeDefinition: true
   tableDef: TTable
   queryFns: TQueries
-  /** The Drizzle table object (for schemaCollector / drizzle-kit). */
-  table: TTable
+  /** The Drizzle table object with storium metadata attached (for schemaCollector / drizzle-kit / mixins). */
+  table: TTable & { storium: StoriumMeta }
   /** The table name (for schemaCollector). */
   name: string
   /** Chain method: add custom query functions with full ctx inference. */
@@ -279,7 +279,7 @@ const makeStoreDefinition = <TTable extends Table = Table, TQueries extends Quer
     __storeDefinition: true as const,
     tableDef: drizzleTable,
     queryFns,
-    table: drizzleTable,
+    table: drizzleTable as TTable & { storium: StoriumMeta },
     name: (drizzleTable as any).storium.name,
     queries: (newQueries: any) =>
       makeStoreDefinition(drizzleTable, config, { ...queryFns, ...newQueries }, assertions),
@@ -305,7 +305,7 @@ const makeStoreDefinition = <TTable extends Table = Table, TQueries extends Quer
  * // Without annotations
  * const bareStore = defineStore(usersTable)
  */
-export function defineStore<TTable extends Table>(
+export function defineStore<TTable extends Table<any>>(
   drizzleTable: TTable,
   config?: StoreConfig
 ): StoreDefinition<TTable, {}>

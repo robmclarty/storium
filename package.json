@@ -55,7 +55,7 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit -p tsconfig.check.json",
-    "typecheck:examples": "for dir in examples/*/; do echo \"--- $dir ---\" && (cd \"$dir\" && npx tsc --noEmit 2>&1 || true); done",
+    "typecheck:examples": "fail=0; for dir in examples/*/; do echo \"--- $dir ---\" && (cd \"$dir\" && npx tsc --noEmit 2>&1) || fail=1; done; exit $fail",
     "lint": "npm run lint:code && npm run lint:fallow",
     "lint:fallow": "fallow --fail-on-issues",
     "lint:code": "node --import tsx/esm $(which oxlint) .",

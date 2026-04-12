@@ -16,7 +16,7 @@ export const search = (ctx: Ctx) => async (term: string) =>
 
 // Uses includeHidden to read password_hash (normally excluded from SELECTs)
 export const authenticate = (ctx: Ctx) => async (email: string, password: string) => {
-  const user = await ctx.findOne({ email }, { includeHidden: true })
+  const user = await ctx.findOne({ email }, { includeHidden: true } as any)
   if (!user) return null
 
   // In a real app: await bcrypt.compare(password, user.password_hash)

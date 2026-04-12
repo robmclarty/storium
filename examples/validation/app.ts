@@ -144,7 +144,7 @@ console.log('\n=== Required fields ===')
 
 const missingRequired = { name: 'Only a name' }
 try {
-  await products.create(missingRequired)
+  await products.create(missingRequired as any)
 } catch (err) {
   if (err instanceof ValidationError) {
     console.log(`Missing ${err.errors.length} required fields:`)
@@ -170,7 +170,7 @@ try {
 console.log('\n=== Skip prep mode ===')
 
 const forceBypass = { price: -100 }
-const forced = await products.update(widget.id, forceBypass, { skipPrep: true })
+const forced = await products.update(widget.id, forceBypass, { skipPrep: true } as any)
 console.log('Updated (pipeline skipped):', forced)
 
 // --- Runtime schemas ---
