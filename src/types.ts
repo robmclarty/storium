@@ -142,6 +142,8 @@ export type StoreConfig = {
   columns?: ColumnAnnotations
   /** Enable soft delete. The Drizzle table must have a `deletedAt` column. */
   softDelete?: boolean
+  /** Default columns to target for conflict detection in `upsert()`. Overridden by per-call `opts.conflictTarget`. */
+  conflictTarget?: string[]
 }
 
 // ----------------------------------------------------------- Table Access --
@@ -254,6 +256,8 @@ export type StoriumMeta = {
   schemas: SchemaSet
   /** Whether this table uses soft delete. */
   softDelete: boolean
+  /** Default conflict target columns for upsert. */
+  conflictTarget?: string[]
 }
 
 // ------------------------------------------------------------ Table Def --
@@ -286,7 +290,7 @@ export type OrderBySpec = {
  * Does not include escape hatches like `skipPrep` or `includeHidden` —
  * those are only available inside custom queries via `PrepOptions`.
  */
-export type QueryOptions = {
+export type QueryOptions<TTable = any> = {
   /** Participate in an external transaction. */
   tx?: any
   /** Limit the number of rows returned (find, findAll). */
@@ -302,7 +306,7 @@ export type QueryOptions = {
    * Additional Drizzle WHERE clause. Receives the table for column references.
    * AND'd with any equality filters from `find()`.
    */
-  where?: (table: any) => SQL | undefined
+  where?: (table: TTable) => SQL | undefined
   /**
    * Columns to target for conflict detection in `upsert()`.
    * Defaults to the primary key. Pass column names for unique constraint targets.
@@ -399,23 +403,23 @@ export type QueriesConfig = Record<string, (ctx: any) => (...args: any[]) => any
  * falls back to `any` / `Record<string, any>` for backward compatibility.
  */
 export type DefaultCRUD<TTable extends Table = Table> = {
-  find: (filters: Partial<InferInput<TTable>>, opts?: QueryOptions) => Promise<InferRow<TTable>[]>
-  findAll: (opts?: QueryOptions) => Promise<InferRow<TTable>[]>
-  findOne: (filters: Partial<InferInput<TTable>>, opts?: QueryOptions) => Promise<InferRow<TTable> | null>
-  findById: (id: PkValue, opts?: QueryOptions) => Promise<InferRow<TTable> | null>
-  findByIdIn: (ids: (string | number)[], opts?: QueryOptions) => Promise<InferRow<TTable>[]>
-  create: (input: InferInput<TTable>, opts?: QueryOptions) => Promise<InferRow<TTable>>
-  createMany: (inputs: InferInput<TTable>[], opts?: QueryOptions) => Promise<InferRow<TTable>[]>
-  update: (id: PkValue, input: Partial<InferInput<TTable>>, opts?: QueryOptions) => Promise<InferRow<TTable>>
-  upsert: (input: InferInput<TTable>, opts?: QueryOptions) => Promise<InferRow<TTable>>
-  destroy: (id: PkValue, opts?: QueryOptions) => Promise<void>
-  destroyAll: (filters: Partial<InferInput<TTable>>, opts?: QueryOptions) => Promise<number>
+  find: (filters: Partial<InferInput<TTable>>, opts?: QueryOptions<TTable>) => Promise<InferRow<TTable>[]>
+  findAll: (opts?: QueryOptions<TTable>) => Promise<InferRow<TTable>[]>
+  findOne: (filters: Partial<InferInput<TTable>>, opts?: QueryOptions<TTable>) => Promise<InferRow<TTable> | null>
+  findById: (id: PkValue, opts?: QueryOptions<TTable>) => Promise<InferRow<TTable> | null>
+  findByIdIn: (ids: (string | number)[], opts?: QueryOptions<TTable>) => Promise<InferRow<TTable>[]>
+  create: (input: InferInput<TTable>, opts?: QueryOptions<TTable>) => Promise<InferRow<TTable>>
+  createMany: (inputs: InferInput<TTable>[], opts?: QueryOptions<TTable>) => Promise<InferRow<TTable>[]>
+  update: (id: PkValue, input: Partial<InferInput<TTable>>, opts?: QueryOptions<TTable>) => Promise<InferRow<TTable>>
+  upsert: (input: InferInput<TTable>, opts?: QueryOptions<TTable>) => Promise<InferRow<TTable>>
+  destroy: (id: PkValue, opts?: QueryOptions<TTable>) => Promise<InferRow<TTable>>
+  destroyAll: (filters: Partial<InferInput<TTable>>, opts?: QueryOptions<TTable>) => Promise<number>
   /** Count rows matching filters and/or a where clause. */
-  count: (filters?: Partial<InferInput<TTable>>, opts?: QueryOptions) => Promise<number>
+  count: (filters?: Partial<InferInput<TTable>>, opts?: QueryOptions<TTable>) => Promise<number>
   /** Check if any row matches the filters and/or where clause. */
-  exists: (filters: Partial<InferInput<TTable>>, opts?: QueryOptions) => Promise<boolean>
+  exists: (filters: Partial<InferInput<TTable>>, opts?: QueryOptions<TTable>) => Promise<boolean>
   /** Look up a row by filter and return its primary key value. */
-  ref: (filter: Partial<InferInput<TTable>>, opts?: QueryOptions) => Promise<PkValue>
+  ref: (filter: Partial<InferInput<TTable>>, opts?: QueryOptions<TTable>) => Promise<PkValue>
 }
 
 /**
@@ -441,11 +445,6 @@ export type InferStore<T> =
     : T extends { tableDef: any; queryFns: infer Q extends QueriesConfig }
       ? Store<Table, Q>
       : Store
-
-/**
- * A Repository is the same shape as a Store, produced by `createRepository()`.
- */
-export type Repository<TTable extends Table = Table, TQueries extends QueriesConfig = {}> = Store<TTable, TQueries>
 
 // ---------------------------------------------------------- Cache Adapter --
 

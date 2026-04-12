@@ -64,22 +64,14 @@ export type {
   StoreConfig,
 
   // Table & repository
-  TableDef,
-  TableAccess,
   AccessConfig,
   Store,
   InferStore,
-  Repository,
-  DrizzleDatabase,
-  InferDialect,
-  DefaultCRUD,
-  RepositoryContext,
   Ctx,
   CustomQueryFn,
   QueriesConfig,
   OrderBySpec,
   QueryOptions,
-  PrepOptions,
 
   // Schema & validation
   RuntimeSchema,
