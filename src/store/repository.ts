@@ -159,6 +159,13 @@ const buildDefaultCrud = (
   /**
    * Run an UPDATE with RETURNING (PostgreSQL/SQLite) or fall back to
    * UPDATE + SELECT for MySQL. Returns the updated row or throws.
+   *
+   * **MySQL race condition:** On MySQL (which lacks RETURNING), this performs
+   * a separate UPDATE followed by a SELECT. Between these two statements,
+   * a concurrent transaction could modify or delete the row, causing the
+   * SELECT to return stale data or no row at all. For critical update-then-read
+   * scenarios on MySQL, wrap the call in a transaction (`{ tx }`) to ensure
+   * the UPDATE and SELECT execute within the same isolation scope.
    */
   const updateAndReturn = async (
     values: Record<string, any>,

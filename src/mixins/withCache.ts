@@ -115,6 +115,7 @@ const wrapWithInvalidation = (
  *
  * **Experimental** — see module-level docs for known limitations.
  *
+ * @experimental This API may change in future releases.
  * @param store - The store or repository to wrap
  * @param cache - A CacheAdapter implementation (Redis, Memcached, etc.)
  * @param config - Map of method names to cache configuration (TTL + key builder)
