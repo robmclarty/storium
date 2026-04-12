@@ -4,6 +4,11 @@ All notable changes to Storium are documented here.
 
 This project uses [Semantic Versioning](https://semver.org/). Pre-1.0 releases may include breaking changes in minor versions.
 
+## 0.14.1 - 11 Apr 2026
+
+- Fix TS2339 error on `.storium` access in from-drizzle example (cast to `any` for runtime-attached property)
+- Remove stale `@ts-expect-error` directive in validation example
+
 ## 0.14.0 - 11 Apr 2026
 
 - **BREAKING:** Remove `defineTable` DSL — users define tables with native Drizzle syntax (`pgTable`, `sqliteTable`, `mysqlTable`)
