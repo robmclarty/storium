@@ -6,7 +6,7 @@
  * runtime schema types, and compile-time generic type utilities.
  */
 
-import type { SQL } from 'drizzle-orm'
+import type { SQL, Table, InferSelectModel, InferInsertModel } from 'drizzle-orm'
 import type { ZodType, z as ZodNamespace } from 'zod'
 import type { PgDatabase } from 'drizzle-orm/pg-core'
 import type { MySqlDatabase } from 'drizzle-orm/mysql-core'
@@ -67,6 +67,22 @@ export type DrizzleColumn = {
   baseColumn?: DrizzleColumn
   [key: string]: any
 }
+
+// --------------------------------------------------------- Row Type Utilities --
+
+/**
+ * Infer the SELECT row type from a Drizzle table.
+ * When TTable is the base `Table` type (no specific table), falls back to `any`.
+ */
+export type InferRow<TTable extends Table = Table> =
+  Table extends TTable ? any : InferSelectModel<TTable>
+
+/**
+ * Infer the INSERT input type from a Drizzle table.
+ * When TTable is the base `Table` type (no specific table), falls back to `Record<string, any>`.
+ */
+export type InferInput<TTable extends Table = Table> =
+  Table extends TTable ? Record<string, any> : InferInsertModel<TTable>
 
 // ------------------------------------------------------------- Assertions --
 
@@ -323,7 +339,7 @@ export type PkValue = string | number | (string | number)[]
  * Contains the database handle, table metadata, default CRUD operations,
  * and the prep pipeline.
  */
-export type RepositoryContext<D extends Dialect = Dialect> = {
+export type RepositoryContext<D extends Dialect = Dialect, TTable extends Table = Table> = {
   /**
    * The Drizzle database instance (escape hatch).
    * When `D` is a specific dialect, resolves to the concrete Drizzle class
@@ -346,21 +362,21 @@ export type RepositoryContext<D extends Dialect = Dialect> = {
   schemas: SchemaSet
   /** The filter → transform → validate pipeline. */
   prep: (input: Record<string, any>, opts?: PrepOptions) => Promise<Record<string, any>>
-} & DefaultCRUD
+} & DefaultCRUD<TTable>
 
 /**
  * Shorthand for `RepositoryContext` — the context object passed to custom
  * query factories.
  */
-export type Ctx<D extends Dialect = Dialect> = RepositoryContext<D>
+export type Ctx<D extends Dialect = Dialect, TTable extends Table = Table> = RepositoryContext<D, TTable>
 
 /**
  * A custom query function receives the repository context and returns
  * the actual query function. This enables closure over `ctx` and
  * composition with default CRUD operations.
  */
-export type CustomQueryFn<D extends Dialect = Dialect> =
-  (ctx: RepositoryContext<D>) => (...args: any[]) => any
+export type CustomQueryFn<D extends Dialect = Dialect, TTable extends Table = Table> =
+  (ctx: RepositoryContext<D, TTable>) => (...args: any[]) => any
 
 /**
  * Constraint type for custom query function records.
@@ -377,37 +393,36 @@ export type QueriesConfig = Record<string, (ctx: any) => (...args: any[]) => any
 /**
  * Default CRUD operations present on every store/repository.
  *
- * @remarks Return types are `Promise<any>` because the row shape depends
- * on the Drizzle table definition and column annotations (hidden, readonly).
- * TypeScript cannot express "the SELECT projection of table T minus hidden
- * columns" without dependent types. A future `Store<T>` generic could narrow
- * these via `InferSelectModel<T>`, but that's a separate initiative.
+ * Generic over `TTable` — when a specific Drizzle table type is provided,
+ * return types narrow to `InferSelectModel<TTable>` and input types narrow
+ * to `InferInsertModel<TTable>`. When `TTable` is the base `Table` (default),
+ * falls back to `any` / `Record<string, any>` for backward compatibility.
  */
-export type DefaultCRUD = {
-  find: (filters: Record<string, any>, opts?: QueryOptions) => Promise<any[]>
-  findAll: (opts?: QueryOptions) => Promise<any[]>
-  findOne: (filters: Record<string, any>, opts?: QueryOptions) => Promise<any | null>
-  findById: (id: PkValue, opts?: QueryOptions) => Promise<any | null>
-  findByIdIn: (ids: (string | number)[], opts?: QueryOptions) => Promise<any[]>
-  create: (input: Record<string, any>, opts?: QueryOptions) => Promise<any>
-  createMany: (inputs: Record<string, any>[], opts?: QueryOptions) => Promise<any[]>
-  update: (id: PkValue, input: Record<string, any>, opts?: QueryOptions) => Promise<any>
-  upsert: (input: Record<string, any>, opts?: QueryOptions) => Promise<any>
+export type DefaultCRUD<TTable extends Table = Table> = {
+  find: (filters: Partial<InferInput<TTable>>, opts?: QueryOptions) => Promise<InferRow<TTable>[]>
+  findAll: (opts?: QueryOptions) => Promise<InferRow<TTable>[]>
+  findOne: (filters: Partial<InferInput<TTable>>, opts?: QueryOptions) => Promise<InferRow<TTable> | null>
+  findById: (id: PkValue, opts?: QueryOptions) => Promise<InferRow<TTable> | null>
+  findByIdIn: (ids: (string | number)[], opts?: QueryOptions) => Promise<InferRow<TTable>[]>
+  create: (input: InferInput<TTable>, opts?: QueryOptions) => Promise<InferRow<TTable>>
+  createMany: (inputs: InferInput<TTable>[], opts?: QueryOptions) => Promise<InferRow<TTable>[]>
+  update: (id: PkValue, input: Partial<InferInput<TTable>>, opts?: QueryOptions) => Promise<InferRow<TTable>>
+  upsert: (input: InferInput<TTable>, opts?: QueryOptions) => Promise<InferRow<TTable>>
   destroy: (id: PkValue, opts?: QueryOptions) => Promise<void>
-  destroyAll: (filters: Record<string, any>, opts?: QueryOptions) => Promise<number>
+  destroyAll: (filters: Partial<InferInput<TTable>>, opts?: QueryOptions) => Promise<number>
   /** Count rows matching filters and/or a where clause. */
-  count: (filters?: Record<string, any>, opts?: QueryOptions) => Promise<number>
+  count: (filters?: Partial<InferInput<TTable>>, opts?: QueryOptions) => Promise<number>
   /** Check if any row matches the filters and/or where clause. */
-  exists: (filters: Record<string, any>, opts?: QueryOptions) => Promise<boolean>
+  exists: (filters: Partial<InferInput<TTable>>, opts?: QueryOptions) => Promise<boolean>
   /** Look up a row by filter and return its primary key value. */
-  ref: (filter: Record<string, any>, opts?: QueryOptions) => Promise<PkValue>
+  ref: (filter: Partial<InferInput<TTable>>, opts?: QueryOptions) => Promise<PkValue>
 }
 
 /**
  * A Store is a live object with CRUD operations, custom queries, and
  * runtime schemas. Produced by `db.defineStore()` or `db.register()`.
  */
-export type Store<TQueries extends QueriesConfig = {}> = DefaultCRUD & {
+export type Store<TTable extends Table = Table, TQueries extends QueriesConfig = {}> = DefaultCRUD<TTable> & {
   /** The table name this store operates on. */
   name: string
   schemas: SchemaSet
@@ -421,14 +436,16 @@ export type Store<TQueries extends QueriesConfig = {}> = DefaultCRUD & {
  * StoreDefinition (which would create a circular dependency with types.ts).
  */
 export type InferStore<T> =
-  T extends { tableDef: TableDef; queryFns: infer Q extends QueriesConfig }
-    ? Store<Q>
-    : Store
+  T extends { tableDef: infer TT extends Table; queryFns: infer Q extends QueriesConfig }
+    ? Store<TT, Q>
+    : T extends { tableDef: any; queryFns: infer Q extends QueriesConfig }
+      ? Store<Table, Q>
+      : Store
 
 /**
  * A Repository is the same shape as a Store, produced by `createRepository()`.
  */
-export type Repository<TQueries extends QueriesConfig = {}> = Store<TQueries>
+export type Repository<TTable extends Table = Table, TQueries extends QueriesConfig = {}> = Store<TTable, TQueries>
 
 // ---------------------------------------------------------- Cache Adapter --
 
@@ -538,13 +555,13 @@ export type StoriumInstance<D extends Dialect = Dialect> = {
    * const users = db.defineStore(usersTable, { columns: { email: { required: true } } })
    * const users = db.defineStore(usersTable).queries({ findByEmail: (ctx) => ... })
    */
-  defineStore: (
-    drizzleTable: any,
+  defineStore: <TTable extends Table = Table>(
+    drizzleTable: TTable,
     config?: StoreConfig
-  ) => Store & {
+  ) => Store<TTable> & {
     queries: <TKeys extends string>(
-      queryFns: Record<TKeys, (ctx: RepositoryContext<D>) => (...args: any[]) => any>
-    ) => Store<Record<TKeys, (ctx: RepositoryContext<D>) => (...args: any[]) => any>>
+      queryFns: Record<TKeys, (ctx: RepositoryContext<D, TTable>) => (...args: any[]) => any>
+    ) => Store<TTable, Record<TKeys, (ctx: RepositoryContext<D, TTable>) => (...args: any[]) => any>>
   }
   /** Materialize StoreDefinitions into live stores with CRUD + queries. */
   register: <T extends Record<string, any>>(
