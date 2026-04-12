@@ -11,7 +11,7 @@
  */
 
 import { z } from 'zod'
-import { is } from 'drizzle-orm'
+import { is, sql } from 'drizzle-orm'
 import type { Table } from 'drizzle-orm'
 import { PgDatabase } from 'drizzle-orm/pg-core'
 import { MySqlDatabase } from 'drizzle-orm/mysql-core'
@@ -156,13 +156,14 @@ const createDrizzleInstance = (config: StoriumConfig): { db: any; teardown: () =
 /**
  * Build a connection URL from individual config fields.
  */
+const enc = (s: string) => encodeURIComponent(s)
+
 const buildAuthHost = (
   user: string | undefined,
   password: string | undefined,
   host: string,
   port: number | undefined
 ): string => {
-  const enc = (s: string) => encodeURIComponent(s)
   const auth = user ? `${enc(user)}${password ? `:${enc(password)}` : ''}@` : ''
   const portSuffix = port ? `:${port}` : ''
   return `${auth}${host}${portSuffix}`
@@ -199,8 +200,6 @@ const buildConnectionUrl = (config: StoriumConfig): string => {
 
 // ------------------------------------------------ Transaction Helper --
 
-import { sql } from 'drizzle-orm'
-
 /**
  * Create a `withTransaction` function bound to a Drizzle db instance.
  *
@@ -224,7 +223,11 @@ const createWithTransaction = (db: any, dialect: Dialect) => {
         db.run(sql`COMMIT`)
         return result
       } catch (err) {
-        db.run(sql`ROLLBACK`)
+        try {
+          db.run(sql`ROLLBACK`)
+        } catch {
+          // ROLLBACK failed — original error is more important
+        }
         throw err
       }
     }
@@ -337,8 +340,8 @@ const buildInstance = <D extends Dialect>(
   let disconnected = false
   const disconnect = async () => {
     if (disconnected) return
-    disconnected = true
     await teardown()
+    disconnected = true
   }
 
   return {
@@ -364,12 +367,17 @@ export const connect = <D extends Dialect>(config: StoriumConfig<D>): StoriumIns
 
   const { db, teardown } = createDrizzleInstance(config as StoriumConfig)
 
-  return buildInstance<D>(
-    db as DrizzleDatabase<D>,
-    config.dialect,
-    config.assertions ?? {},
-    teardown
-  )
+  try {
+    return buildInstance<D>(
+      db as DrizzleDatabase<D>,
+      config.dialect,
+      config.assertions ?? {},
+      teardown
+    )
+  } catch (err) {
+    teardown().catch(() => {})
+    throw err
+  }
 }
 
 /**
