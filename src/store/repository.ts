@@ -19,7 +19,7 @@ import type {
   QueriesConfig,
   PrepOptions,
   OrderBySpec,
-  Repository,
+  Store,
   AssertionRegistry,
   PkValue,
 } from '../types'
@@ -27,6 +27,33 @@ import { StoreError } from '../errors'
 import { createPrepFn } from './prep'
 
 // -------------------------------------------------------------- Helpers --
+
+/**
+ * Detect common database constraint violations and wrap them in StoreError
+ * with a structured message. Unknown DB errors pass through unchanged.
+ */
+const wrapConstraintError = (err: any, tableName: string): never => {
+  // PostgreSQL error codes
+  const pgCode = err?.code
+  if (pgCode === '23505') throw new StoreError(`Unique constraint violation on '${tableName}': ${err.detail ?? err.message}`)
+  if (pgCode === '23503') throw new StoreError(`Foreign key constraint violation on '${tableName}': ${err.detail ?? err.message}`)
+  if (pgCode === '23502') throw new StoreError(`NOT NULL constraint violation on '${tableName}': ${err.detail ?? err.message}`)
+
+  // MySQL error numbers
+  const mysqlErrno = err?.errno
+  if (mysqlErrno === 1062) throw new StoreError(`Unique constraint violation on '${tableName}': ${err.message}`)
+  if (mysqlErrno === 1452) throw new StoreError(`Foreign key constraint violation on '${tableName}': ${err.message}`)
+  if (mysqlErrno === 1048) throw new StoreError(`NOT NULL constraint violation on '${tableName}': ${err.message}`)
+
+  // SQLite constraint errors (code is e.g. 'SQLITE_CONSTRAINT_UNIQUE')
+  const sqliteCode = err?.code ?? ''
+  const msg = err?.message ?? ''
+  if (typeof sqliteCode === 'string' && sqliteCode.startsWith('SQLITE_CONSTRAINT')) {
+    throw new StoreError(`Constraint violation on '${tableName}': ${msg}`)
+  }
+
+  throw err
+}
 
 /**
  * Whether the dialect supports RETURNING clauses on INSERT/UPDATE/DELETE.
@@ -47,6 +74,12 @@ const buildPkWhere = (
     return eq(table[primaryKey], id as string | number)
   }
   const ids = id as (string | number)[]
+  if (ids.length !== primaryKey.length) {
+    throw new StoreError(
+      `Composite PK lookup requires ${primaryKey.length} value(s) [${primaryKey.join(', ')}], ` +
+      `but received ${ids.length}.`
+    )
+  }
   const conditions = primaryKey.map((col, i) => eq(table[col], ids[i]))
   return conditions.length === 1 ? conditions[0] : and(...conditions)
 }
@@ -95,9 +128,15 @@ const buildDefaultCrud = (
    */
   const applyOrderBy = (q: any, orderBy: OrderBySpec | OrderBySpec[]) => {
     const specs = Array.isArray(orderBy) ? orderBy : [orderBy]
-    const clauses = specs.map(spec =>
-      (spec.direction === 'desc' ? desc : asc)(table[spec.column])
-    )
+    const clauses = specs.map(spec => {
+      if (!validColumns.has(spec.column)) {
+        throw new StoreError(
+          `Unknown orderBy column '${spec.column}' on table '${tableName}'. ` +
+          `Valid columns: ${[...validColumns].join(', ')}`
+        )
+      }
+      return (spec.direction === 'desc' ? desc : asc)(table[spec.column])
+    })
     return q.orderBy(...clauses)
   }
 
@@ -173,12 +212,33 @@ const buildDefaultCrud = (
     errorPrefix: string,
     opts?: PrepOptions
   ) => {
-    if (supportsReturning(dialect)) {
-      const rows = await getDb(opts)
+    try {
+      if (supportsReturning(dialect)) {
+        const rows = await getDb(opts)
+          .update(table)
+          .set(values)
+          .where(buildPkWhere(table, primaryKey, id))
+          .returning(getCols(opts))
+
+        if (!rows[0]) {
+          throw new StoreError(
+            `${errorPrefix}: no '${tableName}' row with ${primaryKey} = ${id}.`
+          )
+        }
+        return rows[0]
+      }
+
+      // MySQL: no RETURNING support — update then select back
+      await getDb(opts)
         .update(table)
         .set(values)
         .where(buildPkWhere(table, primaryKey, id))
-        .returning(getCols(opts))
+
+      const rows = await getDb(opts)
+        .select(getCols(opts))
+        .from(table)
+        .where(buildPkWhere(table, primaryKey, id))
+        .limit(1)
 
       if (!rows[0]) {
         throw new StoreError(
@@ -186,26 +246,10 @@ const buildDefaultCrud = (
         )
       }
       return rows[0]
+    } catch (err) {
+      if (err instanceof StoreError) throw err
+      wrapConstraintError(err, tableName)
     }
-
-    // MySQL: no RETURNING support — update then select back
-    await getDb(opts)
-      .update(table)
-      .set(values)
-      .where(buildPkWhere(table, primaryKey, id))
-
-    const rows = await getDb(opts)
-      .select(getCols(opts))
-      .from(table)
-      .where(buildPkWhere(table, primaryKey, id))
-      .limit(1)
-
-    if (!rows[0]) {
-      throw new StoreError(
-        `${errorPrefix}: no '${tableName}' row with ${primaryKey} = ${id}.`
-      )
-    }
-    return rows[0]
   }
 
   const find = async (filters: Record<string, any>, opts?: PrepOptions) => {
@@ -285,63 +329,65 @@ const buildDefaultCrud = (
       onlyWritable: false,
     })
 
-    if (supportsReturning(dialect)) {
-      const rows = await getDb(opts)
-        .insert(table)
-        .values(prepared)
-        .returning(getCols(opts))
+    try {
+      if (supportsReturning(dialect)) {
+        const rows = await getDb(opts)
+          .insert(table)
+          .values(prepared)
+          .returning(getCols(opts))
 
-      if (!rows[0]) {
-        throw new StoreError(
-          `create(): INSERT into '${tableName}' succeeded but returned no rows. ` +
-          'The RETURNING clause produced an empty result.'
-        )
+        if (!rows[0]) {
+          throw new StoreError(
+            `create(): INSERT into '${tableName}' succeeded but returned no rows. ` +
+            'The RETURNING clause produced an empty result.'
+          )
+        }
+
+        return rows[0]
       }
 
-      return rows[0]
-    }
+      // MySQL has no RETURNING clause, so we insert then SELECT back by PK.
+      if (Array.isArray(primaryKey)) {
+        await getDb(opts).insert(table).values(prepared)
+        const pkValues = primaryKey.map(col => prepared[col])
+        const rows = await getDb(opts)
+          .select(getCols(opts))
+          .from(table)
+          .where(buildPkWhere(table, primaryKey, pkValues))
+          .limit(1)
 
-    // MySQL has no RETURNING clause, so we insert then SELECT back by PK.
-    if (Array.isArray(primaryKey)) {
-      await getDb(opts).insert(table).values(prepared)
-      const pkValues = primaryKey.map(col => prepared[col])
+        if (!rows[0]) {
+          throw new StoreError(
+            `create(): INSERT into '${tableName}' succeeded but the follow-up SELECT ` +
+            `found no row with composite PK [${primaryKey.join(', ')}].`
+          )
+        }
+
+        return rows[0]
+      }
+
+      // Single PK: Drizzle's $defaultFn handles UUID generation.
+      // The PK value should be in `prepared` (user-provided) or generated by Drizzle.
+      const result = await getDb(opts).insert(table).values(prepared)
+      const pk = prepared[primaryKey] ?? (result as any).insertId
       const rows = await getDb(opts)
         .select(getCols(opts))
         .from(table)
-        .where(buildPkWhere(table, primaryKey, pkValues))
+        .where(buildPkWhere(table, primaryKey, pk))
         .limit(1)
 
       if (!rows[0]) {
         throw new StoreError(
           `create(): INSERT into '${tableName}' succeeded but the follow-up SELECT ` +
-          `found no row with composite PK [${primaryKey.join(', ')}].`
+          `found no row with ${primaryKey} = ${pk}.`
         )
       }
 
       return rows[0]
+    } catch (err) {
+      if (err instanceof StoreError) throw err
+      wrapConstraintError(err, tableName)
     }
-
-    // Single PK: Drizzle's $defaultFn handles UUID generation.
-    // The PK value should be in `prepared` (user-provided) or generated by Drizzle.
-    const result = await getDb(opts).insert(table).values(prepared)
-    // `(result as any).insertId` — Drizzle's MySQL insert result exposes
-    // insertId but the type is not publicly exported; this is the only
-    // way to retrieve auto-increment PKs on MySQL without RETURNING.
-    const pk = prepared[primaryKey] ?? (result as any).insertId
-    const rows = await getDb(opts)
-      .select(getCols(opts))
-      .from(table)
-      .where(buildPkWhere(table, primaryKey, pk))
-      .limit(1)
-
-    if (!rows[0]) {
-      throw new StoreError(
-        `create(): INSERT into '${tableName}' succeeded but the follow-up SELECT ` +
-        `found no row with ${primaryKey} = ${pk}.`
-      )
-    }
-
-    return rows[0]
   }
 
   const update = async (
@@ -363,24 +409,26 @@ const buildDefaultCrud = (
       const rows = await getDb(opts)
         .delete(table)
         .where(buildPkWhere(table, primaryKey, id))
-        .returning()
+        .returning(getCols(opts))
       if (!rows[0]) {
         throw new StoreError(
           `destroy(): no '${tableName}' row with ${primaryKey} = ${id}.`
         )
       }
-      return
+      return rows[0]
     }
 
-    // MySQL: check affected rows
-    const result = await getDb(opts)
-      .delete(table)
-      .where(buildPkWhere(table, primaryKey, id))
-    if ((result.affectedRows ?? 0) === 0) {
+    // MySQL: SELECT before DELETE (no RETURNING), then verify deletion
+    const row = await findById(id, opts)
+    if (!row) {
       throw new StoreError(
         `destroy(): no '${tableName}' row with ${primaryKey} = ${id}.`
       )
     }
+    await getDb(opts)
+      .delete(table)
+      .where(buildPkWhere(table, primaryKey, id))
+    return row
   }
 
   const destroyAll = async (filters: Record<string, any>, opts?: PrepOptions) => {
@@ -493,15 +541,14 @@ const buildDefaultCrud = (
       onlyWritable: false,
     })
 
-    // Determine conflict target columns
-    const target = opts?.conflictTarget
-      ? opts.conflictTarget.map(col => table[col])
-      : Array.isArray(primaryKey)
-        ? primaryKey.map(col => table[col])
-        : [table[primaryKey]]
+    // Determine conflict target columns: per-call > store config > primary key
+    const resolvedTarget = opts?.conflictTarget
+      ?? tableDef.storium.conflictTarget
+      ?? (Array.isArray(primaryKey) ? primaryKey : [primaryKey])
+    const target = resolvedTarget.map(col => table[col])
 
     // Build the SET clause: all writable columns except the conflict target
-    const targetNames = new Set(opts?.conflictTarget ?? (Array.isArray(primaryKey) ? primaryKey : [primaryKey]))
+    const targetNames = new Set(resolvedTarget)
     const setFields: Record<string, any> = {}
     for (const key of access.writable) {
       if (!targetNames.has(key) && key in prepared) {
@@ -509,45 +556,50 @@ const buildDefaultCrud = (
       }
     }
 
-    if (supportsReturning(dialect)) {
-      const rows = await getDb(opts)
+    try {
+      if (supportsReturning(dialect)) {
+        const rows = await getDb(opts)
+          .insert(table)
+          .values(prepared)
+          .onConflictDoUpdate({ target, set: setFields })
+          .returning(getCols(opts))
+
+        if (!rows[0]) {
+          throw new StoreError(
+            `upsert(): INSERT OR UPDATE on '${tableName}' returned no rows.`
+          )
+        }
+
+        return rows[0]
+      }
+
+      // MySQL: ON DUPLICATE KEY UPDATE
+      await getDb(opts)
         .insert(table)
         .values(prepared)
-        .onConflictDoUpdate({ target, set: setFields })
-        .returning(getCols(opts))
+        .onDuplicateKeyUpdate({ set: setFields })
+
+      const lookupFilters: Record<string, any> = {}
+      for (const col of targetNames) {
+        lookupFilters[col] = prepared[col]
+      }
+      const rows = await getDb(opts)
+        .select(getCols(opts))
+        .from(table)
+        .where(buildWhere(lookupFilters))
+        .limit(1)
 
       if (!rows[0]) {
         throw new StoreError(
-          `upsert(): INSERT OR UPDATE on '${tableName}' returned no rows.`
+          `upsert(): INSERT OR UPDATE on '${tableName}' succeeded but the follow-up SELECT found no row.`
         )
       }
 
       return rows[0]
+    } catch (err) {
+      if (err instanceof StoreError) throw err
+      wrapConstraintError(err, tableName)
     }
-
-    // MySQL: ON DUPLICATE KEY UPDATE
-    await getDb(opts)
-      .insert(table)
-      .values(prepared)
-      .onDuplicateKeyUpdate({ set: setFields })
-
-    const lookupFilters: Record<string, any> = {}
-    for (const col of targetNames) {
-      lookupFilters[col] = prepared[col]
-    }
-    const rows = await getDb(opts)
-      .select(getCols(opts))
-      .from(table)
-      .where(buildWhere(lookupFilters))
-      .limit(1)
-
-    if (!rows[0]) {
-      throw new StoreError(
-        `upsert(): INSERT OR UPDATE on '${tableName}' succeeded but the follow-up SELECT found no row.`
-      )
-    }
-
-    return rows[0]
   }
 
   // Soft delete overrides
@@ -556,30 +608,12 @@ const buildDefaultCrud = (
     const hardDestroyAll = destroyAll
 
     const softDestroy = async (id: PkValue, opts?: PrepOptions) => {
-      if (supportsReturning(dialect)) {
-        const rows = await getDb(opts)
-          .update(table)
-          .set({ deletedAt: new Date() })
-          .where(buildPkWhere(table, primaryKey, id))
-          .returning()
-        if (!rows[0]) {
-          throw new StoreError(
-            `destroy(): no '${tableName}' row with ${primaryKey} = ${id}.`
-          )
-        }
-        return
-      }
-
-      // MySQL: check affected rows
-      const result = await getDb(opts)
-        .update(table)
-        .set({ deletedAt: new Date() })
-        .where(buildPkWhere(table, primaryKey, id))
-      if ((result.affectedRows ?? 0) === 0) {
-        throw new StoreError(
-          `destroy(): no '${tableName}' row with ${primaryKey} = ${id}.`
-        )
-      }
+      return updateAndReturn(
+        { deletedAt: new Date() },
+        id,
+        `destroy(): no '${tableName}' row with`,
+        opts
+      )
     }
 
     const softDestroyAll = async (filters: Record<string, any>, opts?: PrepOptions) => {
@@ -685,7 +719,7 @@ export const createCreateRepository = (
   const createRepository = <TTable extends Table = Table, TQueries extends QueriesConfig = {}>(
     tableDef: TableDef,
     queries: TQueries = {} as TQueries
-  ): Repository<TTable, TQueries> => {
+  ): Store<TTable, TQueries> => {
 
     // Step 1: Build default CRUD operations
     const defaults = buildDefaultCrud(db, tableDef, assertions, dialect)
@@ -741,7 +775,7 @@ export const createCreateRepository = (
       ...customs,
     }
 
-    return repository as unknown as Repository<TTable, TQueries>
+    return repository as unknown as Store<TTable, TQueries>
   }
 
   return createRepository

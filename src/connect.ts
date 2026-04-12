@@ -76,8 +76,16 @@ const createDrizzleInstance = (config: StoriumConfig): { db: any; teardown: () =
 
   switch (dialect) {
     case 'postgresql': {
-      const { Pool } = require('pg')
-      const { drizzle } = require('drizzle-orm/node-postgres')
+      let Pool: any, drizzle: any
+      try {
+        Pool = require('pg').Pool
+        drizzle = require('drizzle-orm/node-postgres').drizzle
+      } catch (e: any) {
+        if (e?.code === 'MODULE_NOT_FOUND') {
+          throw new ConfigError('PostgreSQL driver not found. Install it: npm install pg')
+        }
+        throw e
+      }
       const pool = new Pool({
         connectionString: url,
         min: config.pool?.min,
@@ -92,8 +100,16 @@ const createDrizzleInstance = (config: StoriumConfig): { db: any; teardown: () =
     }
 
     case 'mysql': {
-      const mysql = require('mysql2/promise')
-      const { drizzle } = require('drizzle-orm/mysql2')
+      let mysql: any, drizzle: any
+      try {
+        mysql = require('mysql2/promise')
+        drizzle = require('drizzle-orm/mysql2').drizzle
+      } catch (e: any) {
+        if (e?.code === 'MODULE_NOT_FOUND') {
+          throw new ConfigError('MySQL driver not found. Install it: npm install mysql2')
+        }
+        throw e
+      }
       const pool = mysql.createPool({
         uri: url,
         ...(config.pool?.max !== undefined && { connectionLimit: config.pool.max }),
@@ -107,8 +123,16 @@ const createDrizzleInstance = (config: StoriumConfig): { db: any; teardown: () =
     }
 
     case 'sqlite': {
-      const Database = require('better-sqlite3')
-      const { drizzle } = require('drizzle-orm/better-sqlite3')
+      let Database: any, drizzle: any
+      try {
+        Database = require('better-sqlite3')
+        drizzle = require('drizzle-orm/better-sqlite3').drizzle
+      } catch (e: any) {
+        if (e?.code === 'MODULE_NOT_FOUND') {
+          throw new ConfigError('SQLite driver not found. Install it: npm install better-sqlite3')
+        }
+        throw e
+      }
       const sqlite = new Database(url === ':memory:' ? ':memory:' : url)
       const db = drizzle(sqlite)
 
