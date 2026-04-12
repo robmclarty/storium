@@ -1,17 +1,16 @@
-import { defineTable } from 'storium'
+import { sqliteTable, text, index } from 'drizzle-orm/sqlite-core'
+import crypto from 'node:crypto'
 
-export const postsTable = defineTable('posts')
-  .columns({
-    id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
-    title: { type: 'varchar', maxLength: 255, required: true },
-    body: { type: 'text' },
-    status: { type: 'varchar', maxLength: 20, default: 'draft' },
-    author_id: { type: 'uuid', required: true },
-    // SQLite: arrays stored as JSON text under the hood
-    tags: { type: 'array', items: 'text', default: [] },
-    // SQLite: jsonb maps to text(mode: 'json')
-    metadata: { type: 'jsonb' },
-  })
-  .indexes({
-    author_status: { columns: ['author_id', 'status'] },
-  })
+export const postsTable = sqliteTable('posts', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  title: text('title').notNull(),
+  body: text('body'),
+  status: text('status').default('draft'),
+  author_id: text('author_id').notNull(),
+  // SQLite: arrays stored as JSON text under the hood
+  tags: text('tags', { mode: 'json' }).$type<string[]>().default([]),
+  // SQLite: jsonb maps to text(mode: 'json')
+  metadata: text('metadata', { mode: 'json' }),
+}, (table) => [
+  index('posts_author_status_idx').on(table.author_id, table.status),
+])

@@ -8,20 +8,27 @@
  *   - Trying out schema designs before committing to a real database
  */
 
-import { storium, defineTable, defineStore } from 'storium'
+import { storium, defineStore } from 'storium'
 import type { StoriumInstance } from 'storium'
 import { sql } from 'drizzle-orm'
+import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core'
+import crypto from 'node:crypto'
 
 // --- Schema (defined once, reused across connections) ---
 
-const productsTable = defineTable('memory')('products').columns({
-  id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
-  name: { type: 'varchar', maxLength: 255, required: true },
-  price: { type: 'integer', required: true },
-  inStock: { type: 'boolean' },
-}).timestamps(false)
+const productsTable = sqliteTable('products', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  name: text('name').notNull(),
+  price: integer('price').notNull(),
+  inStock: integer('in_stock', { mode: 'boolean' }),
+})
 
-const productStore = defineStore(productsTable)
+const productStore = defineStore(productsTable, {
+  columns: {
+    name: { required: true },
+    price: { required: true },
+  },
+})
 
 const setupDb = (db: StoriumInstance) => {
   const { products } = db.register({ products: productStore })

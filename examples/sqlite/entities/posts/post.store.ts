@@ -9,7 +9,12 @@ import {
   findByMetadata,
 } from './post.queries.js'
 
-export const postStore = defineStore(postsTable).queries({
+export const postStore = defineStore(postsTable, {
+  columns: {
+    title: { required: true },
+    author_id: { required: true },
+  },
+}).queries({
   findByAuthor,
   findPublished,
   publish,

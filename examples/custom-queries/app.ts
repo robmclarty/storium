@@ -13,26 +13,36 @@
  * Custom queries return a function — this lets ctx capture the original
  * defaults, so even if you override `create`, ctx.create still refers
  * to the built-in version.
+ *
+ * Run: npm start
  */
 
-import { storium, defineTable, defineStore } from 'storium'
+import { storium, defineStore } from 'storium'
 import { sql, eq, like, desc } from 'drizzle-orm'
+import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core'
 
-// --- Schema ---
+// --- Schema (native Drizzle) ---
 
-const articlesTable = defineTable('memory')('articles').columns({
-  id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
-  title: { type: 'varchar', maxLength: 255, required: true },
-  slug: { type: 'varchar', maxLength: 255, required: true },
-  body: { type: 'text' },
-  status: { type: 'varchar', maxLength: 20, required: true },
-  author_id: { type: 'uuid', required: true },
-  view_count: { type: 'integer' },
-}).timestamps(false)
+const articlesTable = sqliteTable('articles', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  title: text('title').notNull(),
+  slug: text('slug').notNull(),
+  body: text('body'),
+  status: text('status').notNull().default('draft'),
+  author_id: text('author_id').notNull(),
+  view_count: integer('view_count').default(0),
+})
 
 // --- Store with custom queries ---
 
-const articleStore = defineStore(articlesTable).queries({
+const articleStore = defineStore(articlesTable, {
+  columns: {
+    title: { required: true },
+    slug: { required: true },
+    status: { required: true },
+    author_id: { required: true },
+  },
+}).queries({
   // Compose with built-in CRUD
   findBySlug: (ctx) => async (slug: string) =>
     ctx.findOne({ slug }),

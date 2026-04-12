@@ -9,53 +9,57 @@
  * This example walks through each stage.
  */
 
-import { storium, defineTable, defineStore, ValidationError } from 'storium'
+import { storium, defineStore, ValidationError } from 'storium'
 import { sql } from 'drizzle-orm'
+import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core'
+import crypto from 'node:crypto'
 
-// --- Schema with custom assertions ---
+// --- Schema ---
 
-const productsTable = defineTable('memory')('products').columns({
-  id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
-  name: {
-    type: 'varchar',
-    maxLength: 100,
-    required: true,
-    validate: (v, test) => {
-      test(v, 'not_empty', 'Product name cannot be empty')
-      test(v, (val) => String(val).length >= 2, 'Product name must be at least 2 characters')
-    },
-  },
-  slug: {
-    type: 'varchar',
-    maxLength: 100,
-    required: true,
-    transform: (v: string) => v.trim().toLowerCase().replace(/\s+/g, '-'),
-    validate: (v, test) => {
-      test(v, 'is_slug', 'Slug must contain only lowercase letters, numbers, and hyphens')
-    },
-  },
-  price: {
-    type: 'integer',
-    required: true,
-    validate: (v, test) => {
-      test(v, (val) => (val as number) > 0, 'Price must be positive')
-      test(v, (val) => (val as number) <= 999999, 'Price must not exceed 999999')
-    },
-  },
-  color: {
-    type: 'varchar',
-    maxLength: 7,
-    validate: (v, test) => {
-      test(v, 'is_hex_color', 'Color must be a hex color code (e.g., #ff0000)')
-    },
-  },
-  description: {
-    type: 'text',
-    transform: (v: string) => v.trim(),
-  },
-}).timestamps(false)
+const productsTable = sqliteTable('products', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  name: text('name').notNull(),
+  slug: text('slug').notNull(),
+  price: integer('price').notNull(),
+  color: text('color'),
+  description: text('description'),
+})
 
-const productStore = defineStore(productsTable)
+// --- Store with custom assertions ---
+
+const productStore = defineStore(productsTable, {
+  columns: {
+    name: {
+      required: true,
+      validate: (v, test) => {
+        test(v, 'not_empty', 'Product name cannot be empty')
+        test(v, (val) => String(val).length >= 2, 'Product name must be at least 2 characters')
+      },
+    },
+    slug: {
+      required: true,
+      transform: (v: string) => v.trim().toLowerCase().replace(/\s+/g, '-'),
+      validate: (v, test) => {
+        test(v, 'is_slug', 'Slug must contain only lowercase letters, numbers, and hyphens')
+      },
+    },
+    price: {
+      required: true,
+      validate: (v, test) => {
+        test(v, (val) => (val as number) > 0, 'Price must be positive')
+        test(v, (val) => (val as number) <= 999999, 'Price must not exceed 999999')
+      },
+    },
+    color: {
+      validate: (v, test) => {
+        test(v, 'is_hex_color', 'Color must be a hex color code (e.g., #ff0000)')
+      },
+    },
+    description: {
+      transform: (v: string) => v.trim(),
+    },
+  },
+})
 
 const db = storium.connect({
   dialect: 'memory',

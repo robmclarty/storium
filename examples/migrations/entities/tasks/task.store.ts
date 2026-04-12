@@ -1,4 +1,8 @@
 import { defineStore } from 'storium'
 import { tasksTable } from './task.schema.js'
 
-export const taskStore = defineStore(tasksTable)
+export const taskStore = defineStore(tasksTable, {
+  columns: {
+    title: { required: true },
+  },
+})

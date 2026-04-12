@@ -12,7 +12,7 @@ export default defineSeed(async (db) => {
 
   await tasks.create({
     title: 'Write schema files',
-    description: 'Define tables using defineTable().',
+    description: 'Define tables using native Drizzle + defineStore().',
     status: 'done',
     priority: 2,
   })

@@ -29,7 +29,18 @@ if (existsSync('./migrations')) rmSync('./migrations', { recursive: true })
 
 const config = await loadConfig()
 const db = storium.connect(config)
-const stores = { tasks: db.defineStore(tasksTable) }
+const stores = {
+  tasks: db.defineStore(tasksTable, {
+    columns: {
+      title: {
+        required: true,
+        validate: (value, test) => {
+          test(value, (v: any) => typeof v === 'string' && v.trim().length > 0, 'Title cannot be empty')
+        },
+      },
+    },
+  }),
+}
 
 await generate()
 await migrate(db)

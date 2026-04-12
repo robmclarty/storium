@@ -1,9 +1,10 @@
-import { defineTable } from 'storium'
+import { sqliteTable, text } from 'drizzle-orm/sqlite-core'
+import crypto from 'node:crypto'
 
-export const postsTable = defineTable('posts').columns({
-  id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
-  title: { type: 'varchar', maxLength: 255, required: true },
-  body: { type: 'text' },
-  status: { type: 'varchar', maxLength: 20, required: true },
-  author_id: { type: 'uuid', required: true },
+export const postsTable = sqliteTable('posts', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  title: text('title').notNull(),
+  body: text('body'),
+  status: text('status').notNull(),
+  author_id: text('author_id').notNull(),
 })

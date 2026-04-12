@@ -1,12 +1,10 @@
-import { defineTable } from 'storium'
+import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core'
+import crypto from 'node:crypto'
 
-// defineTable auto-detects the dialect from storium.config.ts
-export const tasksTable = defineTable('tasks')
-  .columns({
-    id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
-    title: { type: 'varchar', maxLength: 255, required: true },
-    description: { type: 'text' },
-    status: { type: 'varchar', maxLength: 20, default: 'pending' },
-    priority: { type: 'integer', default: 0 },
-  })
-  .indexes({ status: {} })
+export const tasksTable = sqliteTable('tasks', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  title: text('title').notNull(),
+  description: text('description'),
+  status: text('status').default('pending'),
+  priority: integer('priority').default(0),
+})

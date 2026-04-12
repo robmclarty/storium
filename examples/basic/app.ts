@@ -2,7 +2,7 @@
  * Basic example — the simplest path to a working store.
  *
  * Demonstrates:
- *   - db.defineTable() + db.defineStore() — two-step schema + store creation
+ *   - Native Drizzle table definition + db.defineStore() — two-step schema + store creation
  *   - CRUD operations: create, findById, findAll, findOne, update, destroy
  *   - Validation: transforms, built-in assertions (is_email, not_empty)
  *   - Transactions: atomic multi-row inserts
@@ -16,25 +16,20 @@
 
 import { storium } from 'storium'
 import { sql } from 'drizzle-orm'
+import { sqliteTable, text } from 'drizzle-orm/sqlite-core'
+import crypto from 'node:crypto'
+
+// --- Schema ---
+
+const usersTable = sqliteTable('users', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  email: text('email').notNull(),
+  name: text('name'),
+})
 
 // --- Setup ---
 
 const db = storium.connect({ dialect: 'memory' })
-
-const usersTable = db.defineTable('users').columns({
-  id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
-  email: {
-    type: 'varchar',
-    maxLength: 255,
-    required: true,
-    transform: (v: string) => v.trim().toLowerCase(),
-    validate: (v, test) => {
-      test(v, 'not_empty', 'Email cannot be empty')
-      test(v, 'is_email', 'Must be a valid email address')
-    },
-  },
-  name: { type: 'varchar', maxLength: 255 },
-}).timestamps(false).indexes({ email: { unique: true } })
 
 // Normally this would be handled by a migration, but for the sake of simplicity:
 db.drizzle.run(sql`
@@ -45,7 +40,18 @@ db.drizzle.run(sql`
   )
 `)
 
-const users = db.defineStore(usersTable)
+const users = db.defineStore(usersTable, {
+  columns: {
+    email: {
+      required: true,
+      transform: (v: string) => v.trim().toLowerCase(),
+      validate: (v, test) => {
+        test(v, 'not_empty', 'Email cannot be empty')
+        test(v, 'is_email', 'Must be a valid email address')
+      },
+    },
+  },
+})
 
 // --- CRUD ---
 

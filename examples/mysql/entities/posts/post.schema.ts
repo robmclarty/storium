@@ -1,16 +1,15 @@
-import { defineTable } from 'storium'
+import { mysqlTable, text, varchar, json, index } from 'drizzle-orm/mysql-core'
+import crypto from 'node:crypto'
 
-export const postsTable = defineTable('posts')
-  .columns({
-    id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
-    title: { type: 'varchar', maxLength: 255, required: true },
-    body: { type: 'text' },
-    status: { type: 'varchar', maxLength: 20, default: 'draft' },
-    author_id: { type: 'uuid', required: true },
-    // MySQL: arrays and jsonb stored as JSON
-    tags: { type: 'array', items: 'text', default: [] },
-    metadata: { type: 'jsonb' },
-  })
-  .indexes({
-    author_status: { columns: ['author_id', 'status'] },
-  })
+export const postsTable = mysqlTable('posts', {
+  id: varchar('id', { length: 36 }).primaryKey().$defaultFn(() => crypto.randomUUID()),
+  title: varchar('title', { length: 255 }).notNull(),
+  body: text('body'),
+  status: varchar('status', { length: 20 }).default('draft'),
+  author_id: varchar('author_id', { length: 36 }).notNull(),
+  // MySQL: arrays and jsonb stored as JSON
+  tags: json('tags').$type<string[]>().default([]),
+  metadata: json('metadata'),
+}, (table) => [
+  index('posts_author_status_idx').on(table.author_id, table.status),
+])

@@ -1,8 +1,8 @@
-import { defineTable } from 'storium'
+import { sqliteTable, text, primaryKey } from 'drizzle-orm/sqlite-core'
 
-export const postTagsTable = defineTable('post_tags')
-  .columns({
-    post_id: { type: 'uuid', required: true },
-    tag_id: { type: 'uuid', required: true },
-  })
-  .primaryKey('post_id', 'tag_id')
+export const postTagsTable = sqliteTable('post_tags', {
+  post_id: text('post_id').notNull(),
+  tag_id: text('tag_id').notNull(),
+}, (table) => [
+  primaryKey({ columns: [table.post_id, table.tag_id] }),
+])

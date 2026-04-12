@@ -3,18 +3,12 @@
  *
  * This example shows two things:
  * 1. storium.fromDrizzle() wraps an existing Drizzle connection
- * 2. defineTable(drizzleTable) wraps an existing Drizzle table with
- *    Storium metadata — no DSL column definitions needed
+ * 2. defineStore(drizzleTable, config?) adds Storium metadata (column
+ *    annotations, access control) directly — no separate wrapping step
  *
  * Use this when you have complex Drizzle schemas you don't want to
  * rewrite, or when you need full control over column types, defaults,
- * and constraints using Drizzle's native API. Storium's DSL is a
- * convenience layer — but sometimes you want the real thing.
- *
- * Note: Wrapped columns produce z.any() Zod schemas — Storium does
- * not attempt to reverse-engineer Drizzle column types. DB-level
- * constraints (NOT NULL, UNIQUE, etc.) still apply. For typed
- * validation, use defineTable('name').columns({...}) instead.
+ * and constraints using Drizzle's native API.
  *
  * Run: npm start
  */
@@ -23,7 +17,7 @@ import { createClient } from '@libsql/client'
 import { drizzle } from 'drizzle-orm/libsql'
 import { sql } from 'drizzle-orm'
 import { sqliteTable, text, integer, uniqueIndex } from 'drizzle-orm/sqlite-core'
-import { storium, defineTable, defineStore } from 'storium'
+import { storium, defineStore } from 'storium'
 
 // --- 1. Define tables the Drizzle way ---
 //
@@ -31,7 +25,7 @@ import { storium, defineTable, defineStore } from 'storium'
 // everything you'd normally write. Storium doesn't interfere.
 
 const articlesTable = sqliteTable('articles', {
-  id: text('id').primaryKey(),
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   title: text('title').notNull(),
   slug: text('slug').notNull(),
   body: text('body'),
@@ -40,22 +34,27 @@ const articlesTable = sqliteTable('articles', {
   uniqueIndex('articles_slug_unique').on(table.slug),
 ])
 
-// --- 2. Wrap with Storium ---
+// --- 2. Define store with annotations ---
 //
-// defineTable(drizzleTable) detects columns and primary key from
-// the Drizzle table object. Use .access() to control which columns
-// are readonly or hidden — the only chain method for wrapped tables.
+// defineStore(drizzleTable, config?) detects columns and primary key
+// from the Drizzle table. Use the config to annotate columns —
+// readonly, hidden, required, transforms, validation, etc.
 
-const articles = defineTable(articlesTable).access({
-  readonly: ['views'],
+const articleStore = defineStore(articlesTable, {
+  columns: {
+    views: { readonly: true },
+  },
+}).queries({
+  findBySlug: (ctx) => async (slug: string) =>
+    ctx.findOne({ slug }),
 })
 
 console.log('=== Table Metadata ===')
-console.log('Name:', articles.storium.name)
-console.log('Primary key:', articles.storium.primaryKey)
-console.log('Selectable:', articles.storium.access.selectable)
-console.log('Writable:', articles.storium.access.writable)
-console.log('Readonly:', articles.storium.access.readonly)
+console.log('Name:', articlesTable.storium.name)
+console.log('Primary key:', articlesTable.storium.primaryKey)
+console.log('Selectable:', articlesTable.storium.access.selectable)
+console.log('Writable:', articlesTable.storium.access.writable)
+console.log('Readonly:', articlesTable.storium.access.readonly)
 
 // --- 3. Create Drizzle connection + Storium instance ---
 //
@@ -72,12 +71,7 @@ console.log('\n=== Setup ===')
 console.log('Dialect auto-detected:', db.dialect)
 console.log('Same Drizzle instance:', db.drizzle === myDrizzle)
 
-// --- 4. Create store with custom queries ---
-
-const articleStore = defineStore(articles).queries({
-  findBySlug: (ctx) => async (slug: string) =>
-    ctx.findOne({ slug }),
-})
+// --- 4. Register the store ---
 
 const { articles: store } = db.register({ articles: articleStore })
 
@@ -97,13 +91,11 @@ await db.drizzle.run(sql`
 console.log('\n=== CRUD via Storium ===')
 
 const a1 = await store.create({
-  id: crypto.randomUUID(),
   title: 'Hello World',
   slug: 'hello-world',
   body: 'First post.',
 })
 const a2 = await store.create({
-  id: crypto.randomUUID(),
   title: 'From Drizzle',
   slug: 'from-drizzle',
   body: 'BYOD.',

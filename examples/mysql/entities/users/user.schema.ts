@@ -1,23 +1,13 @@
-import { defineTable } from 'storium'
+import { mysqlTable, text, varchar, json, uniqueIndex } from 'drizzle-orm/mysql-core'
+import crypto from 'node:crypto'
 
-// defineTable auto-detects the dialect from storium.config.ts
-export const usersTable = defineTable('users')
-  .columns({
-    id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
-    email: {
-      type: 'varchar',
-      maxLength: 255,
-      required: true,
-      transform: (v: string) => v.trim().toLowerCase(),
-      validate: (v, test) => {
-        test(v, (val) => String(val).length > 0, 'Email cannot be empty')
-      },
-    },
-    password_hash: { type: 'varchar', maxLength: 255, hidden: true },
-    name: { type: 'varchar', maxLength: 100 },
-    bio: { type: 'text' },
-    metadata: { type: 'jsonb' },
-  })
-  .indexes({
-    email: { unique: true },
-  })
+export const usersTable = mysqlTable('users', {
+  id: varchar('id', { length: 36 }).primaryKey().$defaultFn(() => crypto.randomUUID()),
+  email: varchar('email', { length: 255 }).notNull(),
+  password_hash: varchar('password_hash', { length: 255 }),
+  name: varchar('name', { length: 100 }),
+  bio: text('bio'),
+  metadata: json('metadata'),
+}, (table) => [
+  uniqueIndex('users_email_idx').on(table.email),
+])
