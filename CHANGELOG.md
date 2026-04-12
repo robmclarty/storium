@@ -4,6 +4,13 @@ All notable changes to Storium are documented here.
 
 This project uses [Semantic Versioning](https://semver.org/). Pre-1.0 releases may include breaking changes in minor versions.
 
+## 0.14.11
+
+- Type ctx CRUD methods with PrepOptions instead of QueryOptions so custom query factories can pass escape hatches (includeHidden, skipPrep) without casting
+- Harden typecheck:examples to exit non-zero on errors; fix 8 type errors across 5 examples
+- Widen defineStore overload to Table<any> for Drizzle column variance
+- Type StoreDefinition.table as TTable & { storium: StoriumMeta }
+
 ## 0.14.10
 
 - Update AGENTS.md for v0.14.9 API changes (StoreConfig.conflictTarget, destroy return type, generic QueryOptions, withMembers tx support, mixin soft-delete awareness)
