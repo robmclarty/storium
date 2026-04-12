@@ -58,6 +58,15 @@ const resolveUrl = (config: StoriumConfig): string | undefined =>
 /**
  * Create a Drizzle database instance from a connection config.
  * Lazily loads the appropriate driver based on dialect.
+ *
+ * Pool configuration notes:
+ * - **PostgreSQL**: Maps `pool.min` and `pool.max` directly to pg's Pool options.
+ * - **MySQL**: Maps `pool.max` to mysql2's `connectionLimit`. The `pool.min`
+ *   option is **not supported** by mysql2 — it has no minimum idle connection
+ *   setting. Other mysql2 pool options (waitForConnections, queueLimit,
+ *   enableKeepAlive) are not exposed; use `fromDrizzle()` with a custom pool
+ *   for advanced configuration.
+ * - **SQLite**: No pool — single synchronous connection.
  */
 const createDrizzleInstance = (config: StoriumConfig): { db: any; teardown: () => Promise<void> } => {
   const dialect = resolveDialect(config.dialect)

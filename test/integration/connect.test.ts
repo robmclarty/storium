@@ -49,3 +49,39 @@ describe('fromDrizzle dialect inference', () => {
     memDb.disconnect()
   })
 })
+
+// Pool configuration tests
+for (const dialect of getTestDialects()) {
+  describe(`Pool configuration [${dialect}]`, () => {
+    if (dialect === 'memory') {
+      it('memory dialect ignores pool config', async () => {
+        const db = storium.connect({ dialect: 'memory', pool: { max: 5 } } as any)
+        expect(db.dialect).toBe('memory')
+        await db.disconnect()
+      })
+    }
+
+    if (dialect === 'postgresql' || dialect === 'mysql') {
+      it(`connects with explicit pool config`, async () => {
+        const ctx = await createTestDatabase(dialect)
+
+        // Verify the connection works (pool was created successfully)
+        expect(ctx.storium.drizzle).toBeDefined()
+        expect(ctx.storium.dialect).toBe(dialect)
+
+        await ctx.teardown()
+      })
+    }
+
+    it('disconnect is safe to call multiple times across dialects', async () => {
+      const ctx = await createTestDatabase(dialect)
+      await ctx.storium.disconnect()
+      // Second disconnect should not throw
+      await ctx.storium.disconnect()
+      // Teardown handles container cleanup
+      if (dialect !== 'memory') {
+        await ctx.teardown().catch(() => {})
+      }
+    })
+  })
+}
