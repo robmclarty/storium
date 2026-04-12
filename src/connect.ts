@@ -27,7 +27,7 @@ import type {
 import { ConfigError } from './errors'
 import { isStoreDefinition, hasMeta, attachStoriumMeta } from './store/define'
 import { createCreateRepository } from './store/repository'
-import { createAssertionRegistry } from './store/assertions'
+import { createAssertionRegistry } from './assertions'
 import { buildSchemaSet } from './schema/zod'
 
 // createRequire is used intentionally here: connect() is synchronous, and the
@@ -124,7 +124,8 @@ const buildAuthHost = (
   host: string,
   port: number | undefined
 ): string => {
-  const auth = user ? `${user}${password ? `:${password}` : ''}@` : ''
+  const enc = (s: string) => encodeURIComponent(s)
+  const auth = user ? `${enc(user)}${password ? `:${enc(password)}` : ''}@` : ''
   const portSuffix = port ? `:${port}` : ''
   return `${auth}${host}${portSuffix}`
 }
@@ -262,6 +263,12 @@ const buildInstance = <D extends Dialect>(
     // Attach storium metadata if not already present
     if (!hasMeta(drizzleTable)) {
       attachStoriumMeta(drizzleTable, config, registry)
+    } else if (config.columns || config.softDelete !== undefined) {
+      console.warn(
+        `storium: defineStore() received config for table '${(drizzleTable as any).storium.name}' ` +
+        'which already has storium metadata. The config will be ignored. ' +
+        'Remove the config argument or use a table without existing metadata.'
+      )
     }
     const applied = applyAssertions(drizzleTable as TableDef)
     const baseStore = createRepository(applied, {})
