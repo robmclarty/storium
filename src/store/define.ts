@@ -43,7 +43,7 @@ import { SchemaError } from '../errors'
 import { buildSchemaSet } from '../schema/zod'
 import { isTable, getTableName } from 'drizzle-orm/table'
 import { getTableColumns } from 'drizzle-orm/utils'
-import type { Column } from 'drizzle-orm'
+import type { Column, Table } from 'drizzle-orm'
 
 // --------------------------------------------------------------- Types --
 
@@ -55,18 +55,18 @@ import type { Column } from 'drizzle-orm'
  * Surfaces `.table` and `.name` so that schemaCollector can detect
  * StoreDefinition exports for drizzle-kit migrations.
  */
-export type StoreDefinition<TQueries extends QueriesConfig = {}> = {
+export type StoreDefinition<TTable extends Table = Table, TQueries extends QueriesConfig = {}> = {
   readonly __storeDefinition: true
-  tableDef: any
+  tableDef: TTable
   queryFns: TQueries
   /** The Drizzle table object (for schemaCollector / drizzle-kit). */
-  table: any
+  table: TTable
   /** The table name (for schemaCollector). */
   name: string
   /** Chain method: add custom query functions with full ctx inference. */
   queries: <TKeys extends string>(
     fns: Record<TKeys, (ctx: RepositoryContext) => (...args: any[]) => any>
-  ) => StoreDefinition<TQueries & Record<TKeys, (ctx: RepositoryContext) => (...args: any[]) => any>>
+  ) => StoreDefinition<TTable, TQueries & Record<TKeys, (ctx: RepositoryContext) => (...args: any[]) => any>>
 }
 
 /**
@@ -262,12 +262,12 @@ export const attachStoriumMeta = (
 /**
  * Create a StoreDefinition from a Drizzle table and query functions.
  */
-const makeStoreDefinition = <TQueries extends QueriesConfig = {}>(
-  drizzleTable: any,
+const makeStoreDefinition = <TTable extends Table = Table, TQueries extends QueriesConfig = {}>(
+  drizzleTable: TTable,
   config: StoreConfig,
   queryFns: TQueries,
   assertions: AssertionRegistry = {}
-): StoreDefinition<TQueries> => {
+): StoreDefinition<TTable, TQueries> => {
   // Attach storium metadata if not already present
   if (!hasMeta(drizzleTable)) {
     attachStoriumMeta(drizzleTable, config, assertions)
@@ -278,7 +278,7 @@ const makeStoreDefinition = <TQueries extends QueriesConfig = {}>(
     tableDef: drizzleTable,
     queryFns,
     table: drizzleTable,
-    name: drizzleTable.storium.name,
+    name: (drizzleTable as any).storium.name,
     queries: (newQueries: any) =>
       makeStoreDefinition(drizzleTable, config, { ...queryFns, ...newQueries }, assertions),
   }
@@ -303,10 +303,10 @@ const makeStoreDefinition = <TQueries extends QueriesConfig = {}>(
  * // Without annotations
  * const bareStore = defineStore(usersTable)
  */
-export function defineStore(
-  drizzleTable: any,
+export function defineStore<TTable extends Table>(
+  drizzleTable: TTable,
   config?: StoreConfig
-): StoreDefinition<{}>
+): StoreDefinition<TTable, {}>
 
 export function defineStore(drizzleTable: any, config: StoreConfig = {}) {
   if (!isTable(drizzleTable)) {
