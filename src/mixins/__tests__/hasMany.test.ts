@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll } from 'vitest'
-import { storium, defineStore, hasMany } from 'storium'
+import { storium, defineStore, hasMany, StoreError } from 'storium'
 import type { TableDef } from '../../types'
-import { sqliteTable, text } from 'drizzle-orm/sqlite-core'
+import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core'
 import { sql, like } from 'drizzle-orm'
 
 const authorsTable = sqliteTable('authors', {
@@ -92,6 +92,29 @@ describe('hasMany', () => {
     expect(result[0].title).toBe('Post A')
   })
 
+  it('throws StoreError for unknown select column', () => {
+    const badPostsTable = sqliteTable('posts', {
+      id: text('id').primaryKey(),
+      title: text('title').notNull(),
+      author_id: text('author_id').notNull(),
+    })
+    defineStore(badPostsTable)
+
+    const badAuthorsTable = sqliteTable('authors', {
+      id: text('id').primaryKey(),
+      name: text('name').notNull(),
+    })
+
+    const badAuthors = db.defineStore(badAuthorsTable).queries({
+      ...hasMany(badPostsTable as unknown as TableDef, 'author_id', {
+        alias: 'posts',
+        select: ['title', 'nonexistent_col'],
+      }),
+    })
+
+    expect(badAuthors.findPostsFor('alice-1')).rejects.toThrow(StoreError)
+  })
+
   it('respects select option to limit returned columns', async () => {
     // Attach .storium with select restriction
     const postsTable2 = sqliteTable('posts', {
@@ -114,5 +137,49 @@ describe('hasMany', () => {
     const result = await authors2.findPostsFor(alice.id)
     expect(result[0]).toHaveProperty('title')
     expect(result[0]).not.toHaveProperty('author_id')
+  })
+})
+
+describe('hasMany soft-delete filtering', () => {
+  let db2: any
+  let authors2: any
+  let articles: any
+
+  beforeAll(async () => {
+    db2 = storium.connect({ dialect: 'memory' })
+
+    const sdAuthorsTable = sqliteTable('sd_authors', {
+      id: text('id').primaryKey(),
+      name: text('name').notNull(),
+    })
+
+    const sdArticlesTable = sqliteTable('sd_articles', {
+      id: text('id').primaryKey(),
+      title: text('title').notNull(),
+      author_id: text('author_id').notNull(),
+      deletedAt: integer('deleted_at', { mode: 'timestamp' }),
+    })
+
+    db2.drizzle.run(sql`CREATE TABLE sd_authors (id TEXT PRIMARY KEY, name TEXT NOT NULL)`)
+    db2.drizzle.run(sql`CREATE TABLE sd_articles (id TEXT PRIMARY KEY, title TEXT NOT NULL, author_id TEXT NOT NULL, deleted_at INTEGER)`)
+
+    defineStore(sdArticlesTable, { softDelete: true })
+
+    articles = db2.defineStore(sdArticlesTable, { softDelete: true })
+
+    authors2 = db2.defineStore(sdAuthorsTable).queries({
+      ...hasMany(sdArticlesTable as unknown as TableDef, 'author_id', { alias: 'articles' }),
+    })
+
+    await authors2.create({ id: 'a1', name: 'Bob' })
+    await articles.create({ id: 'art1', title: 'Live Article', author_id: 'a1' })
+    await articles.create({ id: 'art2', title: 'Deleted Article', author_id: 'a1' })
+    await articles.destroy('art2')
+  })
+
+  it('excludes soft-deleted related rows', async () => {
+    const result = await authors2.findArticlesFor('a1')
+    expect(result).toHaveLength(1)
+    expect(result[0].title).toBe('Live Article')
   })
 })

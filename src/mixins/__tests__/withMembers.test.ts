@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll } from 'vitest'
-import { storium, defineStore, withMembers } from 'storium'
+import { storium, defineStore, withMembers, StoreError } from 'storium'
 import type { TableDef } from '../../types'
 import { sqliteTable, text } from 'drizzle-orm/sqlite-core'
 import { sql } from 'drizzle-orm'
@@ -98,5 +98,46 @@ describe('withMembers', () => {
   it('getMemberCount decreases after removal', async () => {
     const count = await teams.getMemberCount(teamId)
     expect(count).toBeGreaterThanOrEqual(1)
+  })
+
+  it('removeMember throws StoreError when membership does not exist', async () => {
+    await expect(
+      teams.removeMember(teamId, 'user-nonexistent')
+    ).rejects.toThrow(StoreError)
+  })
+
+  it('methods work with tx option', async () => {
+    const db2 = storium.connect({ dialect: 'memory' })
+    db2.drizzle.run(sql`CREATE TABLE tx_teams (id TEXT PRIMARY KEY, name TEXT NOT NULL)`)
+    db2.drizzle.run(sql`CREATE TABLE tx_members (id TEXT PRIMARY KEY, team_id TEXT NOT NULL, user_id TEXT NOT NULL)`)
+
+    const txMembersTable = sqliteTable('tx_members', {
+      id: text('id').primaryKey(),
+      team_id: text('team_id').notNull(),
+      user_id: text('user_id').notNull(),
+    })
+    defineStore(txMembersTable)
+
+    const txTeamsTable = sqliteTable('tx_teams', {
+      id: text('id').primaryKey(),
+      name: text('name').notNull(),
+    })
+
+    const txTeams = db2.defineStore(txTeamsTable).queries({
+      ...withMembers(txMembersTable as unknown as TableDef, 'team_id', 'user_id'),
+    })
+
+    await txTeams.create({ id: 't1', name: 'Test' })
+
+    await db2.transaction(async (tx: any) => {
+      await txTeams.addMember('t1', 'u1', { id: 'txm-1' }, { tx })
+      const isMember = await txTeams.isMember('t1', 'u1', { tx })
+      expect(isMember).toBe(true)
+    })
+
+    // Verify persisted after transaction
+    const count = await txTeams.getMemberCount('t1')
+    expect(count).toBe(1)
+    await db2.disconnect()
   })
 })
