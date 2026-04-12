@@ -40,7 +40,7 @@ import type {
   AssertionRegistry,
 } from './types'
 import { SchemaError } from './errors'
-import { buildSchemaSet } from './runtime.schema'
+import { buildSchemaSet } from './schema'
 import { isTable, getTableName } from 'drizzle-orm/table'
 import { getTableColumns } from 'drizzle-orm/utils'
 

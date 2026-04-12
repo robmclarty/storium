@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { buildSchemaSet } from '../runtime.schema'
+import { buildSchemaSet } from '../schema'
 import { ValidationError } from '../errors'
 import { sqliteTable, text } from 'drizzle-orm/sqlite-core'
 import type { ColumnAnnotations, TableAccess } from '../types'

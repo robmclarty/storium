@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { buildZodSchemas } from '../zod.schema'
+import { buildZodSchemas } from '../schema'
 import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core'
 import type { ColumnAnnotations, TableAccess } from '../types'
 
