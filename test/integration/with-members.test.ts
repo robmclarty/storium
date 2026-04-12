@@ -67,8 +67,8 @@ for (const dialect of getTestDialects()) {
 
       const members = await teams.getMembers(team.id)
       expect(members).toHaveLength(2)
-      const memberIds = members.map((m: any) => m.member_id).sort()
-      expect(memberIds).toEqual([m1, m2].sort())
+      const memberIds = members.map((m: any) => m.member_id).toSorted()
+      expect(memberIds).toEqual([m1, m2].toSorted())
     })
 
     it('isMember returns true/false correctly', async () => {

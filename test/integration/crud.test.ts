@@ -152,7 +152,7 @@ for (const dialect of getTestDialects()) {
         { email: 'many2@test.com', name: 'Many2' },
       ])
       expect(rows).toHaveLength(2)
-      expect(rows.map((r: any) => r.email).sort()).toEqual(['many1@test.com', 'many2@test.com'])
+      expect(rows.map((r: any) => r.email).toSorted()).toEqual(['many1@test.com', 'many2@test.com'])
     })
 
     // -------------------------------------------------------- upsert --
@@ -255,7 +255,7 @@ for (const dialect of getTestDialects()) {
       ], { skipPrep: true })
 
       expect(rows).toHaveLength(3)
-      const roles = rows.map((r: any) => r.role).sort()
+      const roles = rows.map((r: any) => r.role).toSorted()
       expect(roles).toEqual(['admin', 'member', 'viewer'])
     })
 
