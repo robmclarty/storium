@@ -403,13 +403,7 @@ export type InferStore<T> =
 /**
  * A Repository is the same shape as a Store, produced by `createRepository()`.
  */
-export type Repository<TQueries extends QueriesConfig = {}> = DefaultCRUD & {
-  /** The table name this repository operates on. */
-  name: string
-  schemas: SchemaSet
-} & {
-  [K in keyof TQueries]: TQueries[K] extends (ctx: any) => infer R ? R : never
-}
+export type Repository<TQueries extends QueriesConfig = {}> = Store<TQueries>
 
 // ---------------------------------------------------------- Cache Adapter --
 
