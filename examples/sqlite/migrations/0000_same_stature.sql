@@ -4,7 +4,7 @@ CREATE TABLE `posts` (
 	`body` text,
 	`status` text DEFAULT 'draft',
 	`author_id` text,
-	`tags` text,
+	`tags` text DEFAULT '[]',
 	`metadata` text,
 	`created_at` integer DEFAULT (cast((julianday('now') - 2440587.5)*86400000 as integer)) NOT NULL,
 	`updated_at` integer DEFAULT (cast((julianday('now') - 2440587.5)*86400000 as integer)) NOT NULL

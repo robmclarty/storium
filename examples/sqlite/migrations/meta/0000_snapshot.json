@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "77421043-6930-4dc9-89f5-59653db5c4d0",
+  "id": "fa82ab93-af49-4765-98cd-4bcee9977ef9",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "posts": {
@@ -48,7 +48,8 @@
           "type": "text",
           "primaryKey": false,
           "notNull": false,
-          "autoincrement": false
+          "autoincrement": false,
+          "default": "'[]'"
         },
         "metadata": {
           "name": "metadata",

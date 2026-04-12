@@ -2,7 +2,7 @@
  * Relationship patterns — belongs-to, many-to-many, and raw JOINs.
  *
  * Demonstrates:
- *   - withBelongsTo: LEFT JOIN a related table (posts → authors)
+ *   - belongsTo: LEFT JOIN a related table (posts → authors)
  *   - withMembers: many-to-many via join table (posts ↔ tags)
  *   - Custom JOIN query: raw Drizzle escape hatch
  *   - Composite primary keys on join tables

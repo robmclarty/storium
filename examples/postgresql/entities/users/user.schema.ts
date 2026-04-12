@@ -9,6 +9,9 @@ export const usersTable = defineTable('users')
       maxLength: 255,
       required: true,
       transform: (v: string) => v.trim().toLowerCase(),
+      validate: (v, test) => {
+        test(v, (val) => String(val).length > 0, 'Email cannot be empty')
+      },
     },
     password_hash: { type: 'varchar', maxLength: 255, hidden: true },
     name: { type: 'varchar', maxLength: 100 },

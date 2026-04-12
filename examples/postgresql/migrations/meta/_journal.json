@@ -8,6 +8,13 @@
       "when": 1772177514670,
       "tag": "0000_thick_arclight",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1775957045477,
+      "tag": "0001_smooth_tempest",
+      "breakpoints": true
     }
   ]
 }
