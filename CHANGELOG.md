@@ -4,12 +4,12 @@ All notable changes to Storium are documented here.
 
 This project uses [Semantic Versioning](https://semver.org/). Pre-1.0 releases may include breaking changes in minor versions.
 
-## [0.13.4] — 2026-04-11
+## 0.13.4 - 11 Apr 2026
 
 - Fix relations example crash: import `belongsTo` instead of non-existent `withBelongsTo`
 - Add email validation to sqlite, postgresql, and mysql example user schemas so the Validation section produces output
 
-## [0.13.3] — 2026-04-11
+## 0.13.3 - 11 Apr 2026
 
 - Fix all fallow dead code, duplication, and complexity issues (41 → 0)
 - Remove 14 dead re-exports from core barrel, unexport internal-only types
@@ -17,17 +17,17 @@ This project uses [Semantic Versioning](https://semver.org/). Pre-1.0 releases m
 - Refactor `deriveAccess` and `buildConnectionUrl` to reduce cyclomatic complexity
 - Switch `lint:fallow` from `--fail-on-regression` to `--fail-on-issues`
 
-## [0.13.2] — 2026-04-11
+## 0.13.2 - 11 Apr 2026
 
 - Add fallow for dead code, duplication, and complexity analysis with regression baseline
 - Add `lint:fallow` script and include it in the main `lint` pipeline
 
-## [0.13.1] — 2026-04-11
+## 0.13.1 - 11 Apr 2026
 
 - Update documentation for 0.13.0 features (README, API reference, relationships)
 - Fix `.gitignore` to only ignore `.claude/settings.local.json` instead of entire `.claude/` directory
 
-## [0.13.0] — 2026-04-11
+## 0.13.0 - 11 Apr 2026
 
 ### Breaking
 - **`withBelongsTo` renamed to `belongsTo`.** The `with` prefix was awkward for relationship mixins. Update imports: `import { belongsTo } from 'storium'`. The generated `findWith{Alias}` method name is unchanged.
@@ -42,7 +42,7 @@ This project uses [Semantic Versioning](https://semver.org/). Pre-1.0 releases m
 - **`withPagination` mixin** — wraps any store with a `paginate(filters, { page, pageSize })` method. Returns `{ data, meta: { page, pageSize, total, totalPages } }`. Configurable default page size via `withPagination(store, { pageSize: 10 })`.
 - **`PaginateOptions` and `PaginateResult` types** exported for consumers.
 
-## [0.12.0] — 2026-04-11
+## 0.12.0 - 11 Apr 2026
 
 ### Breaking
 - **`ctx.tableDef` removed.** Use `ctx.table` instead (they were identical references). `StoreDefinition.tableDef` is unchanged.
@@ -62,7 +62,7 @@ This project uses [Semantic Versioning](https://semver.org/). Pre-1.0 releases m
 - **MySQL `array` type** silently fell back to JSON with no warning and `items` was ignored. Now emits a `console.warn` explaining the fallback.
 - **CLI `require` in ESM** — the Bun re-exec block used bare `require('node:child_process')` which fails under `tsx`/ESM. Now uses `createRequire()` for ESM compatibility.
 
-## [0.11.0] — 2026-02-28
+## 0.11.0 - 28 Feb 2026
 
 ### Breaking
 - **`default: 'random_uuid'` renamed to `default: 'uuid:v4'`.** The colon convention distinguishes dynamic generators from literal default values. Update all column definitions accordingly.
@@ -71,7 +71,7 @@ This project uses [Semantic Versioning](https://semver.org/). Pre-1.0 releases m
 - **UUIDv7 support** — `default: 'uuid:v7'` generates RFC 9562 UUIDv7 values with temporal sortability and better B-tree index performance (append-mostly inserts, fewer page splits). Includes a monotonic counter (§6.2) for strict ordering within the same millisecond.
 - PostgreSQL example updated to use `uuid:v7` for primary keys.
 
-## [0.10.0] — 2026-02-28
+## 0.10.0 - 28 Feb 2026
 
 ### Breaking
 - **`defineTable` now uses chain API.** Positional params replaced by named chain methods:
@@ -95,7 +95,7 @@ This project uses [Semantic Versioning](https://semver.org/). Pre-1.0 releases m
 - Index auto-names now use snake_case: `schoolId: {}` → `users_school_id_idx`
 - Tables without a primary key are now allowed (deferred to `.primaryKey()` chain or repository creation)
 
-## [0.9.2] — 2026-02-28
+## 0.9.2 - 28 Feb 2026
 
 ### Fixed
 - `withMembers()` methods now appear on `Store` type (removed `QueriesConfig` return annotation that erased literal keys)
@@ -105,7 +105,7 @@ This project uses [Semantic Versioning](https://semver.org/). Pre-1.0 releases m
 - Renamed `src/helpers/` → `src/mixins/` (better describes composable query sets that get mixed into stores)
 - Expanded `Ctx` JSDoc with inline vs separate-file guidance
 
-## [0.9.1] — 2026-02-28
+## 0.9.1 - 28 Feb 2026
 
 ### Changed
 - `DrizzleDatabase<D>` falls back to `any` when `D` is the full `Dialect` union, so `StoriumInstance` and `Ctx` work without specifying a dialect param.
@@ -114,7 +114,7 @@ This project uses [Semantic Versioning](https://semver.org/). Pre-1.0 releases m
 ### Added
 - `from-drizzle` example: demonstrates `storium.fromDrizzle()` with `@libsql/client` — a different SQLite driver than the `better-sqlite3` Storium uses internally — proving driver-agnostic behavior.
 
-## [0.9.0] — 2026-02-28
+## 0.9.0 - 28 Feb 2026
 
 ### Breaking
 - **Column access model redesigned.** Three orthogonal flags replace the old `writeOnly` / `mutable` system:
@@ -139,12 +139,12 @@ This project uses [Semantic Versioning](https://semver.org/). Pre-1.0 releases m
 - `connect()` infers dialect from config literal: `storium.connect({ dialect: 'postgresql', ... })` → `StoriumInstance<'postgresql'>`.
 - `fromDrizzle()` infers dialect from Drizzle instance type via `InferDialect<DB>`.
 
-## [0.8.3] — 2026-02-28
+## 0.8.3 - 28 Feb 2026
 
 ### Added
 - New documentation: `docs/column-naming.md` — explains camelCase/snake_case conventions, `dbName` override, timestamps, and raw columns.
 
-## [0.8.2] — 2026-02-28
+## 0.8.2 - 28 Feb 2026
 
 ### Added
 - Automatic camelCase → snake_case column name mapping: DSL keys like `inStock` produce `in_stock` in the database. Snake_case input is idempotent.
@@ -163,24 +163,24 @@ This project uses [Semantic Versioning](https://semver.org/). Pre-1.0 releases m
 - `writeOnly` + `mutable` columns were incorrectly excluded from `insertable` and `mutable` runtime access lists. They can now be written via `create()` and `update()` as intended.
 - Replaced all uses of the banned `Function` type with `QueriesConfig` — custom query methods now have a proper callable constraint in `Store`, `Repository`, and `StoreDefinition` types.
 
-## [0.8.1] — 2026-02-28
+## 0.8.1 - 28 Feb 2026
 
 ### Added
 - Composite primary key support.
 - `dialect.ts` unit tests — all 13 DSL types across all 4 dialects (93 tests).
 
-## [0.8.0] — 2026-02-28
+## 0.8.0 - 28 Feb 2026
 
 ### Added
 - `toJsonSchema()` options: `properties`, `required`, `title`, `description`, `$id`.
 
-## [0.7.10] — 2026-02-27
+## 0.7.10 - 27 Feb 2026
 
 ### Added
 - Unit tests for all core modules, helpers, migrate modules, and `connect.ts` (168 tests across 17 files).
 - New documentation: `custom-queries.md`, `validation.md`, `migrations.md`, `relationships.md`, `column-reference.md`.
 
-## [0.7.9] — 2026-02-27
+## 0.7.9 - 27 Feb 2026
 
 ### Breaking
 - **`SchemaSet` keys renamed** for ergonomic destructuring:
@@ -194,7 +194,7 @@ This project uses [Semantic Versioning](https://semver.org/). Pre-1.0 releases m
 
 - `examples/postgres` renamed to `examples/postgresql` to match the dialect name.
 
-## [0.7.8] — 2026-02-27
+## 0.7.8 - 27 Feb 2026
 
 ### Added
 - Relations example (`examples/relations/`) demonstrating `withBelongsTo`, `withMembers`, and custom JOINs with full generate/migrate workflow.
@@ -207,7 +207,7 @@ This project uses [Semantic Versioning](https://semver.org/). Pre-1.0 releases m
 - README Quick Start showed incorrect single-step `db.defineStore('name', columns)` — corrected to two-step `db.defineTable()` + `db.defineStore()`.
 - MySQL `create()` now generates UUIDs client-side for columns with `default: 'uuid:v4'` (needed because MySQL lacks `RETURNING`).
 
-## [0.7.7] — 2026-02-25
+## 0.7.7 - 25 Feb 2026
 
 ### Added
 - Support for `storium.config.ts` as config file name (with fallback to `drizzle.config.ts`).
@@ -216,12 +216,12 @@ This project uses [Semantic Versioning](https://semver.org/). Pre-1.0 releases m
 ### Breaking
 - `ConnectConfig` renamed to `StoriumConfig`.
 
-## [0.7.6] — 2026-02-24
+## 0.7.6 - 24 Feb 2026
 
 ### Breaking
 - `ConnectConfig` renamed to `StoriumConfig` for clearer public API naming.
 
-## [0.7.0 – 0.7.5]
+## 0.7.0 – 0.7.5
 
 ### Added
 - `defineTable()` — standalone schema definition (3 overloads: direct, curried dialect, auto-config).
@@ -241,7 +241,7 @@ This project uses [Semantic Versioning](https://semver.org/). Pre-1.0 releases m
 - `.storium` metadata on tables is now non-enumerable (for drizzle-kit compatibility).
 - Removed `StoreOptions`, `buildDefineStore`, `BoundDefineStore`.
 
-## [0.1.x]
+## 0.1.x
 
 ### Added
 - Initial Drizzle + Zod integration.
@@ -251,6 +251,6 @@ This project uses [Semantic Versioning](https://semver.org/). Pre-1.0 releases m
 - Built-in assertions (is_email, is_url, is_numeric, is_uuid, is_boolean, is_integer, not_empty).
 - CLI wrapping drizzle-kit (`storium generate`, `migrate`, `push`, `status`, `seed`).
 
-## [0.0.x]
+## 0.0.x
 
 Initial proof of concept built on Knex. Later rewritten for Drizzle ORM.
