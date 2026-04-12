@@ -26,9 +26,12 @@ storium/
 │       ├── errors.ts           # ValidationError, ConfigError, SchemaError
 │       └── test.ts             # createAssertionRegistry(), BUILTIN_ASSERTIONS, createTestFn()
 │   ├── mixins/
-│   │   ├── withBelongsTo.ts    # JOIN mixin for belongs-to relationships
+│   │   ├── belongsTo.ts        # JOIN mixin for belongs-to relationships
+│   │   ├── hasMany.ts          # One-to-many relationship mixin
+│   │   ├── hasOne.ts           # One-to-one relationship mixin
 │   │   ├── withMembers.ts      # Many-to-many membership mixin
 │   │   ├── withCache.ts        # Caching wrapper
+│   │   ├── withPagination.ts   # Pagination wrapper
 │   │   └── withTransaction.ts  # createWithTransaction() helper
 │   └── migrate/
 │       ├── commands.ts         # generate(), migrate(), push(), status() — drizzle-kit CLI + drizzle-orm migrators
@@ -55,7 +58,7 @@ storium/
 
 ```typescript
 // Named exports
-import { storium, defineTable, defineStore, ValidationError, withBelongsTo, ... } from 'storium'
+import { storium, defineTable, defineStore, ValidationError, belongsTo, hasMany, hasOne, withPagination, ... } from 'storium'
 
 storium.connect(config)          // StoriumConfig<D> → StoriumInstance<D> (dialect inferred from config literal)
 storium.fromDrizzle(drizzleDb)   // Auto-detects dialect from Drizzle instance type via InferDialect<DB>
@@ -133,6 +136,27 @@ defineTable('users')
   .access({ hidden: [...], readonly: [...] })  // table-level access overrides
   .primaryKey('a', 'b')                 // composite primary key (variadic params)
   .timestamps(false)                    // disable auto timestamp columns
+  .softDelete()                         // enable soft delete (adds deletedAt, filters reads)
+```
+
+### softDelete (chain method on defineTable)
+```typescript
+const users = defineTable('users')
+  .columns({ ... })
+  .softDelete()
+
+// Auto-filters deleted rows on all reads
+await users.find({ status: 'active' })  // WHERE ... AND deleted_at IS NULL
+await users.findAll()                    // WHERE deleted_at IS NULL
+
+// destroy = soft delete (SET deleted_at)
+await users.destroy(id)
+
+// New methods when soft delete is enabled:
+await users.restore(id)                  // SET deleted_at = NULL
+await users.forceDestroy(id)             // actual DELETE
+await users.forceDestroyAll(filters)     // actual DELETE WHERE ...
+await users.findWithDeleted(filters?)    // bypasses deleted_at filter
 ```
 
 ### defineStore (single param + optional .queries() chain)
@@ -257,6 +281,57 @@ const rows = await users.createMany([
 ])
 // Each row passes through the prep pipeline (transform, validate, required)
 // Returns all inserted rows
+```
+
+### belongsTo (JOIN mixin for belongs-to relationships)
+```typescript
+import { belongsTo } from 'storium'
+
+const posts = defineStore(postsTable).queries({
+  ...belongsTo(usersTable, 'author_id', { alias: 'author' }),
+})
+
+await posts.findWithAuthor(postId)
+// → { id, title, author: { id, name, email } } | null
+```
+
+### hasMany (one-to-many relationship mixin)
+```typescript
+import { hasMany } from 'storium'
+
+const authors = defineStore(authorsTable).queries({
+  ...hasMany(postsTable, 'author_id', { alias: 'posts' }),
+})
+
+await authors.findPostsFor(authorId)
+// → [{ id, title, author_id }, ...]
+
+// Supports opts (limit, offset, orderBy, where)
+await authors.findPostsFor(authorId, { limit: 10, orderBy: { column: 'createdAt', direction: 'desc' } })
+```
+
+### hasOne (one-to-one relationship mixin)
+```typescript
+import { hasOne } from 'storium'
+
+const users = defineStore(usersTable).queries({
+  ...hasOne(profilesTable, 'user_id', { alias: 'profile' }),
+})
+
+await users.findProfileFor(userId)
+// → { id, user_id, bio, avatar } | null
+```
+
+### withPagination (pagination wrapper)
+```typescript
+import { withPagination } from 'storium'
+
+const paginatedUsers = withPagination(users)
+// or with custom default page size:
+const paginatedUsers = withPagination(users, { pageSize: 10 })
+
+await paginatedUsers.paginate({ status: 'active' }, { page: 2, pageSize: 25 })
+// → { data: [...], meta: { page: 2, pageSize: 25, total: 142, totalPages: 6 } }
 ```
 
 ### Column modes
