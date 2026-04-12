@@ -4,6 +4,11 @@ All notable changes to Storium are documented here.
 
 This project uses [Semantic Versioning](https://semver.org/). Pre-1.0 releases may include breaking changes in minor versions.
 
+## [0.13.2] — 2026-04-11
+
+- Add fallow for dead code, duplication, and complexity analysis with regression baseline
+- Add `lint:fallow` script and include it in the main `lint` pipeline
+
 ## [0.13.1] — 2026-04-11
 
 - Update documentation for 0.13.0 features (README, API reference, relationships)
