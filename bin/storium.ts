@@ -104,6 +104,9 @@ const main = async () => {
 
     case 'migrate': {
       const db = connect(config)
+      const shutdown = () => { db.disconnect().finally(() => process.exit(1)) }
+      process.on('SIGTERM', shutdown)
+      process.on('SIGINT', shutdown)
       try {
         const result = await migrate(db, config)
         console.log(result.message)
@@ -130,6 +133,9 @@ const main = async () => {
 
     case 'seed': {
       const db = connect(config)
+      const shutdown = () => { db.disconnect().finally(() => process.exit(1)) }
+      process.on('SIGTERM', shutdown)
+      process.on('SIGINT', shutdown)
       try {
         const result = await seed(db, config)
         console.log(result.message)
