@@ -4,6 +4,11 @@ All notable changes to Storium are documented here.
 
 This project uses [Semantic Versioning](https://semver.org/). Pre-1.0 releases may include breaking changes in minor versions.
 
+## [0.13.1] — 2026-04-11
+
+- Update documentation for 0.13.0 features (README, API reference, relationships)
+- Fix `.gitignore` to only ignore `.claude/settings.local.json` instead of entire `.claude/` directory
+
 ## [0.13.0] — 2026-04-11
 
 ### Breaking
