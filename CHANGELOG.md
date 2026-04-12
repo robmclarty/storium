@@ -4,6 +4,14 @@ All notable changes to Storium are documented here.
 
 This project uses [Semantic Versioning](https://semver.org/). Pre-1.0 releases may include breaking changes in minor versions.
 
+## 0.14.10
+
+- Update AGENTS.md for v0.14.9 API changes (StoreConfig.conflictTarget, destroy return type, generic QueryOptions, withMembers tx support, mixin soft-delete awareness)
+- Add mixin soft-delete filtering tests for hasMany and belongsTo
+- Add withMembers tests for removeMember throw on missing row and tx option
+- Add column introspection tests covering string, integer, real, boolean, timestamp, JSON, and blob mapping through Zod and JSON Schema pipelines
+- Add Zod ↔ JSON Schema required-field alignment verification tests
+
 ## 0.14.9
 
 - Align Zod and JSON Schema required-field logic: both now enforce `notNull && !hasDefault` columns as required on insert
