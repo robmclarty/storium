@@ -12,6 +12,15 @@ Storium provides composable mixins for common relationship patterns, plus full D
 | Many-to-many | `withMembers` | `addMember`, `removeMember`, `getMembers`, `isMember`, `getMemberCount` |
 | Anything else | Custom query | Full Drizzle query builder via `ctx.drizzle` |
 
+```mermaid
+erDiagram
+    AUTHORS ||--o{ POSTS : "hasMany"
+    POSTS }o--|| AUTHORS : "belongsTo"
+    USERS ||--o| PROFILES : "hasOne"
+    TEAMS ||--o{ TEAM_MEMBERS : "withMembers"
+    USERS ||--o{ TEAM_MEMBERS : ""
+```
+
 Mixins are plain objects of query functions. Spread them into a store definition:
 
 ```typescript
@@ -32,6 +41,20 @@ const authorStore = defineStore(authorsTable).queries({
 ## belongsTo
 
 Generates a `findWith{Alias}` method that LEFT JOINs a related table and returns the entity with related fields inlined under a prefix.
+
+```mermaid
+graph LR
+    subgraph posts ["posts table"]
+        P["id, title, <b>author_id</b>"]
+    end
+    subgraph authors ["authors table"]
+        A["id, name, email"]
+    end
+    posts -- "LEFT JOIN on author_id → id" --> authors
+    authors --> R["Result: id, title, author_id,<br/><b>author_name</b>, <b>author_email</b>"]
+
+    style R fill:#d4edda,stroke:#5a9a6e
+```
 
 ### API
 
@@ -156,6 +179,30 @@ const profile = await users.findProfileFor(userId)
 ## withMembers
 
 Generates five methods for managing many-to-many relationships through a join table.
+
+```mermaid
+graph TD
+    subgraph teams ["teams"]
+        T["id, name"]
+    end
+    subgraph join ["team_members <i>(join table)</i>"]
+        J["<b>team_id</b>, <b>member_id</b>, role"]
+    end
+    subgraph users ["users"]
+        U["id, email, name"]
+    end
+
+    T -- "team_id" --> J
+    U -- "member_id" --> J
+
+    J --> M1["addMember(teamId, userId, extra?)"]
+    J --> M2["removeMember(teamId, userId)"]
+    J --> M3["getMembers(teamId)"]
+    J --> M4["isMember(teamId, userId)"]
+    J --> M5["getMemberCount(teamId)"]
+
+    style join fill:#fff3cd,stroke:#d4a843
+```
 
 ### API
 

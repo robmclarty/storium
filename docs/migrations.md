@@ -115,15 +115,26 @@ Each function returns `{ success: boolean, message: string }`. The `seed` functi
 
 A typical migration workflow:
 
-```
-1. Edit schema files (Drizzle tables)
-2. npx storium generate     → creates SQL migration in ./migrations/
-3. npx storium status       → verify the migration was created
-4. npx storium migrate      → apply to database
-5. npx storium seed         → populate with seed data (if needed)
-```
+```mermaid
+graph TD
+    A["Edit Drizzle<br/>table files"] --> B{"Production<br/>or dev?"}
 
-For development, you can skip step 2-3 and use `npx storium push` to push schema changes directly without creating migration files.
+    B -- "production" --> C["npx storium <b>generate</b><br/><i>creates SQL migration</i>"]
+    C --> D["npx storium <b>status</b><br/><i>verify migration</i>"]
+    D --> E["npx storium <b>migrate</b><br/><i>apply to database</i>"]
+
+    B -- "dev" --> F["npx storium <b>push</b><br/><i>push directly, no migration file</i>"]
+
+    E --> G["npx storium <b>seed</b><br/><i>populate data (optional)</i>"]
+    F --> G
+
+    style A fill:#e8f4f8,stroke:#4a90a4
+    style C fill:#fff3cd,stroke:#d4a843
+    style D fill:#fff3cd,stroke:#d4a843
+    style E fill:#d4edda,stroke:#5a9a6e
+    style F fill:#d4edda,stroke:#5a9a6e
+    style G fill:#e8f4f8,stroke:#4a90a4
+```
 
 ## Seeds
 
@@ -170,6 +181,28 @@ The `db` parameter passed to seed functions contains:
 ### Store Discovery
 
 The seed runner auto-discovers stores from your config:
+
+```mermaid
+graph TD
+    subgraph phase1 ["Phase 1 — stores glob"]
+        S1["Import *.store.ts files"]
+        S1 --> S2["Find StoreDefinition exports"]
+        S2 --> S3["db.register() → full stores<br/><i>with custom queries</i>"]
+    end
+
+    subgraph phase2 ["Phase 2 — schema glob"]
+        T1["Import *.table.ts files"]
+        T1 --> T2["Find Drizzle tables<br/><i>not already in Phase 1</i>"]
+        T2 --> T3["db.defineStore() → CRUD-only stores"]
+    end
+
+    S3 --> R["db.stores<br/><i>keyed by table name</i>"]
+    T3 --> R
+
+    style phase1 fill:#d4edda,stroke:#5a9a6e
+    style phase2 fill:#e8f4f8,stroke:#4a90a4
+    style R fill:#fff3cd,stroke:#d4a843
+```
 
 1. **Phase 1** — Imports files matching the `stores` glob, finds `StoreDefinition` exports, and materializes them with `db.register()`. These stores have full custom queries.
 2. **Phase 2** — Imports files matching the `schema` glob, finds storium-annotated tables and raw Drizzle tables not already covered by phase 1, and creates CRUD-only stores with `db.defineStore()`.

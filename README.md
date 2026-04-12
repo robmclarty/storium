@@ -57,6 +57,30 @@ const updated = await users.update(user.id, { name: 'Alice B.' })
 - **Migration tooling** — thin CLI wrapping drizzle-kit
 - **Stands back** — Storium doesn't try to own your architecture. It gives you tools and gets out of the way.
 
+## How It Fits Together
+
+```mermaid
+graph TD
+    A["<b>Drizzle Table</b><br/>pgTable, sqliteTable, mysqlTable"] --> B["<b>defineStore(table, config)</b>"]
+    B --> C["<b>Store</b>"]
+
+    B -- "introspects columns" --> D["Zod Schemas"]
+    B -- "introspects columns" --> E["JSON Schema"]
+    B -- "annotations" --> F["Prep Pipeline"]
+    B -- "CRUD + queries" --> C
+
+    C --> G["find / create / update / destroy"]
+    C --> H["Custom Queries via ctx"]
+
+    D -. ".zod" .-> I["tRPC, react-hook-form, etc."]
+    E -. ".toJsonSchema()" .-> J["Fastify, Ajv, OpenAPI"]
+    F -. "every write" .-> G
+
+    style A fill:#e8f4f8,stroke:#4a90a4
+    style B fill:#fff3cd,stroke:#d4a843
+    style C fill:#d4edda,stroke:#5a9a6e
+```
+
 ## Core Concepts
 
 ### Column Annotations

@@ -36,6 +36,28 @@ and annotate columns with access metadata — `readonly`, `hidden`,
 - A **prep pipeline** (filter, transform, validate, required) that runs
   automatically on every write.
 
+```mermaid
+graph TD
+    DT["<b>Drizzle Table</b><br/>columns, types, constraints"]
+    AN["<b>Column Annotations</b><br/>readonly, hidden, required,<br/>transform, validate"]
+
+    DT --> DS["defineStore(table, { columns })"]
+    AN --> DS
+
+    DS --> ZS["<b>Zod Schemas</b><br/>create, update, select, full"]
+    DS --> JS["<b>JSON Schema</b><br/>Fastify / Ajv / OpenAPI"]
+    DS --> CR["<b>CRUD Repository</b><br/>find, create, update, destroy..."]
+    DS --> PP["<b>Prep Pipeline</b><br/>filter → transform → validate → required"]
+
+    style DT fill:#e8f4f8,stroke:#4a90a4
+    style AN fill:#e8f4f8,stroke:#4a90a4
+    style DS fill:#fff3cd,stroke:#d4a843
+    style ZS fill:#d4edda,stroke:#5a9a6e
+    style JS fill:#d4edda,stroke:#5a9a6e
+    style CR fill:#d4edda,stroke:#5a9a6e
+    style PP fill:#d4edda,stroke:#5a9a6e
+```
+
 Storium isn't an abstraction over Drizzle and Zod — it's a **policy
 layer** for data access patterns. You're not learning "how to make a
 column." You're declaring "this field is readonly" or "this field is hidden

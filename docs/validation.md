@@ -12,9 +12,71 @@ Storium has three validation tiers, each serving a different layer of your stack
 
 JSON Schema is fast and stateless — great for rejecting bad requests before they hit your business logic. Zod adds transforms and custom validation. The prep pipeline is the innermost guard, running on every write even if the outer tiers are bypassed.
 
+```mermaid
+graph TD
+    subgraph tier1 ["JSON Schema — HTTP edge"]
+        direction TB
+        J1["Fastify / Ajv / OpenAPI"]
+        J2["Structural: types, required, maxLength"]
+    end
+
+    subgraph tier2 ["Zod — Application layer"]
+        direction TB
+        Z1["tRPC, react-hook-form, manual validate()"]
+        Z2["Runtime types + transforms + custom rules"]
+    end
+
+    subgraph tier3 ["Prep Pipeline — Data layer"]
+        direction TB
+        P1["Runs on every create() and update()"]
+        P2["Resolve → Filter → Transform → Validate → Required"]
+    end
+
+    tier1 -->|"rejects bad shape<br/>before business logic"| tier2
+    tier2 -->|"validates + transforms<br/>at app boundary"| tier3
+
+    style tier1 fill:#e8f4f8,stroke:#4a90a4
+    style tier2 fill:#fff3cd,stroke:#d4a843
+    style tier3 fill:#d4edda,stroke:#5a9a6e
+```
+
 ## Prep Pipeline
 
-The prep pipeline runs automatically on `create()` and `update()`. It has four stages:
+The prep pipeline runs automatically on `create()` and `update()`. It has five stages:
+
+```mermaid
+graph TD
+    Input["Raw Input"] --> S0
+
+    S0["<b>Stage 0: Resolve</b><br/>Await Promises<br/><i>e.g. ref() lookups</i>"]
+    S0 --> S1
+
+    S1["<b>Stage 1: Filter</b><br/>Strip unknown keys<br/>Strip readonly <i>(on update)</i>"]
+    S1 --> S2
+
+    S2["<b>Stage 2: Transform</b><br/>Run column transform() callbacks<br/><i>trim, lowercase, hash...</i>"]
+    S2 --> S3
+
+    S3["<b>Stage 3: Validate</b><br/>Type checks + custom validate()<br/><i>Errors accumulated</i>"]
+    S3 --> S4
+
+    S4["<b>Stage 4: Required</b><br/>Check required columns<br/><i>on create only</i>"]
+    S4 --> Clean["Prepared Input"]
+
+    S2 -. "errors" .-> Err
+    S3 -. "errors" .-> Err
+    S4 -. "errors" .-> Err
+    Err["ValidationError<br/>.errors[ ]"] -. "all errors<br/>in one throw" .-> Throw(("throw"))
+
+    style S0 fill:#e8f4f8,stroke:#4a90a4
+    style S1 fill:#e8f4f8,stroke:#4a90a4
+    style S2 fill:#fff3cd,stroke:#d4a843
+    style S3 fill:#fff3cd,stroke:#d4a843
+    style S4 fill:#fff3cd,stroke:#d4a843
+    style Clean fill:#d4edda,stroke:#5a9a6e
+    style Err fill:#f8d7da,stroke:#c0392b
+    style Throw fill:#f8d7da,stroke:#c0392b
+```
 
 ### Stage 0: Promise Resolution
 

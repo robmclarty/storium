@@ -39,6 +39,29 @@ The context object contains everything you need:
 
 All CRUD methods on `ctx` are always the **original** built-in versions, even if you override them by name in your queries.
 
+```mermaid
+graph TD
+    subgraph store ["Live Store"]
+        S_create["store.create()  →  <b>your override</b>"]
+        S_find["store.find()  →  built-in"]
+        S_custom["store.findByEmail()  →  custom query"]
+    end
+
+    subgraph ctx ["ctx (inside your query)"]
+        C_create["ctx.create()  →  <b>always built-in</b>"]
+        C_find["ctx.find()  →  always built-in"]
+        C_drizzle["ctx.drizzle  →  raw Drizzle"]
+    end
+
+    S_create -. "your override calls" .-> C_create
+    C_create -. "no recursion" .-> DB[("Database")]
+    C_find --> DB
+    C_drizzle --> DB
+
+    style ctx fill:#e8f4f8,stroke:#4a90a4
+    style store fill:#fff3cd,stroke:#d4a843
+```
+
 ## Composing with Built-in CRUD
 
 The simplest custom queries delegate to built-in methods:
