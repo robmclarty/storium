@@ -54,7 +54,7 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit -p tsconfig.check.json",
     "typecheck:examples": "for dir in examples/*/; do echo \"--- $dir ---\" && (cd \"$dir\" && npx tsc --noEmit 2>&1 || true); done",
     "lint": "npm run lint:code && npm run lint:fallow",
     "lint:fallow": "fallow --fail-on-issues",

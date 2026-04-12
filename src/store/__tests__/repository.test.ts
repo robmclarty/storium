@@ -43,7 +43,7 @@ describe('CRUD operations', () => {
       columns: {
         email: {
           required: true,
-          transform: (v: string) => v.trim().toLowerCase(),
+          transform: (v) => (v as string).trim().toLowerCase(),
         },
       },
     })
@@ -273,7 +273,7 @@ describe('prep pipeline integration', () => {
       columns: {
         email: {
           required: true,
-          transform: (v: string) => v.trim().toLowerCase(),
+          transform: (v) => (v as string).trim().toLowerCase(),
         },
       },
     })
@@ -625,7 +625,7 @@ describe('createMany', () => {
       columns: {
         email: {
           required: true,
-          transform: (v: string) => v.trim().toLowerCase(),
+          transform: (v) => (v as string).trim().toLowerCase(),
         },
       },
     })
