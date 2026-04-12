@@ -24,8 +24,8 @@ const createMockStore = () => ({
   findByEmail: vi.fn(async (email: string) => ({ id: '1', email })),
   create: vi.fn(async (input: any) => ({ id: '1', ...input })),
   update: vi.fn(async (id: string, input: any) => ({ id, ...input })),
-  destroy: vi.fn(async () => {}),
-  destroyAll: vi.fn(async () => 1),
+  destroy: vi.fn(async (_id: string) => {}),
+  destroyAll: vi.fn(async (_filters: any) => 1),
 })
 
 describe('withCache', () => {

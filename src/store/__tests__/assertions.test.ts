@@ -91,8 +91,8 @@ describe('createTestFn', () => {
     const test = createTestFn('email', errors)
     test('value', 'does_not_exist')
     expect(errors).toHaveLength(1)
-    expect(errors[0].message).toContain('does_not_exist')
-    expect(errors[0].message).toContain('does_not_exist')
+    expect(errors[0]!.message).toContain('does_not_exist')
+    expect(errors[0]!.message).toContain('does_not_exist')
   })
 
   it('supports inline function assertions', () => {
@@ -108,14 +108,14 @@ describe('createTestFn', () => {
     const errors: Array<{ field: string; message: string }> = []
     const test = createTestFn('email', errors)
     test('bad', 'is_email', 'Must be a valid email')
-    expect(errors[0].message).toBe('Must be a valid email')
+    expect(errors[0]!.message).toBe('Must be a valid email')
   })
 
   it('uses custom error callback when provided', () => {
     const errors: Array<{ field: string; message: string }> = []
     const test = createTestFn('email', errors)
     test('bad', 'is_email', (defaultMsg) => `Custom: ${defaultMsg}`)
-    expect(errors[0].message).toMatch(/^Custom:/)
+    expect(errors[0]!.message).toMatch(/^Custom:/)
   })
 
   it('uses custom assertions from registry', () => {
