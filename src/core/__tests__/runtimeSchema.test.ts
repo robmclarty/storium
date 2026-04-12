@@ -1,12 +1,17 @@
 import { describe, it, expect } from 'vitest'
 import { buildSchemaSet } from '../runtimeSchema'
 import { ValidationError } from '../errors'
-import type { ColumnsConfig, TableAccess } from '../types'
+import { sqliteTable, text } from 'drizzle-orm/sqlite-core'
+import type { ColumnAnnotations, TableAccess } from '../types'
 
-const columns: ColumnsConfig = {
-  id: { type: 'uuid', primaryKey: true, notNull: true, default: 'uuid:v4' },
-  email: { type: 'varchar', maxLength: 255, required: true, notNull: true },
-  name: { type: 'varchar', maxLength: 255 },
+const usersTable = sqliteTable('users', {
+  id: text('id').primaryKey().notNull().$defaultFn(() => crypto.randomUUID()),
+  email: text('email', { length: 255 }).notNull(),
+  name: text('name', { length: 255 }),
+})
+
+const annotations: ColumnAnnotations = {
+  email: { required: true },
 }
 
 const access: TableAccess = {
@@ -17,7 +22,7 @@ const access: TableAccess = {
 }
 
 describe('buildSchemaSet', () => {
-  const schemas = buildSchemaSet(columns, access)
+  const schemas = buildSchemaSet(usersTable, annotations, access)
 
   it('produces all 4 schema variants', () => {
     expect(schemas).toHaveProperty('createSchema')
@@ -50,9 +55,9 @@ describe('buildSchemaSet', () => {
       const result = schemas.createSchema.tryValidate({})
       expect(result.success).toBe(false)
       if (!result.success) {
-        expect(result.errors.length).toBeGreaterThan(0)
-        expect(result.errors[0]).toHaveProperty('field')
-        expect(result.errors[0]).toHaveProperty('message')
+        expect(result.errors!.length).toBeGreaterThan(0)
+        expect(result.errors![0]).toHaveProperty('field')
+        expect(result.errors![0]).toHaveProperty('message')
       }
     })
   })

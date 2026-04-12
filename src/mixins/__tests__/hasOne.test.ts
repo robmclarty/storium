@@ -1,6 +1,22 @@
 import { describe, it, expect, beforeAll } from 'vitest'
-import { storium, hasOne } from 'storium'
+import { storium, defineStore, hasOne } from 'storium'
+import { sqliteTable, text } from 'drizzle-orm/sqlite-core'
 import { sql } from 'drizzle-orm'
+
+const usersTable = sqliteTable('has_one_users', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull(),
+})
+
+const profilesTable = sqliteTable('has_one_profiles', {
+  id: text('id').primaryKey(),
+  user_id: text('user_id').notNull(),
+  bio: text('bio'),
+  avatar: text('avatar'),
+})
+
+// Attach .storium metadata so hasOne can read it
+defineStore(profilesTable)
 
 let db: any
 let users: any
@@ -8,18 +24,6 @@ let profiles: any
 
 beforeAll(async () => {
   db = storium.connect({ dialect: 'memory' })
-
-  const usersTable = db.defineTable('has_one_users').columns({
-    id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
-    name: { type: 'varchar', maxLength: 255, required: true },
-  }).timestamps(false)
-
-  const profilesTable = db.defineTable('has_one_profiles').columns({
-    id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
-    user_id: { type: 'uuid', required: true },
-    bio: { type: 'text' },
-    avatar: { type: 'varchar', maxLength: 255 },
-  }).timestamps(false)
 
   db.drizzle.run(sql`
     CREATE TABLE IF NOT EXISTS has_one_users (
@@ -46,8 +50,8 @@ describe('hasOne', () => {
   })
 
   it('returns the related row', async () => {
-    const user = await users.create({ name: 'Alice' })
-    await profiles.create({ user_id: user.id, bio: 'Hello', avatar: 'alice.png' })
+    const user = await users.create({ id: 'u1', name: 'Alice' })
+    await profiles.create({ id: 'pr1', user_id: user.id, bio: 'Hello', avatar: 'alice.png' })
 
     const result = await users.findProfileFor(user.id)
     expect(result).not.toBeNull()
@@ -56,7 +60,7 @@ describe('hasOne', () => {
   })
 
   it('returns null when no related row exists', async () => {
-    const user = await users.create({ name: 'Bob' })
+    const user = await users.create({ id: 'u2', name: 'Bob' })
     const result = await users.findProfileFor(user.id)
     expect(result).toBeNull()
   })
@@ -67,17 +71,18 @@ describe('hasOne', () => {
   })
 
   it('respects select option', async () => {
-    const profilesTable2 = db.defineTable('has_one_profiles').columns({
-      id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
-      user_id: { type: 'uuid', required: true },
-      bio: { type: 'text' },
-      avatar: { type: 'varchar', maxLength: 255 },
-    }).timestamps(false)
+    const profilesTable2 = sqliteTable('has_one_profiles', {
+      id: text('id').primaryKey(),
+      user_id: text('user_id').notNull(),
+      bio: text('bio'),
+      avatar: text('avatar'),
+    })
+    defineStore(profilesTable2)
 
-    const usersTable2 = db.defineTable('has_one_users').columns({
-      id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
-      name: { type: 'varchar', maxLength: 255, required: true },
-    }).timestamps(false)
+    const usersTable2 = sqliteTable('has_one_users', {
+      id: text('id').primaryKey(),
+      name: text('name').notNull(),
+    })
 
     const users2 = db.defineStore(usersTable2).queries({
       ...hasOne(profilesTable2, 'user_id', { alias: 'profile', select: ['bio'] }),

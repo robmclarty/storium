@@ -1,6 +1,22 @@
 import { describe, it, expect, beforeAll } from 'vitest'
-import { storium, belongsTo } from 'storium'
+import { storium, defineStore, belongsTo } from 'storium'
+import { sqliteTable, text } from 'drizzle-orm/sqlite-core'
 import { sql } from 'drizzle-orm'
+
+const authorsTable = sqliteTable('authors', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull(),
+  email: text('email').notNull(),
+})
+
+const postsTable = sqliteTable('posts', {
+  id: text('id').primaryKey(),
+  title: text('title').notNull(),
+  author_id: text('author_id').notNull(),
+})
+
+// Attach .storium metadata to authorsTable so belongsTo can read it
+defineStore(authorsTable)
 
 let db: any
 let authors: any
@@ -8,18 +24,6 @@ let posts: any
 
 beforeAll(() => {
   db = storium.connect({ dialect: 'memory' })
-
-  const authorsTable = db.defineTable('authors').columns({
-    id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
-    name: { type: 'varchar', maxLength: 255, required: true },
-    email: { type: 'varchar', maxLength: 255, required: true },
-  }).timestamps(false)
-
-  const postsTable = db.defineTable('posts').columns({
-    id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
-    title: { type: 'varchar', maxLength: 255, required: true },
-    author_id: { type: 'uuid', required: true },
-  }).timestamps(false)
 
   db.drizzle.run(sql`
     CREATE TABLE IF NOT EXISTS authors (
@@ -49,8 +53,8 @@ describe('belongsTo', () => {
   })
 
   it('returns the entity with inlined related fields', async () => {
-    const author = await authors.create({ name: 'Alice', email: 'alice@test.com' })
-    const post = await posts.create({ title: 'Hello', author_id: author.id })
+    const author = await authors.create({ id: 'a1', name: 'Alice', email: 'alice@test.com' })
+    const post = await posts.create({ id: 'p1', title: 'Hello', author_id: author.id })
 
     const result = await posts.findWithAuthor(post.id)
     expect(result).not.toBeNull()
@@ -61,6 +65,7 @@ describe('belongsTo', () => {
 
   it('returns null fields when the related entity does not exist', async () => {
     const post = await posts.create({
+      id: 'p2',
       title: 'Orphan',
       author_id: '00000000-0000-0000-0000-000000000000',
     })

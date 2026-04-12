@@ -1,34 +1,47 @@
-import { describe, it, expect, beforeAll } from 'vitest'
-import { storium } from 'storium'
+import { describe, it, expect, beforeEach } from 'vitest'
+import Database from 'better-sqlite3'
+import { drizzle } from 'drizzle-orm/better-sqlite3'
 import { sql } from 'drizzle-orm'
-
-let db: any
-let users: any
-
-beforeAll(() => {
-  db = storium.connect({ dialect: 'memory' })
-
-  const usersTable = db.defineTable('sd_users').columns({
-    id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
-    name: { type: 'varchar', maxLength: 255, required: true },
-    email: { type: 'varchar', maxLength: 255, required: true },
-  }).softDelete()
-
-  db.drizzle.run(sql`
-    CREATE TABLE IF NOT EXISTS sd_users (
-      id TEXT PRIMARY KEY,
-      name TEXT NOT NULL,
-      email TEXT NOT NULL,
-      created_at TEXT NOT NULL DEFAULT (datetime('now')),
-      updated_at TEXT NOT NULL DEFAULT (datetime('now')),
-      deleted_at TEXT
-    )
-  `)
-
-  users = db.defineStore(usersTable)
-})
+import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core'
+import { attachStoriumMeta } from '../defineStore'
+import { createCreateRepository } from '../createRepository'
 
 describe('soft delete', () => {
+  let db: any
+  let users: any
+
+  beforeEach(() => {
+    const sqlite = new Database(':memory:')
+    db = drizzle(sqlite)
+
+    const usersTable = sqliteTable('sd_users', {
+      id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+      name: text('name').notNull(),
+      email: text('email').notNull(),
+      deletedAt: integer('deleted_at', { mode: 'timestamp' }),
+    })
+
+    db.run(sql`
+      CREATE TABLE IF NOT EXISTS sd_users (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        email TEXT NOT NULL,
+        deleted_at INTEGER
+      )
+    `)
+
+    attachStoriumMeta(usersTable, {
+      columns: {
+        name: { required: true },
+        email: { required: true },
+      },
+      softDelete: true,
+    })
+
+    const createRepository = createCreateRepository(db, {}, 'memory')
+    users = createRepository(usersTable as any)
+  })
+
   describe('destroy() soft deletes', () => {
     it('marks the row as deleted instead of removing it', async () => {
       const user = await users.create({ name: 'Alice', email: 'alice@test.com' })
@@ -39,7 +52,7 @@ describe('soft delete', () => {
       expect(found).toBeNull()
 
       // Row should still exist in the database
-      const stmt = db.drizzle.all(sql`SELECT * FROM sd_users WHERE id = ${user.id}`)
+      const stmt = db.all(sql`SELECT * FROM sd_users WHERE id = ${user.id}`)
       expect(stmt).toHaveLength(1)
       expect(stmt[0].deleted_at).not.toBeNull()
     })
@@ -48,7 +61,7 @@ describe('soft delete', () => {
   describe('read methods auto-filter deleted rows', () => {
     let activeUser: any
 
-    beforeAll(async () => {
+    beforeEach(async () => {
       activeUser = await users.create({ name: 'Bob', email: 'bob@test.com' })
       const deletedUser = await users.create({ name: 'Charlie', email: 'charlie@test.com' })
       await users.destroy(deletedUser.id)
@@ -97,7 +110,7 @@ describe('soft delete', () => {
 
   describe('destroyAll() soft deletes matching rows', () => {
     it('sets deletedAt instead of deleting', async () => {
-      const u1 = await users.create({ name: 'Temp1', email: 't1@test.com' })
+      await users.create({ name: 'Temp1', email: 't1@test.com' })
       const u2 = await users.create({ name: 'Temp2', email: 't2@test.com' })
 
       const count = await users.destroyAll({ name: 'Temp1' })
@@ -134,7 +147,7 @@ describe('soft delete', () => {
       const user = await users.create({ name: 'Gone', email: 'gone@test.com' })
       await users.forceDestroy(user.id)
 
-      const rows = db.drizzle.all(sql`SELECT * FROM sd_users WHERE id = ${user.id}`)
+      const rows = db.all(sql`SELECT * FROM sd_users WHERE id = ${user.id}`)
       expect(rows).toHaveLength(0)
     })
   })
@@ -146,7 +159,7 @@ describe('soft delete', () => {
 
       await users.forceDestroyAll({ name: 'Perm1' })
 
-      const rows = db.drizzle.all(sql`SELECT * FROM sd_users WHERE name = 'Perm1'`)
+      const rows = db.all(sql`SELECT * FROM sd_users WHERE name = 'Perm1'`)
       expect(rows).toHaveLength(0)
 
       const found = await users.find({ name: 'Perm2' })
@@ -156,6 +169,10 @@ describe('soft delete', () => {
 
   describe('findWithDeleted()', () => {
     it('returns all rows including soft-deleted ones', async () => {
+      await users.create({ name: 'Active', email: 'active@test.com' })
+      const deleted = await users.create({ name: 'Deleted', email: 'deleted@test.com' })
+      await users.destroy(deleted.id)
+
       const all = await users.findWithDeleted()
       expect(all.length).toBeGreaterThan(0)
     })

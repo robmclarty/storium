@@ -1,6 +1,21 @@
 import { describe, it, expect, beforeAll } from 'vitest'
-import { storium, hasMany } from 'storium'
+import { storium, defineStore, hasMany } from 'storium'
+import { sqliteTable, text } from 'drizzle-orm/sqlite-core'
 import { sql, like } from 'drizzle-orm'
+
+const authorsTable = sqliteTable('authors', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull(),
+})
+
+const postsTable = sqliteTable('posts', {
+  id: text('id').primaryKey(),
+  title: text('title').notNull(),
+  author_id: text('author_id').notNull(),
+})
+
+// Attach .storium metadata so hasMany can read it
+defineStore(postsTable)
 
 let db: any
 let authors: any
@@ -8,17 +23,6 @@ let posts: any
 
 beforeAll(async () => {
   db = storium.connect({ dialect: 'memory' })
-
-  const authorsTable = db.defineTable('authors').columns({
-    id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
-    name: { type: 'varchar', maxLength: 255, required: true },
-  }).timestamps(false)
-
-  const postsTable = db.defineTable('posts').columns({
-    id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
-    title: { type: 'varchar', maxLength: 255, required: true },
-    author_id: { type: 'uuid', required: true },
-  }).timestamps(false)
 
   db.drizzle.run(sql`
     CREATE TABLE IF NOT EXISTS authors (
@@ -38,10 +42,10 @@ beforeAll(async () => {
     ...hasMany(postsTable, 'author_id', { alias: 'posts' }),
   })
 
-  const alice = await authors.create({ name: 'Alice' })
-  await posts.create({ title: 'Post A', author_id: alice.id })
-  await posts.create({ title: 'Post B', author_id: alice.id })
-  await posts.create({ title: 'Post C', author_id: alice.id })
+  const alice = await authors.create({ id: 'alice-1', name: 'Alice' })
+  await posts.create({ id: 'pa', title: 'Post A', author_id: alice.id })
+  await posts.create({ id: 'pb', title: 'Post B', author_id: alice.id })
+  await posts.create({ id: 'pc', title: 'Post C', author_id: alice.id })
 })
 
 describe('hasMany', () => {
@@ -88,16 +92,18 @@ describe('hasMany', () => {
   })
 
   it('respects select option to limit returned columns', async () => {
-    const authorsTable2 = db.defineTable('authors').columns({
-      id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
-      name: { type: 'varchar', maxLength: 255, required: true },
-    }).timestamps(false)
+    // Attach .storium with select restriction
+    const postsTable2 = sqliteTable('posts', {
+      id: text('id').primaryKey(),
+      title: text('title').notNull(),
+      author_id: text('author_id').notNull(),
+    })
+    defineStore(postsTable2)
 
-    const postsTable2 = db.defineTable('posts').columns({
-      id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
-      title: { type: 'varchar', maxLength: 255, required: true },
-      author_id: { type: 'uuid', required: true },
-    }).timestamps(false)
+    const authorsTable2 = sqliteTable('authors', {
+      id: text('id').primaryKey(),
+      name: text('name').notNull(),
+    })
 
     const authors2 = db.defineStore(authorsTable2).queries({
       ...hasMany(postsTable2, 'author_id', { alias: 'posts', select: ['title'] }),

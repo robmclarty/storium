@@ -1,8 +1,6 @@
-import { buildDefineTable } from '../../../../core/defineTable'
+import { sqliteTable, text } from 'drizzle-orm/sqlite-core'
 
-const dt = buildDefineTable('memory')
-
-export const widgetsTable = dt('widgets').columns({
-  id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
-  label: { type: 'varchar', maxLength: 255, required: true },
-}).timestamps(false)
+export const widgetsTable = sqliteTable('widgets', {
+  id: text('id').primaryKey(),
+  label: text('label').notNull(),
+})

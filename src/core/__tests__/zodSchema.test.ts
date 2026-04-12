@@ -1,32 +1,34 @@
 import { describe, it, expect } from 'vitest'
 import { buildZodSchemas } from '../zodSchema'
-import type { ColumnsConfig, TableAccess } from '../types'
+import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core'
+import type { ColumnAnnotations, TableAccess } from '../types'
 
-const columns: ColumnsConfig = {
-  id: { type: 'uuid', primaryKey: true, notNull: true, default: 'uuid:v4' },
+const usersTable = sqliteTable('users', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  email: text('email', { length: 10 }).notNull(),
+  name: text('name', { length: 255 }),
+  age: integer('age'),
+  active: integer('active', { mode: 'boolean' }),
+  bio: text('bio'),
+  score: real('score'),
+})
+
+const annotations: ColumnAnnotations = {
   email: {
-    type: 'varchar',
-    maxLength: 10,
     required: true,
     transform: (v: string) => v.trim().toLowerCase(),
   },
-  name: { type: 'varchar', maxLength: 255 },
-  age: { type: 'integer' },
-  active: { type: 'boolean' },
-  bio: { type: 'text' },
-  score: { type: 'real' },
-  raw_col: { raw: () => null },
 }
 
 const access: TableAccess = {
   selectable: ['id', 'email', 'name', 'age', 'active', 'bio', 'score'],
-  writable: ['email', 'name', 'age', 'active', 'bio', 'score', 'raw_col'],
+  writable: ['email', 'name', 'age', 'active', 'bio', 'score'],
   hidden: [],
   readonly: ['id'],
 }
 
 describe('buildZodSchemas', () => {
-  const schemas = buildZodSchemas(columns, access)
+  const schemas = buildZodSchemas(usersTable, annotations, access)
 
   describe('createSchema', () => {
     it('accepts valid input with required fields', () => {
@@ -96,34 +98,30 @@ describe('buildZodSchemas', () => {
       expect(result.success).toBe(false)
     })
   })
-
-  describe('raw columns', () => {
-    it('accepts any value for raw columns', () => {
-      const result = schemas.createSchema.safeParse({ email: 'a@b.com', raw_col: { anything: true } })
-      expect(result.success).toBe(true)
-    })
-  })
 })
 
 describe('validate callbacks', () => {
   it('accumulates errors from validate callbacks via superRefine', () => {
-    const cols: ColumnsConfig = {
+    const table = sqliteTable('slug_table', {
+      slug: text('slug', { length: 255 }).notNull(),
+    })
+
+    const slugAnnotations: ColumnAnnotations = {
       slug: {
-        type: 'varchar',
-        maxLength: 255,
         required: true,
         validate: (v, test) => {
           test(v, (val: any) => /^[a-z0-9-]+$/.test(val), 'Must be a valid slug')
         },
       },
     }
-    const acc: TableAccess = {
+    const slugAccess: TableAccess = {
       selectable: ['slug'],
       writable: ['slug'],
       hidden: [],
       readonly: [],
     }
-    const schemas = buildZodSchemas(cols, acc)
+
+    const schemas = buildZodSchemas(table, slugAnnotations, slugAccess)
     const result = schemas.createSchema.safeParse({ slug: 'INVALID SLUG' })
     expect(result.success).toBe(false)
   })

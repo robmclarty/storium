@@ -1,6 +1,13 @@
 import { describe, it, expect, beforeAll } from 'vitest'
-import { storium, withPagination } from 'storium'
+import { storium, defineStore, withPagination } from 'storium'
+import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core'
 import { sql, gt } from 'drizzle-orm'
+
+const pgUsersTable = sqliteTable('pg_users', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull(),
+  age: integer('age'),
+})
 
 let db: any
 let users: any
@@ -9,23 +16,17 @@ let paginatedUsers: any
 beforeAll(async () => {
   db = storium.connect({ dialect: 'memory' })
 
-  const usersTable = db.defineTable('pg_users').columns({
-    id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
-    name: { type: 'varchar', maxLength: 255, required: true },
-    age: { type: 'integer' },
-  }).timestamps(false)
-
   db.drizzle.run(sql`
     CREATE TABLE IF NOT EXISTS pg_users (
       id TEXT PRIMARY KEY, name TEXT NOT NULL, age INTEGER
     )
   `)
 
-  users = db.defineStore(usersTable)
+  users = db.defineStore(pgUsersTable)
   paginatedUsers = withPagination(users)
 
   for (let i = 1; i <= 50; i++) {
-    await users.create({ name: `User ${String(i).padStart(2, '0')}`, age: 20 + i })
+    await users.create({ id: `user-${i}`, name: `User ${String(i).padStart(2, '0')}`, age: 20 + i })
   }
 })
 
@@ -128,13 +129,13 @@ describe('withPagination', () => {
   })
 
   it('handles empty table', async () => {
-    const emptyTable = db.defineTable('pg_empty').columns({
-      id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
-    }).timestamps(false)
+    const pgEmptyTable = sqliteTable('pg_empty', {
+      id: text('id').primaryKey(),
+    })
 
     db.drizzle.run(sql`CREATE TABLE IF NOT EXISTS pg_empty (id TEXT PRIMARY KEY)`)
 
-    const emptyStore = db.defineStore(emptyTable)
+    const emptyStore = db.defineStore(pgEmptyTable)
     const paginated = withPagination(emptyStore)
 
     const result = await paginated.paginate({}, { page: 1, pageSize: 10 })

@@ -1,39 +1,57 @@
-import { describe, it, expect, beforeAll } from 'vitest'
-import { storium } from 'storium'
+import { describe, it, expect, beforeEach } from 'vitest'
+import Database from 'better-sqlite3'
+import { drizzle } from 'drizzle-orm/better-sqlite3'
 import { sql, gt, like } from 'drizzle-orm'
+import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core'
+import { attachStoriumMeta } from '../defineStore'
+import { createCreateRepository } from '../createRepository'
 import { StoreError } from '../errors'
 
-let db: any
-let users: any
+// --------------------------------------------------------------- Helpers --
 
-beforeAll(() => {
-  db = storium.connect({ dialect: 'memory' })
+const createDb = () => {
+  const sqlite = new Database(':memory:')
+  return drizzle(sqlite)
+}
 
-  const usersTable = db.defineTable('users').columns({
-    id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
-    email: {
-      type: 'varchar',
-      maxLength: 255,
-      required: true,
-      transform: (v: string) => v.trim().toLowerCase(),
-    },
-    name: { type: 'varchar', maxLength: 255 },
-    age: { type: 'integer' },
-  }).timestamps(false)
-
-  db.drizzle.run(sql`
-    CREATE TABLE IF NOT EXISTS users (
-      id TEXT PRIMARY KEY,
-      email TEXT NOT NULL,
-      name TEXT,
-      age INTEGER
-    )
-  `)
-
-  users = db.defineStore(usersTable)
-})
+// ----------------------------------------------------------------- Tests --
 
 describe('CRUD operations', () => {
+  let db: any
+  let users: any
+
+  beforeEach(() => {
+    db = createDb()
+
+    const usersTable = sqliteTable('users', {
+      id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+      email: text('email').notNull(),
+      name: text('name'),
+      age: integer('age'),
+    })
+
+    db.run(sql`
+      CREATE TABLE IF NOT EXISTS users (
+        id TEXT PRIMARY KEY,
+        email TEXT NOT NULL,
+        name TEXT,
+        age INTEGER
+      )
+    `)
+
+    attachStoriumMeta(usersTable, {
+      columns: {
+        email: {
+          required: true,
+          transform: (v: string) => v.trim().toLowerCase(),
+        },
+      },
+    })
+
+    const createRepository = createCreateRepository(db, {}, 'memory')
+    users = createRepository(usersTable as any)
+  })
+
   it('creates a record and returns it with an ID', async () => {
     const user = await users.create({ email: 'alice@example.com', name: 'Alice' })
     expect(user).toHaveProperty('id')
@@ -69,6 +87,36 @@ describe('CRUD operations', () => {
 })
 
 describe('find and findAll', () => {
+  let db: any
+  let users: any
+
+  beforeEach(() => {
+    db = createDb()
+
+    const usersTable = sqliteTable('users', {
+      id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+      email: text('email').notNull(),
+      name: text('name'),
+      age: integer('age'),
+    })
+
+    db.run(sql`
+      CREATE TABLE IF NOT EXISTS users (
+        id TEXT PRIMARY KEY,
+        email TEXT NOT NULL,
+        name TEXT,
+        age INTEGER
+      )
+    `)
+
+    attachStoriumMeta(usersTable, {
+      columns: { email: { required: true } },
+    })
+
+    const createRepository = createCreateRepository(db, {}, 'memory')
+    users = createRepository(usersTable as any)
+  })
+
   it('find returns matching records', async () => {
     await users.create({ email: 'find1@test.com', name: 'Finder' })
     const results = await users.find({ name: 'Finder' })
@@ -99,12 +147,39 @@ describe('find and findAll', () => {
   })
 
   it('findAll supports limit', async () => {
+    await users.create({ email: 'l1@test.com' })
+    await users.create({ email: 'l2@test.com' })
+    await users.create({ email: 'l3@test.com' })
     const results = await users.findAll({ limit: 2 })
     expect(results.length).toBeLessThanOrEqual(2)
   })
 })
 
 describe('ref', () => {
+  let db: any
+  let users: any
+
+  beforeEach(() => {
+    db = createDb()
+
+    const usersTable = sqliteTable('users', {
+      id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+      email: text('email').notNull(),
+      name: text('name'),
+    })
+
+    db.run(sql`
+      CREATE TABLE users (id TEXT PRIMARY KEY, email TEXT NOT NULL, name TEXT)
+    `)
+
+    attachStoriumMeta(usersTable, {
+      columns: { email: { required: true } },
+    })
+
+    const createRepository = createCreateRepository(db, {}, 'memory')
+    users = createRepository(usersTable as any)
+  })
+
   it('returns the primary key of a matching record', async () => {
     const user = await users.create({ email: 'ref@test.com', name: 'RefTest' })
     const pk = await users.ref({ email: 'ref@test.com' })
@@ -119,6 +194,30 @@ describe('ref', () => {
 })
 
 describe('destroyAll', () => {
+  let db: any
+  let users: any
+
+  beforeEach(() => {
+    db = createDb()
+
+    const usersTable = sqliteTable('users', {
+      id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+      email: text('email').notNull(),
+      name: text('name'),
+    })
+
+    db.run(sql`
+      CREATE TABLE users (id TEXT PRIMARY KEY, email TEXT NOT NULL, name TEXT)
+    `)
+
+    attachStoriumMeta(usersTable, {
+      columns: { email: { required: true } },
+    })
+
+    const createRepository = createCreateRepository(db, {}, 'memory')
+    users = createRepository(usersTable as any)
+  })
+
   it('deletes matching records and returns count', async () => {
     await users.create({ email: 'da1@test.com', name: 'DestroyAll' })
     await users.create({ email: 'da2@test.com', name: 'DestroyAll' })
@@ -132,6 +231,35 @@ describe('destroyAll', () => {
 })
 
 describe('prep pipeline integration', () => {
+  let db: any
+  let users: any
+
+  beforeEach(() => {
+    db = createDb()
+
+    const usersTable = sqliteTable('users', {
+      id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+      email: text('email').notNull(),
+      name: text('name'),
+    })
+
+    db.run(sql`
+      CREATE TABLE users (id TEXT PRIMARY KEY, email TEXT NOT NULL, name TEXT)
+    `)
+
+    attachStoriumMeta(usersTable, {
+      columns: {
+        email: {
+          required: true,
+          transform: (v: string) => v.trim().toLowerCase(),
+        },
+      },
+    })
+
+    const createRepository = createCreateRepository(db, {}, 'memory')
+    users = createRepository(usersTable as any)
+  })
+
   it('applies transforms on create', async () => {
     const user = await users.create({ email: '  UPPER@CASE.COM  ' })
     expect(user.email).toBe('upper@case.com')
@@ -150,53 +278,25 @@ describe('prep pipeline integration', () => {
   })
 })
 
-describe('uuid:v7 primary key', () => {
-  let events: any
-
-  beforeAll(() => {
-    const eventsTable = db.defineTable('events').columns({
-      id: { type: 'uuid', primaryKey: true, default: 'uuid:v7' },
-      kind: { type: 'varchar', maxLength: 100, required: true },
-    }).timestamps(false)
-
-    db.drizzle.run(sql`
-      CREATE TABLE IF NOT EXISTS events (
-        id TEXT PRIMARY KEY,
-        kind TEXT NOT NULL
-      )
-    `)
-
-    events = db.defineStore(eventsTable)
-  })
-
-  it('auto-generates a valid UUIDv7 on create', async () => {
-    const event = await events.create({ kind: 'click' })
-    expect(event.id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/)
-  })
-
-  it('produces temporally sortable IDs', async () => {
-    const a = await events.create({ kind: 'first' })
-    await new Promise((r) => setTimeout(r, 2))
-    const b = await events.create({ kind: 'second' })
-    expect(a.id < b.id).toBe(true)
-  })
-})
-
 describe('custom queries', () => {
   it('receives ctx with original CRUD methods', async () => {
-    const table = db.defineTable('items').columns({
-      id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
-      label: { type: 'varchar', maxLength: 255, required: true },
-    }).timestamps(false)
+    const db = createDb()
 
-    db.drizzle.run(sql`
-      CREATE TABLE IF NOT EXISTS items (
-        id TEXT PRIMARY KEY,
-        label TEXT NOT NULL
-      )
+    const itemsTable = sqliteTable('items', {
+      id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+      label: text('label').notNull(),
+    })
+
+    db.run(sql`
+      CREATE TABLE items (id TEXT PRIMARY KEY, label TEXT NOT NULL)
     `)
 
-    const items = db.defineStore(table).queries({
+    attachStoriumMeta(itemsTable, {
+      columns: { label: { required: true } },
+    })
+
+    const createRepository = createCreateRepository(db, {}, 'memory')
+    const items = createRepository(itemsTable as any, {
       findByLabel: (ctx: any) => async (label: string) =>
         ctx.findOne({ label }),
     })
@@ -209,17 +309,20 @@ describe('custom queries', () => {
 })
 
 describe('composite primary keys', () => {
+  let db: any
   let memberships: any
 
-  beforeAll(() => {
-    const table = db.defineTable('memberships').columns({
-      user_id: { type: 'uuid', required: true },
-      group_id: { type: 'uuid', required: true },
-      role: { type: 'varchar', maxLength: 50 },
-    }).timestamps(false).primaryKey('user_id', 'group_id')
+  beforeEach(() => {
+    db = createDb()
 
-    db.drizzle.run(sql`
-      CREATE TABLE IF NOT EXISTS memberships (
+    const membershipsTable = sqliteTable('memberships', {
+      user_id: text('user_id').notNull(),
+      group_id: text('group_id').notNull(),
+      role: text('role'),
+    })
+
+    db.run(sql`
+      CREATE TABLE memberships (
         user_id TEXT NOT NULL,
         group_id TEXT NOT NULL,
         role TEXT,
@@ -227,7 +330,34 @@ describe('composite primary keys', () => {
       )
     `)
 
-    memberships = db.defineStore(table)
+    // For composite PK tables, both columns need to be marked appropriately.
+    // Since Drizzle doesn't mark composite PKs via .primaryKey() on individual
+    // columns (that's done via primaryKey() table constraint), the detection
+    // falls back to 'id' which doesn't exist, so we rely on Drizzle's table-level
+    // composite PK definition or manual override.
+    // The attachStoriumMeta will detect PK from Drizzle column metadata.
+    attachStoriumMeta(membershipsTable, {
+      columns: {
+        user_id: { required: true },
+        group_id: { required: true },
+      },
+    })
+
+    // Since SQLite composite PKs aren't detected via column.primary,
+    // manually set the PK on storium meta if needed.
+    const meta = (membershipsTable as any).storium
+    if (!meta.primaryKey || meta.primaryKey === 'id') {
+      // Manually override for composite PK
+      Object.defineProperty(membershipsTable, 'storium', {
+        value: { ...meta, primaryKey: ['user_id', 'group_id'] },
+        enumerable: false,
+        configurable: true,
+        writable: false,
+      })
+    }
+
+    const createRepository = createCreateRepository(db, {}, 'memory')
+    memberships = createRepository(membershipsTable as any)
   })
 
   it('creates a record with composite PK', async () => {
@@ -241,6 +371,10 @@ describe('composite primary keys', () => {
   })
 
   it('findById with composite PK array', async () => {
+    await memberships.create(
+      { user_id: 'u1', group_id: 'g1', role: 'admin' },
+      { force: true }
+    )
     const found = await memberships.findById(['u1', 'g1'])
     expect(found).not.toBeNull()
     expect(found.role).toBe('admin')
@@ -252,6 +386,10 @@ describe('composite primary keys', () => {
   })
 
   it('update with composite PK', async () => {
+    await memberships.create(
+      { user_id: 'u1', group_id: 'g1', role: 'admin' },
+      { force: true }
+    )
     const updated = await memberships.update(
       ['u1', 'g1'],
       { role: 'member' }
@@ -274,13 +412,40 @@ describe('composite primary keys', () => {
   })
 
   it('ref returns composite PK as array', async () => {
+    await memberships.create(
+      { user_id: 'u1', group_id: 'g1', role: 'admin' },
+      { force: true }
+    )
     const pk = await memberships.ref({ user_id: 'u1', group_id: 'g1' })
     expect(pk).toEqual(['u1', 'g1'])
   })
 })
 
 describe('where clause', () => {
-  beforeAll(async () => {
+  let db: any
+  let users: any
+
+  beforeEach(async () => {
+    db = createDb()
+
+    const usersTable = sqliteTable('users', {
+      id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+      email: text('email').notNull(),
+      name: text('name'),
+      age: integer('age'),
+    })
+
+    db.run(sql`
+      CREATE TABLE users (id TEXT PRIMARY KEY, email TEXT NOT NULL, name TEXT, age INTEGER)
+    `)
+
+    attachStoriumMeta(usersTable, {
+      columns: { email: { required: true } },
+    })
+
+    const createRepository = createCreateRepository(db, {}, 'memory')
+    users = createRepository(usersTable as any)
+
     await users.create({ email: 'where1@test.com', name: 'WhereTest', age: 25 })
     await users.create({ email: 'where2@test.com', name: 'WhereTest', age: 30 })
     await users.create({ email: 'where3@test.com', name: 'WhereTest', age: 35 })
@@ -323,7 +488,29 @@ describe('where clause', () => {
 })
 
 describe('count', () => {
-  beforeAll(async () => {
+  let db: any
+  let users: any
+
+  beforeEach(async () => {
+    db = createDb()
+
+    const usersTable = sqliteTable('users', {
+      id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+      email: text('email').notNull(),
+      name: text('name'),
+    })
+
+    db.run(sql`
+      CREATE TABLE users (id TEXT PRIMARY KEY, email TEXT NOT NULL, name TEXT)
+    `)
+
+    attachStoriumMeta(usersTable, {
+      columns: { email: { required: true } },
+    })
+
+    const createRepository = createCreateRepository(db, {}, 'memory')
+    users = createRepository(usersTable as any)
+
     await users.create({ email: 'count1@test.com', name: 'CountTest' })
     await users.create({ email: 'count2@test.com', name: 'CountTest' })
   })
@@ -347,8 +534,33 @@ describe('count', () => {
 })
 
 describe('exists', () => {
-  it('returns true when a matching row exists', async () => {
+  let db: any
+  let users: any
+
+  beforeEach(async () => {
+    db = createDb()
+
+    const usersTable = sqliteTable('users', {
+      id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+      email: text('email').notNull(),
+      name: text('name'),
+    })
+
+    db.run(sql`
+      CREATE TABLE users (id TEXT PRIMARY KEY, email TEXT NOT NULL, name TEXT)
+    `)
+
+    attachStoriumMeta(usersTable, {
+      columns: { email: { required: true } },
+    })
+
+    const createRepository = createCreateRepository(db, {}, 'memory')
+    users = createRepository(usersTable as any)
+
     await users.create({ email: 'exists@test.com', name: 'ExistsTest' })
+  })
+
+  it('returns true when a matching row exists', async () => {
     const result = await users.exists({ name: 'ExistsTest' })
     expect(result).toBe(true)
   })
@@ -371,6 +583,35 @@ describe('exists', () => {
 })
 
 describe('createMany', () => {
+  let db: any
+  let users: any
+
+  beforeEach(() => {
+    db = createDb()
+
+    const usersTable = sqliteTable('users', {
+      id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+      email: text('email').notNull(),
+      name: text('name'),
+    })
+
+    db.run(sql`
+      CREATE TABLE users (id TEXT PRIMARY KEY, email TEXT NOT NULL, name TEXT)
+    `)
+
+    attachStoriumMeta(usersTable, {
+      columns: {
+        email: {
+          required: true,
+          transform: (v: string) => v.trim().toLowerCase(),
+        },
+      },
+    })
+
+    const createRepository = createCreateRepository(db, {}, 'memory')
+    users = createRepository(usersTable as any)
+  })
+
   it('inserts multiple rows and returns them', async () => {
     const rows = await users.createMany([
       { email: 'batch1@test.com', name: 'Batch' },
@@ -397,18 +638,21 @@ describe('createMany', () => {
 })
 
 describe('upsert', () => {
+  let db: any
   let products: any
 
-  beforeAll(() => {
-    const productsTable = db.defineTable('products').columns({
-      id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
-      sku: { type: 'varchar', maxLength: 100, required: true },
-      name: { type: 'varchar', maxLength: 255 },
-      price: { type: 'integer' },
-    }).timestamps(false)
+  beforeEach(() => {
+    db = createDb()
 
-    db.drizzle.run(sql`
-      CREATE TABLE IF NOT EXISTS products (
+    const productsTable = sqliteTable('products', {
+      id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+      sku: text('sku').notNull().unique(),
+      name: text('name'),
+      price: integer('price'),
+    })
+
+    db.run(sql`
+      CREATE TABLE products (
         id TEXT PRIMARY KEY,
         sku TEXT NOT NULL UNIQUE,
         name TEXT,
@@ -416,7 +660,12 @@ describe('upsert', () => {
       )
     `)
 
-    products = db.defineStore(productsTable)
+    attachStoriumMeta(productsTable, {
+      columns: { sku: { required: true } },
+    })
+
+    const createRepository = createCreateRepository(db, {}, 'memory')
+    products = createRepository(productsTable as any)
   })
 
   it('inserts a new row when no conflict', async () => {
@@ -432,6 +681,12 @@ describe('upsert', () => {
   })
 
   it('updates an existing row on conflict', async () => {
+    await products.upsert({
+      sku: 'SKU-001',
+      name: 'Widget',
+      price: 100,
+    }, { conflictTarget: ['sku'] })
+
     const row = await products.upsert({
       sku: 'SKU-001',
       name: 'Updated Widget',
@@ -450,6 +705,19 @@ describe('upsert', () => {
 
 describe('store name', () => {
   it('exposes the table name on the store', () => {
+    const db = createDb()
+
+    const usersTable = sqliteTable('users', {
+      id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+      email: text('email').notNull(),
+    })
+
+    attachStoriumMeta(usersTable, {
+      columns: { email: { required: true } },
+    })
+
+    const createRepository = createCreateRepository(db, {}, 'memory')
+    const users = createRepository(usersTable as any)
     expect(users.name).toBe('users')
   })
 })

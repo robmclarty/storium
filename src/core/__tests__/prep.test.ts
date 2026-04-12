@@ -1,19 +1,22 @@
 import { describe, it, expect } from 'vitest'
 import { createPrepFn } from '../prep'
-import type { ColumnsConfig, TableAccess } from '../types'
+import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core'
+import type { ColumnAnnotations, TableAccess } from '../types'
 
-const columns: ColumnsConfig = {
-  id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
+const usersTable = sqliteTable('users', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  email: text('email', { length: 255 }).notNull(),
+  name: text('name', { length: 255 }),
+})
+
+const annotations: ColumnAnnotations = {
   email: {
-    type: 'varchar',
-    maxLength: 255,
     required: true,
     transform: (v: string) => v.trim().toLowerCase(),
     validate: (v, test) => {
       test(v, 'not_empty', 'Email cannot be empty')
     },
   },
-  name: { type: 'varchar', maxLength: 255 },
 }
 
 const access: TableAccess = {
@@ -24,7 +27,7 @@ const access: TableAccess = {
 }
 
 describe('prep pipeline', () => {
-  const prep = createPrepFn(columns, access)
+  const prep = createPrepFn(usersTable, annotations, access)
 
   it('filters unknown keys from input', async () => {
     const result = await prep(
@@ -92,18 +95,18 @@ describe('prep pipeline', () => {
   })
 
   it('accumulates multiple validation errors in a single throw', async () => {
-    // Use columns without transforms so type checks run and accumulate
-    const plainColumns: ColumnsConfig = {
-      a: { type: 'varchar', maxLength: 255 },
-      b: { type: 'integer' },
-    }
+    const plainTable = sqliteTable('plain_prep', {
+      a: text('a', { length: 255 }),
+      b: integer('b'),
+    })
+    const plainAnnotations: ColumnAnnotations = {}
     const plainAccess: TableAccess = {
       selectable: ['a', 'b'],
       writable: ['a', 'b'],
       hidden: [],
       readonly: [],
     }
-    const plainPrep = createPrepFn(plainColumns, plainAccess)
+    const plainPrep = createPrepFn(plainTable, plainAnnotations, plainAccess)
     const { ValidationError } = await import('../errors')
 
     try {
@@ -120,10 +123,12 @@ describe('prep pipeline', () => {
 })
 
 describe('prep with custom assertions', () => {
-  const colsWithValidate: ColumnsConfig = {
+  const slugTable = sqliteTable('slugs', {
+    slug: text('slug', { length: 255 }).notNull(),
+  })
+
+  const slugAnnotations: ColumnAnnotations = {
     slug: {
-      type: 'varchar',
-      maxLength: 255,
       required: true,
       validate: (v, test) => {
         test(v, 'is_slug', 'Must be a valid slug')
@@ -139,7 +144,7 @@ describe('prep with custom assertions', () => {
   }
 
   it('uses custom assertions from the registry', async () => {
-    const prep = createPrepFn(colsWithValidate, slugAccess, {
+    const prep = createPrepFn(slugTable, slugAnnotations, slugAccess, {
       is_slug: (v) => typeof v === 'string' && /^[a-z0-9-]+$/.test(v),
     })
 
@@ -148,7 +153,7 @@ describe('prep with custom assertions', () => {
   })
 
   it('rejects values that fail custom assertions', async () => {
-    const prep = createPrepFn(colsWithValidate, slugAccess, {
+    const prep = createPrepFn(slugTable, slugAnnotations, slugAccess, {
       is_slug: (v) => typeof v === 'string' && /^[a-z0-9-]+$/.test(v),
     })
 

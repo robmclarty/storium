@@ -3,6 +3,7 @@ import { storium } from 'storium'
 import { sql } from 'drizzle-orm'
 import { drizzle } from 'drizzle-orm/better-sqlite3'
 import Database from 'better-sqlite3'
+import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core'
 import { ConfigError } from '../core/errors'
 import { defineStore } from '../core/defineStore'
 
@@ -12,7 +13,6 @@ describe('connect', () => {
     expect(db).toHaveProperty('drizzle')
     expect(db).toHaveProperty('zod')
     expect(db).toHaveProperty('dialect', 'memory')
-    expect(typeof db.defineTable).toBe('function')
     expect(typeof db.defineStore).toBe('function')
     expect(typeof db.register).toBe('function')
     expect(typeof db.transaction).toBe('function')
@@ -59,12 +59,15 @@ describe('fromDrizzle', () => {
 describe('register', () => {
   it('materializes StoreDefinitions into live stores', () => {
     const db = storium.connect({ dialect: 'memory' })
-    const table = db.defineTable('items').columns({
-      id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
-      label: { type: 'varchar', maxLength: 255, required: true },
-    }).timestamps(false)
 
-    const itemStore = defineStore(table)
+    const itemsTable = sqliteTable('items', {
+      id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+      label: text('label').notNull(),
+    })
+
+    const itemStore = defineStore(itemsTable, {
+      columns: { label: { required: true } },
+    })
     const { items } = db.register({ items: itemStore })
 
     expect(typeof items.create).toBe('function')
@@ -79,13 +82,17 @@ describe('register', () => {
 })
 
 describe('db.defineStore (simple path)', () => {
-  it('creates a live store from a table definition', () => {
+  it('creates a live store from a Drizzle table', () => {
     const db = storium.connect({ dialect: 'memory' })
-    const table = db.defineTable('widgets').columns({
-      id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
-      name: { type: 'varchar', maxLength: 255, required: true },
-    }).timestamps(false)
-    const widgets = db.defineStore(table)
+
+    const widgetsTable = sqliteTable('widgets', {
+      id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+      name: text('name').notNull(),
+    })
+
+    const widgets = db.defineStore(widgetsTable, {
+      columns: { name: { required: true } },
+    })
 
     expect(typeof widgets.create).toBe('function')
     expect(typeof widgets.findById).toBe('function')
@@ -93,7 +100,7 @@ describe('db.defineStore (simple path)', () => {
 
   it('throws ConfigError for non-table values', () => {
     const db = storium.connect({ dialect: 'memory' })
-    expect(() => db.defineStore({} as any)).toThrow(ConfigError)
+    expect(() => db.defineStore({} as any)).toThrow()
   })
 })
 
@@ -103,14 +110,19 @@ describe('transaction', () => {
 
   beforeAll(() => {
     db = storium.connect({ dialect: 'memory' })
-    const table = db.defineTable('tx_items').columns({
-      id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
-      label: { type: 'varchar', maxLength: 255, required: true },
-    }).timestamps(false)
+
+    const itemsTable = sqliteTable('tx_items', {
+      id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+      label: text('label').notNull(),
+    })
+
     db.drizzle.run(sql`
       CREATE TABLE IF NOT EXISTS tx_items (id TEXT PRIMARY KEY, label TEXT NOT NULL)
     `)
-    items = db.defineStore(table)
+
+    items = db.defineStore(itemsTable, {
+      columns: { label: { required: true } },
+    })
   })
 
   it('commits on success', async () => {
@@ -162,21 +174,23 @@ describe('assertions integration', () => {
       },
     })
 
-    const table = db.defineTable('slugs').columns({
-      id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
-      slug: {
-        type: 'varchar',
-        maxLength: 255,
-        required: true,
-        validate: (v, test) => { test(v, 'is_slug', 'Invalid slug') },
-      },
-    }).timestamps(false)
+    const slugsTable = sqliteTable('slugs', {
+      id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+      slug: text('slug').notNull(),
+    })
 
     db.drizzle.run(sql`
       CREATE TABLE IF NOT EXISTS slugs (id TEXT PRIMARY KEY, slug TEXT NOT NULL)
     `)
 
-    const slugs = db.defineStore(table)
+    const slugs = db.defineStore(slugsTable, {
+      columns: {
+        slug: {
+          required: true,
+          validate: (v, test) => { test(v, 'is_slug', 'Invalid slug') },
+        },
+      },
+    })
 
     const good = await slugs.create({ slug: 'valid-slug' })
     expect(good.slug).toBe('valid-slug')

@@ -5,13 +5,12 @@ import { collectSchemas } from '../schemaCollector'
 const fixturesDir = path.resolve(__dirname, 'fixtures')
 
 describe('collectSchemas', () => {
-  it('collects TableDefs from schema files', async () => {
+  it('collects Drizzle tables from schema files', async () => {
     const schemas = await collectSchemas(
       path.join(fixturesDir, 'entities/*.schema.ts')
     )
 
     expect(schemas).toHaveProperty('widgets')
-    expect(schemas.widgets.storium.name).toBe('widgets')
   })
 
   it('collects StoreDefinitions from store files', async () => {

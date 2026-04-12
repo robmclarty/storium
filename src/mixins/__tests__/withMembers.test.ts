@@ -1,24 +1,28 @@
 import { describe, it, expect, beforeAll } from 'vitest'
-import { storium, withMembers } from 'storium'
+import { storium, defineStore, withMembers } from 'storium'
+import { sqliteTable, text } from 'drizzle-orm/sqlite-core'
 import { sql } from 'drizzle-orm'
+
+const teamsTable = sqliteTable('teams', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull(),
+})
+
+const membersTable = sqliteTable('team_members', {
+  id: text('id').primaryKey(),
+  team_id: text('team_id').notNull(),
+  user_id: text('user_id').notNull(),
+  role: text('role'),
+})
+
+// Attach .storium metadata so withMembers can read it
+defineStore(membersTable)
 
 let db: any
 let teams: any
 
 beforeAll(() => {
   db = storium.connect({ dialect: 'memory' })
-
-  const teamsTable = db.defineTable('teams').columns({
-    id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
-    name: { type: 'varchar', maxLength: 255, required: true },
-  }).timestamps(false)
-
-  const membersTable = db.defineTable('team_members').columns({
-    id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
-    team_id: { type: 'uuid', required: true },
-    user_id: { type: 'uuid', required: true },
-    role: { type: 'varchar', maxLength: 50 },
-  }).timestamps(false)
 
   db.drizzle.run(sql`
     CREATE TABLE IF NOT EXISTS teams (
@@ -44,7 +48,7 @@ describe('withMembers', () => {
   let teamId: string
 
   beforeAll(async () => {
-    const team = await teams.create({ name: 'Alpha' })
+    const team = await teams.create({ id: 'team-1', name: 'Alpha' })
     teamId = team.id
   })
 
@@ -57,14 +61,14 @@ describe('withMembers', () => {
   })
 
   it('addMember inserts a join record and returns it', async () => {
-    const record = await teams.addMember(teamId, userId1, { role: 'captain' })
+    const record = await teams.addMember(teamId, userId1, { id: 'tm-1', role: 'captain' })
     expect(record).toHaveProperty('team_id', teamId)
     expect(record).toHaveProperty('user_id', userId1)
     expect(record).toHaveProperty('role', 'captain')
   })
 
   it('getMembers returns all members for a collection', async () => {
-    await teams.addMember(teamId, userId2)
+    await teams.addMember(teamId, userId2, { id: 'tm-2' })
     const members = await teams.getMembers(teamId)
     expect(members.length).toBeGreaterThanOrEqual(2)
   })
