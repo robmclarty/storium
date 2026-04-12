@@ -43,7 +43,7 @@ Exhaustive list of everything exported from `storium` and `storium/migrate`.
 | `belongsTo(relatedTable, foreignKey, opts)` | Generates a `findWith{Alias}` custom query that LEFT JOINs a related table. |
 | `hasMany(relatedTable, foreignKey, opts)` | Generates a `find{Alias}For` custom query returning all related rows for a parent ID. Supports `limit`, `offset`, `orderBy`, `where` opts. |
 | `hasOne(relatedTable, foreignKey, opts)` | Generates a `find{Alias}For` custom query returning a single related row or `null`. Supports `where` opt. |
-| `withMembers(joinTable, foreignKey, memberKey?)` | Generates `addMember`, `removeMember`, `getMembers`, `isMember`, `getMemberCount` custom queries for collection patterns. `memberKey` defaults to `'user_id'`. |
+| `withMembers(joinTable, foreignKey, memberKey?)` | Generates `addMember`, `removeMember`, `getMembers`, `isMember`, `getMemberCount` custom queries for collection patterns. `memberKey` defaults to `'member_id'`. |
 | `withPagination(store, defaults?)` | Wraps a store with a `paginate(filters, opts)` method. Returns `{ data, meta: { page, pageSize, total, totalPages } }`. Default page size: 25. |
 | `withCache(store, cacheAdapter, config)` | Wraps a store with cache-aside logic on configured read methods and auto-invalidation on writes. **(Experimental)** |
 

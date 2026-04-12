@@ -37,7 +37,7 @@ beforeAll(() => {
   `)
 
   teams = db.defineStore(teamsTable).queries({
-    ...withMembers(membersTable, 'team_id'),
+    ...withMembers(membersTable, 'team_id', 'user_id'),
   })
 })
 
