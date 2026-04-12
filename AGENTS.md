@@ -154,7 +154,8 @@ type ColumnAnnotation = {
 ```typescript
 type StoreConfig = {
   columns?: Record<string, ColumnAnnotation>
-  softDelete?: boolean   // requires deletedAt column on Drizzle table
+  softDelete?: boolean       // requires deletedAt column on Drizzle table
+  conflictTarget?: string[]  // default columns for upsert conflict detection (overridden by per-call opts)
 }
 ```
 
@@ -207,21 +208,30 @@ store.create(input, opts?)
 store.createMany(inputs[], opts?)
 store.update(id, input, opts?)
 store.upsert(input, opts?)
-store.destroy(id, opts?)
+store.destroy(id, opts?)             // returns the deleted row
 store.destroyAll(filters, opts?)
 ```
 
 ### Query opts
+`QueryOptions<TTable>` is generic — `where` callback receives the typed table for column autocomplete.
 ```typescript
 {
   tx?: any                           // Transaction handle
   limit?: number
   offset?: number
   orderBy?: OrderBySpec | OrderBySpec[]
-  includeHidden?: boolean
+  where?: (table: TTable) => SQL     // Typed Drizzle WHERE clause
+  conflictTarget?: string[]          // Upsert conflict columns (overrides StoreConfig default)
+}
+```
+
+`PrepOptions` extends `QueryOptions` with internal escape hatches (available in custom queries via `ctx`):
+```typescript
+{
   skipPrep?: boolean                 // Bypass prep pipeline
-  where?: (table) => SQL             // Drizzle WHERE clause
-  conflictTarget?: string[]          // Upsert conflict columns
+  includeHidden?: boolean            // Include hidden columns in result
+  validateRequired?: boolean         // Enforce required fields
+  onlyWritable?: boolean             // Strip non-writable keys
 }
 ```
 
@@ -258,6 +268,17 @@ const authors = defineStore(authorsTable).queries({
 ```
 
 Note: Related tables passed to mixins must have `.storium` metadata (go through `defineStore` first).
+Relationship mixins auto-filter soft-deleted related rows when the related table has `softDelete: true`.
+
+### withMembers transaction support
+All `withMembers` methods accept an optional `opts` parameter with `tx` for transaction support:
+```typescript
+await teams.addMember(teamId, userId, {}, { tx })
+await teams.removeMember(teamId, userId, { tx })
+await teams.getMembers(teamId, { tx })
+await teams.isMember(teamId, userId, { tx })
+await teams.getMemberCount(teamId, { tx })
+```
 
 ### withPagination
 ```typescript
