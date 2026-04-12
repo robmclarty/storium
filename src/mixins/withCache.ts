@@ -141,7 +141,7 @@ export const withCache = <T extends Record<string, any>>(
   }
 
   // Wrap write methods with invalidation
-  const writeMethods = ['create', 'update', 'destroy', 'destroyAll']
+  const writeMethods = ['create', 'createMany', 'update', 'upsert', 'destroy', 'destroyAll', 'restore', 'forceDestroy', 'forceDestroyAll']
 
   for (const method of writeMethods) {
     const original = store[method]
