@@ -5,9 +5,9 @@
  * - A config object (inline or drizzle-kit format)
  * - An existing Drizzle instance (via fromDrizzle)
  *
- * The returned instance has dialect-bound `defineTable`, `register` for
- * materializing store definitions, db-bound `transaction`, and raw
- * `drizzle` and `zod` escape hatches.
+ * The returned instance has `defineStore` for creating live stores,
+ * `register` for materializing store definitions, db-bound `transaction`,
+ * and raw `drizzle` and `zod` escape hatches.
  */
 
 import { z } from 'zod'
@@ -16,17 +16,16 @@ import type {
   FromDrizzleOptions,
   StoriumInstance,
   TableDef,
-  ColumnsConfig,
   Store,
   InferStore,
   Dialect,
   AssertionRegistry,
   DrizzleDatabase,
   InferDialect,
+  StoreConfig,
 } from './core/types'
 import { ConfigError } from './core/errors'
-import { buildDefineTable, hasMeta } from './core/defineTable'
-import { isStoreDefinition } from './core/defineStore'
+import { isStoreDefinition, hasMeta, attachStoriumMeta } from './core/defineStore'
 import { createCreateRepository } from './core/createRepository'
 import { createAssertionRegistry } from './core/test'
 import { buildSchemaSet } from './core/runtimeSchema'
@@ -118,7 +117,6 @@ const createDrizzleInstance = (config: StoriumConfig): { db: any; teardown: () =
 
 /**
  * Build a connection URL from individual config fields.
- * Checks both top-level fields and dbCredentials.
  */
 const buildAuthHost = (
   user: string | undefined,
@@ -135,7 +133,6 @@ const buildConnectionUrl = (config: StoriumConfig): string => {
   const url = resolveUrl(config)
   if (url) return url
 
-  // Try top-level fields first, then dbCredentials
   const host = config.host ?? config.dbCredentials?.host
   const port = config.port ?? config.dbCredentials?.port
   const database = config.database ?? config.dbCredentials?.database
@@ -167,14 +164,6 @@ import { sql } from 'drizzle-orm'
 
 /**
  * Create a `withTransaction` function bound to a Drizzle db instance.
- *
- * For PostgreSQL and MySQL, delegates to Drizzle's built-in transaction
- * which supports async callbacks natively.
- *
- * For SQLite (including memory), better-sqlite3 rejects async callbacks,
- * so we manually manage BEGIN/COMMIT/ROLLBACK and pass the db instance
- * as the transaction context. This works because SQLite serializes all
- * operations on a single connection — the async callback is safe.
  */
 const createWithTransaction = (db: any, dialect: Dialect) => {
   if (dialect === 'sqlite') {
@@ -229,8 +218,6 @@ const buildInstance = <D extends Dialect>(
   const registry = createAssertionRegistry(assertions)
   const createRepository = createCreateRepository(db, registry, dialect)
 
-  const boundDefineTable = buildDefineTable(drizzleDialect, registry)
-
   /**
    * Rebuild a table's storium schemas with instance-level assertions (if any).
    * Mutates the .storium property in place (safe — called once at startup).
@@ -239,7 +226,7 @@ const buildInstance = <D extends Dialect>(
     if (Object.keys(registry).length === 0) return tableDef
     const meta = tableDef.storium
     Object.defineProperty(tableDef, 'storium', {
-      value: { ...meta, schemas: buildSchemaSet(meta.columns, meta.access, registry) },
+      value: { ...meta, schemas: buildSchemaSet(tableDef, meta.annotations, meta.access, registry) },
       enumerable: false,
       configurable: true,
       writable: false,
@@ -256,7 +243,7 @@ const buildInstance = <D extends Dialect>(
       if (!isStoreDefinition(def)) {
         throw new ConfigError(
           `register(): '${key}' is not a valid StoreDefinition. ` +
-          'Use defineStore(tableDef) to create one.'
+          'Use defineStore(drizzleTable) to create one.'
         )
       }
       result[key] = createRepository(applyAssertions(def.tableDef), def.queryFns)
@@ -266,19 +253,17 @@ const buildInstance = <D extends Dialect>(
   }
 
   /**
-   * Create a live store from a table definition (simple path — no register step).
-   * Returns a Store with a non-enumerable `.queries()` chain method for adding
-   * custom queries with full ctx inference.
+   * Create a live store from a Drizzle table (simple path — no register step).
    */
-  const instanceDefineStore = <TColumns extends ColumnsConfig>(
-    tableDef: TableDef<TColumns>,
+  const instanceDefineStore = (
+    drizzleTable: any,
+    config: StoreConfig = {}
   ) => {
-    if (!hasMeta(tableDef)) {
-      throw new ConfigError(
-        'db.defineStore(): first argument must be a table from defineTable().'
-      )
+    // Attach storium metadata if not already present
+    if (!hasMeta(drizzleTable)) {
+      attachStoriumMeta(drizzleTable, config, registry)
     }
-    const applied = applyAssertions(tableDef)
+    const applied = applyAssertions(drizzleTable as TableDef)
     const baseStore = createRepository(applied, {})
 
     // Attach non-enumerable .queries() that creates a new store with queries
@@ -289,7 +274,7 @@ const buildInstance = <D extends Dialect>(
       writable: false,
     })
 
-    return baseStore as unknown as Store<TColumns>
+    return baseStore as unknown as Store
   }
 
   let disconnected = false
@@ -303,7 +288,6 @@ const buildInstance = <D extends Dialect>(
     drizzle: db,
     zod: z,
     dialect,
-    defineTable: boundDefineTable,
     defineStore: instanceDefineStore,
     register,
     transaction: createWithTransaction(db as any, drizzleDialect),
@@ -315,21 +299,6 @@ const buildInstance = <D extends Dialect>(
 
 /**
  * Create a fully configured StoriumInstance.
- *
- * Accepts both storium's inline config shape and drizzle-kit's config shape.
- * Storium-specific keys (assertions, pool, seeds) are spread alongside
- * drizzle-kit keys in a single flat object.
- *
- * @param config - Config object (inline or drizzle-kit format, with optional storium extras)
- * @returns StoriumInstance with all methods pre-bound
- *
- * @example
- * // Inline config
- * const db = storium.connect({ dialect: 'postgresql', url: '...' })
- *
- * // Drizzle config + storium extras
- * import config from './drizzle.config'
- * const db = storium.connect({ ...config, assertions: { ... } })
  */
 export const connect = <D extends Dialect>(config: StoriumConfig<D>): StoriumInstance<D> => {
   if (!config?.dialect) {
@@ -349,16 +318,6 @@ export const connect = <D extends Dialect>(config: StoriumConfig<D>): StoriumIns
 /**
  * Create a StoriumInstance from an existing Drizzle database instance.
  * Dialect is auto-detected from the Drizzle instance's internal dialect class.
- *
- * @param drizzleDb - A pre-configured Drizzle database instance
- * @param options - Optional storium-specific options (assertions)
- * @returns StoriumInstance with all methods pre-bound
- *
- * @example
- * import { drizzle } from 'drizzle-orm/node-postgres'
- * const myDrizzle = drizzle(myPool)
- * const db = storium.fromDrizzle(myDrizzle)
- * const db = storium.fromDrizzle(myDrizzle, { assertions: { ... } })
  */
 export const fromDrizzle = <DB extends DrizzleDatabase>(
   drizzleDb: DB,

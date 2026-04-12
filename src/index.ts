@@ -3,7 +3,7 @@
  * The `storium` namespace provides `connect` and `fromDrizzle`.
  *
  * @example
- * import { storium, defineTable, defineStore } from 'storium'
+ * import { storium, defineStore } from 'storium'
  *
  * const db = storium.connect(config)
  * const stores = db.register({ users: userStore })
@@ -18,9 +18,9 @@ export const storium = { connect, fromDrizzle }
 // ------------------------------------------------- Schema & Store DSL --
 
 export {
-  defineTable,
   defineStore,
   isStoreDefinition,
+  hasMeta,
 } from './core'
 
 // ------------------------------------------------------------ Errors --
@@ -45,16 +45,10 @@ export {
 
 // --------------------------------------------------------------- Types --
 
-export {
-  isRawColumn,
-  isRawIndex,
-} from './core'
-
 export type {
   StoreDefinition,
+  StoriumMeta,
 } from './core'
-
-export type { StoriumMeta } from './core/defineTable'
 
 export type {
   // Dialect & config
@@ -63,24 +57,15 @@ export type {
   FromDrizzleOptions,
   StoriumInstance,
 
-  // Column & schema
-  DslType,
-  DslColumnConfig,
-  RawColumnConfig,
-  ColumnConfig,
-  ColumnsConfig,
-  DslIndexConfig,
-  RawIndexConfig,
-  IndexConfig,
-  IndexesConfig,
+  // Column annotations
+  ColumnAnnotation,
+  ColumnAnnotations,
+  StoreConfig,
 
   // Table & repository
   TableDef,
   TableAccess,
   AccessConfig,
-  TableBuilderConfig,
-  TableOptions,
-  TimestampColumns,
   Store,
   InferStore,
   Repository,
@@ -116,11 +101,7 @@ export type {
   PaginateOptions,
   PaginateResult,
 
-  // Compile-time type utilities
+  // Utility
   PkValue,
   Promisable,
-  ResolveColumnType,
-  SelectType,
-  InsertType,
-  UpdateType,
 } from './core'

@@ -19,10 +19,10 @@
 
 import path from 'node:path'
 import { glob } from 'glob'
-import { hasMeta } from '../core/defineTable'
 import { isStoreDefinition } from '../core/defineStore'
 import { loadConfig } from '../core/configLoader'
-import type { StoriumInstance, StoriumConfig, Dialect, TableDef } from '../core/types'
+import { isTable, getTableName } from 'drizzle-orm/table'
+import type { StoriumInstance, StoriumConfig, Dialect } from '../core/types'
 
 // --------------------------------------------------------------- Types --
 
@@ -39,7 +39,7 @@ export type SeedContext = {
   dialect: Dialect
   /** Scoped transaction helper. */
   transaction: StoriumInstance['transaction']
-  /** Full StoriumInstance for advanced use (manual register, defineTable, etc). */
+  /** Full StoriumInstance for advanced use (manual register, defineStore, etc). */
   instance: StoriumInstance
 }
 
@@ -149,17 +149,17 @@ const discoverStores = async (
     }
   }
 
-  // Phase 2: TableDefs (CRUD-only fallback)
+  // Phase 2: Drizzle tables (CRUD-only fallback)
   if (config?.schema) {
-    const tableDefs = await importAndCollect(
+    const tables = await importAndCollect(
       config.schema,
-      hasMeta as (value: any) => value is TableDef
+      isTable as (value: any) => value is any
     )
 
-    for (const tableDef of tableDefs) {
-      const name = (tableDef as any).storium.name
+    for (const table of tables) {
+      const name = getTableName(table)
       if (!coveredTables.has(name)) {
-        liveStores[name] = db.defineStore(tableDef)
+        liveStores[name] = db.defineStore(table)
         coveredTables.add(name)
       }
     }

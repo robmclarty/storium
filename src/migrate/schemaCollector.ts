@@ -18,7 +18,8 @@
  */
 
 import { glob } from 'glob'
-import { hasMeta } from '../core/defineTable'
+import { hasMeta } from '../core/defineStore'
+import { isTable, getTableName } from 'drizzle-orm/table'
 
 // --------------------------------------------------------------- Types --
 
@@ -63,12 +64,7 @@ export const collectSchemas = async (
       const mod = await import(filePath)
 
       for (const [_exportName, exportValue] of Object.entries(mod)) {
-        // Case 1: Plain storium table (from defineTable)
-        if (hasMeta(exportValue)) {
-          schemaMap[(exportValue as any).storium.name] = exportValue
-          continue
-        }
-        // Case 2: StoreDefinition (from defineStore)
+        // Case 1: StoreDefinition (from defineStore)
         if (
           exportValue !== null &&
           typeof exportValue === 'object' &&
@@ -76,6 +72,17 @@ export const collectSchemas = async (
         ) {
           const def = exportValue as { table: any; name: string }
           schemaMap[def.name] = def.table
+          continue
+        }
+        // Case 2: Storium-annotated table (has .storium metadata)
+        if (hasMeta(exportValue)) {
+          schemaMap[(exportValue as any).storium.name] = exportValue
+          continue
+        }
+        // Case 3: Raw Drizzle table (from pgTable/sqliteTable/mysqlTable)
+        if (isTable(exportValue)) {
+          const name = getTableName(exportValue as any)
+          schemaMap[name] = exportValue
         }
       }
     } catch (err) {

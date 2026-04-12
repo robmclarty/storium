@@ -1,9 +1,8 @@
 /**
  * @module configLoader
  *
- * Loads config from the project's config file. Two entry points:
+ * Loads config from the project's config file.
  *
- * - `loadDialectFromConfig()` — sync, for `defineTable()` at import time
  * - `loadConfig()` — async, for migrate/seed commands at runtime
  *
  * Config file resolution order:
@@ -15,15 +14,8 @@
 
 import { resolve } from 'node:path'
 import { existsSync } from 'node:fs'
-import type { Dialect, StoriumConfig } from './types'
+import type { StoriumConfig } from './types'
 import { ConfigError } from './errors'
-
-// createRequire is used intentionally: loadDialectFromConfig() is called
-// synchronously by defineTable(). Switching to async import() would cascade
-// into making defineTable() async — a breaking API change.
-import { createRequire } from 'node:module'
-
-const require = createRequire(import.meta.url)
 
 // ---------------------------------------------------- Path Resolution --
 
@@ -59,48 +51,6 @@ export const resolveConfigPath = (): string => {
 
   // Default fallback (will fail at import time with a clear error)
   return resolve(process.cwd(), 'storium.config.ts')
-}
-
-// ----------------------------------------------- Sync Dialect Loader --
-
-/**
- * Load the dialect string from the project's config file (sync).
- * Used by `defineTable()` when called without an explicit dialect.
- *
- * No module-level cache — Node's `require()` cache handles repeat loads,
- * and a process-global singleton would return the wrong dialect in
- * multi-dialect test suites or monorepos.
- */
-export const loadDialectFromConfig = (): Dialect => {
-  const configPath = resolveConfigPath()
-
-  // Strip extension for require() — it probes .ts/.js/.mjs automatically
-  const requirePath = configPath.replace(/\.(ts|js|mjs)$/, '')
-
-  try {
-    const mod = require(requirePath)
-    const config = mod.default ?? mod
-
-    if (!config?.dialect) {
-      throw new ConfigError(
-        'Config file found but `dialect` is not set. ' +
-        'Add `dialect` to your config file.'
-      )
-    }
-
-    return config.dialect
-  } catch (err) {
-    if (err instanceof ConfigError) throw err
-    if ((err as any)?.code === 'MODULE_NOT_FOUND') {
-      throw new ConfigError(
-        'defineTable() called without a dialect and no config file found. ' +
-        "Either pass a dialect — defineTable('postgresql')('users', {...}) — " +
-        'or create storium.config.ts (or drizzle.config.ts) in your project root. ' +
-        'You can also set the STORIUM_CONFIG env var to a custom path.'
-      )
-    }
-    throw err
-  }
 }
 
 // ------------------------------------------------ Async Config Loader --
