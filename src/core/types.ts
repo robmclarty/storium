@@ -46,6 +46,27 @@ export type InferDialect<DB> =
   DB extends BaseSQLiteDatabase<any, any, any, any> ? 'sqlite' :
   Dialect
 
+// --------------------------------------------------------- Drizzle Column --
+
+/**
+ * Minimal shape of a Drizzle column object at runtime.
+ * We only declare what we actually read — no coupling to Drizzle internals.
+ */
+export type DrizzleColumn = {
+  name: string
+  dataType: string
+  columnType: string
+  notNull: boolean
+  hasDefault: boolean
+  primary: boolean
+  isUnique: boolean
+  enumValues?: string[]
+  length?: number
+  /** Array columns expose their base column type. */
+  baseColumn?: DrizzleColumn
+  [key: string]: any
+}
+
 // ------------------------------------------------------------- Assertions --
 
 /** A named assertion function: receives a value, returns true if valid. */
