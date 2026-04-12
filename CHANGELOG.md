@@ -4,6 +4,11 @@ All notable changes to Storium are documented here.
 
 This project uses [Semantic Versioning](https://semver.org/). Pre-1.0 releases may include breaking changes in minor versions.
 
+## 0.13.5 - 11 Apr 2026
+
+- Add `defineTable(drizzleTable)` overload for wrapping existing Drizzle tables with Storium metadata
+- Rewrite from-drizzle example to use Drizzle-native table definitions with indexes and constraints
+
 ## 0.13.4 - 11 Apr 2026
 
 - Fix relations example crash: import `belongsTo` instead of non-existent `withBelongsTo`
