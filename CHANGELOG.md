@@ -4,6 +4,29 @@ All notable changes to Storium are documented here.
 
 This project uses [Semantic Versioning](https://semver.org/). Pre-1.0 releases may include breaking changes in minor versions.
 
+## 0.14.9
+
+- Align Zod and JSON Schema required-field logic: both now enforce `notNull && !hasDefault` columns as required on insert
+- Align JSON Schema `json` column type to `oneOf: [object, array]`, matching the Zod union
+- Remove transforms from Zod schemas (transforms are handled by the prep pipeline only, fixing async transform corruption)
+- Prep pipeline `checkRequired` now enforces DB-level `notNull` columns, not just annotation `required`
+- Wrap DB constraint violations (unique, FK, NOT NULL) in `StoreError` with structured messages
+- Wrap driver `require()` errors in `ConfigError` with install instructions
+- Catch transform errors in prep and wrap in `ValidationError`
+- Validate `orderBy` column names and composite PK array lengths
+- Add soft-delete awareness to `hasMany`, `hasOne`, and `belongsTo` mixins
+- Add `opts.tx` transaction support to all `withMembers` methods
+- `addMember` throws on MySQL post-SELECT miss; `removeMember` throws when no row found
+- Guard `withCache` `delPattern` failures after successful writes (optional `onError` callback)
+- Throw `StoreError` for unknown column names in mixin `select` arrays
+- **Breaking:** `QueryOptions<TTable>` is now generic (typed `where` callback with column autocomplete)
+- **Breaking:** Remove `Repository` type alias (use `Store` everywhere)
+- **Breaking:** `destroy()` now returns the deleted row (was `void`)
+- Remove internal types from public exports (`TableDef`, `TableAccess`, `PrepOptions`, `RepositoryContext`, `DefaultCRUD`, `DrizzleDatabase`, `InferDialect`)
+- `hasMeta()` returns type predicate (`value is TableDef`) for TypeScript narrowing
+- Add `conflictTarget` to `StoreConfig` for default upsert conflict columns
+- Remove Bun re-exec block from CLI
+
 ## 0.14.8
 
 - Add multi-dialect integration tests for soft-delete, upsert, relationships, withMembers, and pagination
