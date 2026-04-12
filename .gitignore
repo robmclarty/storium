@@ -11,7 +11,7 @@ npm-debug.log*
 Thumbs.db
 
 # AI
-.claude/
+.claude/settings.local.json
 
 # Output
 dist/
