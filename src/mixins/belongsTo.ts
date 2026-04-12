@@ -83,14 +83,20 @@ export const belongsTo = <A extends string>(
         joinCondition = and(joinCondition, isNull(relatedTable.deletedAt))
       }
 
-      const rows = await ctx.drizzle
-        .select(selectObj)
-        .from(ctx.table)
-        .leftJoin(relatedTable, joinCondition)
-        .where(eq(ctx.table[ctx.primaryKey as string], id))
-        .limit(1)
+      try {
+        const rows = await ctx.drizzle
+          .select(selectObj)
+          .from(ctx.table)
+          .leftJoin(relatedTable, joinCondition)
+          .where(eq(ctx.table[ctx.primaryKey as string], id))
+          .limit(1)
 
-      return rows[0] ?? null
+        return rows[0] ?? null
+      } catch (err) {
+        throw new StoreError(
+          `Failed to load ${alias} relation: ${err instanceof Error ? err.message : String(err)}`
+        )
+      }
     },
   } as { [K in `findWith${Capitalize<A>}`]: (ctx: any) => (id: string | number) => Promise<any> }
 }

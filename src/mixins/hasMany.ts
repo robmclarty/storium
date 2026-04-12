@@ -114,23 +114,29 @@ export const hasMany = <A extends string>(
       const selectObj = buildRelatedSelect(relatedTable, relatedColumns)
       const whereClause = buildRelatedWhere(relatedTable, foreignKey, id, opts)
 
-      let q = _ctx.drizzle
-        .select(selectObj)
-        .from(relatedTable)
-        .where(whereClause)
+      try {
+        let q = _ctx.drizzle
+          .select(selectObj)
+          .from(relatedTable)
+          .where(whereClause)
 
-      if (opts?.orderBy) {
-        const specs = Array.isArray(opts.orderBy) ? opts.orderBy : [opts.orderBy]
-        const clauses = specs.map((spec: OrderBySpec) =>
-          (spec.direction === 'desc' ? desc : asc)(relatedTable[spec.column])
+        if (opts?.orderBy) {
+          const specs = Array.isArray(opts.orderBy) ? opts.orderBy : [opts.orderBy]
+          const clauses = specs.map((spec: OrderBySpec) =>
+            (spec.direction === 'desc' ? desc : asc)(relatedTable[spec.column])
+          )
+          q = q.orderBy(...clauses)
+        }
+
+        if (opts?.limit !== undefined) q = q.limit(opts.limit)
+        if (opts?.offset !== undefined) q = q.offset(opts.offset)
+
+        return q
+      } catch (err) {
+        throw new StoreError(
+          `Failed to load ${options.alias} relation: ${err instanceof Error ? err.message : String(err)}`
         )
-        q = q.orderBy(...clauses)
       }
-
-      if (opts?.limit !== undefined) q = q.limit(opts.limit)
-      if (opts?.offset !== undefined) q = q.offset(opts.offset)
-
-      return q
     },
   } as { [K in `find${Capitalize<A>}For`]: (ctx: any) => (id: string | number, opts?: any) => Promise<any[]> }
 }

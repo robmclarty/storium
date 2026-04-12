@@ -18,6 +18,7 @@
  */
 
 import type { TableDef } from '../types'
+import { StoreError } from '../errors'
 import { buildRelatedSelect, buildRelatedWhere, prepareRelatedMixin } from './hasMany'
 
 type HasOneOptions<A extends string = string> = {
@@ -51,13 +52,19 @@ export const hasOne = <A extends string>(
       const selectObj = buildRelatedSelect(relatedTable, relatedColumns)
       const whereClause = buildRelatedWhere(relatedTable, foreignKey, id, opts)
 
-      const rows = await _ctx.drizzle
-        .select(selectObj)
-        .from(relatedTable)
-        .where(whereClause)
-        .limit(1)
+      try {
+        const rows = await _ctx.drizzle
+          .select(selectObj)
+          .from(relatedTable)
+          .where(whereClause)
+          .limit(1)
 
-      return rows[0] ?? null
+        return rows[0] ?? null
+      } catch (err) {
+        throw new StoreError(
+          `Failed to load ${options.alias} relation: ${err instanceof Error ? err.message : String(err)}`
+        )
+      }
     },
   } as { [K in `find${Capitalize<A>}For`]: (ctx: any) => (id: string | number, opts?: any) => Promise<any | null> }
 }
