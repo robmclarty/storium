@@ -4,6 +4,11 @@ All notable changes to Storium are documented here.
 
 This project uses [Semantic Versioning](https://semver.org/). Pre-1.0 releases may include breaking changes in minor versions.
 
+## [0.13.4] — 2026-04-11
+
+- Fix relations example crash: import `belongsTo` instead of non-existent `withBelongsTo`
+- Add email validation to sqlite, postgresql, and mysql example user schemas so the Validation section produces output
+
 ## [0.13.3] — 2026-04-11
 
 - Fix all fallow dead code, duplication, and complexity issues (41 → 0)
