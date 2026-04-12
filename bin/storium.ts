@@ -1,19 +1,6 @@
 #!/usr/bin/env node
 
-import { createRequire, register } from 'node:module'
-
-// If we're under Node but Bun is available, re-exec with Bun
-// so that bun:-protocol imports (bun:sqlite, etc.) resolve.
-if (!('Bun' in globalThis)) {
-  try {
-    const require = createRequire(import.meta.url)
-    const { execFileSync } = require('node:child_process')
-    execFileSync('bun', process.argv.slice(1), { stdio: 'inherit' })
-    process.exit(0)
-  } catch {
-    // Bun not installed — fall through to Node path
-  }
-}
+import { register } from 'node:module'
 
 /**
  * Storium CLI

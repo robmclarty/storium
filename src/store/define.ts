@@ -36,6 +36,7 @@ import type {
   QueriesConfig,
   RepositoryContext,
   TableAccess,
+  TableDef,
   StoriumMeta,
   AssertionRegistry,
 } from '../types'
@@ -82,7 +83,7 @@ export const isStoreDefinition = (value: any): value is StoreDefinition =>
 /**
  * Check whether a value is a storium-annotated table (has `.storium` metadata).
  */
-export const hasMeta = (value: unknown): boolean =>
+export const hasMeta = (value: unknown): value is TableDef =>
   value !== null && typeof value === 'object' && 'storium' in (value as any)
 
 /**
@@ -243,6 +244,7 @@ export const attachStoriumMeta = (
     name,
     schemas,
     softDelete: config.softDelete === true,
+    conflictTarget: config.conflictTarget,
   }
 
   // Attach storium metadata as a non-enumerable property on the Drizzle table.
