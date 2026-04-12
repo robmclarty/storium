@@ -11,7 +11,11 @@
  */
 
 import { z } from 'zod'
+import { is } from 'drizzle-orm'
 import type { Table } from 'drizzle-orm'
+import { PgDatabase } from 'drizzle-orm/pg-core'
+import { MySqlDatabase } from 'drizzle-orm/mysql-core'
+import { BaseSQLiteDatabase } from 'drizzle-orm/sqlite-core'
 import type {
   StoriumConfig,
   FromDrizzleOptions,
@@ -235,16 +239,16 @@ const createWithTransaction = (db: any, dialect: Dialect) => {
 
 /**
  * Infer the storium dialect string from a Drizzle database instance.
- * Drizzle exposes `db.dialect` as an internal class (PgDialect, etc.).
+ * Uses Drizzle's `is()` utility which checks the stable `entityKind` symbol —
+ * survives bundlers and minifiers unlike constructor name matching.
  */
 const inferDialect = (drizzleDb: any): Exclude<Dialect, 'memory'> => {
-  const name = drizzleDb?.dialect?.constructor?.name ?? ''
-  if (name.includes('Pg')) return 'postgresql'
-  if (name.includes('MySql')) return 'mysql'
-  if (name.includes('SQLite')) return 'sqlite'
+  if (is(drizzleDb, PgDatabase)) return 'postgresql'
+  if (is(drizzleDb, MySqlDatabase)) return 'mysql'
+  if (is(drizzleDb, BaseSQLiteDatabase)) return 'sqlite'
   throw new ConfigError(
-    `Could not infer dialect from Drizzle instance (got: '${name}'). ` +
-    'Ensure you pass a valid Drizzle database instance.'
+    `Could not infer dialect from Drizzle instance. ` +
+    `Pass { dialect: 'postgresql' | 'mysql' | 'sqlite' } explicitly.`
   )
 }
 
@@ -370,10 +374,9 @@ export const connect = <D extends Dialect>(config: StoriumConfig<D>): StoriumIns
 
 /**
  * Create a StoriumInstance from an existing Drizzle database instance.
- * Dialect is auto-detected from the Drizzle instance's internal dialect class.
+ * Dialect is auto-detected via Drizzle's stable entityKind symbol.
  *
- * When `options.dialect` is provided, the return type uses that literal dialect
- * instead of the inferred one — useful when bundlers mangle class names.
+ * Pass `options.dialect` to override inference and narrow the return type.
  */
 export function fromDrizzle<DB extends DrizzleDatabase, D extends Exclude<Dialect, 'memory'>>(
   drizzleDb: DB,

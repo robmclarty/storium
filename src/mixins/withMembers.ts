@@ -115,9 +115,9 @@ export const withMembers = (
         return
       }
 
-      // MySQL: check affected rows
-      const result = await db.delete(joinTable).where(condition)
-      if ((result.affectedRows ?? 0) === 0) {
+      // MySQL: result is [ResultSetHeader, FieldPacket[]]
+      const result: any = await db.delete(joinTable).where(condition)
+      if ((result[0]?.affectedRows ?? 0) === 0) {
         throw new StoreError(
           `removeMember(): no membership row found for ${foreignKey}=${collectionId}, ${memberKey}=${memberId}.`
         )
