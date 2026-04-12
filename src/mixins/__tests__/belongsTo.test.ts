@@ -82,7 +82,7 @@ describe('belongsTo', () => {
     expect(result).toBeNull()
   })
 
-  it('throws StoreError for unknown select column', () => {
+  it('throws StoreError for unknown select column', async () => {
     const badAuthorsTable = sqliteTable('authors', {
       id: text('id').primaryKey(),
       name: text('name').notNull(),
@@ -103,7 +103,7 @@ describe('belongsTo', () => {
       }),
     })
 
-    expect(badPosts.findWithAuthor('p1')).rejects.toThrow(StoreError)
+    await expect(badPosts.findWithAuthor('p1')).rejects.toThrow(StoreError)
   })
 })
 

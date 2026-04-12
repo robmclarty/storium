@@ -92,7 +92,7 @@ describe('hasMany', () => {
     expect(result[0].title).toBe('Post A')
   })
 
-  it('throws StoreError for unknown select column', () => {
+  it('throws StoreError for unknown select column', async () => {
     const badPostsTable = sqliteTable('posts', {
       id: text('id').primaryKey(),
       title: text('title').notNull(),
@@ -112,7 +112,7 @@ describe('hasMany', () => {
       }),
     })
 
-    expect(badAuthors.findPostsFor('alice-1')).rejects.toThrow(StoreError)
+    await expect(badAuthors.findPostsFor('alice-1')).rejects.toThrow(StoreError)
   })
 
   it('respects select option to limit returned columns', async () => {
