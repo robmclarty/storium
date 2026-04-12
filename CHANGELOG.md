@@ -4,6 +4,15 @@ All notable changes to Storium are documented here.
 
 This project uses [Semantic Versioning](https://semver.org/). Pre-1.0 releases may include breaking changes in minor versions.
 
+## 0.14.6
+
+- Add `TTable` generic to `Store`, `DefaultCRUD`, `Repository`, `RepositoryContext`, `StoreDefinition`, and `StoriumInstance.defineStore` — CRUD methods now return typed rows (`InferSelectModel<TTable>`) instead of `any` when a specific table type is provided
+- Add `InferRow<TTable>` and `InferInput<TTable>` utility types with backward-compatible `any` fallback
+- Add optional `dialect` parameter to `fromDrizzle()` options as an escape hatch when constructor-name inference fails (e.g., bundlers/minifiers)
+- Add `fromDrizzle` overloads so the return type honors an explicit dialect override
+- Add SQLite transaction commit/rollback tests and improve `createWithTransaction` documentation
+- Add type-level verification tests for `Store<TTable>` generics
+
 ## 0.14.5
 
 - Add `countWithDeleted()` and `paginateWithDeleted()` for soft-delete stores — `withPagination` now composes with soft-delete out of the box
