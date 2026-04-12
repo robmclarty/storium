@@ -41,7 +41,7 @@ belongsTo(relatedTableDef, foreignKey, options)
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `relatedTableDef` | `TableDef` | The related table (from `defineTable`). |
+| `relatedTable` | Drizzle table | The related table (must have `.storium` metadata via `defineStore`). |
 | `foreignKey` | `string` | Column on the current table that references the related table's PK. |
 | `options.alias` | `string` | Name for the relationship. Determines method name and field prefix. |
 | `options.select` | `string[]` (optional) | Which columns to include from the related table. Defaults to all selectable. |
@@ -85,7 +85,7 @@ hasMany(relatedTableDef, foreignKey, options)
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `relatedTableDef` | `TableDef` | The related table (from `defineTable`). |
+| `relatedTable` | Drizzle table | The related table (must have `.storium` metadata via `defineStore`). |
 | `foreignKey` | `string` | Column on the related table referencing the parent entity's PK. |
 | `options.alias` | `string` | Name for the relationship. Determines method name: `find{Alias}For`. |
 | `options.select` | `string[]` (optional) | Which columns to include from the related table. Defaults to all selectable. |
@@ -129,7 +129,7 @@ hasOne(relatedTableDef, foreignKey, options)
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `relatedTableDef` | `TableDef` | The related table (from `defineTable`). |
+| `relatedTable` | Drizzle table | The related table (must have `.storium` metadata via `defineStore`). |
 | `foreignKey` | `string` | Column on the related table referencing the parent entity's PK. |
 | `options.alias` | `string` | Name for the relationship. Determines method name: `find{Alias}For`. |
 | `options.select` | `string[]` (optional) | Which columns to include from the related table. Defaults to all selectable. |
@@ -165,9 +165,9 @@ withMembers(joinTableDef, foreignKey, memberKey?)
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `joinTableDef` | `TableDef` | The join/membership table (from `defineTable`). |
+| `joinTable` | Drizzle table | The join/membership table (must have `.storium` metadata via `defineStore`). |
 | `foreignKey` | `string` | Column on the join table referencing the "collection" (e.g., `team_id`). |
-| `memberKey` | `string` (optional) | Column on the join table referencing the "member". Default: `'user_id'`. |
+| `memberKey` | `string` (optional) | Column on the join table referencing the "member". Default: `'member_id'`. |
 
 ### Generated Methods
 
@@ -211,12 +211,14 @@ const postStore = defineStore(postsTable).queries({
 Join tables are best modeled with a composite primary key — no synthetic `id` column needed:
 
 ```typescript
-const postTagsTable = defineTable('post_tags')
-  .columns({
-    post_id: { type: 'uuid', required: true },
-    tag_id: { type: 'uuid', required: true },
-  })
-  .primaryKey('post_id', 'tag_id')
+import { sqliteTable, text, primaryKey } from 'drizzle-orm/sqlite-core'
+
+const postTagsTable = sqliteTable('post_tags', {
+  postId: text('post_id').notNull(),
+  tagId: text('tag_id').notNull(),
+}, (table) => [
+  primaryKey({ columns: [table.postId, table.tagId] }),
+])
 ```
 
 CRUD methods accept an array of values matching the PK column order:

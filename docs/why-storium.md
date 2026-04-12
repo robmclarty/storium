@@ -24,11 +24,10 @@ with every table you add.
 
 ## What Storium Does
 
-A single `defineTable()` call replaces all of the above. You describe each
-column once with its type and access metadata — `readonly`, `hidden`,
+You define your Drizzle tables normally, then wrap them with `defineStore()`
+and annotate columns with access metadata — `readonly`, `hidden`,
 `required` — and Storium derives everything else:
 
-- A **Drizzle table** ready for migrations and queries.
 - **Zod schemas** for create, update, select, and full validation, with
   transforms and custom validation baked in.
 - **JSON Schema** output for HTTP-layer validation (e.g., Fastify/Ajv).
@@ -37,8 +36,8 @@ column once with its type and access metadata — `readonly`, `hidden`,
 - A **prep pipeline** (filter, transform, validate, required) that runs
   automatically on every write.
 
-The DSL isn't really an abstraction over Drizzle and Zod — it's a **policy
-language** for data access patterns. You're not learning "how to make a
+Storium isn't an abstraction over Drizzle and Zod — it's a **policy
+layer** for data access patterns. You're not learning "how to make a
 column." You're declaring "this field is readonly" or "this field is hidden
 from output." That's a higher-level concern that Drizzle and Zod don't
 address on their own.
@@ -48,11 +47,9 @@ address on their own.
 Storium is designed with escape hatches at every level so you're never painted
 into a corner:
 
-- **Column-level**: Use `custom` to tweak the auto-built Drizzle column, or
-  `raw` to bypass the DSL entirely while keeping metadata like `readonly`,
-  `hidden`, and `validate`.
-- **Index-level**: Use the index DSL for common cases, or `raw` for full
-  Drizzle index control (e.g., GIN indexes).
+- **Column-level**: Columns are native Drizzle — you have full control over
+  types, defaults, and constraints. Storium annotations (`readonly`,
+  `hidden`, `validate`, `transform`) layer on top without replacing anything.
 - **Query-level**: Custom queries receive a `ctx` with full Drizzle access
   (`ctx.drizzle`, `ctx.table`) alongside all default CRUD methods.
 - **Schema-level**: Every generated schema exposes `.zod` for direct access to
@@ -62,9 +59,9 @@ into a corner:
 - **Pipeline-level**: Pass `skipPrep: true` to any write operation to skip the
   entire prep pipeline.
 
-The goal is that ~80% of your work stays in Storium's DSL, ~15% uses custom
-queries through `ctx`, and ~5% drops down to raw Drizzle. The library earns
-its keep on the common case and gets out of the way for the rest.
+The goal is that ~80% of your work stays in Storium's store pattern, ~15% uses
+custom queries through `ctx`, and ~5% drops down to raw Drizzle. The library
+earns its keep on the common case and gets out of the way for the rest.
 
 ## For Solo Developers
 
@@ -75,9 +72,9 @@ write without you having to remember to wire them up. The schema sync problem
 — where your Zod schemas drift from your Drizzle table after a migration —
 goes away entirely.
 
-The cognitive load of learning `readonly`, `hidden`, `required`, and the custom
-query pattern is paid once. The cognitive load of manually maintaining schema
-parity across Drizzle and Zod is paid forever.
+The cognitive load of learning `readonly`, `hidden`, `required`, `transform`,
+`validate`, and the custom query pattern is paid once. The cognitive load of
+manually maintaining schema parity across Drizzle and Zod is paid forever.
 
 ## For Teams
 
@@ -92,8 +89,7 @@ Another puts it in a repository method. Another forgets entirely. Six months
 in, nobody knows where input sanitization happens for any given table without
 reading the code. Code review becomes archaeology.
 
-Storium eliminates that class of inconsistency. If the rule is "all tables go
-through `defineTable`, all stores through `defineStore`, all custom queries
+Storium eliminates that class of inconsistency. If the rule is "all tables go through `defineStore`, all custom queries
 use `ctx`," then:
 
 - Validation **always** lives in column definitions.
@@ -129,9 +125,10 @@ should provide.
 ## The Trade-Off
 
 Storium is additive cognitive load on top of Drizzle and Zod. Your engineers
-still need to know Drizzle for custom queries and Zod for edge cases. But in
-practice, most table definitions will be pure DSL, most queries will be default
-CRUD or simple custom queries, and the escape hatches will be occasional.
+still need to know Drizzle for table definitions and custom queries, and Zod
+for edge cases. But in practice, most stores need only a few annotations, most
+queries will be default CRUD or simple custom queries, and the escape hatches
+will be occasional.
 
-The DSL earns its keep not because it's less code, but because it makes the
+Storium earns its keep not because it's less code, but because it makes the
 right thing automatic and the wrong thing visible.

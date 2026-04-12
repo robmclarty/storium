@@ -41,18 +41,22 @@ await users.create({ email: 'alice@example.com', unknown_field: 'ignored' })
 Each column's `transform` callback runs on its value. Transforms run before validation — sanitize first, then check:
 
 ```typescript
-email: {
-  type: 'varchar', maxLength: 255, required: true,
-  transform: (v) => String(v).trim().toLowerCase(),
+columns: {
+  email: {
+    required: true,
+    transform: (v) => String(v).trim().toLowerCase(),
+  },
 }
 ```
 
 Transforms can be async:
 
 ```typescript
-password: {
-  type: 'varchar', maxLength: 255, required: true, hidden: true,
-  transform: async (v) => await bcrypt.hash(v, 10),
+columns: {
+  password: {
+    required: true, hidden: true,
+    transform: async (v) => await bcrypt.hash(v, 10),
+  },
 }
 ```
 
@@ -60,17 +64,19 @@ password: {
 
 Two checks happen here:
 
-1. **Type checking** — the value's JavaScript type is checked against the DSL type (e.g., `varchar` expects a string, `integer` expects a number). Mismatches produce a `ValidationError`.
+1. **Type checking** — the value's JavaScript type is checked against the Drizzle column's introspected type (e.g., `varchar` expects a string, `integer` expects a number). Mismatches produce a `ValidationError`.
 
 2. **Custom `validate` callbacks** — your column's `validate` function runs, receiving the value and a `test()` function. Errors are accumulated (not thrown one at a time).
 
 ```typescript
-slug: {
-  type: 'varchar', maxLength: 100, required: true,
-  transform: (v) => String(v).trim().toLowerCase().replace(/\s+/g, '-'),
-  validate: (v, test) => {
-    test(v, 'not_empty', 'Slug cannot be empty')
-    test(v, 'is_slug', 'Must be lowercase letters, numbers, and hyphens')
+columns: {
+  slug: {
+    required: true,
+    transform: (v) => String(v).trim().toLowerCase().replace(/\s+/g, '-'),
+    validate: (v, test) => {
+      test(v, 'not_empty', 'Slug cannot be empty')
+      test(v, 'is_slug', 'Must be lowercase letters, numbers, and hyphens')
+    },
   },
 }
 ```

@@ -116,7 +116,7 @@ Each function returns `{ success: boolean, message: string }`. The `seed` functi
 A typical migration workflow:
 
 ```
-1. Edit schema files (defineTable)
+1. Edit schema files (Drizzle tables)
 2. npx storium generate     → creates SQL migration in ./migrations/
 3. npx storium status       → verify the migration was created
 4. npx storium migrate      → apply to database
@@ -172,7 +172,7 @@ The `db` parameter passed to seed functions contains:
 The seed runner auto-discovers stores from your config:
 
 1. **Phase 1** — Imports files matching the `stores` glob, finds `StoreDefinition` exports, and materializes them with `db.register()`. These stores have full custom queries.
-2. **Phase 2** — Imports files matching the `schema` glob, finds `TableDef` exports not already covered by phase 1, and creates CRUD-only stores with `db.defineStore()`.
+2. **Phase 2** — Imports files matching the `schema` glob, finds storium-annotated tables and raw Drizzle tables not already covered by phase 1, and creates CRUD-only stores with `db.defineStore()`.
 
 Phase 1 stores take priority by table name. This means if you have both `user.table.ts` (Drizzle table) and `user.store.ts` (StoreDefinition with custom queries), the seed runner uses the store version — giving your seeds access to custom queries like `findByEmail`.
 

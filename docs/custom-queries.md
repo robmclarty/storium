@@ -188,7 +188,7 @@ const userStore = defineStore(usersTable).queries({
 })
 ```
 
-Mixins compose with each other and with Storium's built-in mixins (`withBelongsTo`, `withMembers`) via spread.
+Mixins compose with each other and with Storium's built-in mixins (`belongsTo`, `hasMany`, `withMembers`) via spread.
 
 ## Tips
 
