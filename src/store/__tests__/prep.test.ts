@@ -12,7 +12,7 @@ const usersTable = sqliteTable('users', {
 const annotations: ColumnAnnotations = {
   email: {
     required: true,
-    transform: (v: string) => v.trim().toLowerCase(),
+    transform: (v) => (v as string).trim().toLowerCase(),
     validate: (v, test) => {
       test(v, 'not_empty', 'Email cannot be empty')
     },

@@ -16,7 +16,7 @@ const usersTable = sqliteTable('users', {
 const annotations: ColumnAnnotations = {
   email: {
     required: true,
-    transform: (v: string) => v.trim().toLowerCase(),
+    transform: (v) => (v as string).trim().toLowerCase(),
   },
 }
 
@@ -45,7 +45,7 @@ describe('buildZodSchemas', () => {
       const result = schemas.createSchema.safeParse({ email: ' HI@X.COM' })
       expect(result.success).toBe(true)
       if (result.success) {
-        expect(result.data.email).toBe('hi@x.com')
+        expect((result.data as any).email).toBe('hi@x.com')
       }
     })
 
