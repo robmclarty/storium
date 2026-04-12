@@ -29,8 +29,7 @@ storium/
 │   │   ├── hasOne.ts           # One-to-one relationship mixin
 │   │   ├── withMembers.ts      # Many-to-many membership mixin
 │   │   ├── withCache.ts        # Caching wrapper
-│   │   ├── withPagination.ts   # Pagination wrapper
-│   │   └── withTransaction.ts  # createWithTransaction() helper
+│   │   └── withPagination.ts   # Pagination wrapper
 │   └── migrate/
 │       ├── commands.ts         # generate(), migrate(), push(), status() — drizzle-kit CLI + drizzle-orm migrators
 │       ├── schema.collector.ts # collectSchemas(globs) — imports schema files, extracts storium tables + raw Drizzle tables
