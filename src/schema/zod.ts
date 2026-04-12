@@ -23,7 +23,7 @@ import type {
   FieldError,
   DrizzleColumn,
 } from '../types'
-import { createTestFn } from '../store/assertions'
+import { createTestFn } from '../assertions'
 import { ValidationError } from '../errors'
 import { buildJsonSchemas } from './json'
 import { getTableColumns } from 'drizzle-orm/utils'
@@ -79,7 +79,7 @@ const drizzleColumnToZod = (col: DrizzleColumn): ZodType => {
     case 'date':
       return z.coerce.date()
     case 'json':
-      return z.record(z.string(), z.unknown())
+      return z.union([z.record(z.string(), z.unknown()), z.array(z.unknown())])
     case 'array': {
       if (col.baseColumn) {
         const itemSchema = drizzleColumnToZod(col.baseColumn)
