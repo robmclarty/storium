@@ -1,118 +1,42 @@
 /**
  * @module jsonSchema
  *
- * Generates JSON Schema objects from Storium column configs. These schemas
- * are used for Fastify/Ajv validation at the HTTP edge, providing fast,
- * compiled validation with zero runtime overhead from Zod or custom logic.
+ * Generates JSON Schema objects by introspecting Drizzle column metadata.
+ * These schemas are used for Fastify/Ajv validation at the HTTP edge,
+ * providing fast, compiled validation with zero runtime overhead from Zod.
  *
- * JSON Schema generation uses only column metadata (type, maxLength, notNull,
- * required) — it does NOT include column transforms or custom validate logic,
- * as those are runtime-only concerns handled by the prep pipeline and Zod.
+ * JSON Schema generation uses only column metadata (type, maxLength, notNull)
+ * plus storium annotations (required) — it does NOT include transforms or
+ * custom validate logic, as those are runtime-only concerns.
  */
 
 import type {
-  ColumnsConfig,
-  ColumnConfig,
-  DslColumnConfig,
-  DslType,
+  ColumnAnnotations,
   TableAccess,
   JsonSchema,
   JsonSchemaOptions,
 } from './types'
-import { isRawColumn } from './types'
-
-// --------------------------------------------------------- Type Mapping --
-
-type JsonSchemaType = {
-  type: string
-  format?: string
-  maxLength?: number
-  [key: string]: any
-}
-
-/**
- * Map a DSL column config to its JSON Schema representation.
- */
-const dslTypeToJsonSchema = (config: DslColumnConfig): JsonSchemaType => {
-  const base = DSL_TYPE_MAP[config.type]
-  if (!base) return { type: 'string' } // fallback
-
-  const result = typeof base === 'function' ? base(config) : { ...base }
-
-  if (config.maxLength && result.type === 'string') {
-    result.maxLength = config.maxLength
-  }
-
-  return result
-}
-
-/**
- * Mapping from DSL type strings to JSON Schema types.
- * Functions receive the column config for parameterized types (e.g., varchar maxLength).
- */
-const DSL_TYPE_MAP: Record<DslType, JsonSchemaType | ((c: DslColumnConfig) => JsonSchemaType)> = {
-  uuid:      { type: 'string', format: 'uuid' },
-  varchar:   (c) => ({ type: 'string', ...(c.maxLength ? { maxLength: c.maxLength } : {}) }),
-  text:      { type: 'string' },
-  integer:   { type: 'integer' },
-  // BigInt values exceed JSON's safe integer range and are typically
-  // serialized as strings in JSON APIs. format: 'int64' signals this.
-  bigint:    { type: 'string', format: 'int64' },
-  serial:    { type: 'integer' },
-  real:      { type: 'number' },
-  numeric:   { type: 'number' },
-  boolean:   { type: 'boolean' },
-  timestamp: { type: 'string', format: 'date-time' },
-  date:      { type: 'string', format: 'date' },
-  // Note: jsonb columns accept any valid JSON value (objects, arrays, scalars),
-  // but JSON Schema `{ type: 'object' }` only validates JSON objects. This is
-  // the most common real-world use case. If your jsonb column stores arrays or
-  // mixed types, use a `raw` column with a custom `validate` callback instead.
-  jsonb:     { type: 'object' },
-  array:     (c) => {
-    const itemSchema = c.items
-      ? (typeof DSL_TYPE_MAP[c.items] === 'function'
-          ? (DSL_TYPE_MAP[c.items] as (c: DslColumnConfig) => JsonSchemaType)(c)
-          : DSL_TYPE_MAP[c.items])
-      : {}
-    return { type: 'array', items: itemSchema }
-  },
-}
-
-/**
- * Get the JSON Schema type for a single column config.
- */
-const columnToJsonSchema = (config: ColumnConfig): JsonSchemaType => {
-  if (isRawColumn(config)) {
-    // Raw columns: can't infer type, default to permissive
-    return {} as JsonSchemaType
-  }
-
-  return dslTypeToJsonSchema(config as DslColumnConfig)
-}
+import { drizzleColumnToJsonSchema, type DrizzleColumn } from './introspect'
+import { getTableColumns } from 'drizzle-orm/utils'
 
 // -------------------------------------------------------- Schema Builders --
 
 /**
- * Build a JSON Schema object from a set of column keys and their configs.
- *
- * @param columns - Full column config record
- * @param keys - Which columns to include
- * @param requiredKeys - Which of those columns are required
- * @param opts - JSON Schema options (e.g., additionalProperties)
+ * Build a JSON Schema object from a set of column keys.
  */
 const buildJsonSchema = (
-  columns: ColumnsConfig,
+  drizzleTable: any,
   keys: string[],
   requiredKeys: string[],
   opts: JsonSchemaOptions = {}
 ): JsonSchema => {
   const properties: Record<string, any> = {}
+  const drizzleCols = getTableColumns(drizzleTable)
 
   for (const key of keys) {
-    const config = columns[key]
-    if (!config) continue
-    properties[key] = columnToJsonSchema(config)
+    const col = drizzleCols[key] as DrizzleColumn | undefined
+    if (!col) continue
+    properties[key] = drizzleColumnToJsonSchema(col)
   }
 
   // Merge extra properties from options
@@ -146,50 +70,53 @@ const buildJsonSchema = (
 // ---------------------------------------------------------- Public API --
 
 /**
- * Generate the full set of JSON Schemas for a table definition.
+ * Generate the full set of JSON Schemas for a table.
  *
- * Returns factory functions that accept options (e.g., additionalProperties)
- * so each call can customize the output.
+ * @param drizzleTable - The raw Drizzle table
+ * @param annotations - Per-column storium annotations
+ * @param access - Derived access sets
  */
 export const buildJsonSchemas = (
-  columns: ColumnsConfig,
+  drizzleTable: any,
+  annotations: ColumnAnnotations,
   access: TableAccess
 ) => {
+  const drizzleCols = getTableColumns(drizzleTable)
+
   // Determine which columns are required for insert.
-  // A column is required in the insert schema if it has `required: true`
-  // or if it has `notNull: true` and no default value.
+  // A column is required if it has `required: true` in annotations,
+  // or if it is notNull without a default.
   const insertRequired = access.writable.filter(key => {
-    const col = columns[key]
-    if (col?.required) return true
-    if (!isRawColumn(col) && (col as DslColumnConfig)?.notNull && !(col as DslColumnConfig)?.default) return true
+    const ann = annotations[key]
+    if (ann?.required) return true
+    const col = drizzleCols[key] as DrizzleColumn | undefined
+    if (col?.notNull && !col.hasDefault) return true
     return false
   })
 
-  // Select: all selectable columns, required = those that are notNull
+  // Select: required = those that are notNull
   const selectRequired = access.selectable.filter(key => {
-    const col = columns[key]
-    if (isRawColumn(col)) return false
-    return (col as DslColumnConfig).notNull === true
+    const col = drizzleCols[key] as DrizzleColumn | undefined
+    return col?.notNull === true
   })
 
   return {
     selectSchema: (opts?: JsonSchemaOptions) =>
-      buildJsonSchema(columns, access.selectable, selectRequired, opts),
+      buildJsonSchema(drizzleTable, access.selectable, selectRequired, opts),
 
     createSchema: (opts?: JsonSchemaOptions) =>
-      buildJsonSchema(columns, access.writable, insertRequired, opts),
+      buildJsonSchema(drizzleTable, access.writable, insertRequired, opts),
 
     updateSchema: (opts?: JsonSchemaOptions) =>
-      buildJsonSchema(columns, access.writable, [], opts), // all optional for updates
+      buildJsonSchema(drizzleTable, access.writable, [], opts), // all optional for updates
 
     fullSchema: (opts?: JsonSchemaOptions) =>
       buildJsonSchema(
-        columns,
-        Object.keys(columns),
-        Object.keys(columns).filter(key => {
-          const col = columns[key]
-          if (isRawColumn(col)) return false
-          return (col as DslColumnConfig).notNull === true
+        drizzleTable,
+        Object.keys(drizzleCols),
+        Object.keys(drizzleCols).filter(key => {
+          const col = drizzleCols[key] as DrizzleColumn | undefined
+          return col?.notNull === true
         }),
         opts
       ),

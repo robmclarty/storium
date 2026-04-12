@@ -1,96 +1,43 @@
 /**
  * @module zodSchema
  *
- * Generates Zod schemas from Storium column configs. Unlike JSON Schema
- * generation (which only captures structure), Zod schemas include:
- * - column transforms (via .transform())
- * - validate callbacks (via .superRefine() bridging test() into Zod)
- * - maxLength constraints
- * - proper optional/required handling per schema variant
+ * Generates Zod schemas by introspecting Drizzle column metadata and
+ * layering on storium-specific annotations (transforms, validate callbacks).
  *
- * These schemas serve as exportable runtime contracts for API boundaries,
- * frontend validation, and cross-service type sharing.
+ * Drizzle columns provide base type info (.dataType, .columnType, .length).
+ * Annotations provide storium extras (transform, validate, required, hidden, readonly).
  */
 
 import { z, type ZodType } from 'zod'
-import type {
-  ColumnsConfig,
-  ColumnConfig,
-  DslColumnConfig,
-  DslType,
-  TableAccess,
-  AssertionRegistry,
-} from './types'
-import { isRawColumn } from './types'
+import type { ColumnAnnotations, TableAccess, AssertionRegistry } from './types'
+import { drizzleColumnToZod, type DrizzleColumn } from './introspect'
 import { createTestFn } from './test'
-
-// --------------------------------------------------------- Type Mapping --
-
-/**
- * Map DSL type strings to base Zod types.
- */
-const dslTypeToZod = (config: DslColumnConfig): ZodType => {
-  const base = ZOD_TYPE_MAP[config.type]
-  if (!base) return z.any()
-
-  const field = typeof base === 'function' ? base(config) : base
-
-  return field
-}
-
-const ZOD_TYPE_MAP: Record<DslType, ZodType | ((c: DslColumnConfig) => ZodType)> = {
-  uuid:      z.string().uuid(),
-  varchar:   (c) => c.maxLength ? z.string().max(c.maxLength) : z.string(),
-  text:      z.string(),
-  integer:   z.number().int(),
-  bigint:    z.bigint(),
-  serial:    z.number().int(),
-  real:      z.number(),
-  numeric:   z.number(),
-  boolean:   z.boolean(),
-  timestamp: z.coerce.date(),
-  date:      z.coerce.date(),
-  jsonb:     z.record(z.string(), z.unknown()),
-  array:     (c) => {
-    if (c.items) {
-      const base = ZOD_TYPE_MAP[c.items]
-      const itemSchema = typeof base === 'function' ? base(c) : base
-      return z.array(itemSchema ?? z.unknown())
-    }
-    return z.array(z.unknown())
-  },
-}
+import { getTableColumns } from 'drizzle-orm/utils'
 
 // -------------------------------------------------------- Field Builder --
 
 /**
- * Build a single Zod field from a column config. Layers on column transforms
- * and validate refinements when present.
- *
- * @param key - Column name (for error messages in test())
- * @param config - The column config
- * @param assertions - Combined assertion registry (built-ins + user-defined)
+ * Build a single Zod field from a Drizzle column + optional annotation.
+ * Layers on column transforms and validate refinements when present.
  */
 const buildZodField = (
   key: string,
-  config: ColumnConfig,
+  drizzleCol: DrizzleColumn,
+  annotation: { transform?: (value: any) => unknown | Promise<unknown>; validate?: (value: any, test: any) => void } | undefined,
   assertions: AssertionRegistry
 ): ZodType => {
-  // Base type
-  let field: ZodType = isRawColumn(config)
-    ? z.any()
-    : dslTypeToZod(config as DslColumnConfig)
+  // Base type from Drizzle column introspection
+  let field: ZodType = drizzleColumnToZod(drizzleCol)
 
   // Layer on column transform as a Zod transform
-  if (config.transform) {
-    const transformFn = config.transform
+  if (annotation?.transform) {
+    const transformFn = annotation.transform
     field = field.transform((val) => transformFn(val))
   }
 
   // Layer on validate as a Zod superRefine
-  // This bridges the test() callback pattern into Zod's refinement system
-  if (config.validate) {
-    const validateFn = config.validate
+  if (annotation?.validate) {
+    const validateFn = annotation.validate
     field = (field as any).superRefine((val: any, ctx: any) => {
       const errors: Array<{ field: string; message: string }> = []
       const testFn = createTestFn(key, errors, assertions)
@@ -113,39 +60,34 @@ const buildZodField = (
 
 /**
  * Build a Zod object schema from a set of column keys and their configs.
- *
- * @param columns - Full column config record
- * @param keys - Which columns to include
- * @param mode - 'insert' makes required fields mandatory; 'update' makes everything optional
- * @param assertions - Assertion registry for test() in validate callbacks
  */
 const buildZodSchema = (
-  columns: ColumnsConfig,
+  drizzleTable: any,
+  annotations: ColumnAnnotations,
   keys: string[],
   mode: 'strict' | 'insert' | 'update',
   assertions: AssertionRegistry
 ): ZodType => {
   const shape: Record<string, ZodType> = {}
+  const drizzleCols = getTableColumns(drizzleTable)
 
   for (const key of keys) {
-    const config = columns[key]
-    if (!config) continue
+    const drizzleCol = drizzleCols[key] as DrizzleColumn | undefined
+    if (!drizzleCol) continue
 
-    let field = buildZodField(key, config, assertions)
+    const annotation = annotations[key]
+    let field = buildZodField(key, drizzleCol, annotation, assertions)
 
     // Handle optional/required based on mode
     switch (mode) {
       case 'strict':
         // All fields as-is (required if notNull, optional otherwise)
-        if (!isRawColumn(config)) {
-          const dsl = config as DslColumnConfig
-          if (!dsl.notNull) field = field.optional()
-        }
+        if (!drizzleCol.notNull) field = field.optional()
         break
 
       case 'insert':
         // Required fields stay required; everything else is optional
-        if (!config.required) field = field.optional()
+        if (!annotation?.required) field = field.optional()
         break
 
       case 'update':
@@ -163,19 +105,21 @@ const buildZodSchema = (
 // ---------------------------------------------------------- Public API --
 
 /**
- * Generate the full set of Zod schemas for a table definition.
+ * Generate the full set of Zod schemas for a table.
  *
- * @param columns - The column config record
+ * @param drizzleTable - The raw Drizzle table
+ * @param annotations - Per-column storium annotations
  * @param access - Derived access sets
  * @param assertions - Combined assertion registry
  */
 export const buildZodSchemas = (
-  columns: ColumnsConfig,
+  drizzleTable: any,
+  annotations: ColumnAnnotations,
   access: TableAccess,
   assertions: AssertionRegistry = {}
 ) => ({
-  selectSchema: buildZodSchema(columns, access.selectable, 'strict', assertions),
-  createSchema: buildZodSchema(columns, access.writable, 'insert', assertions),
-  updateSchema: buildZodSchema(columns, access.writable, 'update', assertions),
-  fullSchema:   buildZodSchema(columns, Object.keys(columns), 'strict', assertions),
+  selectSchema: buildZodSchema(drizzleTable, annotations, access.selectable, 'strict', assertions),
+  createSchema: buildZodSchema(drizzleTable, annotations, access.writable, 'insert', assertions),
+  updateSchema: buildZodSchema(drizzleTable, annotations, access.writable, 'update', assertions),
+  fullSchema:   buildZodSchema(drizzleTable, annotations, Object.keys(getTableColumns(drizzleTable)), 'strict', assertions),
 })

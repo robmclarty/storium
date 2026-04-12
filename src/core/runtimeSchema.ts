@@ -5,22 +5,6 @@
  * Provides Storium-flavored methods (validate, tryValidate, toJsonSchema)
  * so consumers interact with a consistent API regardless of the underlying
  * validation engine.
- *
- * @example
- * const { createSchema } = users.schemas
- *
- * // Validate (throws ValidationError on failure)
- * const user = createSchema.validate(input)
- *
- * // Try validate (never throws)
- * const result = createSchema.tryValidate(input)
- * if (!result.success) console.log(result.errors)
- *
- * // JSON Schema for Fastify
- * app.post('/users', { schema: { body: createSchema.toJsonSchema() } })
- *
- * // Zod escape hatch
- * const extended = createSchema.zod.extend({ extra: z.string() })
  */
 
 import type { ZodType, ZodError } from 'zod'
@@ -31,7 +15,7 @@ import type {
   JsonSchemaOptions,
   ValidationResult,
   FieldError,
-  ColumnsConfig,
+  ColumnAnnotations,
   TableAccess,
   AssertionRegistry,
 } from './types'
@@ -91,25 +75,26 @@ const createRuntimeSchema = <T>(
 // -------------------------------------------------------- Public API --
 
 /**
- * Build the full SchemaSet for a table definition.
+ * Build the full SchemaSet for a table.
  *
- * @param columns - Column config record
+ * @param drizzleTable - The raw Drizzle table
+ * @param annotations - Per-column storium annotations
  * @param access - Derived access sets
  * @param assertions - Combined assertion registry (built-ins + user-defined)
- * @returns SchemaSet with selectSchema, createSchema, updateSchema, and fullSchema RuntimeSchemas
  */
 export const buildSchemaSet = (
-  columns: ColumnsConfig,
+  drizzleTable: any,
+  annotations: ColumnAnnotations,
   access: TableAccess,
   assertions: AssertionRegistry = {}
-): SchemaSet<any> => {
-  const zodSchemas = buildZodSchemas(columns, access, assertions)
-  const jsonSchemas = buildJsonSchemas(columns, access)
+): SchemaSet => {
+  const zodSchemas = buildZodSchemas(drizzleTable, annotations, access, assertions)
+  const jsonSchemas = buildJsonSchemas(drizzleTable, annotations, access)
 
   return {
-    selectSchema: createRuntimeSchema(zodSchemas.selectSchema, jsonSchemas.selectSchema) as RuntimeSchema<any>,
-    createSchema: createRuntimeSchema(zodSchemas.createSchema, jsonSchemas.createSchema) as RuntimeSchema<any>,
-    updateSchema: createRuntimeSchema(zodSchemas.updateSchema, jsonSchemas.updateSchema) as RuntimeSchema<any>,
-    fullSchema:   createRuntimeSchema(zodSchemas.fullSchema, jsonSchemas.fullSchema) as RuntimeSchema<any>,
+    selectSchema: createRuntimeSchema(zodSchemas.selectSchema, jsonSchemas.selectSchema),
+    createSchema: createRuntimeSchema(zodSchemas.createSchema, jsonSchemas.createSchema),
+    updateSchema: createRuntimeSchema(zodSchemas.updateSchema, jsonSchemas.updateSchema),
+    fullSchema:   createRuntimeSchema(zodSchemas.fullSchema, jsonSchemas.fullSchema),
   }
 }
