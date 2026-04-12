@@ -8,13 +8,18 @@
     "database",
     "repository",
     "schema",
-    "validation"
+    "validation",
+    "postgresql",
+    "mysql",
+    "sqlite",
+    "zod",
+    "crud"
   ],
   "author": "Rob McLarty <r@robmclarty.com> (https://robmclarty.com)",
   "homepage": "https://github.com/robmclarty/storium#readme",
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/robmclarty/storium.git"
+    "url": "git+https://github.com/robmclarty/storium.git"
   },
   "license": "MIT",
   "type": "module",
