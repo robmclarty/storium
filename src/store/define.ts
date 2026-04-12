@@ -145,8 +145,10 @@ const deriveAccess = (
  * Detect the primary key column(s) from Drizzle column metadata.
  */
 const detectPrimaryKey = (
+  drizzleTable: any,
   drizzleCols: Record<string, any>
 ): string | string[] | undefined => {
+  // Check per-column .primary flag (single-column PKs defined inline)
   const pkColumns: string[] = []
 
   for (const [key, col] of Object.entries(drizzleCols)) {
@@ -156,8 +158,27 @@ const detectPrimaryKey = (
   if (pkColumns.length === 1) return pkColumns[0]!
   if (pkColumns.length > 1) return pkColumns
 
-  // Default to 'id' if it exists
-  if ('id' in drizzleCols) return 'id'
+  // Check table-level composite PK constraint (e.g., primaryKey({ columns: [...] }))
+  const extraConfigSym = Object.getOwnPropertySymbols(drizzleTable)
+    .find(s => s.toString() === 'Symbol(drizzle:ExtraConfigBuilder)')
+  const extraConfigBuilder = extraConfigSym ? drizzleTable[extraConfigSym] : undefined
+  if (typeof extraConfigBuilder === 'function') {
+    const extras = extraConfigBuilder(drizzleTable)
+    if (Array.isArray(extras)) {
+      for (const extra of extras) {
+        if (extra?.constructor?.name === 'PrimaryKeyBuilder' && Array.isArray(extra.columns)) {
+          const colNames = extra.columns.map((c: any) => c.name)
+          // Build a reverse map from SQL column names to JS property keys
+          const sqlToKey = new Map<string, string>()
+          for (const [key, col] of Object.entries(drizzleCols)) {
+            sqlToKey.set((col as any).name, key)
+          }
+          const keys = colNames.map((n: string) => sqlToKey.get(n) ?? n)
+          return keys.length === 1 ? keys[0] : keys
+        }
+      }
+    }
+  }
 
   return undefined
 }
@@ -209,7 +230,7 @@ export const attachStoriumMeta = (
   const allKeys = Object.keys(drizzleCols)
   const selectColumns = buildSelectColumns(drizzleTable, access.selectable)
   const allColumns = buildSelectColumns(drizzleTable, allKeys)
-  const primaryKey = detectPrimaryKey(drizzleCols)
+  const primaryKey = detectPrimaryKey(drizzleTable, drizzleCols)
   const schemas = buildSchemaSet(drizzleTable, annotations, access, assertions)
 
   const meta: StoriumMeta = {

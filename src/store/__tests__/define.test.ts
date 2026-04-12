@@ -156,14 +156,14 @@ describe('primary key detection', () => {
     expect((table as any).storium.primaryKey).toBe('id')
   })
 
-  it('falls back to "id" if no explicit primary key', () => {
+  it('returns undefined when no column is marked as primary key', () => {
     const table = sqliteTable('pk_fallback', {
       id: text('id'),
       name: text('name'),
     })
 
     attachStoriumMeta(table)
-    expect((table as any).storium.primaryKey).toBe('id')
+    expect((table as any).storium.primaryKey).toBeUndefined()
   })
 })
 
