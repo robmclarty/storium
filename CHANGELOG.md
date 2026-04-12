@@ -4,6 +4,21 @@ All notable changes to Storium are documented here.
 
 This project uses [Semantic Versioning](https://semver.org/). Pre-1.0 releases may include breaking changes in minor versions.
 
+## [0.13.0] — 2026-04-11
+
+### Breaking
+- **`withBelongsTo` renamed to `belongsTo`.** The `with` prefix was awkward for relationship mixins. Update imports: `import { belongsTo } from 'storium'`. The generated `findWith{Alias}` method name is unchanged.
+
+### Added
+- **`hasMany` relationship mixin** — one-to-many queries returning a flat array of related rows. `...hasMany(postsTable, 'author_id', { alias: 'posts' })` generates `findPostsFor(id, opts?)`. Supports `limit`, `offset`, `orderBy`, `where`, and `select` options.
+- **`hasOne` relationship mixin** — one-to-one queries returning a single related row or null. `...hasOne(profilesTable, 'user_id', { alias: 'profile' })` generates `findProfileFor(id, opts?)`. Same options as `hasMany`.
+- **Soft delete** — `.softDelete()` chain method on `defineTable`. Auto-injects a hidden `deletedAt` timestamp column. When enabled:
+  - All read methods (`find`, `findAll`, `findOne`, `findById`, `findByIdIn`, `count`, `exists`) auto-filter `WHERE deletedAt IS NULL`.
+  - `destroy()` and `destroyAll()` set `deletedAt` instead of deleting.
+  - New methods: `restore(id)`, `forceDestroy(id)`, `forceDestroyAll(filters)`, `findWithDeleted(filters?)`.
+- **`withPagination` mixin** — wraps any store with a `paginate(filters, { page, pageSize })` method. Returns `{ data, meta: { page, pageSize, total, totalPages } }`. Configurable default page size via `withPagination(store, { pageSize: 10 })`.
+- **`PaginateOptions` and `PaginateResult` types** exported for consumers.
+
 ## [0.12.0] — 2026-04-11
 
 ### Breaking
