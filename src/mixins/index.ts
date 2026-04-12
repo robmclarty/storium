@@ -1,4 +1,5 @@
 export { withMembers } from './withMembers'
 export { belongsTo } from './belongsTo'
 export { hasMany } from './hasMany'
+export { hasOne } from './hasOne'
 export { withCache } from './withCache'

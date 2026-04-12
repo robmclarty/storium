@@ -38,6 +38,7 @@ export {
   withMembers,
   belongsTo,
   hasMany,
+  hasOne,
   withCache,
 } from './mixins'
 
