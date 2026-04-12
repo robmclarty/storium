@@ -69,8 +69,8 @@ graph TD
     B -- "annotations" --> F["Prep Pipeline"]
     B -- "CRUD + queries" --> C
 
-    C --> G["find / create / update / destroy"]
     C --> H["Custom Queries via ctx"]
+    C --> G["find / create / update / destroy"]
 
     D -. ".zod" .-> I["tRPC, react-hook-form, etc."]
     E -. ".toJsonSchema()" .-> J["Fastify, Ajv, OpenAPI"]
