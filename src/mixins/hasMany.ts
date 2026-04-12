@@ -11,10 +11,14 @@
  *
  * const posts = await authors.findPostsFor(authorId)
  * // [{ id, title, author_id }, ...]
+ *
+ * @remarks `ctx: any` in return types is intentional — mixin query
+ * factories must compose with arbitrary repository contexts without
+ * introducing circular imports between mixins and types.ts.
  */
 
-import { eq, and, asc, desc } from 'drizzle-orm'
-import type { TableDef } from '../types'
+import { eq, and, asc, desc, type SQL, type Column } from 'drizzle-orm'
+import type { TableDef, OrderBySpec } from '../types'
 
 // -------------------------------------------------- Shared Relation Helpers --
 
@@ -24,8 +28,8 @@ import type { TableDef } from '../types'
 export function buildRelatedSelect(
   relatedTable: TableDef,
   columns: string[]
-): Record<string, any> {
-  const selectObj: Record<string, any> = {}
+): Record<string, Column> {
+  const selectObj: Record<string, Column> = {}
   for (const col of columns) {
     if (col in relatedTable) {
       selectObj[col] = relatedTable[col]
@@ -42,10 +46,13 @@ export function buildRelatedWhere(
   relatedTable: TableDef,
   foreignKey: string,
   id: string | number,
-  opts?: { where?: (t: any) => any }
+  opts?: { where?: (t: any) => SQL | undefined }
 ) {
   const conditions = [eq(relatedTable[foreignKey], id)]
-  if (opts?.where) conditions.push(opts.where(relatedTable))
+  if (opts?.where) {
+    const clause = opts.where(relatedTable)
+    if (clause) conditions.push(clause)
+  }
   return conditions.length === 1 ? conditions[0] : and(...conditions)
 }
 
@@ -106,7 +113,7 @@ export const hasMany = <A extends string>(
 
       if (opts?.orderBy) {
         const specs = Array.isArray(opts.orderBy) ? opts.orderBy : [opts.orderBy]
-        const clauses = specs.map((spec: any) =>
+        const clauses = specs.map((spec: OrderBySpec) =>
           (spec.direction === 'desc' ? desc : asc)(relatedTable[spec.column])
         )
         q = q.orderBy(...clauses)

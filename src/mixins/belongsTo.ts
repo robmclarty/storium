@@ -17,9 +17,13 @@
  *
  * const user = await users.findWithSchool(userId)
  * // { id, email, name, school_name, school_slug }
+ *
+ * @remarks `ctx: any` in the return type is intentional — mixin query
+ * factories must compose with arbitrary repository contexts without
+ * introducing circular imports between mixins and types.ts.
  */
 
-import { eq } from 'drizzle-orm'
+import { eq, type Column } from 'drizzle-orm'
 import type { TableDef } from '../types'
 
 type BelongsToOptions<A extends string = string> = {
@@ -60,7 +64,7 @@ export const belongsTo = <A extends string>(
      */
     [methodName]: (ctx: any) => async (id: string | number) => {
       // Build the select object: entity's selectColumns + prefixed related columns
-      const selectObj: Record<string, any> = { ...ctx.selectColumns }
+      const selectObj: Record<string, Column> = { ...ctx.selectColumns }
 
       for (const col of relatedColumns) {
         if (col in relatedTable) {

@@ -16,13 +16,15 @@
  * // { data: [...], meta: { page: 2, pageSize: 25, total: 142, totalPages: 6 } }
  */
 
+import type { SQL } from 'drizzle-orm'
 import { StoreError } from '../errors'
+import type { OrderBySpec } from '../types'
 
 type PaginateOpts = {
   page: number
   pageSize?: number
-  orderBy?: any
-  where?: (table: any) => any
+  orderBy?: OrderBySpec | OrderBySpec[]
+  where?: (table: any) => SQL | undefined
   tx?: any
   includeHidden?: boolean
 }

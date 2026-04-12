@@ -55,11 +55,11 @@ type CacheConfig = Record<string, CacheMethodConfig>
  * 5. Return the result
  */
 const wrapWithCache = (
-  originalFn: (...args: any[]) => Promise<any>,
+  originalFn: (...args: unknown[]) => Promise<unknown>,
   cache: CacheAdapter,
   config: CacheMethodConfig
 ) => {
-  return async (...args: any[]) => {
+  return async (...args: unknown[]) => {
     const cacheKey = config.key(...args)
 
     // Check cache
@@ -90,11 +90,11 @@ const wrapWithCache = (
  * Uses `delPattern` with a wildcard to clear related entries.
  */
 const wrapWithInvalidation = (
-  originalFn: (...args: any[]) => Promise<any>,
+  originalFn: (...args: unknown[]) => Promise<unknown>,
   cache: CacheAdapter,
   tableName: string
 ) => {
-  return async (...args: any[]) => {
+  return async (...args: unknown[]) => {
     const result = await originalFn(...args)
 
     // Invalidate all cache entries for this table

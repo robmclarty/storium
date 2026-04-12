@@ -11,6 +11,10 @@
  *
  * const profile = await users.findProfileFor(userId)
  * // { id, user_id, bio, ... } | null
+ *
+ * @remarks `ctx: any` in the return type is intentional — mixin query
+ * factories must compose with arbitrary repository contexts without
+ * introducing circular imports between mixins and types.ts.
  */
 
 import type { TableDef } from '../types'
