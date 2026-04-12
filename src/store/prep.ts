@@ -78,8 +78,18 @@ const resolveInput = async (
   if (promiseEntries.length === 0) return input
 
   const resolved = { ...input }
-  const results = await Promise.all(promiseEntries.map(e => e.promise))
-  promiseEntries.forEach((e, i) => { resolved[e.key] = results[i] })
+  const results = await Promise.allSettled(promiseEntries.map(e => e.promise))
+  const errors: FieldError[] = []
+  results.forEach((result, i) => {
+    const { key } = promiseEntries[i]!
+    if (result.status === 'fulfilled') {
+      resolved[key] = result.value
+    } else {
+      const msg = result.reason instanceof Error ? result.reason.message : String(result.reason)
+      errors.push({ field: key, message: `promise resolution failed on \`${key}\`: ${msg}` })
+    }
+  })
+  if (errors.length > 0) throw new ValidationError(errors)
 
   return resolved
 }
