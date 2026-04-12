@@ -3,7 +3,7 @@ import { storium } from 'storium'
 import { sql } from 'drizzle-orm'
 import { drizzle } from 'drizzle-orm/better-sqlite3'
 import Database from 'better-sqlite3'
-import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core'
+import { sqliteTable, text } from 'drizzle-orm/sqlite-core'
 import { ConfigError } from '../errors'
 import { defineStore } from '../store/define'
 

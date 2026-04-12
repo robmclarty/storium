@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { defineStore, isStoreDefinition, hasMeta, attachStoriumMeta } from '../define'
 import { SchemaError } from '../../errors'
 import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core'
-import { getTableColumns } from 'drizzle-orm/utils'
+
 
 const usersTable = sqliteTable('users', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),

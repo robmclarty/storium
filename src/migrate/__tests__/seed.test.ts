@@ -3,7 +3,7 @@ import { storium } from 'storium'
 import { sql } from 'drizzle-orm'
 import path from 'node:path'
 import { defineSeed, seed } from '../seed'
-import type { SeedModule } from '../seed'
+
 
 describe('defineSeed', () => {
   it('returns a seed module with __isSeed marker', () => {

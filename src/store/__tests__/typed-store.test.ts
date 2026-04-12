@@ -1,6 +1,5 @@
 import { describe, it, expectTypeOf } from 'vitest'
 import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core'
-import type { InferSelectModel, InferInsertModel } from 'drizzle-orm'
 import { defineStore } from '../define'
 
 const usersTable = sqliteTable('users', {
@@ -9,9 +8,6 @@ const usersTable = sqliteTable('users', {
   name: text('name'),
   age: integer('age'),
 })
-
-type UserRow = InferSelectModel<typeof usersTable>
-type UserInsert = InferInsertModel<typeof usersTable>
 
 describe('Store<TTable> type inference', () => {
   it('defineStore preserves the table type in StoreDefinition', () => {
