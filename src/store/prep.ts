@@ -27,6 +27,27 @@ import { ValidationError } from '../errors'
 import { createTestFn } from '../assertions'
 import { getTableColumns } from 'drizzle-orm/utils'
 
+// ------------------------------------------------- Settled Promise Helper --
+
+const collectSettled = (
+  results: PromiseSettledResult<any>[],
+  entries: Array<{ key: string }>,
+  target: Record<string, any>,
+  errorPrefix: string,
+): FieldError[] => {
+  const errors: FieldError[] = []
+  results.forEach((result, i) => {
+    const { key } = entries[i]!
+    if (result.status === 'fulfilled') {
+      target[key] = result.value
+    } else {
+      const msg = result.reason instanceof Error ? result.reason.message : String(result.reason)
+      errors.push({ field: key, message: `${errorPrefix} \`${key}\`: ${msg}` })
+    }
+  })
+  return errors
+}
+
 // -------------------------------------------------------- Data Type Checks --
 
 /**
@@ -79,16 +100,7 @@ const resolveInput = async (
 
   const resolved = { ...input }
   const results = await Promise.allSettled(promiseEntries.map(e => e.promise))
-  const errors: FieldError[] = []
-  results.forEach((result, i) => {
-    const { key } = promiseEntries[i]!
-    if (result.status === 'fulfilled') {
-      resolved[key] = result.value
-    } else {
-      const msg = result.reason instanceof Error ? result.reason.message : String(result.reason)
-      errors.push({ field: key, message: `promise resolution failed on \`${key}\`: ${msg}` })
-    }
-  })
+  const errors = collectSettled(results, promiseEntries, resolved, 'promise resolution failed on')
   if (errors.length > 0) throw new ValidationError(errors)
 
   return resolved
@@ -148,17 +160,7 @@ const transformInput = async (
 
   const results = await Promise.allSettled(transformEntries.map(e => e.promise))
   const transformed = { ...input }
-  const errors: FieldError[] = []
-
-  results.forEach((result, i) => {
-    const { key } = transformEntries[i]!
-    if (result.status === 'fulfilled') {
-      transformed[key] = result.value
-    } else {
-      const msg = result.reason instanceof Error ? result.reason.message : String(result.reason)
-      errors.push({ field: key, message: `transform failed on \`${key}\`: ${msg}` })
-    }
-  })
+  const errors = collectSettled(results, transformEntries, transformed, 'transform failed on')
 
   return { data: transformed, errors }
 }

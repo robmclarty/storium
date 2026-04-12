@@ -144,13 +144,41 @@ const deriveAccess = (
 }
 
 /**
+ * Extract composite PK column keys from a Drizzle table-level primaryKey() constraint.
+ */
+const detectCompositePK = (
+  drizzleTable: any,
+  drizzleCols: Record<string, Column>
+): string | string[] | undefined => {
+  const extraConfigSym = Object.getOwnPropertySymbols(drizzleTable)
+    .find(s => s.toString() === 'Symbol(drizzle:ExtraConfigBuilder)')
+  const extraConfigBuilder = extraConfigSym ? drizzleTable[extraConfigSym] : undefined
+  if (typeof extraConfigBuilder !== 'function') return undefined
+
+  const extras = extraConfigBuilder(drizzleTable)
+  if (!Array.isArray(extras)) return undefined
+
+  const pkBuilder = extras.find(
+    (e: any) => e?.constructor?.name === 'PrimaryKeyBuilder' && Array.isArray(e.columns)
+  )
+  if (!pkBuilder) return undefined
+
+  const sqlToKey = new Map<string, string>()
+  for (const [key, col] of Object.entries(drizzleCols)) {
+    sqlToKey.set((col as any).name, key)
+  }
+
+  const keys = pkBuilder.columns.map((c: any) => sqlToKey.get(c.name) ?? c.name)
+  return keys.length === 1 ? keys[0] : keys
+}
+
+/**
  * Detect the primary key column(s) from Drizzle column metadata.
  */
 const detectPrimaryKey = (
   drizzleTable: any,
   drizzleCols: Record<string, Column>
 ): string | string[] | undefined => {
-  // Check per-column .primary flag (single-column PKs defined inline)
   const pkColumns: string[] = []
 
   for (const [key, col] of Object.entries(drizzleCols)) {
@@ -160,29 +188,7 @@ const detectPrimaryKey = (
   if (pkColumns.length === 1) return pkColumns[0]!
   if (pkColumns.length > 1) return pkColumns
 
-  // Check table-level composite PK constraint (e.g., primaryKey({ columns: [...] }))
-  const extraConfigSym = Object.getOwnPropertySymbols(drizzleTable)
-    .find(s => s.toString() === 'Symbol(drizzle:ExtraConfigBuilder)')
-  const extraConfigBuilder = extraConfigSym ? drizzleTable[extraConfigSym] : undefined
-  if (typeof extraConfigBuilder === 'function') {
-    const extras = extraConfigBuilder(drizzleTable)
-    if (Array.isArray(extras)) {
-      for (const extra of extras) {
-        if (extra?.constructor?.name === 'PrimaryKeyBuilder' && Array.isArray(extra.columns)) {
-          const colNames = extra.columns.map((c: any) => c.name)
-          // Build a reverse map from SQL column names to JS property keys
-          const sqlToKey = new Map<string, string>()
-          for (const [key, col] of Object.entries(drizzleCols)) {
-            sqlToKey.set((col as any).name, key)
-          }
-          const keys = colNames.map((n: string) => sqlToKey.get(n) ?? n)
-          return keys.length === 1 ? keys[0] : keys
-        }
-      }
-    }
-  }
-
-  return undefined
+  return detectCompositePK(drizzleTable, drizzleCols)
 }
 
 /**

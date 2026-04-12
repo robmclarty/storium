@@ -31,6 +31,20 @@ import { loadConfig } from '../src/migrate/config'
 
 // --------------------------------------------------------------- Helpers --
 
+const withDb = async (config: any, fn: (db: any, config: any) => Promise<{ success: boolean; message: string }>) => {
+  const db = connect(config)
+  const shutdown = () => { db.disconnect().finally(() => process.exit(1)) }
+  process.on('SIGTERM', shutdown)
+  process.on('SIGINT', shutdown)
+  try {
+    const result = await fn(db, config)
+    console.log(result.message)
+    process.exit(result.success ? 0 : 1)
+  } finally {
+    await db.disconnect()
+  }
+}
+
 const COMMANDS = ['generate', 'migrate', 'push', 'status', 'seed'] as const
 type Command = (typeof COMMANDS)[number]
 
@@ -103,17 +117,7 @@ const main = async () => {
     }
 
     case 'migrate': {
-      const db = connect(config)
-      const shutdown = () => { db.disconnect().finally(() => process.exit(1)) }
-      process.on('SIGTERM', shutdown)
-      process.on('SIGINT', shutdown)
-      try {
-        const result = await migrate(db, config)
-        console.log(result.message)
-        process.exit(result.success ? 0 : 1)
-      } finally {
-        await db.disconnect()
-      }
+      await withDb(config, (db, cfg) => migrate(db, cfg))
       break
     }
 
@@ -132,17 +136,7 @@ const main = async () => {
     }
 
     case 'seed': {
-      const db = connect(config)
-      const shutdown = () => { db.disconnect().finally(() => process.exit(1)) }
-      process.on('SIGTERM', shutdown)
-      process.on('SIGINT', shutdown)
-      try {
-        const result = await seed(db, config)
-        console.log(result.message)
-        process.exit(result.success ? 0 : 1)
-      } finally {
-        await db.disconnect()
-      }
+      await withDb(config, (db, cfg) => seed(db, cfg))
       break
     }
   }
