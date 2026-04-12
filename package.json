@@ -63,6 +63,7 @@
     "test": "npm run typecheck && npm run lint && npm run build && npm run test:unit",
     "test:unit": "vitest",
     "test:run": "vitest run",
+    "test:integration": "TEST_DIALECTS=memory,postgresql,mysql vitest run --config vitest.integration.config.ts",
     "coverage": "vitest run --coverage",
     "test:examples": "for dir in examples/*/; do echo \"--- $dir ---\" && (cd \"$dir\" && npm install --silent && npm start) || exit 1; done",
     "release": "npm publish --access public",
@@ -96,6 +97,8 @@
     }
   },
   "devDependencies": {
+    "@testcontainers/mysql": "11.14.0",
+    "@testcontainers/postgresql": "11.14.0",
     "@types/better-sqlite3": "7.6.13",
     "@types/node": "25.3.0",
     "@types/pg": "8.16.0",
@@ -106,6 +109,7 @@
     "mysql2": "3.18.2",
     "oxlint": "1.50.0",
     "pg": "8.19.0",
+    "testcontainers": "11.14.0",
     "tsup": "8.5.1",
     "tsx": "4.21.0",
     "typescript": "5.9.3",
