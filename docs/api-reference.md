@@ -23,7 +23,7 @@ Exhaustive list of everything exported from `storium` and `storium/migrate`.
 
 | Export | Description |
 |--------|-------------|
-| `defineTable` | Define a table schema — 3 overloads: `(name).columns(cols).timestamps(false)`, `(dialect)(name).columns(cols)`, `()(name).columns(cols)`. Chain methods after `.columns()`: `.indexes({})`, `.access({})`, `.primaryKey('a', 'b')`, `.timestamps(false)`. |
+| `defineTable` | Define a table schema — 3 overloads: `(name).columns(cols).timestamps(false)`, `(dialect)(name).columns(cols)`, `()(name).columns(cols)`. Chain methods after `.columns()`: `.indexes({})`, `.access({})`, `.primaryKey('a', 'b')`, `.timestamps(false)`, `.softDelete()`. |
 | `defineStore` | Bundle a table (from `defineTable`) + custom queries into a `StoreDefinition`: `defineStore(table)` or `defineStore(table).queries({ ... })`. |
 | `isStoreDefinition(value)` | Type guard: returns `true` if the value is a `StoreDefinition`. |
 
@@ -40,9 +40,12 @@ Exhaustive list of everything exported from `storium` and `storium/migrate`.
 
 | Export | Description |
 |--------|-------------|
-| `withBelongsTo(relatedTable, foreignKey, opts)` | Generates a `findWith{Alias}` custom query that LEFT JOINs a related table. |
+| `belongsTo(relatedTable, foreignKey, opts)` | Generates a `findWith{Alias}` custom query that LEFT JOINs a related table. |
+| `hasMany(relatedTable, foreignKey, opts)` | Generates a `find{Alias}For` custom query returning all related rows for a parent ID. Supports `limit`, `offset`, `orderBy`, `where` opts. |
+| `hasOne(relatedTable, foreignKey, opts)` | Generates a `find{Alias}For` custom query returning a single related row or `null`. Supports `where` opt. |
 | `withMembers(joinTable, foreignKey, memberKey?)` | Generates `addMember`, `removeMember`, `getMembers`, `isMember`, `getMemberCount` custom queries for collection patterns. `memberKey` defaults to `'user_id'`. |
-| `withCache(store, cacheAdapter, config)` | Wraps a store with cache-aside logic on configured read methods and auto-invalidation on writes. |
+| `withPagination(store, defaults?)` | Wraps a store with a `paginate(filters, opts)` method. Returns `{ data, meta: { page, pageSize, total, totalPages } }`. Default page size: 25. |
+| `withCache(store, cacheAdapter, config)` | Wraps a store with cache-aside logic on configured read methods and auto-invalidation on writes. **(Experimental)** |
 
 ### Type Guards
 
@@ -91,7 +94,7 @@ Migration tooling — heavier dependencies, opt-in import.
 | `db.drizzle` | Raw Drizzle database instance (escape hatch for direct Drizzle queries). |
 | `db.zod` | The Zod namespace (`z`) — convenience accessor. |
 | `db.dialect` | The active dialect string: `'postgresql'`, `'mysql'`, `'sqlite'`, or `'memory'`. |
-| `db.defineTable(name).columns(cols)` | Create a Drizzle table with `.storium` metadata, pre-bound to this instance's dialect and assertions. Chain methods: `.indexes({})`, `.access({})`, `.primaryKey('a', 'b')`, `.timestamps(false)`. |
+| `db.defineTable(name).columns(cols)` | Create a Drizzle table with `.storium` metadata, pre-bound to this instance's dialect and assertions. Chain methods: `.indexes({})`, `.access({})`, `.primaryKey('a', 'b')`, `.timestamps(false)`, `.softDelete()`. |
 | `db.defineStore(tableDef).queries({...})` | Create a live store from a table definition (simple path — no `register` step needed). Omit `.queries()` for CRUD-only stores. |
 | `db.register(storeDefs)` | Materialize a record of `StoreDefinition` objects into live stores with CRUD + query methods. |
 | `db.transaction(fn)` | Execute an async function within a database transaction. |
@@ -112,14 +115,30 @@ Migration tooling — heavier dependencies, opt-in import.
 | `store.findByIdIn(ids, opts?)` | Find all rows whose primary key is in the given array. |
 | `store.create(input, opts?)` | Insert a new row; runs the prep pipeline (filter, transform, validate, required); throws `StoreError` if no row is returned. |
 | `store.update(id, input, opts?)` | Update a row by primary key; only writable columns are accepted; throws `StoreError` if no row is matched. |
+| `store.createMany(inputs[], opts?)` | Bulk insert multiple rows; each row passes through the prep pipeline. Returns all inserted rows. |
+| `store.upsert(input, opts?)` | Insert or update on conflict. Default conflict target: primary key. Override with `opts.conflictTarget`. |
 | `store.destroy(id, opts?)` | Delete a single row by primary key. |
 | `store.destroyAll(filters, opts?)` | Delete all rows matching filters (requires at least one filter to prevent accidental full-table deletion). |
+| `store.count(filters?, opts?)` | Count rows matching filters. Supports `where` callback. |
+| `store.exists(filters, opts?)` | Check if any row matches filters. Returns `boolean`. |
 | `store.ref(filter, opts?)` | Look up a row by filter and return its primary key value. Throws `StoreError` if not found. |
+
+### Soft Delete Methods
+
+When a table is defined with `.softDelete()`, `destroy` performs a soft delete (sets `deletedAt`) and all reads automatically filter out deleted rows. These additional methods are also available:
+
+| Method | Description |
+|--------|-------------|
+| `store.restore(id, opts?)` | Restore a soft-deleted row (sets `deletedAt` back to `null`). Throws `StoreError` if not found. |
+| `store.forceDestroy(id, opts?)` | Permanently delete a row (actual `DELETE`), bypassing soft delete. |
+| `store.forceDestroyAll(filters, opts?)` | Permanently delete all matching rows (actual `DELETE`). |
+| `store.findWithDeleted(filters?, opts?)` | Find rows including soft-deleted ones (bypasses the `deletedAt IS NULL` filter). |
 
 ### Store Properties
 
 | Property | Description |
 |----------|-------------|
+| `store.name` | The table name string. |
 | `store.schemas` | `SchemaSet` with `createSchema`, `updateSchema`, `selectSchema`, and `fullSchema` `RuntimeSchema` objects. |
 
 ### TableDef Properties (on Drizzle tables from `defineTable`)
@@ -135,6 +154,7 @@ Storium metadata is attached as a non-enumerable `.storium` property on the Driz
 | `table.storium.primaryKey` | Name of the primary key column. |
 | `table.storium.name` | Table name string. |
 | `table.storium.schemas` | `SchemaSet` with `createSchema`, `updateSchema`, `selectSchema`, and `fullSchema` `RuntimeSchema` objects. |
+| `table.storium.softDelete` | `boolean` — `true` if `.softDelete()` was called on the table definition. |
 
 ---
 
@@ -231,6 +251,13 @@ Each schema variant (`createSchema`, `updateSchema`, `selectSchema`, `fullSchema
 |------|-------------|
 | `CacheAdapter` | Interface for cache implementations: `get`, `set`, `del`, `delPattern`. |
 | `CacheMethodConfig` | Per-method cache config: `{ ttl, key: (...args) => string }`. |
+
+### Pagination
+
+| Type | Description |
+|------|-------------|
+| `PaginateOptions` | Options for `paginate()`: `{ page, pageSize?, orderBy?, where?, tx?, includeHidden? }`. |
+| `PaginateResult<T>` | Return type of `paginate()`: `{ data: T[], meta: { page, pageSize, total, totalPages } }`. |
 
 ### Compile-Time Type Utilities
 

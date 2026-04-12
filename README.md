@@ -46,7 +46,8 @@ const updated = await users.update(user.id, { name: 'Alice B.' })
 - **Repository pattern** — default CRUD with extensible custom queries
 - **Three-tier validation** — JSON Schema for the HTTP edge, Zod for runtime, prep pipeline for business rules
 - **Database agnostic** — PostgreSQL, MySQL, and SQLite via Drizzle
-- **Composable mixins** — `withBelongsTo`, `withMembers`, `withCache`, `transaction`
+- **Composable mixins** — `belongsTo`, `hasMany`, `hasOne`, `withMembers`, `withPagination`, `withCache`, `transaction`
+- **Soft delete** — built-in via `.softDelete()` chain on `defineTable`
 - **Fastify integration** — `toJsonSchema()` for route validation
 - **Migration tooling** — thin CLI wrapping drizzle-kit
 - **Stands back** — Storium doesn't try to own your architecture. It gives you tools and gets out of the way.
@@ -185,35 +186,17 @@ export const usersTable = defineTable('users').columns({
 
 `transform` runs before `validate` — sanitize first, then check. Built-in assertions like `is_email` and `not_empty` are always available. Custom assertions like `is_slug` are registered at connect time (see database file below).
 
-**Mixins file** — reusable query patterns you define yourself. Same `(ctx) => (...args) => result` shape as any custom query, so they compose naturally with built-in mixins like `withBelongsTo`:
-
-```typescript
-// entities/users/user.mixins.ts
-import { eq } from 'drizzle-orm'
-
-export const withSoftDelete = {
-  destroy: (ctx) => async (id: string, opts?) => {
-    return ctx.update(id, { deleted_at: new Date() }, opts)
-  },
-
-  findActive: (ctx) => async () =>
-    ctx.drizzle.select(ctx.selectColumns)
-      .from(ctx.table)
-      .where(eq(ctx.table.deleted_at, null)),
-}
-```
-
-**Store file** — bundles the schema with queries and mixins into an inert DTO:
+**Store file** — bundles the schema with queries into an inert DTO:
 
 ```typescript
 // entities/users/user.store.ts
-import { defineStore } from 'storium'
+import { defineStore, belongsTo } from 'storium'
 import { usersTable } from './user.schema'
-import { withSoftDelete } from './user.mixins'
+import { schoolsTable } from '../schools/school.schema'
 import { eq, ilike } from 'drizzle-orm'
 
 export const userStore = defineStore(usersTable).queries({
-  ...withSoftDelete,
+  ...belongsTo(schoolsTable, 'school_id', { alias: 'school' }),
 
   findByEmail: (ctx) => async (email: string) =>
     ctx.drizzle.select(ctx.selectColumns)
@@ -278,17 +261,35 @@ const postsTable = dt('posts').columns(columns)
 
 Storium ships a small set of composable mixins for common patterns. You can also write your own — a mixin is just an object of query functions that you spread into a store definition.
 
-### withBelongsTo
+### belongsTo
 
 ```typescript
-import { withBelongsTo } from 'storium'
+import { belongsTo } from 'storium'
 
 const userStore = defineStore(usersTable).queries({
-  ...withBelongsTo(schools, 'school_id', { alias: 'school', select: ['name'] }),
+  ...belongsTo(schools, 'school_id', { alias: 'school', select: ['name'] }),
 })
 
 const { users } = db.register({ users: userStore })
 const user = await users.findWithSchool(userId)
+```
+
+### hasMany / hasOne
+
+```typescript
+import { hasMany, hasOne } from 'storium'
+
+const authorStore = defineStore(authorsTable).queries({
+  ...hasMany(postsTable, 'author_id', { alias: 'posts' }),
+  ...hasOne(profilesTable, 'user_id', { alias: 'profile' }),
+})
+
+const { authors } = db.register({ authors: authorStore })
+const posts = await authors.findPostsFor(authorId)           // array
+const profile = await authors.findProfileFor(authorId)       // single row | null
+
+// hasMany supports opts
+await authors.findPostsFor(authorId, { limit: 10, orderBy: { column: 'createdAt', direction: 'desc' } })
 ```
 
 ### withMembers
@@ -303,6 +304,37 @@ const teamStore = defineStore(teamsTable).queries({
 const { teams } = db.register({ teams: teamStore })
 await teams.addMember(teamId, userId, { role: 'captain' })
 await teams.isMember(teamId, userId)
+```
+
+### withPagination
+
+```typescript
+import { withPagination } from 'storium'
+
+const paginatedUsers = withPagination(users)
+// or with custom default page size:
+const paginatedUsers = withPagination(users, { pageSize: 10 })
+
+const result = await paginatedUsers.paginate({ status: 'active' }, { page: 2, pageSize: 25 })
+// { data: [...], meta: { page: 2, pageSize: 25, total: 142, totalPages: 6 } }
+```
+
+### Soft Delete
+
+Built-in soft delete via the `.softDelete()` chain method on `defineTable`. Adds a `deletedAt` column, auto-filters deleted rows on all reads, and makes `destroy` perform a soft delete:
+
+```typescript
+const usersTable = defineTable('users')
+  .columns({ ... })
+  .softDelete()
+
+// destroy = soft delete (sets deletedAt)
+await users.destroy(id)
+
+// Additional methods:
+await users.restore(id)                     // un-delete
+await users.forceDestroy(id)                // actual DELETE
+await users.findWithDeleted()               // include soft-deleted rows
 ```
 
 ### withCache (Experimental)
@@ -333,21 +365,10 @@ const result = await db.transaction(async tx => {
 A mixin is just a plain object whose values follow the `(ctx) => (...args) => result` pattern. Spread it into any store:
 
 ```typescript
-// mixins/withSoftDelete.ts
-export const withSoftDelete = {
-  destroy: (ctx) => async (id, opts?) =>
-    ctx.update(id, { deleted_at: new Date() }, opts),
-
-  findActive: (ctx) => async () =>
-    ctx.drizzle.select(ctx.selectColumns)
-      .from(ctx.table)
-      .where(eq(ctx.table.deleted_at, null)),
-}
-
 // user.store.ts
 const userStore = defineStore(usersTable).queries({
-  ...withSoftDelete,
-  ...withBelongsTo(schools, 'school_id'),
+  ...belongsTo(schools, 'school_id', { alias: 'school' }),
+  ...hasMany(postsTable, 'author_id', { alias: 'posts' }),
   findByEmail: (ctx) => async (email) => { ... },
 })
 ```

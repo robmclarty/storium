@@ -1,36 +1,42 @@
 # Relationships
 
-Storium provides two composable mixins for common relationship patterns, plus full Drizzle access for anything more complex.
+Storium provides composable mixins for common relationship patterns, plus full Drizzle access for anything more complex.
 
 ## Overview
 
 | Pattern | Mixin | What it generates |
 |---------|--------|-------------------|
-| Belongs-to (many-to-one) | `withBelongsTo` | `findWith{Alias}(id)` — LEFT JOIN with inlined fields |
+| Belongs-to (many-to-one) | `belongsTo` | `findWith{Alias}(id)` — LEFT JOIN with inlined fields |
+| Has-many (one-to-many) | `hasMany` | `find{Alias}For(id, opts?)` — flat array of related rows |
+| Has-one (one-to-one) | `hasOne` | `find{Alias}For(id, opts?)` — single related row or null |
 | Many-to-many | `withMembers` | `addMember`, `removeMember`, `getMembers`, `isMember`, `getMemberCount` |
 | Anything else | Custom query | Full Drizzle query builder via `ctx.drizzle` |
 
 Mixins are plain objects of query functions. Spread them into a store definition:
 
 ```typescript
-import { defineStore, withBelongsTo, withMembers } from 'storium'
+import { defineStore, belongsTo, hasMany, withMembers } from 'storium'
 
 const postStore = defineStore(postsTable).queries({
-  ...withBelongsTo(authorsTable, 'author_id', { alias: 'author' }),
+  ...belongsTo(authorsTable, 'author_id', { alias: 'author' }),
   ...withMembers(postTagsTable, 'post_id', 'tag_id'),
   // your own queries too:
   findByStatus: (ctx) => async (status) => ctx.find({ status }),
 })
+
+const authorStore = defineStore(authorsTable).queries({
+  ...hasMany(postsTable, 'author_id', { alias: 'posts' }),
+})
 ```
 
-## withBelongsTo
+## belongsTo
 
 Generates a `findWith{Alias}` method that LEFT JOINs a related table and returns the entity with related fields inlined under a prefix.
 
 ### API
 
 ```typescript
-withBelongsTo(relatedTableDef, foreignKey, options)
+belongsTo(relatedTableDef, foreignKey, options)
 ```
 
 | Parameter | Type | Description |
@@ -44,7 +50,7 @@ withBelongsTo(relatedTableDef, foreignKey, options)
 
 ```typescript
 const postStore = defineStore(postsTable).queries({
-  ...withBelongsTo(authorsTable, 'author_id', {
+  ...belongsTo(authorsTable, 'author_id', {
     alias: 'author',
     select: ['name', 'email'],
   }),
@@ -66,6 +72,86 @@ const post = await posts.findWithAuthor(postId)
 - The method name is `findWith` + capitalized alias: `'author'` → `findWithAuthor`.
 - The related table's primary key is detected automatically from its `.storium` metadata.
 - Returns `null` if the entity itself doesn't exist.
+
+## hasMany
+
+Generates a `find{Alias}For` method that returns all related rows for a given parent entity ID.
+
+### API
+
+```typescript
+hasMany(relatedTableDef, foreignKey, options)
+```
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `relatedTableDef` | `TableDef` | The related table (from `defineTable`). |
+| `foreignKey` | `string` | Column on the related table referencing the parent entity's PK. |
+| `options.alias` | `string` | Name for the relationship. Determines method name: `find{Alias}For`. |
+| `options.select` | `string[]` (optional) | Which columns to include from the related table. Defaults to all selectable. |
+
+### Example
+
+```typescript
+const authorStore = defineStore(authorsTable).queries({
+  ...hasMany(postsTable, 'author_id', { alias: 'posts' }),
+})
+
+const { authors } = db.register({ authors: authorStore })
+const posts = await authors.findPostsFor(authorId)
+// [{ id, title, author_id, createdAt, ... }, ...]
+```
+
+### Behavior
+
+- Returns a **flat array** of related rows (empty array if none found).
+- The method name is `find` + capitalized alias + `For`: `'posts'` → `findPostsFor`.
+- Supports standard query opts: `limit`, `offset`, `orderBy`, and `where` callback.
+
+```typescript
+// With opts
+await authors.findPostsFor(authorId, {
+  limit: 10,
+  orderBy: { column: 'createdAt', direction: 'desc' },
+  where: (t) => eq(t.status, 'published'),
+})
+```
+
+## hasOne
+
+Generates a `find{Alias}For` method that returns a single related row or `null` for a given parent entity ID.
+
+### API
+
+```typescript
+hasOne(relatedTableDef, foreignKey, options)
+```
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `relatedTableDef` | `TableDef` | The related table (from `defineTable`). |
+| `foreignKey` | `string` | Column on the related table referencing the parent entity's PK. |
+| `options.alias` | `string` | Name for the relationship. Determines method name: `find{Alias}For`. |
+| `options.select` | `string[]` (optional) | Which columns to include from the related table. Defaults to all selectable. |
+
+### Example
+
+```typescript
+const userStore = defineStore(usersTable).queries({
+  ...hasOne(profilesTable, 'user_id', { alias: 'profile' }),
+})
+
+const { users } = db.register({ users: userStore })
+const profile = await users.findProfileFor(userId)
+// { id, user_id, bio, avatar, ... } | null
+```
+
+### Behavior
+
+- Returns a **single row** or `null` if not found.
+- The method name is `find` + capitalized alias + `For`: `'profile'` → `findProfileFor`.
+- Internally uses `LIMIT 1` — if multiple rows exist, only the first is returned.
+- Supports the `where` callback opt for additional filtering.
 
 ## withMembers
 
@@ -197,7 +283,7 @@ Mixins compose naturally via spread. A single store can use multiple mixins:
 ```typescript
 const postStore = defineStore(postsTable).queries({
   // Belongs-to: posts → authors
-  ...withBelongsTo(authorsTable, 'author_id', {
+  ...belongsTo(authorsTable, 'author_id', {
     alias: 'author',
     select: ['name', 'email'],
   }),
@@ -205,5 +291,12 @@ const postStore = defineStore(postsTable).queries({
   ...withMembers(postTagsTable, 'post_id', 'tag_id'),
   // Your own queries
   findPublished: (ctx) => async () => ctx.find({ status: 'published' }),
+})
+
+const authorStore = defineStore(authorsTable).queries({
+  // One-to-many: authors → posts
+  ...hasMany(postsTable, 'author_id', { alias: 'posts' }),
+  // One-to-one: authors → profiles
+  ...hasOne(profilesTable, 'user_id', { alias: 'profile' }),
 })
 ```
