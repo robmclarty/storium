@@ -78,6 +78,7 @@ export type {
   CustomQueryFn,
   QueriesConfig,
   OrderBySpec,
+  QueryOptions,
   PrepOptions,
 
   // Schema & validation
