@@ -4,6 +4,14 @@ All notable changes to Storium are documented here.
 
 This project uses [Semantic Versioning](https://semver.org/). Pre-1.0 releases may include breaking changes in minor versions.
 
+## 0.14.17
+
+- Fix strict equality checks to satisfy eqeqeq lint rule
+- Extract helpers to reduce code duplication and cognitive complexity
+- Remove dead code: unused barrel, re-exports, and unexported types
+- Configure fallow for integration tests, testcontainers, and duplication exceptions
+- Reorder Mermaid diagram boxes to uncross arrows
+
 ## 0.14.16
 
 - Add README.md to all 11 examples with install instructions, usage, and project structure descriptions
