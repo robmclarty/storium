@@ -13,6 +13,9 @@ Thumbs.db
 # AI
 .claude/settings.local.json
 
+# Analysis
+.fallow/
+
 # Output
 dist/
 build/
