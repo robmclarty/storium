@@ -50,11 +50,12 @@ const articleStore = defineStore(articlesTable, {
 })
 
 console.log('=== Table Metadata ===')
-console.log('Name:', articlesTable.storium.name)
-console.log('Primary key:', articlesTable.storium.primaryKey)
-console.log('Selectable:', articlesTable.storium.access.selectable)
-console.log('Writable:', articlesTable.storium.access.writable)
-console.log('Readonly:', articlesTable.storium.access.readonly)
+const meta = (articlesTable as any).storium
+console.log('Name:', meta.name)
+console.log('Primary key:', meta.primaryKey)
+console.log('Selectable:', meta.access.selectable)
+console.log('Writable:', meta.access.writable)
+console.log('Readonly:', meta.access.readonly)
 
 // --- 3. Create Drizzle connection + Storium instance ---
 //
