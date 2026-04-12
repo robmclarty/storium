@@ -105,17 +105,11 @@ const drizzleColumnToZod = (col: DrizzleColumn): ZodType => {
 const buildZodField = (
   key: string,
   drizzleCol: DrizzleColumn,
-  annotation: { transform?: (value: any) => unknown | Promise<unknown>; validate?: (value: any, test: any) => void } | undefined,
+  annotation: { validate?: (value: any, test: any) => void } | undefined,
   assertions: AssertionRegistry
 ): ZodType => {
   // Base type from Drizzle column introspection
   let field: ZodType = drizzleColumnToZod(drizzleCol)
-
-  // Layer on column transform as a Zod transform
-  if (annotation?.transform) {
-    const transformFn = annotation.transform
-    field = field.transform((val) => transformFn(val))
-  }
 
   // Layer on validate as a Zod superRefine
   if (annotation?.validate) {
@@ -168,8 +162,10 @@ const buildZodSchema = (
         break
 
       case 'insert':
-        // Required fields stay required; everything else is optional
-        if (!annotation?.required) field = field.optional()
+        // Required if annotated OR if DB column is notNull without a default
+        if (!annotation?.required && !(drizzleCol.notNull && !drizzleCol.hasDefault)) {
+          field = field.optional()
+        }
         break
 
       case 'update':

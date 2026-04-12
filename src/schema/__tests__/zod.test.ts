@@ -41,11 +41,12 @@ describe('buildZodSchemas', () => {
       expect(result.success).toBe(false)
     })
 
-    it('applies transform functions', () => {
+    it('does not apply transforms (transforms are handled by the prep pipeline)', () => {
       const result = schemas.createSchema.safeParse({ email: ' HI@X.COM' })
       expect(result.success).toBe(true)
       if (result.success) {
-        expect((result.data as any).email).toBe('hi@x.com')
+        // Zod schemas validate shape/types only — transforms run in prep, not here
+        expect((result.data as any).email).toBe(' HI@X.COM')
       }
     })
 

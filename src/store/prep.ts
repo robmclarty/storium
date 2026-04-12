@@ -120,30 +120,37 @@ const filterInput = (
 const transformInput = async (
   input: Record<string, any>,
   annotations: ColumnAnnotations
-): Promise<Record<string, any>> => {
+): Promise<{ data: Record<string, any>; errors: FieldError[] }> => {
   const keys = Object.keys(input)
-  const transformPromises: Array<{ key: string; promise: any }> = []
+  const transformEntries: Array<{ key: string; promise: Promise<any> }> = []
 
   for (const key of keys) {
     const ann = annotations[key]
     if (ann?.transform) {
-      transformPromises.push({
+      transformEntries.push({
         key,
-        promise: Promise.resolve(ann.transform(input[key])),
+        promise: Promise.resolve().then(() => ann.transform!(input[key])),
       })
     }
   }
 
-  if (transformPromises.length === 0) return input
+  if (transformEntries.length === 0) return { data: input, errors: [] }
 
-  const results = await Promise.all(transformPromises.map(s => s.promise))
+  const results = await Promise.allSettled(transformEntries.map(e => e.promise))
   const transformed = { ...input }
+  const errors: FieldError[] = []
 
-  transformPromises.forEach((s, i) => {
-    transformed[s.key] = results[i]
+  results.forEach((result, i) => {
+    const { key } = transformEntries[i]!
+    if (result.status === 'fulfilled') {
+      transformed[key] = result.value
+    } else {
+      const msg = result.reason instanceof Error ? result.reason.message : String(result.reason)
+      errors.push({ field: key, message: `transform failed on \`${key}\`: ${msg}` })
+    }
   })
 
-  return transformed
+  return { data: transformed, errors }
 }
 
 /**
@@ -204,13 +211,16 @@ const validateInput = (
 const checkRequired = (
   input: Record<string, any>,
   annotations: ColumnAnnotations,
+  drizzleCols: Record<string, DrizzleColumn>,
   allColumnKeys: string[]
 ): FieldError[] => {
   const errors: FieldError[] = []
 
   for (const key of allColumnKeys) {
     const ann = annotations[key]
-    if (!ann?.required) continue
+    const col = drizzleCols[key]
+    const isRequired = ann?.required || (col?.notNull && !col?.hasDefault)
+    if (!isRequired) continue
 
     const value = input[key]
     if (value === undefined || value === null) {
@@ -265,18 +275,18 @@ export const createPrepFn = (
     const filtered = filterInput(resolved, allColumnKeys, access, onlyWritable)
 
     // Stage 2: Transform
-    const transformed = await transformInput(filtered, annotations)
+    const { data: transformed, errors: transformErrors } = await transformInput(filtered, annotations)
 
     // Stage 3: Validate (accumulates errors)
     const validationErrors = validateInput(transformed, drizzleCols, annotations, assertions)
 
     // Stage 4: Required check (accumulates errors)
     const requiredErrors = validateRequired
-      ? checkRequired(transformed, annotations, allColumnKeys)
+      ? checkRequired(transformed, annotations, drizzleCols, allColumnKeys)
       : []
 
     // Combine and throw if any errors
-    const allErrors = [...validationErrors, ...requiredErrors]
+    const allErrors = [...transformErrors, ...validationErrors, ...requiredErrors]
 
     if (allErrors.length > 0) {
       throw new ValidationError(allErrors)

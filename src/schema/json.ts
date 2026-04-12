@@ -42,7 +42,7 @@ const INTEGER_COLUMN_TYPES = new Set([
 // ---------------------------------------------- Drizzle → JSON Schema Mapping --
 
 type JsonSchemaType = {
-  type: string
+  type?: string
   format?: string
   maxLength?: number
   items?: JsonSchemaType | Record<string, never>
@@ -92,7 +92,7 @@ const drizzleColumnToJsonSchema = (col: DrizzleColumn): JsonSchemaType => {
       }
       return { type: 'string', format: 'date-time' }
     case 'json':
-      return { type: 'object' }
+      return { oneOf: [{ type: 'object' }, { type: 'array' }] }
     case 'array': {
       const items = col.baseColumn
         ? drizzleColumnToJsonSchema(col.baseColumn)
