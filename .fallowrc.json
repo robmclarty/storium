@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "entry": [
+    "bin/**/*.ts",
+    "examples/*/app.ts"
+  ],
+  "ignorePatterns": [
+    "dist/**",
+    "examples/*/node_modules/**"
+  ],
+  "ignoreDependencies": [
+    "better-sqlite3",
+    "pg",
+    "mysql2"
+  ],
+  "rules": {
+    "unused-dev-dependencies": "error"
+  },
+  "regression": {
+    "baseline":     {
+      "totalIssues": 41,
+      "unusedFiles": 11,
+      "unusedExports": 18,
+      "unusedTypes": 8,
+      "unusedDependencies": 0,
+      "unusedDevDependencies": 0,
+      "unusedOptionalDependencies": 0,
+      "unusedEnumMembers": 0,
+      "unusedClassMembers": 0,
+      "unresolvedImports": 0,
+      "unlistedDependencies": 4,
+      "duplicateExports": 0,
+      "circularDependencies": 0,
+      "typeOnlyDependencies": 0,
+      "testOnlyDependencies": 0,
+      "boundaryViolations": 0
+    }
+  }
+}
