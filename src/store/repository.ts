@@ -11,7 +11,7 @@
  * object, but `ctx.create` still references the original.
  */
 
-import { eq, and, or, inArray, asc, desc, sql, count as drizzleCount, isNull, type SQL } from 'drizzle-orm'
+import { eq, and, or, inArray, asc, desc, sql, count as drizzleCount, isNull, type SQL, type Table } from 'drizzle-orm'
 import { z } from 'zod'
 import type {
   Dialect,
@@ -675,10 +675,10 @@ export const createCreateRepository = (
   /**
    * Create a repository from a TableDef with optional custom queries.
    */
-  const createRepository = <TQueries extends QueriesConfig = {}>(
+  const createRepository = <TTable extends Table = Table, TQueries extends QueriesConfig = {}>(
     tableDef: TableDef,
     queries: TQueries = {} as TQueries
-  ): Repository<TQueries> => {
+  ): Repository<TTable, TQueries> => {
 
     // Step 1: Build default CRUD operations
     const defaults = buildDefaultCrud(db, tableDef, assertions, dialect)
@@ -734,7 +734,7 @@ export const createCreateRepository = (
       ...customs,
     }
 
-    return repository as unknown as Repository<TQueries>
+    return repository as unknown as Repository<TTable, TQueries>
   }
 
   return createRepository
