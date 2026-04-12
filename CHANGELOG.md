@@ -4,6 +4,15 @@ All notable changes to Storium are documented here.
 
 This project uses [Semantic Versioning](https://semver.org/). Pre-1.0 releases may include breaking changes in minor versions.
 
+## 0.14.7
+
+- Add `tsconfig.check.json` to include test files in typecheck, catching errors the build tsconfig missed
+- Fix unused imports across test files (`integer`, `SeedModule`, `beforeEach`, `getTableColumns`, `UserRow`, `UserInsert`)
+- Fix mixin test type errors by casting tables to `TableDef` after `defineStore()` attaches `.storium` metadata
+- Fix `transform` parameter types in test annotations to match `(value: unknown) => unknown` signature
+- Fix `Object is possibly undefined` errors in assertion tests with non-null assertions
+- Fix `withCache` mock function signatures to accept expected arguments
+
 ## 0.14.6
 
 - Add `TTable` generic to `Store`, `DefaultCRUD`, `Repository`, `RepositoryContext`, `StoreDefinition`, and `StoriumInstance.defineStore` — CRUD methods now return typed rows (`InferSelectModel<TTable>`) instead of `any` when a specific table type is provided
