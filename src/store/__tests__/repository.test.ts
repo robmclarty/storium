@@ -743,3 +743,115 @@ describe('store name', () => {
     expect(users.name).toBe('users')
   })
 })
+
+describe('includeHidden', () => {
+  it('excludes hidden columns by default and includes them with includeHidden', async () => {
+    const db = createDb()
+
+    const usersTable = sqliteTable('users', {
+      id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+      email: text('email').notNull(),
+      password: text('password').notNull(),
+    })
+
+    db.run(sql`
+      CREATE TABLE IF NOT EXISTS users (
+        id TEXT PRIMARY KEY,
+        email TEXT NOT NULL,
+        password TEXT NOT NULL
+      )
+    `)
+
+    attachStoriumMeta(usersTable, {
+      columns: {
+        password: { hidden: true },
+      },
+    })
+
+    const createRepository = createCreateRepository(db, {}, 'memory')
+    const users = createRepository(usersTable as any, {
+      findWithPassword: (ctx: any) => async (id: string) => {
+        return ctx.findById(id, { includeHidden: true })
+      },
+    })
+
+    const user = await users.create({ email: 'a@b.com', password: 'secret123' })
+    expect(user).not.toHaveProperty('password')
+    expect(user).toHaveProperty('email')
+
+    const full = await users.findWithPassword(user.id)
+    expect(full).toHaveProperty('password', 'secret123')
+    expect(full).toHaveProperty('email', 'a@b.com')
+  })
+})
+
+describe('destroy returns deleted row', () => {
+  it('returns the destroyed row', async () => {
+    const db = createDb()
+
+    const usersTable = sqliteTable('users', {
+      id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+      email: text('email').notNull(),
+    })
+
+    db.run(sql`
+      CREATE TABLE IF NOT EXISTS users (
+        id TEXT PRIMARY KEY,
+        email TEXT NOT NULL
+      )
+    `)
+
+    attachStoriumMeta(usersTable, {})
+
+    const createRepository = createCreateRepository(db, {}, 'memory')
+    const users = createRepository(usersTable as any)
+
+    const user = await users.create({ email: 'a@b.com' })
+    const deleted = await users.destroy(user.id)
+    expect(deleted).toHaveProperty('id', user.id)
+    expect(deleted).toHaveProperty('email', 'a@b.com')
+
+    const found = await users.findById(user.id)
+    expect(found).toBeNull()
+  })
+})
+
+describe('orderBy column validation', () => {
+  it('throws StoreError for unknown orderBy column', async () => {
+    const db = createDb()
+
+    const usersTable = sqliteTable('users', {
+      id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+      email: text('email').notNull(),
+    })
+
+    db.run(sql`CREATE TABLE IF NOT EXISTS users (id TEXT PRIMARY KEY, email TEXT NOT NULL)`)
+    attachStoriumMeta(usersTable, {})
+    const createRepository = createCreateRepository(db, {}, 'memory')
+    const users = createRepository(usersTable as any)
+
+    await users.create({ email: 'a@b.com' })
+    await expect(
+      users.findAll({ orderBy: { column: 'nonexistent', direction: 'asc' } })
+    ).rejects.toThrow(StoreError)
+  })
+})
+
+describe('constraint error wrapping', () => {
+  it('wraps unique constraint violations in StoreError', async () => {
+    const db = createDb()
+
+    const usersTable = sqliteTable('users', {
+      id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+      email: text('email').notNull().unique(),
+    })
+
+    db.run(sql`CREATE TABLE IF NOT EXISTS users (id TEXT PRIMARY KEY, email TEXT NOT NULL UNIQUE)`)
+    attachStoriumMeta(usersTable, {})
+    const createRepository = createCreateRepository(db, {}, 'memory')
+    const users = createRepository(usersTable as any)
+
+    await users.create({ email: 'dup@test.com' })
+    await expect(users.create({ email: 'dup@test.com' })).rejects.toThrow(StoreError)
+  })
+})

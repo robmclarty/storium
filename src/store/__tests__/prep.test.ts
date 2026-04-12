@@ -122,6 +122,114 @@ describe('prep pipeline', () => {
   })
 })
 
+describe('async transforms', () => {
+  it('resolves async transform functions', async () => {
+    const asyncTable = sqliteTable('async_t', {
+      email: text('email', { length: 255 }).notNull(),
+    })
+    const asyncAnnotations: ColumnAnnotations = {
+      email: {
+        required: true,
+        transform: async (v) => {
+          // Simulate async operation (e.g., hash)
+          return (v as string).toLowerCase()
+        },
+      },
+    }
+    const asyncAccess: TableAccess = {
+      selectable: ['email'],
+      writable: ['email'],
+      hidden: [],
+      readonly: [],
+    }
+    const prep = createPrepFn(asyncTable, asyncAnnotations, asyncAccess)
+    const result = await prep({ email: 'HELLO@TEST.COM' }, { validateRequired: true })
+    expect(result.email).toBe('hello@test.com')
+  })
+
+  it('catches throwing transforms and wraps in ValidationError', async () => {
+    const throwTable = sqliteTable('throw_t', {
+      val: text('val', { length: 255 }),
+    })
+    const throwAnnotations: ColumnAnnotations = {
+      val: {
+        transform: () => { throw new Error('transform boom') },
+      },
+    }
+    const throwAccess: TableAccess = {
+      selectable: ['val'],
+      writable: ['val'],
+      hidden: [],
+      readonly: [],
+    }
+    const prep = createPrepFn(throwTable, throwAnnotations, throwAccess)
+    const { ValidationError } = await import('../../errors')
+
+    try {
+      await prep({ val: 'test' }, { validateRequired: false })
+      expect.fail('should have thrown')
+    } catch (err: any) {
+      expect(err).toBeInstanceOf(ValidationError)
+      expect(err.errors[0].field).toBe('val')
+      expect(err.errors[0].message).toContain('transform boom')
+    }
+  })
+
+  it('catches async transform rejections', async () => {
+    const rejectTable = sqliteTable('reject_t', {
+      val: text('val', { length: 255 }),
+    })
+    const rejectAnnotations: ColumnAnnotations = {
+      val: {
+        transform: async () => { throw new Error('async boom') },
+      },
+    }
+    const rejectAccess: TableAccess = {
+      selectable: ['val'],
+      writable: ['val'],
+      hidden: [],
+      readonly: [],
+    }
+    const prep = createPrepFn(rejectTable, rejectAnnotations, rejectAccess)
+    const { ValidationError } = await import('../../errors')
+
+    try {
+      await prep({ val: 'test' }, { validateRequired: false })
+      expect.fail('should have thrown')
+    } catch (err: any) {
+      expect(err).toBeInstanceOf(ValidationError)
+      expect(err.errors[0].message).toContain('async boom')
+    }
+  })
+})
+
+describe('notNull enforcement', () => {
+  it('enforces notNull columns without hasDefault as required', async () => {
+    const strictTable = sqliteTable('strict_t', {
+      id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+      required_col: text('required_col').notNull(),
+      optional_col: text('optional_col'),
+    })
+    const strictAccess: TableAccess = {
+      selectable: ['id', 'required_col', 'optional_col'],
+      writable: ['required_col', 'optional_col'],
+      hidden: [],
+      readonly: ['id'],
+    }
+    const prep = createPrepFn(strictTable, {}, strictAccess)
+    const { ValidationError } = await import('../../errors')
+
+    // Should throw because required_col is notNull without a default
+    try {
+      await prep({ optional_col: 'ok' }, { validateRequired: true })
+      expect.fail('should have thrown')
+    } catch (err: any) {
+      expect(err).toBeInstanceOf(ValidationError)
+      expect(err.errors.some((e: any) => e.field === 'required_col')).toBe(true)
+    }
+  })
+})
+
 describe('prep with custom assertions', () => {
   const slugTable = sqliteTable('slugs', {
     slug: text('slug', { length: 255 }).notNull(),
