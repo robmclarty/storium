@@ -4,6 +4,10 @@ All notable changes to Storium are documented here.
 
 This project uses [Semantic Versioning](https://semver.org/). Pre-1.0 releases may include breaking changes in minor versions.
 
+## 0.14.16
+
+- Add README.md to all 11 examples with install instructions, usage, and project structure descriptions
+
 ## 0.14.15
 
 - Add Mermaid diagrams to README and docs for visual technical documentation: architecture overview, validation pipeline, relationship patterns, ctx resolution, migration workflow, seed discovery, and single-source-of-truth derivation
