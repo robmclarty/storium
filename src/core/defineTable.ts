@@ -115,38 +115,31 @@ const injectTimestamps = (columns: ColumnsConfig): ColumnsConfig => {
  * Derive access sets from column configs, optionally merging table-level
  * access overrides from `.access()`.
  */
-const deriveAccess = (columns: ColumnsConfig, accessOverrides?: AccessConfig): TableAccess => {
-  const allKeys = Object.keys(columns)
-
-  // Validate override references
-  if (accessOverrides) {
-    for (const col of accessOverrides.hidden ?? []) {
+/**
+ * Validate that override column names exist in the schema, and that
+ * no column has conflicting readonly/required or readonly/hidden flags.
+ */
+const validateAccessConfig = (columns: ColumnsConfig, overrides?: AccessConfig) => {
+  if (overrides) {
+    for (const col of overrides.hidden ?? []) {
       if (!(col in columns)) {
-        throw new SchemaError(
-          `access({ hidden }): column '${col}' is not defined in the schema`
-        )
+        throw new SchemaError(`access({ hidden }): column '${col}' is not defined in the schema`)
       }
     }
-    for (const col of accessOverrides.readonly ?? []) {
+    for (const col of overrides.readonly ?? []) {
       if (!(col in columns)) {
-        throw new SchemaError(
-          `access({ readonly }): column '${col}' is not defined in the schema`
-        )
+        throw new SchemaError(`access({ readonly }): column '${col}' is not defined in the schema`)
       }
     }
   }
 
-  // Guard invalid column config combinations at definition time.
-  for (const key of allKeys) {
-    const col = columns[key]
-
+  for (const [key, col] of Object.entries(columns)) {
     if (col?.readonly === true && col?.required === true) {
       throw new SchemaError(
         `Column '${key}': cannot be both \`readonly\` and \`required\` ` +
         '(a required value that can never be written is lost in the abyss).'
       )
     }
-
     if (col?.readonly === true && col?.hidden === true) {
       throw new SchemaError(
         `Column '${key}': cannot be both \`readonly\` and \`hidden\` ` +
@@ -154,7 +147,16 @@ const deriveAccess = (columns: ColumnsConfig, accessOverrides?: AccessConfig): T
       )
     }
   }
+}
 
+/**
+ * Derive access sets from column configs, optionally merging table-level
+ * access overrides from `.access()`.
+ */
+const deriveAccess = (columns: ColumnsConfig, accessOverrides?: AccessConfig): TableAccess => {
+  validateAccessConfig(columns, accessOverrides)
+
+  const allKeys = Object.keys(columns)
   const overrideHidden = new Set(accessOverrides?.hidden ?? [])
   const overrideReadonly = new Set(accessOverrides?.readonly ?? [])
 
@@ -167,7 +169,7 @@ const deriveAccess = (columns: ColumnsConfig, accessOverrides?: AccessConfig): T
   const isHidden = (k: string) =>
     overrideHidden.has(k) || columns[k]?.hidden === true
 
-  // Validate no column is both hidden and readonly after merging
+  // Validate no column is both hidden and readonly after merging overrides
   for (const key of allKeys) {
     if (isHidden(key) && isReadonly(key)) {
       throw new SchemaError(
@@ -177,12 +179,12 @@ const deriveAccess = (columns: ColumnsConfig, accessOverrides?: AccessConfig): T
     }
   }
 
-  const hidden = allKeys.filter(k => isHidden(k))
-  const readonly = allKeys.filter(k => isReadonly(k))
-  const selectable = allKeys.filter(k => !isHidden(k))
-  const writable = allKeys.filter(k => !isReadonly(k))
-
-  return { selectable, writable, hidden, readonly }
+  return {
+    selectable: allKeys.filter(k => !isHidden(k)),
+    writable: allKeys.filter(k => !isReadonly(k)),
+    hidden: allKeys.filter(k => isHidden(k)),
+    readonly: allKeys.filter(k => isReadonly(k)),
+  }
 }
 
 /**

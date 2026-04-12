@@ -14,7 +14,7 @@
 import { PostgreSqlContainer } from '@testcontainers/postgresql'
 import type { StoriumConfig } from 'storium'
 
-export type TemporaryDatabase = {
+type TemporaryDatabase = {
   config: StoriumConfig
   stop: () => Promise<void>
 }

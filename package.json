@@ -57,7 +57,7 @@
     "typecheck": "tsc --noEmit",
     "typecheck:examples": "for dir in examples/*/; do echo \"--- $dir ---\" && (cd \"$dir\" && npx tsc --noEmit 2>&1 || true); done",
     "lint": "npm run lint:code && npm run lint:fallow",
-    "lint:fallow": "fallow --fail-on-regression",
+    "lint:fallow": "fallow --fail-on-issues",
     "lint:code": "node --import tsx/esm $(which oxlint) .",
     "lint:code:fix": "node --import tsx/esm $(which oxlint) . --fix",
     "test": "npm run typecheck && npm run lint && npm run build && npm run test:unit",

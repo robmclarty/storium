@@ -23,9 +23,9 @@ const require = createRequire(import.meta.url)
 
 // -------------------------------------------------------------- Types --
 
-export type ColumnBuilderFn = (name: string, config: DslColumnConfig) => any
+type ColumnBuilderFn = (name: string, config: DslColumnConfig) => any
 
-export type DialectMapping = {
+type DialectMapping = {
   tableConstructor: (...args: any[]) => any
   columnBuilders: Record<DslType, ColumnBuilderFn>
 }

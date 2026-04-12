@@ -2,7 +2,12 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "entry": [
     "bin/**/*.ts",
-    "examples/*/app.ts"
+    "src/migrate/index.ts",
+    "oxlint.config.ts",
+    "examples/*/app.ts",
+    "examples/*/storium.config.ts",
+    "examples/*/seeds/**/*.ts",
+    "examples/*/entities/**/*.store.ts"
   ],
   "ignorePatterns": [
     "dist/**",
@@ -11,29 +16,28 @@
   "ignoreDependencies": [
     "better-sqlite3",
     "pg",
-    "mysql2"
+    "mysql2",
+    "@libsql/client",
+    "@testcontainers/mysql",
+    "@testcontainers/postgresql",
+    "fastify"
   ],
   "rules": {
     "unused-dev-dependencies": "error"
   },
-  "regression": {
-    "baseline":     {
-      "totalIssues": 41,
-      "unusedFiles": 11,
-      "unusedExports": 18,
-      "unusedTypes": 8,
-      "unusedDependencies": 0,
-      "unusedDevDependencies": 0,
-      "unusedOptionalDependencies": 0,
-      "unusedEnumMembers": 0,
-      "unusedClassMembers": 0,
-      "unresolvedImports": 0,
-      "unlistedDependencies": 4,
-      "duplicateExports": 0,
-      "circularDependencies": 0,
-      "typeOnlyDependencies": 0,
-      "testOnlyDependencies": 0,
-      "boundaryViolations": 0
-    }
+  "duplicates": {
+    "ignore": [
+      "examples/**",
+      "**/__tests__/**",
+      "src/mixins/hasMany.ts",
+      "src/mixins/hasOne.ts"
+    ]
+  },
+  "health": {
+    "maxCyclomatic": 25,
+    "maxCognitive": 25,
+    "ignore": [
+      "examples/**"
+    ]
   }
 }

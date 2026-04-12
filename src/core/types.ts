@@ -376,22 +376,7 @@ export type RepositoryContext<
   schemas: SchemaSet<TColumns>
   /** The filter → transform → validate pipeline. */
   prep: (input: Record<string, any>, opts?: PrepOptions) => Promise<Record<string, any>>
-  /** Default CRUD operations (always originals, even if overridden). */
-  find: (filters: Record<string, any>, opts?: PrepOptions) => Promise<SelectType<TColumns>[]>
-  findAll: (opts?: PrepOptions) => Promise<SelectType<TColumns>[]>
-  findOne: (filters: Record<string, any>, opts?: PrepOptions) => Promise<SelectType<TColumns> | null>
-  findById: (id: PkValue, opts?: PrepOptions) => Promise<SelectType<TColumns> | null>
-  findByIdIn: (ids: (string | number)[], opts?: PrepOptions) => Promise<SelectType<TColumns>[]>
-  create: (input: InsertType<TColumns>, opts?: PrepOptions) => Promise<SelectType<TColumns>>
-  createMany: (inputs: InsertType<TColumns>[], opts?: PrepOptions) => Promise<SelectType<TColumns>[]>
-  update: (id: PkValue, input: UpdateType<TColumns>, opts?: PrepOptions) => Promise<SelectType<TColumns>>
-  upsert: (input: InsertType<TColumns>, opts?: PrepOptions) => Promise<SelectType<TColumns>>
-  destroy: (id: PkValue, opts?: PrepOptions) => Promise<void>
-  destroyAll: (filters: Record<string, any>, opts?: PrepOptions) => Promise<number>
-  count: (filters?: Record<string, any>, opts?: PrepOptions) => Promise<number>
-  exists: (filters: Record<string, any>, opts?: PrepOptions) => Promise<boolean>
-  ref: (filter: Record<string, any>, opts?: PrepOptions) => Promise<PkValue>
-}
+} & DefaultCRUD<TColumns>
 
 /**
  * Shorthand for `RepositoryContext` — the context object passed to custom

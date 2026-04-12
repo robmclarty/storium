@@ -120,6 +120,17 @@ const createDrizzleInstance = (config: StoriumConfig): { db: any; teardown: () =
  * Build a connection URL from individual config fields.
  * Checks both top-level fields and dbCredentials.
  */
+const buildAuthHost = (
+  user: string | undefined,
+  password: string | undefined,
+  host: string,
+  port: number | undefined
+): string => {
+  const auth = user ? `${user}${password ? `:${password}` : ''}@` : ''
+  const portSuffix = port ? `:${port}` : ''
+  return `${auth}${host}${portSuffix}`
+}
+
 const buildConnectionUrl = (config: StoriumConfig): string => {
   const url = resolveUrl(config)
   if (url) return url
@@ -139,14 +150,10 @@ const buildConnectionUrl = (config: StoriumConfig): string => {
   }
 
   switch (dialect) {
-    case 'postgresql': {
-      const auth = user ? `${user}${password ? `:${password}` : ''}@` : ''
-      return `postgresql://${auth}${host}${port ? `:${port}` : ''}/${database}`
-    }
-    case 'mysql': {
-      const auth = user ? `${user}${password ? `:${password}` : ''}@` : ''
-      return `mysql://${auth}${host}${port ? `:${port}` : ''}/${database}`
-    }
+    case 'postgresql':
+      return `postgresql://${buildAuthHost(user, password, host, port)}/${database}`
+    case 'mysql':
+      return `mysql://${buildAuthHost(user, password, host, port)}/${database}`
     case 'sqlite':
       return database
     default:

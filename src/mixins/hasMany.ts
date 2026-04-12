@@ -13,8 +13,9 @@
  * // [{ id, title, author_id }, ...]
  */
 
-import { eq, and, asc, desc } from 'drizzle-orm'
+import { asc, desc } from 'drizzle-orm'
 import type { TableDef } from '../core/types'
+import { buildRelatedSelect, buildRelatedWhere, prepareRelatedMixin } from './relatedQuery'
 
 type HasManyOptions<A extends string = string> = {
   /** The alias for the related collection (used in the method name: find{Alias}For). */
@@ -36,25 +37,7 @@ export const hasMany = <A extends string>(
   foreignKey: string,
   options: HasManyOptions<A>
 ): { [K in `find${Capitalize<A>}For`]: (ctx: any) => (id: string | number, opts?: any) => Promise<any[]> } => {
-  const { alias, select: selectFields } = options
-  const relatedTable = relatedTableDef
-  const meta = relatedTableDef.storium
-
-  // Capitalize first letter for method name: 'posts' → 'findPostsFor'
-  const methodName = `find${alias.charAt(0).toUpperCase()}${alias.slice(1)}For`
-
-  // Determine which related columns to include
-  const relatedColumns = selectFields ?? meta.access.selectable
-
-  const buildSelectObj = () => {
-    const selectObj: Record<string, any> = {}
-    for (const col of relatedColumns) {
-      if (col in relatedTable) {
-        selectObj[col] = relatedTable[col]
-      }
-    }
-    return selectObj
-  }
+  const { relatedTable, methodName, columns: relatedColumns } = prepareRelatedMixin(relatedTableDef, options)
 
   return {
     /**
@@ -62,11 +45,8 @@ export const hasMany = <A extends string>(
      * Supports limit, offset, orderBy, and where callback opts.
      */
     [methodName]: (_ctx: any) => async (id: string | number, opts?: any) => {
-      const selectObj = buildSelectObj()
-
-      const conditions = [eq(relatedTable[foreignKey], id)]
-      if (opts?.where) conditions.push(opts.where(relatedTable))
-      const whereClause = conditions.length === 1 ? conditions[0] : and(...conditions)
+      const selectObj = buildRelatedSelect(relatedTable, relatedColumns)
+      const whereClause = buildRelatedWhere(relatedTable, foreignKey, id, opts)
 
       let q = _ctx.drizzle
         .select(selectObj)

@@ -135,25 +135,82 @@ const buildDefaultCrud = (
     return conditions.length === 1 ? conditions[0] : and(...conditions)
   }
 
-  const find = async (filters: Record<string, any>, opts?: PrepOptions) => {
-    const entries = Object.entries(filters)
+  /**
+   * Apply orderBy, limit, and offset options to a query builder.
+   */
+  const applyQueryOpts = (q: any, opts?: PrepOptions) => {
+    if (opts?.orderBy) q = applyOrderBy(q, opts.orderBy)
+    if (opts?.limit !== undefined) q = q.limit(opts.limit)
+    if (opts?.offset !== undefined) q = q.offset(opts.offset)
+    return q
+  }
 
-    if (entries.length === 0 && !opts?.where) {
+  /**
+   * Throw if filters are empty and no where clause is provided.
+   */
+  const requireFilters = (method: string, filters: Record<string, any>, opts?: PrepOptions) => {
+    if (Object.keys(filters).length === 0 && !opts?.where) {
       throw new StoreError(
-        'find() requires at least one filter or a where clause. Use findAll() to retrieve all rows.'
+        `${method}() requires at least one filter or a where clause.` +
+        (method === 'find' ? ' Use findAll() to retrieve all rows.' : '')
       )
     }
+  }
 
-    let q = getDb(opts)
+  /**
+   * Run an UPDATE with RETURNING (PostgreSQL/SQLite) or fall back to
+   * UPDATE + SELECT for MySQL. Returns the updated row or throws.
+   */
+  const updateAndReturn = async (
+    values: Record<string, any>,
+    id: PkValue,
+    errorPrefix: string,
+    opts?: PrepOptions
+  ) => {
+    if (dialect === 'postgresql' || dialect === 'sqlite' || dialect === 'memory') {
+      const rows = await getDb(opts)
+        .update(table)
+        .set(values)
+        .where(buildPkWhere(table, primaryKey, id))
+        .returning(getCols(opts))
+
+      if (!rows[0]) {
+        throw new StoreError(
+          `${errorPrefix}: no '${tableName}' row with ${primaryKey} = ${id}.`
+        )
+      }
+      return rows[0]
+    }
+
+    // MySQL: no RETURNING support — update then select back
+    await getDb(opts)
+      .update(table)
+      .set(values)
+      .where(buildPkWhere(table, primaryKey, id))
+
+    const rows = await getDb(opts)
+      .select(getCols(opts))
+      .from(table)
+      .where(buildPkWhere(table, primaryKey, id))
+      .limit(1)
+
+    if (!rows[0]) {
+      throw new StoreError(
+        `${errorPrefix}: no '${tableName}' row with ${primaryKey} = ${id}.`
+      )
+    }
+    return rows[0]
+  }
+
+  const find = async (filters: Record<string, any>, opts?: PrepOptions) => {
+    requireFilters('find', filters, opts)
+
+    const q = getDb(opts)
       .select(getCols(opts))
       .from(table)
       .where(buildWhere(filters, opts))
 
-    if (opts?.orderBy) q = applyOrderBy(q, opts.orderBy)
-    if (opts?.limit !== undefined) q = q.limit(opts.limit)
-    if (opts?.offset !== undefined) q = q.offset(opts.offset)
-
-    return q
+    return applyQueryOpts(q, opts)
   }
 
   const findAll = async (opts?: PrepOptions) => {
@@ -165,11 +222,8 @@ const buildDefaultCrud = (
     if (conditions.length > 0) {
       q = q.where(conditions.length === 1 ? conditions[0] : and(...conditions))
     }
-    if (opts?.orderBy) q = applyOrderBy(q, opts.orderBy)
-    if (opts?.limit !== undefined) q = q.limit(opts.limit)
-    if (opts?.offset !== undefined) q = q.offset(opts.offset)
 
-    return q
+    return applyQueryOpts(q, opts)
   }
 
   const findOne = async (filters: Record<string, any>, opts?: PrepOptions) => {
@@ -295,41 +349,7 @@ const buildDefaultCrud = (
       onlyWritable: true,
     })
 
-    if (dialect === 'postgresql' || dialect === 'sqlite' || dialect === 'memory') {
-      const rows = await getDb(opts)
-        .update(table)
-        .set(prepared)
-        .where(buildPkWhere(table, primaryKey, id))
-        .returning(getCols(opts))
-
-      if (!rows[0]) {
-        throw new StoreError(
-          `update(): UPDATE on '${tableName}' matched no row with ${primaryKey} = ${id}.`
-        )
-      }
-
-      return rows[0]
-    }
-
-    // MySQL: no RETURNING support — update then select back
-    await getDb(opts)
-      .update(table)
-      .set(prepared)
-      .where(buildPkWhere(table, primaryKey, id))
-
-    const rows = await getDb(opts)
-      .select(getCols(opts))
-      .from(table)
-      .where(buildPkWhere(table, primaryKey, id))
-      .limit(1)
-
-    if (!rows[0]) {
-      throw new StoreError(
-        `update(): UPDATE on '${tableName}' matched no row with ${primaryKey} = ${id}.`
-      )
-    }
-
-    return rows[0]
+    return updateAndReturn(prepared, id, `update(): UPDATE on '${tableName}' matched no row with`, opts)
   }
 
   const destroy = async (id: PkValue, opts?: PrepOptions) => {
@@ -339,13 +359,7 @@ const buildDefaultCrud = (
   }
 
   const destroyAll = async (filters: Record<string, any>, opts?: PrepOptions) => {
-    const entries = Object.entries(filters)
-
-    if (entries.length === 0 && !opts?.where) {
-      throw new StoreError(
-        'destroyAll() requires at least one filter or a where clause to prevent accidental deletion of all rows.'
-      )
-    }
+    requireFilters('destroyAll', filters, opts)
 
     const result = await getDb(opts)
       .delete(table)
@@ -522,13 +536,7 @@ const buildDefaultCrud = (
     }
 
     const softDestroyAll = async (filters: Record<string, any>, opts?: PrepOptions) => {
-      const entries = Object.entries(filters)
-
-      if (entries.length === 0 && !opts?.where) {
-        throw new StoreError(
-          'destroyAll() requires at least one filter or a where clause to prevent accidental deletion of all rows.'
-        )
-      }
+      requireFilters('destroyAll', filters, opts)
 
       const result = await getDb(opts)
         .update(table)
@@ -539,39 +547,7 @@ const buildDefaultCrud = (
     }
 
     const restore = async (id: PkValue, opts?: PrepOptions) => {
-      if (dialect === 'postgresql' || dialect === 'sqlite' || dialect === 'memory') {
-        const rows = await getDb(opts)
-          .update(table)
-          .set({ deletedAt: null })
-          .where(buildPkWhere(table, primaryKey, id))
-          .returning(getCols(opts))
-
-        if (!rows[0]) {
-          throw new StoreError(
-            `restore(): no '${tableName}' row with ${primaryKey} = ${id}.`
-          )
-        }
-        return rows[0]
-      }
-
-      // MySQL: update then select
-      await getDb(opts)
-        .update(table)
-        .set({ deletedAt: null })
-        .where(buildPkWhere(table, primaryKey, id))
-
-      const rows = await getDb(opts)
-        .select(getCols(opts))
-        .from(table)
-        .where(buildPkWhere(table, primaryKey, id))
-        .limit(1)
-
-      if (!rows[0]) {
-        throw new StoreError(
-          `restore(): no '${tableName}' row with ${primaryKey} = ${id}.`
-        )
-      }
-      return rows[0]
+      return updateAndReturn({ deletedAt: null }, id, 'restore()', opts)
     }
 
     const findWithDeleted = async (filters?: Record<string, any>, opts?: PrepOptions) => {
@@ -579,22 +555,16 @@ const buildDefaultCrud = (
         // findAll variant — no filters
         let q = getDb(opts).select(getCols(opts)).from(table)
         if (opts?.where) q = q.where(opts.where(table))
-        if (opts?.orderBy) q = applyOrderBy(q, opts.orderBy)
-        if (opts?.limit !== undefined) q = q.limit(opts.limit)
-        if (opts?.offset !== undefined) q = q.offset(opts.offset)
-        return q
+        return applyQueryOpts(q, opts)
       }
 
       // find variant — with filters, but no soft delete filter
-      let q = getDb(opts)
+      const q = getDb(opts)
         .select(getCols(opts))
         .from(table)
         .where(buildWhere(filters, opts, true))
 
-      if (opts?.orderBy) q = applyOrderBy(q, opts.orderBy)
-      if (opts?.limit !== undefined) q = q.limit(opts.limit)
-      if (opts?.offset !== undefined) q = q.offset(opts.offset)
-      return q
+      return applyQueryOpts(q, opts)
     }
 
     return {
