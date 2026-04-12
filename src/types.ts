@@ -531,15 +531,18 @@ export type StoriumConfig<D extends Dialect = Dialect> = {
  * Options for `storium.fromDrizzle()`.
  * Dialect is auto-detected from the Drizzle instance.
  */
-export type FromDrizzleOptions<D extends Dialect = Dialect> = {
+export type FromDrizzleOptions = {
   /** User-defined named assertions for `test()`. */
   assertions?: AssertionRegistry
   /**
    * Explicit dialect override. When provided, bypasses automatic dialect
    * inference from the Drizzle instance's constructor name. Use this when
    * bundlers/minifiers mangle class names or when inference fails.
+   *
+   * Excludes 'memory' because fromDrizzle operates on real Drizzle instances
+   * which are never the memory dialect (memory is resolved to sqlite at connect time).
    */
-  dialect?: D
+  dialect?: Exclude<Dialect, 'memory'>
 }
 
 /** The Storium instance returned by `connect()` or `fromDrizzle()`. */

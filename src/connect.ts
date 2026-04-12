@@ -338,15 +338,26 @@ export const connect = <D extends Dialect>(config: StoriumConfig<D>): StoriumIns
 /**
  * Create a StoriumInstance from an existing Drizzle database instance.
  * Dialect is auto-detected from the Drizzle instance's internal dialect class.
+ *
+ * When `options.dialect` is provided, the return type uses that literal dialect
+ * instead of the inferred one — useful when bundlers mangle class names.
  */
-export const fromDrizzle = <DB extends DrizzleDatabase>(
+export function fromDrizzle<DB extends DrizzleDatabase, D extends Exclude<Dialect, 'memory'>>(
   drizzleDb: DB,
+  options: FromDrizzleOptions & { dialect: D }
+): StoriumInstance<D>
+export function fromDrizzle<DB extends DrizzleDatabase>(
+  drizzleDb: DB,
+  options?: FromDrizzleOptions
+): StoriumInstance<InferDialect<DB>>
+export function fromDrizzle(
+  drizzleDb: any,
   options: FromDrizzleOptions = {}
-): StoriumInstance<InferDialect<DB>> => {
-  const dialect = (options.dialect ?? inferDialect(drizzleDb)) as InferDialect<DB>
+): StoriumInstance<any> {
+  const dialect = options.dialect ?? inferDialect(drizzleDb)
 
-  return buildInstance<InferDialect<DB>>(
-    drizzleDb as unknown as DrizzleDatabase<InferDialect<DB>>,
+  return buildInstance(
+    drizzleDb,
     dialect,
     options.assertions ?? {},
     async () => {} // No-op teardown — user manages their own connection
