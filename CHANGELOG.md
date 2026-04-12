@@ -4,6 +4,30 @@ All notable changes to Storium are documented here.
 
 This project uses [Semantic Versioning](https://semver.org/). Pre-1.0 releases may include breaking changes in minor versions.
 
+## 0.14.4
+
+- **Breaking:** Rename `force` option to `skipPrep` on PrepOptions (follows `validateRequired`/`onlyWritable`/`includeHidden` naming convention)
+- **Breaking:** Change `withMembers` default `memberKey` from `'user_id'` to `'member_id'`
+- **Breaking:** `destroy()` and soft-delete `destroy()` now throw `StoreError` when no row matches (consistent with `update()`)
+- Split `PrepOptions` into public `QueryOptions` (for Store methods) and internal `PrepOptions` (for custom query `ctx` methods) — `skipPrep` and `includeHidden` are no longer accessible from application code at the type level
+- Fix MySQL `createMany()` for composite-PK tables (was silently returning empty results)
+- Fix `detectPrimaryKey` to detect table-level composite PKs via `primaryKey()` constraint; remove unsafe fallback to `'id'` column
+- Fix `withMembers` RETURNING support for SQLite/memory dialects (was PostgreSQL-only)
+- Fix `withCache` write invalidation — add `createMany`, `upsert`, `restore`, `forceDestroy`, `forceDestroyAll` to invalidation list
+- Fix JSON column Zod schema to accept arrays (aligns with prep pipeline behavior)
+- Fix `buildConnectionUrl` to percent-encode credentials with special characters
+- Remove `upsert()` magic `updatedAt` auto-injection (timestamps are user's responsibility)
+- Add filter key validation in CRUD methods — unknown keys throw `StoreError` with valid column list
+- Warn when `db.defineStore()` receives config for a table with existing storium metadata
+- Extract `supportsReturning(dialect)` helper, eliminating scattered dialect branching
+- Move `assertions.ts` to `src/` root (fixes schema→store layer boundary violation)
+- Deduplicate `Repository` type as alias for `Store`
+- Remove `attachStoriumMeta` from store barrel export (internal only)
+- Reduce `any` usage: type WHERE conditions as `SQL[]`, column maps as `Record<string, Column>`, callbacks as `(value: unknown)`
+- Add testcontainers infrastructure and 36 multi-dialect integration tests (CRUD, transactions, error recovery, connection lifecycle)
+- Reorganize `src/core/` into domain-grouped structure
+- Update AGENTS.md: remove non-existent `withTransaction.ts` reference
+
 ## 0.14.3
 
 - Remove orphaned `uuidv7` module (Drizzle's `$defaultFn` handles UUID generation)
