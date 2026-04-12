@@ -11,7 +11,7 @@
  * object, but `ctx.create` still references the original.
  */
 
-import { eq, and, inArray, asc, desc, sql, count as drizzleCount, isNull } from 'drizzle-orm'
+import { eq, and, or, inArray, asc, desc, sql, count as drizzleCount, isNull } from 'drizzle-orm'
 import { z } from 'zod'
 import type {
   Dialect,
@@ -27,6 +27,12 @@ import { StoreError } from '../errors'
 import { createPrepFn } from './prep'
 
 // -------------------------------------------------------------- Helpers --
+
+/**
+ * Whether the dialect supports RETURNING clauses on INSERT/UPDATE/DELETE.
+ */
+export const supportsReturning = (dialect: Dialect): boolean =>
+  dialect !== 'mysql'
 
 /**
  * Build a WHERE clause for primary key lookup.
@@ -66,6 +72,7 @@ const buildDefaultCrud = (
   const primaryKey: string | string[] = rawPk
   const table = tableDef
   const prep = createPrepFn(tableDef, annotations, access, assertions)
+  const validColumns = new Set(Object.keys(allColumns))
 
   /**
    * Get the query builder, optionally scoped to a transaction.
@@ -103,6 +110,12 @@ const buildDefaultCrud = (
     }
 
     for (const [key, value] of Object.entries(filters)) {
+      if (!validColumns.has(key)) {
+        throw new StoreError(
+          `Unknown filter key '${key}' on table '${tableName}'. ` +
+          `Valid columns: ${[...validColumns].join(', ')}`
+        )
+      }
       conditions.push(eq(table[key], value))
     }
 
@@ -146,7 +159,7 @@ const buildDefaultCrud = (
     errorPrefix: string,
     opts?: PrepOptions
   ) => {
-    if (dialect === 'postgresql' || dialect === 'sqlite' || dialect === 'memory') {
+    if (supportsReturning(dialect)) {
       const rows = await getDb(opts)
         .update(table)
         .set(values)
@@ -255,7 +268,7 @@ const buildDefaultCrud = (
       onlyWritable: false,
     })
 
-    if (dialect === 'postgresql' || dialect === 'sqlite' || dialect === 'memory') {
+    if (supportsReturning(dialect)) {
       const rows = await getDb(opts)
         .insert(table)
         .values(prepared)
@@ -326,9 +339,28 @@ const buildDefaultCrud = (
   }
 
   const destroy = async (id: PkValue, opts?: PrepOptions) => {
-    await getDb(opts)
+    if (supportsReturning(dialect)) {
+      const rows = await getDb(opts)
+        .delete(table)
+        .where(buildPkWhere(table, primaryKey, id))
+        .returning()
+      if (!rows[0]) {
+        throw new StoreError(
+          `destroy(): no '${tableName}' row with ${primaryKey} = ${id}.`
+        )
+      }
+      return
+    }
+
+    // MySQL: check affected rows
+    const result = await getDb(opts)
       .delete(table)
       .where(buildPkWhere(table, primaryKey, id))
+    if ((result.affectedRows ?? 0) === 0) {
+      throw new StoreError(
+        `destroy(): no '${tableName}' row with ${primaryKey} = ${id}.`
+      )
+    }
   }
 
   const destroyAll = async (filters: Record<string, any>, opts?: PrepOptions) => {
@@ -399,7 +431,7 @@ const buildDefaultCrud = (
       }))
     )
 
-    if (dialect === 'postgresql' || dialect === 'sqlite' || dialect === 'memory') {
+    if (supportsReturning(dialect)) {
       return getDb(opts)
         .insert(table)
         .values(preparedRows)
@@ -409,13 +441,26 @@ const buildDefaultCrud = (
     // MySQL: no RETURNING — insert then select back by PKs
     await getDb(opts).insert(table).values(preparedRows)
 
-    const pkValues = preparedRows.map(r => r[primaryKey as string]).filter(Boolean)
+    if (Array.isArray(primaryKey)) {
+      // Composite PK: build OR'd compound WHERE clauses
+      const conditions = preparedRows.map(r => {
+        const pkValues = primaryKey.map(col => r[col])
+        return buildPkWhere(table, primaryKey, pkValues)
+      })
+      return getDb(opts)
+        .select(getCols(opts))
+        .from(table)
+        .where(conditions.length === 1 ? conditions[0] : or(...conditions))
+    }
+
+    // Single PK
+    const pkValues = preparedRows.map(r => r[primaryKey]).filter(Boolean)
     if (pkValues.length === 0) return []
 
     return getDb(opts)
       .select(getCols(opts))
       .from(table)
-      .where(inArray(table[primaryKey as string], pkValues))
+      .where(inArray(table[primaryKey], pkValues))
   }
 
   const upsert = async (input: Record<string, any>, opts?: PrepOptions) => {
@@ -441,12 +486,7 @@ const buildDefaultCrud = (
       }
     }
 
-    // Handle updatedAt if present
-    if ('updatedAt' in table && !targetNames.has('updatedAt')) {
-      setFields.updatedAt = new Date()
-    }
-
-    if (dialect === 'postgresql' || dialect === 'sqlite' || dialect === 'memory') {
+    if (supportsReturning(dialect)) {
       const rows = await getDb(opts)
         .insert(table)
         .values(prepared)
@@ -493,10 +533,30 @@ const buildDefaultCrud = (
     const hardDestroyAll = destroyAll
 
     const softDestroy = async (id: PkValue, opts?: PrepOptions) => {
-      await getDb(opts)
+      if (supportsReturning(dialect)) {
+        const rows = await getDb(opts)
+          .update(table)
+          .set({ deletedAt: new Date() })
+          .where(buildPkWhere(table, primaryKey, id))
+          .returning()
+        if (!rows[0]) {
+          throw new StoreError(
+            `destroy(): no '${tableName}' row with ${primaryKey} = ${id}.`
+          )
+        }
+        return
+      }
+
+      // MySQL: check affected rows
+      const result = await getDb(opts)
         .update(table)
         .set({ deletedAt: new Date() })
         .where(buildPkWhere(table, primaryKey, id))
+      if ((result.affectedRows ?? 0) === 0) {
+        throw new StoreError(
+          `destroy(): no '${tableName}' row with ${primaryKey} = ${id}.`
+        )
+      }
     }
 
     const softDestroyAll = async (filters: Record<string, any>, opts?: PrepOptions) => {

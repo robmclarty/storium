@@ -3,7 +3,7 @@
  *
  * Composable membership operations for collection-pattern repositories.
  * Generates standard add/remove/get/check/count operations for any entity
- * that uses a join table with a foreign key and a `user_id` column.
+ * that uses a join table with a foreign key and a member ID column.
  *
  * Spread into a defineStore's `queries` or createRepository's custom queries.
  *
@@ -23,19 +23,20 @@
 
 import { eq, and, sql, count } from 'drizzle-orm'
 import type { TableDef } from '../types'
+import { supportsReturning } from '../store/repository'
 
 /**
  * Generate membership query functions for a collection.
  *
  * @param joinTableDef - The TableDef for the join/membership table
  * @param foreignKey - The column name on the join table that references the collection
- * @param memberKey - The column name on the join table that references the member (default: 'user_id')
+ * @param memberKey - The column name on the join table that references the member (default: 'member_id')
  * @returns An object of custom query functions to spread into queries
  */
 export const withMembers = (
   joinTableDef: TableDef,
   foreignKey: string,
-  memberKey: string = 'user_id'
+  memberKey: string = 'member_id'
 ) => {
   const joinTable = joinTableDef
 
@@ -57,7 +58,7 @@ export const withMembers = (
         ...extra,
       }
 
-      if (ctx.dialect === 'postgresql') {
+      if (supportsReturning(ctx.dialect)) {
         const rows = await ctx.drizzle
           .insert(joinTable)
           .values(values)
@@ -66,6 +67,7 @@ export const withMembers = (
         return rows[0]
       }
 
+      // MySQL: no RETURNING — insert then select back
       await ctx.drizzle.insert(joinTable).values(values)
       const rows = await ctx.drizzle
         .select()
