@@ -365,10 +365,24 @@ export type CustomQueryFn<D extends Dialect = Dialect> =
 /**
  * Constraint type for custom query function records.
  * Each entry is a factory: receives ctx, returns the actual query function.
+ *
+ * @remarks `ctx: any` is intentional — user-defined query factories have
+ * arbitrary signatures and may compose mixins from different modules.
+ * Typing ctx here would create circular imports between types.ts and
+ * the mixin modules. The typed `RepositoryContext<D>` alias exists for
+ * consumers who want narrower typing on individual queries.
  */
 export type QueriesConfig = Record<string, (ctx: any) => (...args: any[]) => any>
 
-/** Default CRUD operations present on every store/repository. */
+/**
+ * Default CRUD operations present on every store/repository.
+ *
+ * @remarks Return types are `Promise<any>` because the row shape depends
+ * on the Drizzle table definition and column annotations (hidden, readonly).
+ * TypeScript cannot express "the SELECT projection of table T minus hidden
+ * columns" without dependent types. A future `Store<T>` generic could narrow
+ * these via `InferSelectModel<T>`, but that's a separate initiative.
+ */
 export type DefaultCRUD = {
   find: (filters: Record<string, any>, opts?: QueryOptions) => Promise<any[]>
   findAll: (opts?: QueryOptions) => Promise<any[]>
