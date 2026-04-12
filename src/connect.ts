@@ -166,6 +166,17 @@ import { sql } from 'drizzle-orm'
 
 /**
  * Create a `withTransaction` function bound to a Drizzle db instance.
+ *
+ * SQLite (better-sqlite3) note: Drizzle's `db.transaction()` is synchronous
+ * and rejects async callbacks. We use manual BEGIN/COMMIT/ROLLBACK instead.
+ * This is safe for better-sqlite3 because it operates on a single synchronous
+ * connection — all statements within the callback execute serially on the
+ * same connection, and the BEGIN/COMMIT brackets them correctly.
+ *
+ * The callback receives the `db` instance as `tx`. For better-sqlite3 this
+ * is the same object (single connection), but callers should use `tx` to
+ * stay consistent with the PostgreSQL/MySQL transaction pattern where `tx`
+ * is a distinct scoped handle.
  */
 const createWithTransaction = (db: any, dialect: Dialect) => {
   if (dialect === 'sqlite') {
