@@ -4,6 +4,15 @@ All notable changes to Storium are documented here.
 
 This project uses [Semantic Versioning](https://semver.org/). Pre-1.0 releases may include breaking changes in minor versions.
 
+## 0.14.14
+
+- Rewrite README and docs to reflect current `defineStore` + native Drizzle API (removed all `defineTable` DSL references)
+- Remove obsolete doc files: `column-naming.md`, `column-reference.md`, `raw-columns.md`
+- Rewrite `api-reference.md` to match current exports
+- Update `relationships.md`, `validation.md`, `why-storium.md`, `custom-queries.md`, `migrations.md` for current API
+- Fix missing `await` on `.rejects.toThrow()` in belongsTo/hasMany tests (Vitest 3 compat)
+- Improve package.json metadata: add keywords, switch repo URL to HTTPS
+
 ## 0.14.13
 
 - Harden connection lifecycle: clean up pool on init errors, allow disconnect retry on failure, preserve original error when SQLite ROLLBACK fails
