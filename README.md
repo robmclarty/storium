@@ -4,7 +4,7 @@ A lightweight, database-agnostic storage toolkit built on [Drizzle](https://orm.
 
 I built Storium because Drizzle gives you a fantastic query builder, but every project still needs the same scaffolding on top of it: validation, sanitization, CRUD operations, migration workflows, and some coherent pattern tying it all together. I kept rebuilding that scaffolding. Poorly, at first. Then well enough that I stopped wanting to rewrite it, which felt like a milestone worth shipping.
 
-Define your schema once with `defineTable()` and Storium generates TypeScript types, Zod schemas, and JSON Schema from the same column definitions. Wrap it with `defineStore()` to get standard CRUD, custom query hooks powered by Drizzle's query builder, and a validation pipeline that runs on every write. One source of truth, every layer covered. No more redeclaring the same shape in three different formats and hoping they don't drift apart over time.
+Define your tables with native Drizzle, then wrap them with `defineStore()` to layer on column annotations, validation, transforms, and a full CRUD repository. Storium generates Zod schemas and JSON Schema from Drizzle's column metadata — one source of truth, every layer covered. No more redeclaring the same shape in three different formats and hoping they don't drift apart over time.
 
 The goal is a data-access layer that's structured enough to keep things consistent and predictable, but flexible enough that you're never fighting it. You define the stores, the queries, the transforms. Storium just makes it harder to stray from the pattern -- especially six months in when the codebase would have otherwise quietly rotted into three different ways of talking to the database.
 
@@ -20,20 +20,25 @@ npm install better-sqlite3 # SQLite
 ```
 
 ```typescript
-import { storium } from 'storium'
+import { pgTable, uuid, varchar } from 'drizzle-orm/pg-core'
+import { storium, defineStore } from 'storium'
 
+// 1. Define a native Drizzle table
+const usersTable = pgTable('users', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  email: varchar('email', { length: 255 }).notNull(),
+  name: varchar('name', { length: 255 }),
+})
+
+// 2. Connect and create a store
 const db = storium.connect({
   dialect: 'postgresql',
   url: process.env.DATABASE_URL,
 })
 
-const usersTable = db.defineTable('users').columns({
-  id:    { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
-  email: { type: 'varchar', maxLength: 255, required: true },
-  name:  { type: 'varchar', maxLength: 255 },
+const users = db.defineStore(usersTable, {
+  columns: { email: { required: true } },
 })
-
-const users = db.defineStore(usersTable)
 
 const user = await users.create({ email: 'alice@example.com', name: 'Alice' })
 const found = await users.findById(user.id)
@@ -42,47 +47,51 @@ const updated = await users.update(user.id, { name: 'Alice B.' })
 
 ## Features
 
-- **Single source of truth** — one schema definition drives TypeScript types, JSON Schema, Zod schemas, and database migrations
+- **Single source of truth** — Drizzle column metadata drives Zod schemas, JSON Schema, and the prep pipeline automatically
 - **Repository pattern** — default CRUD with extensible custom queries
 - **Three-tier validation** — JSON Schema for the HTTP edge, Zod for runtime, prep pipeline for business rules
 - **Database agnostic** — PostgreSQL, MySQL, and SQLite via Drizzle
 - **Composable mixins** — `belongsTo`, `hasMany`, `hasOne`, `withMembers`, `withPagination`, `withCache`, `transaction`
-- **Soft delete** — built-in via `.softDelete()` chain on `defineTable`
+- **Soft delete** — built-in via `softDelete: true` in store config
 - **Fastify integration** — `toJsonSchema()` for route validation
 - **Migration tooling** — thin CLI wrapping drizzle-kit
 - **Stands back** — Storium doesn't try to own your architecture. It gives you tools and gets out of the way.
 
 ## Core Concepts
 
-### Column Definitions
+### Column Annotations
 
-Three modes for every column, depending on how much control you need:
+Columns are defined with native Drizzle — types, defaults, constraints, indexes are all Drizzle's domain. Storium adds a thin annotation layer on top for access control and validation:
 
 ```typescript
-// DSL (90% of cases — just declare what it is)
-email: { type: 'varchar', maxLength: 255 }
-
-// DSL + custom (one Drizzle tweak on top)
-email: { type: 'varchar', maxLength: 255, custom: col => col.unique() }
-
-// Raw (full Drizzle control — Storium steps aside entirely)
-meta: { raw: () => jsonb('meta').default({}) }
+const userStore = defineStore(usersTable, {
+  columns: {
+    email:     { required: true, validate: (v, test) => test(v, 'is_email') },
+    password:  { hidden: true, transform: hashPassword },
+    createdAt: { readonly: true },
+    updatedAt: { readonly: true },
+  },
+})
 ```
 
-Column metadata (`readonly`, `hidden`, `required`, `transform`, `validate`) works with all modes. The `transform` callback runs before validation and is where you'd put sanitization (trim, lowercase), enrichment, or any other pre-save logic. Basically anything you'd otherwise scatter across your route handlers ;)
+| Annotation | Effect |
+|------------|--------|
+| `readonly` | Excluded from create and update operations |
+| `hidden` | Excluded from SELECT results (still writable) |
+| `required` | Must be provided on create |
+| `transform` | Runs before validation — sanitization, hashing, enrichment |
+| `validate` | Custom validation using the `test()` API |
 
 ### Custom Queries
 
 This is where Storium really earns its keep. Custom queries receive `ctx` with the database handle and all default CRUD operations. You can override defaults by name. `ctx` always has the originals, so you can compose on top of them rather than starting from scratch:
 
 ```typescript
-const usersTable = db.defineTable('users').columns(columns)
-
-const users = db.defineStore(usersTable).queries({
+const users = db.defineStore(usersTable, { columns }).queries({
   // Override create — hash password before insert
   create: (ctx) => async (input, opts) => {
     const hashed = { ...input, password: await hash(input.password) }
-    return ctx.create(hashed, { ...opts, force: true })
+    return ctx.create(hashed, { ...opts, skipPrep: true })
   },
 
   // New query — just write Drizzle like you normally would
@@ -119,29 +128,11 @@ app.post('/users', {
 const extended = createSchema.zod.extend({ extra: z.string() })
 ```
 
-### Index DSL
-
-```typescript
-indexes: {
-  email: { unique: true },                         // → users_email_unique
-  school_id: {},                                   // → users_school_id_idx
-  school_role: { columns: ['school_id', 'role'] }, // → users_school_role_idx
-  active_email: {                                  // Partial index
-    columns: ['email'],
-    unique: true,
-    where: (table) => isNull(table.deleted_at),
-  },
-  search: {                                        // Raw (full Drizzle control)
-    raw: (table) => index('search_gin').using('gin', table.search_vector),
-  },
-}
-```
-
 ## Scaling Up
 
-The Quick Start uses `db.defineTable()` + `db.defineStore()` — the simplest path. But as a project grows, you may want schema definitions separated from store logic. Three reasons:
+The Quick Start uses `db.defineStore()` — the simplest path. But as a project grows, you may want schema definitions separated from store logic. Three reasons:
 
-- **Migration tooling** — `drizzle-kit` imports schema files at module level, before any database connection exists. Standalone `defineTable()` files work at module scope; `defineStore()` can't because it requires a live db connection (think of the table as the blueprint, and the store as the actual construction).
+- **Migration tooling** — `drizzle-kit` imports schema files at module level, before any database connection exists. Standalone Drizzle table files work at module scope; store wiring happens at connect time.
 - **Organization** — Schemas, queries, and wiring live in separate files. Easier to navigate when you have 50+ tables.
 - **Testability** — Store definitions are inert DTOs. You can unit-test query functions or compose stores without a live database.
 
@@ -150,43 +141,29 @@ The pattern looks like this:
 ```
 entities/
 └── users/
-    ├── user.table.ts     ← Drizzle table definition (drives migrations)
-    ├── user.mixins.ts    ← reusable query patterns
-    ├── user.queries.ts   ← query functions
-    └── user.store.ts     ← defineStore (bundles schema + queries)
-database.ts               ← connect + register all stores
+    ├── user.table.ts     <- Drizzle table definition (drives migrations)
+    ├── user.queries.ts   <- query functions
+    └── user.store.ts     <- defineStore (bundles table + annotations + queries)
+database.ts               <- connect + register all stores
 ```
 
-**Schema file** — importable by drizzle-kit for migration generation. Uses `validate` and `transform` to enforce business rules at the data layer:
+**Schema file** — importable by drizzle-kit for migration generation. Pure Drizzle, no storium runtime needed:
 
 ```typescript
 // entities/users/user.table.ts
-import { defineTable } from 'storium'
+import { pgTable, uuid, varchar, timestamp } from 'drizzle-orm/pg-core'
 
-export const usersTable = defineTable('users').columns({
-  id:    { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
-  email: {
-    type: 'varchar', maxLength: 255, required: true,
-    transform: (v) => String(v).trim().toLowerCase(),
-    validate: (v, test) => {
-      test(v, 'not_empty', 'Email cannot be empty')
-      test(v, 'is_email')
-    },
-  },
-  name:  { type: 'varchar', maxLength: 255 },
-  slug:  {
-    type: 'varchar', maxLength: 100, required: true,
-    transform: (v) => String(v).trim().toLowerCase().replace(/\s+/g, '-'),
-    validate: (v, test) => {
-      test(v, 'is_slug', 'Slug must be lowercase letters, numbers, and hyphens')
-    },
-  },
-}).indexes({ email: { unique: true } })
+export const usersTable = pgTable('users', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  email: varchar('email', { length: 255 }).notNull().unique(),
+  name: varchar('name', { length: 255 }),
+  slug: varchar('slug', { length: 100 }).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+})
 ```
 
-`transform` runs before `validate` — sanitize first, then check. Built-in assertions like `is_email` and `not_empty` are always available. Custom assertions like `is_slug` are registered at connect time (see database file below).
-
-**Store file** — bundles the schema with queries into an inert DTO:
+**Store file** — bundles the table with annotations and queries into an inert DTO. `transform` runs before `validate` — sanitize first, then check. Built-in assertions like `is_email` and `not_empty` are always available. Custom assertions like `is_slug` are registered at connect time (see database file below):
 
 ```typescript
 // entities/users/user.store.ts
@@ -195,7 +172,27 @@ import { usersTable } from './user.table'
 import { schoolsTable } from '../schools/school.table'
 import { eq, ilike } from 'drizzle-orm'
 
-export const userStore = defineStore(usersTable).queries({
+export const userStore = defineStore(usersTable, {
+  columns: {
+    email: {
+      required: true,
+      transform: (v) => String(v).trim().toLowerCase(),
+      validate: (v, test) => {
+        test(v, 'not_empty', 'Email cannot be empty')
+        test(v, 'is_email')
+      },
+    },
+    slug: {
+      required: true,
+      transform: (v) => String(v).trim().toLowerCase().replace(/\s+/g, '-'),
+      validate: (v, test) => {
+        test(v, 'is_slug', 'Slug must be lowercase letters, numbers, and hyphens')
+      },
+    },
+    createdAt: { readonly: true },
+    updatedAt: { readonly: true },
+  },
+}).queries({
   ...belongsTo(schoolsTable, 'school_id', { alias: 'school' }),
 
   findByEmail: (ctx) => async (email: string) =>
@@ -239,23 +236,6 @@ npm install storium drizzle-orm@0.45 drizzle-kit@0.31 zod@4
 ```
 
 Database drivers (`pg`, `mysql2`, `better-sqlite3`) are optional peers — install whichever one matches your dialect.
-
-### defineTable Calling Conventions
-
-`defineTable` has three calling conventions depending on how you manage the dialect:
-
-```typescript
-// Explicit dialect (curried) — no config file needed
-const usersTable = defineTable('postgresql')('users').columns(columns).indexes({...})
-
-// Auto-detect dialect from drizzle.config.ts
-const usersTable = defineTable('users').columns(columns)
-
-// Bound function for reuse across multiple tables
-const dt = defineTable('postgresql')
-const usersTable = dt('users').columns(columns)
-const postsTable = dt('posts').columns(columns)
-```
 
 ## Mixins
 
@@ -321,12 +301,18 @@ const result = await paginatedUsers.paginate({ status: 'active' }, { page: 2, pa
 
 ### Soft Delete
 
-Built-in soft delete via the `.softDelete()` chain method on `defineTable`. Adds a `deletedAt` column, auto-filters deleted rows on all reads, and makes `destroy` perform a soft delete:
+Built-in soft delete via the `softDelete: true` config option. Requires a `deletedAt` column on the Drizzle table. Auto-filters deleted rows on all reads, and makes `destroy` perform a soft delete:
 
 ```typescript
-const usersTable = defineTable('users')
-  .columns({ ... })
-  .softDelete()
+import { pgTable, uuid, varchar, timestamp } from 'drizzle-orm/pg-core'
+
+const usersTable = pgTable('users', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  email: varchar('email', { length: 255 }).notNull(),
+  deletedAt: timestamp('deleted_at'),
+})
+
+const userStore = defineStore(usersTable, { softDelete: true })
 
 // destroy = soft delete (sets deletedAt)
 await users.destroy(id)
@@ -414,7 +400,7 @@ export default {
 Storium ships a thin CLI wrapper for convenience:
 
 ```bash
-npx storium generate   # Diff schemas → create SQL migration
+npx storium generate   # Diff schemas -> create SQL migration
 npx storium migrate    # Apply pending migrations
 npx storium push       # Push directly (dev only)
 npx storium status     # Check migration state
@@ -438,12 +424,6 @@ db.drizzle.execute(sql`SELECT 1`)
 // Bring your own Drizzle (dialect auto-detected from instance type)
 import { storium } from 'storium'
 const db = storium.fromDrizzle(myDrizzleInstance)
-
-// Raw columns bypass the DSL entirely
-meta: { raw: () => jsonb('meta').default({}) }
-
-// Raw indexes bypass the index DSL entirely
-search: { raw: (table) => index('search_gin').using('gin', table.search_vector) }
 
 // Custom queries give you the full Drizzle query builder
 findByEmail: (ctx) => async (email) =>
