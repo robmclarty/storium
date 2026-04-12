@@ -4,6 +4,10 @@
     "bin/**/*.ts",
     "src/migrate/index.ts",
     "oxlint.config.ts",
+    "vitest.integration.config.ts",
+    "test/integration/**/*.test.ts",
+    "test/tables.ts",
+    "test/dialects.ts",
     "examples/*/app.ts",
     "examples/*/storium.config.ts",
     "examples/*/seeds/**/*.ts",
@@ -20,7 +24,8 @@
     "@libsql/client",
     "@testcontainers/mysql",
     "@testcontainers/postgresql",
-    "fastify"
+    "fastify",
+    "testcontainers"
   ],
   "rules": {
     "unused-dev-dependencies": "error"
@@ -29,10 +34,12 @@
     "ignore": [
       "examples/**",
       "**/__tests__/**",
+      "test/integration/**",
       "src/mixins/hasMany.ts",
       "src/mixins/hasOne.ts",
       "src/schema/zod.ts",
-      "src/schema/json.ts"
+      "src/schema/json.ts",
+      "src/store/repository.ts"
     ]
   },
   "health": {
