@@ -40,7 +40,7 @@ try {
 import { generate, migrate, push, status } from '../src/migrate/commands'
 import { seed } from '../src/migrate/seed'
 import { connect } from '../src/connect'
-import { loadConfig } from '../src/core/configLoader'
+import { loadConfig } from '../src/migrate/configLoader'
 
 // --------------------------------------------------------------- Helpers --
 

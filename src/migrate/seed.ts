@@ -20,7 +20,7 @@
 import path from 'node:path'
 import { glob } from 'glob'
 import { isStoreDefinition } from '../core/defineStore'
-import { loadConfig } from '../core/configLoader'
+import { loadConfig } from './configLoader'
 import { isTable, getTableName } from 'drizzle-orm/table'
 import type { StoriumInstance, StoriumConfig, Dialect } from '../core/types'
 

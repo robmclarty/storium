@@ -28,7 +28,7 @@ import { resolve as resolvePath } from 'node:path'
 import { existsSync, readdirSync } from 'node:fs'
 import { glob } from 'glob'
 import type { StoriumConfig, StoriumInstance } from '../core/types'
-import { loadConfig, resolveConfigPath } from '../core/configLoader'
+import { loadConfig, resolveConfigPath } from './configLoader'
 
 // --------------------------------------------------------------- Types --
 

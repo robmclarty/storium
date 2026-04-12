@@ -14,8 +14,8 @@
 
 import { resolve } from 'node:path'
 import { existsSync } from 'node:fs'
-import type { StoriumConfig } from './types'
-import { ConfigError } from './errors'
+import type { StoriumConfig } from '../core/types'
+import { ConfigError } from '../core/errors'
 
 // ---------------------------------------------------- Path Resolution --
 
