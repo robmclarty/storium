@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeAll } from 'vitest'
 import { storium, defineStore, withMembers } from 'storium'
+import type { TableDef } from '../../types'
 import { sqliteTable, text } from 'drizzle-orm/sqlite-core'
 import { sql } from 'drizzle-orm'
 
@@ -37,7 +38,7 @@ beforeAll(() => {
   `)
 
   teams = db.defineStore(teamsTable).queries({
-    ...withMembers(membersTable, 'team_id', 'user_id'),
+    ...withMembers(membersTable as unknown as TableDef, 'team_id', 'user_id'),
   })
 })
 

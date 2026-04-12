@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeAll } from 'vitest'
 import { storium, defineStore, belongsTo } from 'storium'
+import type { TableDef } from '../../types'
 import { sqliteTable, text } from 'drizzle-orm/sqlite-core'
 import { sql } from 'drizzle-orm'
 
@@ -40,7 +41,7 @@ beforeAll(() => {
   authors = db.defineStore(authorsTable)
 
   posts = db.defineStore(postsTable).queries({
-    ...belongsTo(authorsTable, 'author_id', {
+    ...belongsTo(authorsTable as unknown as TableDef, 'author_id', {
       alias: 'author',
       select: ['name', 'email'],
     }),

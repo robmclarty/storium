@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeAll } from 'vitest'
 import { storium, defineStore, hasOne } from 'storium'
+import type { TableDef } from '../../types'
 import { sqliteTable, text } from 'drizzle-orm/sqlite-core'
 import { sql } from 'drizzle-orm'
 
@@ -40,7 +41,7 @@ beforeAll(async () => {
   profiles = db.defineStore(profilesTable)
 
   users = db.defineStore(usersTable).queries({
-    ...hasOne(profilesTable, 'user_id', { alias: 'profile' }),
+    ...hasOne(profilesTable as unknown as TableDef, 'user_id', { alias: 'profile' }),
   })
 })
 
@@ -85,7 +86,7 @@ describe('hasOne', () => {
     })
 
     const users2 = db.defineStore(usersTable2).queries({
-      ...hasOne(profilesTable2, 'user_id', { alias: 'profile', select: ['bio'] }),
+      ...hasOne(profilesTable2 as unknown as TableDef, 'user_id', { alias: 'profile', select: ['bio'] }),
     })
 
     const [alice] = await users2.find({ name: 'Alice' })
