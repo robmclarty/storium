@@ -28,7 +28,7 @@ import { ConfigError } from './core/errors'
 import { isStoreDefinition, hasMeta, attachStoriumMeta } from './core/defineStore'
 import { createCreateRepository } from './core/createRepository'
 import { createAssertionRegistry } from './core/test'
-import { buildSchemaSet } from './core/runtimeSchema'
+import { buildSchemaSet } from './core/runtime.schema'
 
 // createRequire is used intentionally here: connect() is synchronous, and the
 // dialect-specific drivers (pg, mysql2, better-sqlite3) must be loaded lazily

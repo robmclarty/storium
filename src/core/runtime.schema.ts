@@ -20,8 +20,8 @@ import type {
   AssertionRegistry,
 } from './types'
 import { ValidationError } from './errors'
-import { buildZodSchemas } from './zodSchema'
-import { buildJsonSchemas } from './jsonSchema'
+import { buildZodSchemas } from './zod.schema'
+import { buildJsonSchemas } from './json.schema'
 
 // ------------------------------------------------------------ Helpers --
 

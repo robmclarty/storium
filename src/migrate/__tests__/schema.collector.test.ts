@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import path from 'node:path'
-import { collectSchemas } from '../schemaCollector'
+import { collectSchemas } from '../schema.collector'
 
 const fixturesDir = path.resolve(__dirname, 'fixtures')
 

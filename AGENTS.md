@@ -18,9 +18,9 @@ storium/
 │       ├── configLoader.ts     # loadConfig() — reads config from drizzle.config.ts
 │       ├── createRepository.ts # CRUD builder + custom query context (ctx)
 │       ├── prep.ts             # Validation/transform pipeline (filter → transform → validate → required)
-│       ├── runtimeSchema.ts    # buildSchemaSet() → { createSchema, updateSchema, selectSchema, fullSchema } RuntimeSchema objects
-│       ├── zodSchema.ts        # Zod schema generation from Drizzle column introspection + annotations
-│       ├── jsonSchema.ts       # JSON Schema generation from Drizzle column introspection
+│       ├── runtime.schema.ts   # buildSchemaSet() → { createSchema, updateSchema, selectSchema, fullSchema } RuntimeSchema objects
+│       ├── zod.schema.ts       # Zod schema generation from Drizzle column introspection + annotations
+│       ├── json.schema.ts      # JSON Schema generation from Drizzle column introspection
 │       ├── errors.ts           # ValidationError, ConfigError, SchemaError
 │       └── test.ts             # createAssertionRegistry(), BUILTIN_ASSERTIONS, createTestFn()
 │   ├── mixins/
@@ -33,7 +33,7 @@ storium/
 │   │   └── withTransaction.ts  # createWithTransaction() helper
 │   └── migrate/
 │       ├── commands.ts         # generate(), migrate(), push(), status() — drizzle-kit CLI + drizzle-orm migrators
-│       ├── schemaCollector.ts  # collectSchemas(globs) — imports schema files, extracts storium tables + raw Drizzle tables
+│       ├── schema.collector.ts # collectSchemas(globs) — imports schema files, extracts storium tables + raw Drizzle tables
 │       └── seed.ts             # defineSeed(), seed(seedsDir, db)
 ├── examples/
 │   ├── basic/                  # In-memory CRUD fundamentals
