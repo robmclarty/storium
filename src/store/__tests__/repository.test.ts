@@ -269,10 +269,10 @@ describe('prep pipeline integration', () => {
     await expect(users.create({ name: 'NoEmail' })).rejects.toThrow()
   })
 
-  it('bypasses prep with force: true', async () => {
+  it('bypasses prep with skipPrep: true', async () => {
     const user = await users.create(
-      { id: 'custom-id', email: 'force@test.com' },
-      { force: true }
+      { id: 'custom-id', email: 'skipPrep@test.com' },
+      { skipPrep: true }
     )
     expect(user.id).toBe('custom-id')
   })
@@ -363,7 +363,7 @@ describe('composite primary keys', () => {
   it('creates a record with composite PK', async () => {
     const record = await memberships.create(
       { user_id: 'u1', group_id: 'g1', role: 'admin' },
-      { force: true }
+      { skipPrep: true }
     )
     expect(record.user_id).toBe('u1')
     expect(record.group_id).toBe('g1')
@@ -373,7 +373,7 @@ describe('composite primary keys', () => {
   it('findById with composite PK array', async () => {
     await memberships.create(
       { user_id: 'u1', group_id: 'g1', role: 'admin' },
-      { force: true }
+      { skipPrep: true }
     )
     const found = await memberships.findById(['u1', 'g1'])
     expect(found).not.toBeNull()
@@ -388,7 +388,7 @@ describe('composite primary keys', () => {
   it('update with composite PK', async () => {
     await memberships.create(
       { user_id: 'u1', group_id: 'g1', role: 'admin' },
-      { force: true }
+      { skipPrep: true }
     )
     const updated = await memberships.update(
       ['u1', 'g1'],
@@ -400,7 +400,7 @@ describe('composite primary keys', () => {
   it('destroy with composite PK', async () => {
     await memberships.create(
       { user_id: 'u2', group_id: 'g2', role: 'viewer' },
-      { force: true }
+      { skipPrep: true }
     )
     await memberships.destroy(['u2', 'g2'])
     const found = await memberships.findById(['u2', 'g2'])
@@ -414,7 +414,7 @@ describe('composite primary keys', () => {
   it('ref returns composite PK as array', async () => {
     await memberships.create(
       { user_id: 'u1', group_id: 'g1', role: 'admin' },
-      { force: true }
+      { skipPrep: true }
     )
     const pk = await memberships.ref({ user_id: 'u1', group_id: 'g1' })
     expect(pk).toEqual(['u1', 'g1'])

@@ -219,7 +219,7 @@ store.destroyAll(filters, opts?)
   offset?: number
   orderBy?: OrderBySpec | OrderBySpec[]
   includeHidden?: boolean
-  force?: boolean                    // Bypass prep pipeline
+  skipPrep?: boolean                 // Bypass prep pipeline
   where?: (table) => SQL             // Drizzle WHERE clause
   conflictTarget?: string[]          // Upsert conflict columns
 }

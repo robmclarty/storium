@@ -68,9 +68,9 @@ describe('prep pipeline', () => {
     expect(result).toEqual({ name: 'Alice' })
   })
 
-  it('passes input through raw when force is true', async () => {
+  it('passes input through raw when skipPrep is true', async () => {
     const raw = { anything: 'goes', foo: 42 }
-    const result = await prep(raw, { force: true })
+    const result = await prep(raw, { skipPrep: true })
 
     expect(result).toBe(raw)
   })

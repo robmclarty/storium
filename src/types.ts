@@ -6,6 +6,7 @@
  * runtime schema types, and compile-time generic type utilities.
  */
 
+import type { SQL } from 'drizzle-orm'
 import type { ZodType, z as ZodNamespace } from 'zod'
 import type { PgDatabase } from 'drizzle-orm/pg-core'
 import type { MySqlDatabase } from 'drizzle-orm/mysql-core'
@@ -107,8 +108,8 @@ export type ColumnAnnotation = {
   hidden?: boolean
   /** Must be provided on create. */
   required?: boolean
-  transform?: (value: any) => unknown | Promise<unknown>
-  validate?: (value: any, test: TestFn) => void
+  transform?: (value: unknown) => unknown | Promise<unknown>
+  validate?: (value: unknown, test: TestFn) => void
 }
 
 /** A record of column names to their annotations. */
@@ -264,14 +265,12 @@ export type OrderBySpec = {
   direction?: 'asc' | 'desc'
 }
 
-/** Options for the `prep` pipeline (used by `create` and `update`). */
-export type PrepOptions = {
-  /** Skip the entire pipeline and pass input through raw. Default: false. */
-  force?: boolean
-  /** Enforce required fields. Default: true for create, false for update. */
-  validateRequired?: boolean
-  /** Strip non-writable keys from input. Default: false for create, true for update. */
-  onlyWritable?: boolean
+/**
+ * Public query options available to application code calling store methods.
+ * Does not include escape hatches like `skipPrep` or `includeHidden` —
+ * those are only available inside custom queries via `PrepOptions`.
+ */
+export type QueryOptions = {
   /** Participate in an external transaction. */
   tx?: any
   /** Limit the number of rows returned (find, findAll). */
@@ -284,22 +283,34 @@ export type PrepOptions = {
    */
   orderBy?: OrderBySpec | OrderBySpec[]
   /**
-   * Include hidden columns in the result. Default: false.
-   * Use this for specific operations that need sensitive data (e.g. password
-   * hash comparison during authentication). The flag is intentionally verbose
-   * so it stands out in code review.
-   */
-  includeHidden?: boolean
-  /**
    * Additional Drizzle WHERE clause. Receives the table for column references.
    * AND'd with any equality filters from `find()`.
    */
-  where?: (table: any) => any
+  where?: (table: any) => SQL | undefined
   /**
    * Columns to target for conflict detection in `upsert()`.
    * Defaults to the primary key. Pass column names for unique constraint targets.
    */
   conflictTarget?: string[]
+}
+
+/**
+ * Internal options extending QueryOptions with escape hatches.
+ * Available inside custom queries via `ctx` methods, but not on the public Store type.
+ */
+export type PrepOptions = QueryOptions & {
+  /** Skip the entire prep pipeline and pass input through unprocessed. Default: false. */
+  skipPrep?: boolean
+  /** Enforce required fields. Default: true for create, false for update. */
+  validateRequired?: boolean
+  /** Strip non-writable keys from input. Default: false for create, true for update. */
+  onlyWritable?: boolean
+  /**
+   * Include hidden columns in the result. Default: false.
+   * Use this for specific operations that need sensitive data (e.g. password
+   * hash comparison during authentication). Only available inside custom queries.
+   */
+  includeHidden?: boolean
 }
 
 /** A primary key value: single column or composite (array of values in PK column order). */
@@ -359,23 +370,23 @@ export type QueriesConfig = Record<string, (ctx: any) => (...args: any[]) => any
 
 /** Default CRUD operations present on every store/repository. */
 export type DefaultCRUD = {
-  find: (filters: Record<string, any>, opts?: PrepOptions) => Promise<any[]>
-  findAll: (opts?: PrepOptions) => Promise<any[]>
-  findOne: (filters: Record<string, any>, opts?: PrepOptions) => Promise<any | null>
-  findById: (id: PkValue, opts?: PrepOptions) => Promise<any | null>
-  findByIdIn: (ids: (string | number)[], opts?: PrepOptions) => Promise<any[]>
-  create: (input: Record<string, any>, opts?: PrepOptions) => Promise<any>
-  createMany: (inputs: Record<string, any>[], opts?: PrepOptions) => Promise<any[]>
-  update: (id: PkValue, input: Record<string, any>, opts?: PrepOptions) => Promise<any>
-  upsert: (input: Record<string, any>, opts?: PrepOptions) => Promise<any>
-  destroy: (id: PkValue, opts?: PrepOptions) => Promise<void>
-  destroyAll: (filters: Record<string, any>, opts?: PrepOptions) => Promise<number>
+  find: (filters: Record<string, any>, opts?: QueryOptions) => Promise<any[]>
+  findAll: (opts?: QueryOptions) => Promise<any[]>
+  findOne: (filters: Record<string, any>, opts?: QueryOptions) => Promise<any | null>
+  findById: (id: PkValue, opts?: QueryOptions) => Promise<any | null>
+  findByIdIn: (ids: (string | number)[], opts?: QueryOptions) => Promise<any[]>
+  create: (input: Record<string, any>, opts?: QueryOptions) => Promise<any>
+  createMany: (inputs: Record<string, any>[], opts?: QueryOptions) => Promise<any[]>
+  update: (id: PkValue, input: Record<string, any>, opts?: QueryOptions) => Promise<any>
+  upsert: (input: Record<string, any>, opts?: QueryOptions) => Promise<any>
+  destroy: (id: PkValue, opts?: QueryOptions) => Promise<void>
+  destroyAll: (filters: Record<string, any>, opts?: QueryOptions) => Promise<number>
   /** Count rows matching filters and/or a where clause. */
-  count: (filters?: Record<string, any>, opts?: PrepOptions) => Promise<number>
+  count: (filters?: Record<string, any>, opts?: QueryOptions) => Promise<number>
   /** Check if any row matches the filters and/or where clause. */
-  exists: (filters: Record<string, any>, opts?: PrepOptions) => Promise<boolean>
+  exists: (filters: Record<string, any>, opts?: QueryOptions) => Promise<boolean>
   /** Look up a row by filter and return its primary key value. */
-  ref: (filter: Record<string, any>, opts?: PrepOptions) => Promise<PkValue>
+  ref: (filter: Record<string, any>, opts?: QueryOptions) => Promise<PkValue>
 }
 
 /**

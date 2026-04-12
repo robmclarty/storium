@@ -12,7 +12,7 @@
  * The pipeline accumulates all errors before throwing a single ValidationError,
  * so consumers get every problem in one round trip.
  *
- * `force: true` skips the entire pipeline and passes input through raw.
+ * `skipPrep: true` skips the entire pipeline and passes input through unprocessed.
  */
 
 import type {
@@ -231,7 +231,7 @@ const checkRequired = (
  * and assertion registry.
  *
  * The returned function processes raw input through the full pipeline
- * (filter → transform → validate → required) unless `force: true` is set.
+ * (filter → transform → validate → required) unless `skipPrep: true` is set.
  */
 export const createPrepFn = (
   drizzleTable: any,
@@ -250,13 +250,13 @@ export const createPrepFn = (
     options: PrepOptions = {}
   ): Promise<Record<string, any>> => {
     const {
-      force = false,
+      skipPrep = false,
       validateRequired = true,
       onlyWritable = false,
     } = options
 
-    // Skip everything if forced
-    if (force) return input
+    // Skip everything if skipPrep is set
+    if (skipPrep) return input
 
     // Stage 0: Resolve any promise values in input
     const resolved = await resolveInput(input)

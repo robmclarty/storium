@@ -11,7 +11,7 @@
  * object, but `ctx.create` still references the original.
  */
 
-import { eq, and, or, inArray, asc, desc, sql, count as drizzleCount, isNull } from 'drizzle-orm'
+import { eq, and, or, inArray, asc, desc, sql, count as drizzleCount, isNull, type SQL } from 'drizzle-orm'
 import { z } from 'zod'
 import type {
   Dialect,
@@ -103,7 +103,7 @@ const buildDefaultCrud = (
    * adds `deletedAt IS NULL` unless `skipSoftDelete` is true.
    */
   const buildWhere = (filters: Record<string, any>, opts?: PrepOptions, skipSoftDelete = false) => {
-    const conditions: any[] = []
+    const conditions: SQL[] = []
 
     if (softDelete && !skipSoftDelete) {
       conditions.push(isNull(table.deletedAt))
@@ -120,7 +120,8 @@ const buildDefaultCrud = (
     }
 
     if (opts?.where) {
-      conditions.push(opts.where(table))
+      const clause = opts.where(table)
+      if (clause) conditions.push(clause)
     }
 
     if (conditions.length === 0) return undefined
@@ -208,9 +209,12 @@ const buildDefaultCrud = (
   const findAll = async (opts?: PrepOptions) => {
     let q = getDb(opts).select(getCols(opts)).from(table)
 
-    const conditions: any[] = []
+    const conditions: SQL[] = []
     if (softDelete) conditions.push(isNull(table.deletedAt))
-    if (opts?.where) conditions.push(opts.where(table))
+    if (opts?.where) {
+      const clause = opts.where(table)
+      if (clause) conditions.push(clause)
+    }
     if (conditions.length > 0) {
       q = q.where(conditions.length === 1 ? conditions[0] : and(...conditions))
     }
@@ -263,7 +267,7 @@ const buildDefaultCrud = (
 
   const create = async (input: Record<string, any>, opts?: PrepOptions) => {
     const prepared = await prep(input, {
-      force: opts?.force ?? false,
+      skipPrep: opts?.skipPrep ?? false,
       validateRequired: true,
       onlyWritable: false,
     })
@@ -330,7 +334,7 @@ const buildDefaultCrud = (
     opts?: PrepOptions
   ) => {
     const prepared = await prep(input, {
-      force: opts?.force ?? false,
+      skipPrep: opts?.skipPrep ?? false,
       validateRequired: false,
       onlyWritable: true,
     })
@@ -425,7 +429,7 @@ const buildDefaultCrud = (
 
     const preparedRows = await Promise.all(
       inputs.map(input => prep(input, {
-        force: opts?.force ?? false,
+        skipPrep: opts?.skipPrep ?? false,
         validateRequired: true,
         onlyWritable: false,
       }))
@@ -465,7 +469,7 @@ const buildDefaultCrud = (
 
   const upsert = async (input: Record<string, any>, opts?: PrepOptions) => {
     const prepared = await prep(input, {
-      force: opts?.force ?? false,
+      skipPrep: opts?.skipPrep ?? false,
       validateRequired: true,
       onlyWritable: false,
     })
