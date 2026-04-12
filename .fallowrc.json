@@ -30,7 +30,9 @@
       "examples/**",
       "**/__tests__/**",
       "src/mixins/hasMany.ts",
-      "src/mixins/hasOne.ts"
+      "src/mixins/hasOne.ts",
+      "src/core/schema.ts",
+      "src/core/json.schema.ts"
     ]
   },
   "health": {
