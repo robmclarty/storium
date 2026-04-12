@@ -315,8 +315,8 @@ export type QueryOptions<TTable = any> = {
 }
 
 /**
- * Internal options extending QueryOptions with escape hatches.
- * Available inside custom queries via `ctx` methods, but not on the public Store type.
+ * Extended options with escape hatches for the prep pipeline.
+ * Available inside custom queries via `ctx` methods. The public Store API uses `QueryOptions`.
  */
 export type PrepOptions = QueryOptions & {
   /** Skip the entire prep pipeline and pass input through unprocessed. Default: false. */
@@ -366,7 +366,7 @@ export type RepositoryContext<D extends Dialect = Dialect, TTable extends Table 
   schemas: SchemaSet
   /** The filter → transform → validate pipeline. */
   prep: (input: Record<string, any>, opts?: PrepOptions) => Promise<Record<string, any>>
-} & DefaultCRUD<TTable>
+} & DefaultCRUD<TTable, PrepOptions>
 
 /**
  * Shorthand for `RepositoryContext` — the context object passed to custom
@@ -402,24 +402,24 @@ export type QueriesConfig = Record<string, (ctx: any) => (...args: any[]) => any
  * to `InferInsertModel<TTable>`. When `TTable` is the base `Table` (default),
  * falls back to `any` / `Record<string, any>` for backward compatibility.
  */
-export type DefaultCRUD<TTable extends Table = Table> = {
-  find: (filters: Partial<InferInput<TTable>>, opts?: QueryOptions<TTable>) => Promise<InferRow<TTable>[]>
-  findAll: (opts?: QueryOptions<TTable>) => Promise<InferRow<TTable>[]>
-  findOne: (filters: Partial<InferInput<TTable>>, opts?: QueryOptions<TTable>) => Promise<InferRow<TTable> | null>
-  findById: (id: PkValue, opts?: QueryOptions<TTable>) => Promise<InferRow<TTable> | null>
-  findByIdIn: (ids: (string | number)[], opts?: QueryOptions<TTable>) => Promise<InferRow<TTable>[]>
-  create: (input: InferInput<TTable>, opts?: QueryOptions<TTable>) => Promise<InferRow<TTable>>
-  createMany: (inputs: InferInput<TTable>[], opts?: QueryOptions<TTable>) => Promise<InferRow<TTable>[]>
-  update: (id: PkValue, input: Partial<InferInput<TTable>>, opts?: QueryOptions<TTable>) => Promise<InferRow<TTable>>
-  upsert: (input: InferInput<TTable>, opts?: QueryOptions<TTable>) => Promise<InferRow<TTable>>
-  destroy: (id: PkValue, opts?: QueryOptions<TTable>) => Promise<InferRow<TTable>>
-  destroyAll: (filters: Partial<InferInput<TTable>>, opts?: QueryOptions<TTable>) => Promise<number>
+export type DefaultCRUD<TTable extends Table = Table, TOpts = QueryOptions<TTable>> = {
+  find: (filters: Partial<InferInput<TTable>>, opts?: TOpts) => Promise<InferRow<TTable>[]>
+  findAll: (opts?: TOpts) => Promise<InferRow<TTable>[]>
+  findOne: (filters: Partial<InferInput<TTable>>, opts?: TOpts) => Promise<InferRow<TTable> | null>
+  findById: (id: PkValue, opts?: TOpts) => Promise<InferRow<TTable> | null>
+  findByIdIn: (ids: (string | number)[], opts?: TOpts) => Promise<InferRow<TTable>[]>
+  create: (input: InferInput<TTable>, opts?: TOpts) => Promise<InferRow<TTable>>
+  createMany: (inputs: InferInput<TTable>[], opts?: TOpts) => Promise<InferRow<TTable>[]>
+  update: (id: PkValue, input: Partial<InferInput<TTable>>, opts?: TOpts) => Promise<InferRow<TTable>>
+  upsert: (input: InferInput<TTable>, opts?: TOpts) => Promise<InferRow<TTable>>
+  destroy: (id: PkValue, opts?: TOpts) => Promise<InferRow<TTable>>
+  destroyAll: (filters: Partial<InferInput<TTable>>, opts?: TOpts) => Promise<number>
   /** Count rows matching filters and/or a where clause. */
-  count: (filters?: Partial<InferInput<TTable>>, opts?: QueryOptions<TTable>) => Promise<number>
+  count: (filters?: Partial<InferInput<TTable>>, opts?: TOpts) => Promise<number>
   /** Check if any row matches the filters and/or where clause. */
-  exists: (filters: Partial<InferInput<TTable>>, opts?: QueryOptions<TTable>) => Promise<boolean>
+  exists: (filters: Partial<InferInput<TTable>>, opts?: TOpts) => Promise<boolean>
   /** Look up a row by filter and return its primary key value. */
-  ref: (filter: Partial<InferInput<TTable>>, opts?: QueryOptions<TTable>) => Promise<PkValue>
+  ref: (filter: Partial<InferInput<TTable>>, opts?: TOpts) => Promise<PkValue>
 }
 
 /**
