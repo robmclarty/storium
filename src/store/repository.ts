@@ -127,7 +127,7 @@ const buildDefaultCrud = (
     if (supportsReturning(dialect)) return
     const pkCols = Array.isArray(primaryKey) ? primaryKey : [primaryKey]
     for (const col of pkCols) {
-      if (prepared[col] == null && allColumns[col]?.defaultFn) {
+      if ((prepared[col] === null || prepared[col] === undefined) && allColumns[col]?.defaultFn) {
         prepared[col] = allColumns[col].defaultFn()
       }
     }
