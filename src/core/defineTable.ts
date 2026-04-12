@@ -65,6 +65,8 @@ export type StoriumMeta<TColumns extends ColumnsConfig = ColumnsConfig> = {
   primaryKey: string | string[] | undefined
   name: string
   schemas: SchemaSet<TColumns>
+  /** Whether this table uses soft delete. */
+  softDelete: boolean
 }
 
 /**
@@ -276,6 +278,14 @@ const buildTable = <TColumns extends ColumnsConfig>(config: BuildConfig): TableD
     ? injectTimestamps(columns) as TColumns
     : columns as unknown as TColumns
 
+  // Inject deletedAt column for soft delete (nullable timestamp, hidden)
+  if (options.softDelete === true && !('deletedAt' in resolvedColumns)) {
+    (resolvedColumns as any).deletedAt = {
+      type: 'timestamp' as const,
+      hidden: true,
+    }
+  }
+
   // Detect primary key early so composite PKs can skip .primaryKey() on individual columns
   const primaryKey = detectPrimaryKey(resolvedColumns, options.primaryKey)
   const isCompositePk = Array.isArray(primaryKey)
@@ -343,7 +353,7 @@ const buildTable = <TColumns extends ColumnsConfig>(config: BuildConfig): TableD
   // Attach storium metadata as a non-enumerable property on the Drizzle table.
   // drizzle-kit sees a real Drizzle table; storium code accesses table.storium.*
   Object.defineProperty(drizzleTable, 'storium', {
-    value: { columns: resolvedColumns, access, selectColumns, allColumns, primaryKey, name, schemas },
+    value: { columns: resolvedColumns, access, selectColumns, allColumns, primaryKey, name, schemas, softDelete: options.softDelete === true },
     enumerable: false,
     configurable: true,
     writable: false,
@@ -384,6 +394,10 @@ const attachChainMethods = (table: any, config: BuildConfig) => {
 
   define('timestamps', (enabled: false) =>
     buildTable({ ...config, options: { ...config.options, timestamps: enabled } })
+  )
+
+  define('softDelete', (enabled: boolean = true) =>
+    buildTable({ ...config, options: { ...config.options, softDelete: enabled } })
   )
 }
 

@@ -276,6 +276,8 @@ export type TableDef<TColumns extends ColumnsConfig = ColumnsConfig> = {
   primaryKey(...columns: string[]): TableDef<TColumns>
   /** Disable automatic timestamp columns. Returns a new TableDef (rebuilt). */
   timestamps(enabled: false): TableDef<TColumns>
+  /** Enable soft delete. Injects deletedAt column, auto-filters reads, soft destroy. */
+  softDelete(enabled?: boolean): TableDef<TColumns>
   /** Drizzle column access — any other property is a Drizzle column. */
   [key: string]: any
 }
@@ -632,6 +634,8 @@ export type TableBuilderConfig = {
   timestamps?: boolean
   /** Table-level access overrides (union with per-column settings). */
   access?: AccessConfig
+  /** Enable soft delete (injects deletedAt column, auto-filters reads, soft destroy). */
+  softDelete?: boolean
 }
 
 /**
