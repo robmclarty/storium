@@ -153,6 +153,28 @@ describe('find and findAll', () => {
     const results = await users.findAll({ limit: 2 })
     expect(results.length).toBeLessThanOrEqual(2)
   })
+
+  it('findAll supports multi-column orderBy', async () => {
+    await users.create({ email: 'a@test.com', name: 'Alice', age: 30 })
+    await users.create({ email: 'b@test.com', name: 'Alice', age: 25 })
+    await users.create({ email: 'c@test.com', name: 'Bob', age: 40 })
+
+    const results = await users.findAll({
+      orderBy: [
+        { column: 'name', direction: 'asc' },
+        { column: 'age', direction: 'desc' },
+      ],
+    })
+
+    expect(results).toHaveLength(3)
+    // Primary: name asc → Alice, Alice, Bob
+    // Tiebreak: age desc → Alice(30), Alice(25), Bob(40)
+    expect(results[0].name).toBe('Alice')
+    expect(results[0].age).toBe(30)
+    expect(results[1].name).toBe('Alice')
+    expect(results[1].age).toBe(25)
+    expect(results[2].name).toBe('Bob')
+  })
 })
 
 describe('ref', () => {
