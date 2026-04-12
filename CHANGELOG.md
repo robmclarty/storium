@@ -4,6 +4,15 @@ All notable changes to Storium are documented here.
 
 This project uses [Semantic Versioning](https://semver.org/). Pre-1.0 releases may include breaking changes in minor versions.
 
+## 0.14.5
+
+- Add `countWithDeleted()` and `paginateWithDeleted()` for soft-delete stores — `withPagination` now composes with soft-delete out of the box
+- Reduce `any` usage in mixins: type select column maps as `Record<string, Column>`, `where` returns as `SQL | undefined`, orderBy specs as `OrderBySpec`, cache wrapper args as `unknown[]`
+- Replace `withPagination`'s local `PaginateOpts` type with `QueryOptions` extension, removing `includeHidden` from the public pagination interface
+- Document structural `any` usages with `@remarks` JSDoc (QueriesConfig, DefaultCRUD, mixins, repository internals)
+- Add `docs/type-safety.md` explaining what is typed, what is intentionally `any`, and the future `Store<T>` generic path
+- Add multi-column `orderBy` array test
+
 ## 0.14.4
 
 - **Breaking:** Rename `force` option to `skipPrep` on PrepOptions (follows `validateRequired`/`onlyWritable`/`includeHidden` naming convention)
