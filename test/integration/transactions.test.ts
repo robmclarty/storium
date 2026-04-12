@@ -85,5 +85,20 @@ for (const dialect of getTestDialects()) {
       expect(found).not.toBeNull()
       expect(found.name).toBe('After')
     })
+
+    it('update within transaction returns correct data (UPDATE+SELECT path)', async () => {
+      const user = await users.create({ email: 'tx_update@test.com', name: 'TxBefore' })
+
+      await ctx.storium.transaction(async (tx) => {
+        const updated = await users.update(user.id, { name: 'TxAfter' }, { tx })
+        // The returned row should reflect the update even on MySQL
+        expect(updated.name).toBe('TxAfter')
+        expect(updated.email).toBe('tx_update@test.com')
+      })
+
+      // Verify it persisted
+      const found = await users.findById(user.id)
+      expect(found.name).toBe('TxAfter')
+    })
   })
 }

@@ -7,7 +7,7 @@
  */
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
-import { sql } from 'drizzle-orm'
+import { sql, and, or, gt, like } from 'drizzle-orm'
 import { defineStore, StoreError } from 'storium'
 import { createTestDatabase, getTestDialects, type TestDatabase } from '../dialects'
 import { getTables, getDDL } from '../tables'
@@ -233,13 +233,75 @@ for (const dialect of getTestDialects()) {
     // ------------------------------------------- composite PK --
 
     it('creates and finds with composite primary key', async () => {
+      const uid = crypto.randomUUID()
+      const gid = crypto.randomUUID()
       await memberships.create(
-        { user_id: 'u1', group_id: 'g1', role: 'admin' },
+        { user_id: uid, group_id: gid, role: 'admin' },
         { skipPrep: true }
       )
-      const found = await memberships.findById(['u1', 'g1'])
+      const found = await memberships.findById([uid, gid])
       expect(found).not.toBeNull()
       expect(found.role).toBe('admin')
+    })
+
+    // -------------------------------- createMany with composite PK --
+
+    it('createMany with composite PK returns all rows', async () => {
+      const gid = crypto.randomUUID()
+      const rows = await memberships.createMany([
+        { user_id: crypto.randomUUID(), group_id: gid, role: 'admin' },
+        { user_id: crypto.randomUUID(), group_id: gid, role: 'member' },
+        { user_id: crypto.randomUUID(), group_id: gid, role: 'viewer' },
+      ], { skipPrep: true })
+
+      expect(rows).toHaveLength(3)
+      const roles = rows.map((r: any) => r.role).sort()
+      expect(roles).toEqual(['admin', 'member', 'viewer'])
+    })
+
+    // ---------------------------------------- complex WHERE clauses --
+
+    it('find with where callback using and()', async () => {
+      await users.create({ email: 'where_and@test.com', name: 'WhereAnd' })
+
+      const results = await users.find(
+        { name: 'WhereAnd' },
+        { where: (t: any) => like(t.email, '%where_and%') }
+      )
+      expect(results.length).toBeGreaterThanOrEqual(1)
+      expect(results[0].name).toBe('WhereAnd')
+    })
+
+    it('find with where callback using or()', async () => {
+      await users.create({ email: 'where_or1@test.com', name: 'WhereOr1' })
+      await users.create({ email: 'where_or2@test.com', name: 'WhereOr2' })
+
+      const results = await users.findAll({
+        where: (t: any) => or(
+          like(t.name, 'WhereOr1'),
+          like(t.name, 'WhereOr2'),
+        ),
+      })
+      expect(results.length).toBeGreaterThanOrEqual(2)
+    })
+
+    it('findByIdIn with many IDs', async () => {
+      const ids: string[] = []
+      for (let i = 0; i < 20; i++) {
+        const user = await users.create({ email: `bulkid_${i}@test.com`, name: 'BulkId' })
+        ids.push(user.id)
+      }
+
+      const results = await users.findByIdIn(ids)
+      expect(results).toHaveLength(20)
+    })
+
+    it('find with multiple equality filters', async () => {
+      await users.create({ email: 'multi_eq@test.com', name: 'MultiEq' })
+
+      const results = await users.find({ email: 'multi_eq@test.com', name: 'MultiEq' })
+      expect(results).toHaveLength(1)
+      expect(results[0].email).toBe('multi_eq@test.com')
     })
   })
 }
