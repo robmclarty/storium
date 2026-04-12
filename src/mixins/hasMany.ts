@@ -13,9 +13,60 @@
  * // [{ id, title, author_id }, ...]
  */
 
-import { asc, desc } from 'drizzle-orm'
+import { eq, and, asc, desc } from 'drizzle-orm'
 import type { TableDef } from '../core/types'
-import { buildRelatedSelect, buildRelatedWhere, prepareRelatedMixin } from './relatedQuery'
+
+// -------------------------------------------------- Shared Relation Helpers --
+
+/**
+ * Build a column select object for a related table query.
+ */
+export function buildRelatedSelect(
+  relatedTable: TableDef,
+  columns: string[]
+): Record<string, any> {
+  const selectObj: Record<string, any> = {}
+  for (const col of columns) {
+    if (col in relatedTable) {
+      selectObj[col] = relatedTable[col]
+    }
+  }
+  return selectObj
+}
+
+/**
+ * Build a WHERE clause for a related table query, combining
+ * the foreign key condition with an optional where callback.
+ */
+export function buildRelatedWhere(
+  relatedTable: TableDef,
+  foreignKey: string,
+  id: string | number,
+  opts?: { where?: (t: any) => any }
+) {
+  const conditions = [eq(relatedTable[foreignKey], id)]
+  if (opts?.where) conditions.push(opts.where(relatedTable))
+  return conditions.length === 1 ? conditions[0] : and(...conditions)
+}
+
+/**
+ * Extract common setup for hasMany/hasOne: resolve table, method name,
+ * and selectable columns from options.
+ */
+export function prepareRelatedMixin(
+  relatedTableDef: TableDef,
+  options: { alias: string; select?: string[] }
+) {
+  const alias = options.alias
+  const methodName = `find${alias.charAt(0).toUpperCase()}${alias.slice(1)}For`
+  return {
+    relatedTable: relatedTableDef,
+    methodName,
+    columns: options.select ?? relatedTableDef.storium.access.selectable,
+  }
+}
+
+// ------------------------------------------------------------ hasMany --
 
 type HasManyOptions<A extends string = string> = {
   /** The alias for the related collection (used in the method name: find{Alias}For). */

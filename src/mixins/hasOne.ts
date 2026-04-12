@@ -14,7 +14,7 @@
  */
 
 import type { TableDef } from '../core/types'
-import { buildRelatedSelect, buildRelatedWhere, prepareRelatedMixin } from './relatedQuery'
+import { buildRelatedSelect, buildRelatedWhere, prepareRelatedMixin } from './hasMany'
 
 type HasOneOptions<A extends string = string> = {
   /** The alias for the related row (used in the method name: find{Alias}For). */
