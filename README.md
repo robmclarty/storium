@@ -150,7 +150,7 @@ The pattern looks like this:
 ```
 entities/
 └── users/
-    ├── user.schema.ts    ← defineTable (pure schema, no connection)
+    ├── user.table.ts     ← Drizzle table definition (drives migrations)
     ├── user.mixins.ts    ← reusable query patterns
     ├── user.queries.ts   ← query functions
     └── user.store.ts     ← defineStore (bundles schema + queries)
@@ -160,7 +160,7 @@ database.ts               ← connect + register all stores
 **Schema file** — importable by drizzle-kit for migration generation. Uses `validate` and `transform` to enforce business rules at the data layer:
 
 ```typescript
-// entities/users/user.schema.ts
+// entities/users/user.table.ts
 import { defineTable } from 'storium'
 
 export const usersTable = defineTable('users').columns({
@@ -191,8 +191,8 @@ export const usersTable = defineTable('users').columns({
 ```typescript
 // entities/users/user.store.ts
 import { defineStore, belongsTo } from 'storium'
-import { usersTable } from './user.schema'
-import { schoolsTable } from '../schools/school.schema'
+import { usersTable } from './user.table'
+import { schoolsTable } from '../schools/school.table'
 import { eq, ilike } from 'drizzle-orm'
 
 export const userStore = defineStore(usersTable).queries({
@@ -405,7 +405,7 @@ export default {
   dialect: 'postgresql',
   dbCredentials: { url: process.env.DATABASE_URL! },
   out: './migrations',
-  schema: ['./src/entities/**/*.schema.ts'],
+  schema: ['./src/entities/**/*.table.ts'],
   stores: ['./src/entities/**/*.store.ts'], // storium-only — drizzle-kit ignores this  
   seeds: './seeds',                         // storium-only — drizzle-kit ignores this
 } satisfies StoriumConfig

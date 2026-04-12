@@ -295,7 +295,7 @@ import type { StoriumConfig } from 'storium'
 export default {
   dialect: 'postgresql',
   dbCredentials: { url: process.env.DATABASE_URL! },
-  schema: ['./src/**/*.schema.ts'],
+  schema: ['./src/**/*.table.ts'],
   out: './migrations',
   seeds: './seeds',
 } satisfies StoriumConfig
@@ -312,12 +312,12 @@ project/
 ├── database.ts                    # connect + register all stores
 ├── entities/
 │   └── users/
-│       ├── user.schema.ts         # pgTable('users', { ... })
+│       ├── user.table.ts          # pgTable('users', { ... })
 │       ├── user.queries.ts        # Custom query functions
 │       └── user.store.ts          # defineStore(usersTable, { columns: {...} }).queries({...})
 ├── collections/
 │   └── user-roles/
-│       ├── user-role.schema.ts    # pgTable('user_roles', { ... })
+│       ├── user-role.table.ts     # pgTable('user_roles', { ... })
 │       └── user-role.store.ts     # defineStore(table).queries({ ...withMembers(...) })
 ```
 

@@ -20,7 +20,7 @@ import type { StoriumConfig } from 'storium'
 export default {
   dialect: 'postgresql',
   dbCredentials: { url: process.env.DATABASE_URL! },
-  schema: ['./entities/**/*.schema.ts'],   // where defineTable() exports live
+  schema: ['./entities/**/*.table.ts'],    // where Drizzle table exports live
   stores: ['./entities/**/*.store.ts'],    // where defineStore() exports live (storium-only)
   out: './migrations',                     // migration output directory
   seeds: './seeds',                        // seed files directory (storium-only)
@@ -36,33 +36,29 @@ drizzle-kit reads `dialect`, `dbCredentials`, `schema`, and `out`. It silently i
 | `dialect` | Both | `'postgresql'`, `'mysql'`, `'sqlite'`, or `'memory'` |
 | `dbCredentials` | Both | `{ url }` or `{ host, port, database, user, password }` |
 | `url` | Storium | Shorthand for `dbCredentials.url` |
-| `schema` | Both | Glob pattern(s) for schema files (defineTable exports) |
+| `schema` | Both | Glob pattern(s) for table files (Drizzle table exports) |
 | `stores` | Storium | Glob pattern(s) for store files (defineStore exports) — used by seed runner |
 | `out` | Both | Directory for generated migration SQL files (default: `./migrations`) |
 | `seeds` | Storium | Directory for seed files (default: `./seeds`) |
 | `assertions` | Storium | Custom assertion functions for validation |
 | `pool` | Storium | Connection pool options (`{ min, max }`) |
 
-## Schema Files
+## Table Files
 
-Schema files export `defineTable()` results. drizzle-kit imports them at module level (before any DB connection exists), so use the standalone `defineTable()` — not `db.defineTable()`:
+Table files export native Drizzle table definitions. drizzle-kit imports them at module level (before any DB connection exists), so they must be pure Drizzle — no storium runtime needed:
 
 ```typescript
-// entities/users/user.schema.ts
-import { defineTable } from 'storium'
+// entities/users/user.table.ts
+import { pgTable, uuid, varchar } from 'drizzle-orm/pg-core'
 
-export const usersTable = defineTable('users')
-  .columns({
-    id: { type: 'uuid', primaryKey: true, default: 'uuid:v4' },
-    email: { type: 'varchar', maxLength: 255, required: true },
-    name: { type: 'varchar', maxLength: 255 },
-  })
-  .indexes({ email: { unique: true } })
+export const usersTable = pgTable('users', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  email: varchar('email', { length: 255 }).notNull().unique(),
+  name: varchar('name', { length: 255 }),
+})
 ```
 
-`defineTable()` auto-detects the dialect from your config file. You can also be explicit: `defineTable('postgresql')('users').columns({...})`.
-
-The returned object is a real Drizzle table — drizzle-kit sees it as a standard table definition. The `.storium` metadata is attached as a non-enumerable property so it doesn't interfere.
+The table is a standard Drizzle table — drizzle-kit sees it as any other table definition. When wrapped with `defineStore()`, storium metadata is attached as a non-enumerable `.storium` property so it doesn't interfere with drizzle-kit.
 
 ## Store Files
 
@@ -71,7 +67,7 @@ Store files bundle a table with custom queries into a `StoreDefinition`:
 ```typescript
 // entities/users/user.store.ts
 import { defineStore } from 'storium'
-import { usersTable } from './user.schema'
+import { usersTable } from './user.table'
 
 export const userStore = defineStore(usersTable).queries({
   findByEmail: (ctx) => async (email) => ctx.findOne({ email }),
@@ -178,7 +174,7 @@ The seed runner auto-discovers stores from your config:
 1. **Phase 1** — Imports files matching the `stores` glob, finds `StoreDefinition` exports, and materializes them with `db.register()`. These stores have full custom queries.
 2. **Phase 2** — Imports files matching the `schema` glob, finds `TableDef` exports not already covered by phase 1, and creates CRUD-only stores with `db.defineStore()`.
 
-Phase 1 stores take priority by table name. This means if you have both `user.schema.ts` (TableDef) and `user.store.ts` (StoreDefinition with custom queries), the seed runner uses the store version — giving your seeds access to custom queries like `findByEmail`.
+Phase 1 stores take priority by table name. This means if you have both `user.table.ts` (Drizzle table) and `user.store.ts` (StoreDefinition with custom queries), the seed runner uses the store version — giving your seeds access to custom queries like `findByEmail`.
 
 ### Seed Behavior
 
@@ -194,7 +190,7 @@ For advanced use cases, you can collect schemas programmatically:
 ```typescript
 import { collectSchemas } from 'storium/migrate'
 
-const schemas = await collectSchemas('./entities/**/*.schema.ts')
+const schemas = await collectSchemas('./entities/**/*.table.ts')
 // { users: <DrizzleTable>, posts: <DrizzleTable>, ... }
 ```
 
