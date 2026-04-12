@@ -74,14 +74,14 @@ export type DrizzleColumn = {
  * Infer the SELECT row type from a Drizzle table.
  * When TTable is the base `Table` type (no specific table), falls back to `any`.
  */
-export type InferRow<TTable extends Table = Table> =
+type InferRow<TTable extends Table = Table> =
   Table extends TTable ? any : InferSelectModel<TTable>
 
 /**
  * Infer the INSERT input type from a Drizzle table.
  * When TTable is the base `Table` type (no specific table), falls back to `Record<string, any>`.
  */
-export type InferInput<TTable extends Table = Table> =
+type InferInput<TTable extends Table = Table> =
   Table extends TTable ? Record<string, any> : InferInsertModel<TTable>
 
 // ------------------------------------------------------------- Assertions --
@@ -402,7 +402,7 @@ export type QueriesConfig = Record<string, (ctx: any) => (...args: any[]) => any
  * to `InferInsertModel<TTable>`. When `TTable` is the base `Table` (default),
  * falls back to `any` / `Record<string, any>` for backward compatibility.
  */
-export type DefaultCRUD<TTable extends Table = Table, TOpts = QueryOptions<TTable>> = {
+type DefaultCRUD<TTable extends Table = Table, TOpts = QueryOptions<TTable>> = {
   find: (filters: Partial<InferInput<TTable>>, opts?: TOpts) => Promise<InferRow<TTable>[]>
   findAll: (opts?: TOpts) => Promise<InferRow<TTable>[]>
   findOne: (filters: Partial<InferInput<TTable>>, opts?: TOpts) => Promise<InferRow<TTable> | null>
