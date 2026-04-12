@@ -508,6 +508,27 @@ export type CacheMethodConfig = {
   key: (...args: any[]) => string
 }
 
+// ------------------------------------------------------- Pagination --
+
+/** Options for `paginate()` — extends PrepOptions with page info. */
+export type PaginateOptions = PrepOptions & {
+  /** 1-indexed page number. */
+  page: number
+  /** Rows per page. Defaults to 25. */
+  pageSize?: number
+}
+
+/** Result from `paginate()`. */
+export type PaginateResult<T = any> = {
+  data: T[]
+  meta: {
+    page: number
+    pageSize: number
+    total: number
+    totalPages: number
+  }
+}
+
 // ----------------------------------------------------------- Connect Config --
 
 /**

@@ -51,6 +51,8 @@ export type {
   InferDialect,
   CacheAdapter,
   CacheMethodConfig,
+  PaginateOptions,
+  PaginateResult,
   StoriumConfig,
   FromDrizzleOptions,
   StoriumInstance,

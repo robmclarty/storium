@@ -40,6 +40,7 @@ export {
   hasMany,
   hasOne,
   withCache,
+  withPagination,
 } from './mixins'
 
 // --------------------------------------------------------------- Types --
@@ -110,6 +111,10 @@ export type {
   // Cache
   CacheAdapter,
   CacheMethodConfig,
+
+  // Pagination
+  PaginateOptions,
+  PaginateResult,
 
   // Compile-time type utilities
   PkValue,
