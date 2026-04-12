@@ -4,8 +4,8 @@ import { sql } from 'drizzle-orm'
 import { drizzle } from 'drizzle-orm/better-sqlite3'
 import Database from 'better-sqlite3'
 import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core'
-import { ConfigError } from '../core/errors'
-import { defineStore } from '../core/defineStore'
+import { ConfigError } from '../errors'
+import { defineStore } from '../store/define'
 
 describe('connect', () => {
   it('returns a StoriumInstance with all expected properties', () => {

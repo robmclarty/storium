@@ -22,7 +22,7 @@
  */
 
 import { eq, and, sql, count } from 'drizzle-orm'
-import type { TableDef } from '../core/types'
+import type { TableDef } from '../types'
 
 /**
  * Generate membership query functions for a collection.

@@ -16,7 +16,7 @@
  * // { data: [...], meta: { page: 2, pageSize: 25, total: 142, totalPages: 6 } }
  */
 
-import { StoreError } from '../core/errors'
+import { StoreError } from '../errors'
 
 type PaginateOpts = {
   page: number

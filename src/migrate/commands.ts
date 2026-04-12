@@ -27,8 +27,8 @@ import { spawn } from 'node:child_process'
 import { resolve as resolvePath } from 'node:path'
 import { existsSync, readdirSync } from 'node:fs'
 import { glob } from 'glob'
-import type { StoriumConfig, StoriumInstance } from '../core/types'
-import { loadConfig, resolveConfigPath } from './configLoader'
+import type { StoriumConfig, StoriumInstance } from '../types'
+import { loadConfig, resolveConfigPath } from './config'
 
 // --------------------------------------------------------------- Types --
 

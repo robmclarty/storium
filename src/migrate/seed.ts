@@ -19,10 +19,10 @@
 
 import path from 'node:path'
 import { glob } from 'glob'
-import { isStoreDefinition } from '../core/defineStore'
-import { loadConfig } from './configLoader'
+import { isStoreDefinition } from '../store/define'
+import { loadConfig } from './config'
 import { isTable, getTableName } from 'drizzle-orm/table'
-import type { StoriumInstance, StoriumConfig, Dialect } from '../core/types'
+import type { StoriumInstance, StoriumConfig, Dialect } from '../types'
 
 // --------------------------------------------------------------- Types --
 

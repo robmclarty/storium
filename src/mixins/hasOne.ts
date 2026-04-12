@@ -13,7 +13,7 @@
  * // { id, user_id, bio, ... } | null
  */
 
-import type { TableDef } from '../core/types'
+import type { TableDef } from '../types'
 import { buildRelatedSelect, buildRelatedWhere, prepareRelatedMixin } from './hasMany'
 
 type HasOneOptions<A extends string = string> = {

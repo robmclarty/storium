@@ -14,7 +14,7 @@
  */
 
 import { eq, and, asc, desc } from 'drizzle-orm'
-import type { TableDef } from '../core/types'
+import type { TableDef } from '../types'
 
 // -------------------------------------------------- Shared Relation Helpers --
 

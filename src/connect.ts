@@ -23,12 +23,12 @@ import type {
   DrizzleDatabase,
   InferDialect,
   StoreConfig,
-} from './core/types'
-import { ConfigError } from './core/errors'
-import { isStoreDefinition, hasMeta, attachStoriumMeta } from './core/defineStore'
-import { createCreateRepository } from './core/createRepository'
-import { createAssertionRegistry } from './core/assertions'
-import { buildSchemaSet } from './core/schema'
+} from './types'
+import { ConfigError } from './errors'
+import { isStoreDefinition, hasMeta, attachStoriumMeta } from './store/define'
+import { createCreateRepository } from './store/repository'
+import { createAssertionRegistry } from './store/assertions'
+import { buildSchemaSet } from './schema/zod'
 
 // createRequire is used intentionally here: connect() is synchronous, and the
 // dialect-specific drivers (pg, mysql2, better-sqlite3) must be loaded lazily

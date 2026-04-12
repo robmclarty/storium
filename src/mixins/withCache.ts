@@ -38,7 +38,7 @@
  * await cachedUsers.update('123', { name: 'Bob' })
  */
 
-import type { CacheAdapter, CacheMethodConfig } from '../core/types'
+import type { CacheAdapter, CacheMethodConfig } from '../types'
 
 // --------------------------------------------------------------- Types --
 

@@ -20,7 +20,7 @@
  */
 
 import { eq } from 'drizzle-orm'
-import type { TableDef } from '../core/types'
+import type { TableDef } from '../types'
 
 type BelongsToOptions<A extends string = string> = {
   /** The alias for the related entity (used in the method name: findWith{Alias}). */

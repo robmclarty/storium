@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { withCache } from '../withCache'
-import type { CacheAdapter } from '../../core/types'
+import type { CacheAdapter } from '../../types'
 
 const createMockCache = (): CacheAdapter & { store: Map<string, string> } => {
   const store = new Map<string, string>()

@@ -21,7 +21,7 @@ export {
   defineStore,
   isStoreDefinition,
   hasMeta,
-} from './core'
+} from './store'
 
 // ------------------------------------------------------------ Errors --
 
@@ -30,7 +30,7 @@ export {
   ConfigError,
   SchemaError,
   StoreError,
-} from './core'
+} from './errors'
 
 // -------------------------------------------------------------- Mixins --
 
@@ -47,10 +47,11 @@ export {
 
 export type {
   StoreDefinition,
-  StoriumMeta,
-} from './core'
+} from './store'
 
 export type {
+  StoriumMeta,
+
   // Dialect & config
   Dialect,
   StoriumConfig,
@@ -104,4 +105,4 @@ export type {
   // Utility
   PkValue,
   Promisable,
-} from './core'
+} from './types'
