@@ -11,6 +11,7 @@
  */
 
 import { z } from 'zod'
+import type { Table } from 'drizzle-orm'
 import type {
   StoriumConfig,
   FromDrizzleOptions,
@@ -247,7 +248,7 @@ const buildInstance = <D extends Dialect>(
           'Use defineStore(drizzleTable) to create one.'
         )
       }
-      result[key] = createRepository(applyAssertions(def.tableDef), def.queryFns)
+      result[key] = createRepository(applyAssertions(def.tableDef as unknown as TableDef), def.queryFns)
     }
 
     return result as { [K in keyof T]: InferStore<T[K]> }
@@ -256,8 +257,8 @@ const buildInstance = <D extends Dialect>(
   /**
    * Create a live store from a Drizzle table (simple path — no register step).
    */
-  const instanceDefineStore = (
-    drizzleTable: any,
+  const instanceDefineStore = <TTable extends Table = Table>(
+    drizzleTable: TTable,
     config: StoreConfig = {}
   ) => {
     // Attach storium metadata if not already present
@@ -270,18 +271,19 @@ const buildInstance = <D extends Dialect>(
         'Remove the config argument or use a table without existing metadata.'
       )
     }
-    const applied = applyAssertions(drizzleTable as TableDef)
-    const baseStore = createRepository(applied, {})
+    const applied = applyAssertions(drizzleTable as unknown as TableDef)
+    const baseStore = createRepository<TTable>(applied, {})
 
     // Attach non-enumerable .queries() that creates a new store with queries
     Object.defineProperty(baseStore, 'queries', {
-      value: (queryFns: Record<string, any>) => createRepository(applied, queryFns),
+      value: <TKeys extends string>(queryFns: Record<TKeys, any>) =>
+        createRepository<TTable, Record<TKeys, any>>(applied, queryFns),
       enumerable: false,
       configurable: true,
       writable: false,
     })
 
-    return baseStore as unknown as Store
+    return baseStore as unknown as Store<TTable>
   }
 
   let disconnected = false
