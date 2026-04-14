@@ -5,28 +5,46 @@
       "id": "L001",
       "insight": "Complexity is concentrated in the store layer (repository.ts, prep.ts, define.ts) — all three are accelerating hotspots. This cluster represents the core API surface and is the highest-risk area for regressions.",
       "category": "risk",
-      "confidence": "low",
+      "confidence": "medium",
       "firstSeen": "2026-04-14",
       "lastConfirmed": "2026-04-14",
-      "context": "First snapshot baseline. repository.ts: cyc 179, cog 124, 803 lines. prep.ts: cyc 59, cog 46. define.ts: cyc 56, cog 34. Fragility analysis confirms: store layer has 3 of top 7 fragile files, all accelerating."
+      "context": "Confirmed across 6 snapshots. repository.ts: cyc 179, cog 124, 803 lines. prep.ts: cyc 59, cog 46, 310L. define.ts: cyc 56, cog 34, 329L. All remain accelerating with no trend change. Hotspot count rose from 29→34 across sessions."
     },
     {
       "id": "L002",
-      "insight": "No test coverage data is being collected. CRAP scores are static estimates only. Coverage tracking is the highest-leverage QA improvement available.",
+      "insight": "Coverage data is intermittent. Earlier snapshot (04:49) captured 86.9% total coverage, but latest shows null. The snapshot pipeline's coverage collection is not reliably wired.",
       "category": "gap",
-      "confidence": "low",
+      "confidence": "medium",
       "firstSeen": "2026-04-14",
       "lastConfirmed": "2026-04-14",
-      "context": "All files show lineCoverage: null, branchCoverage: null in snapshot."
+      "context": "Snapshot 2026-04-14T04:49 had totalCoverage: 86.9. Snapshots 2026-04-14T05:02 through 05:07 show null. Likely requires --coverage flag or vitest coverage config."
     },
     {
       "id": "L003",
-      "insight": "Test files account for 10 of 29 hotspots. repository.test.ts (cyc: 111, 858 lines) is itself a complexity risk — test helpers or shared fixtures could reduce this.",
+      "insight": "Test files account for a growing share of hotspots (now 10+ of 34). Test complexity is rising alongside source complexity — test helpers or shared fixtures could reduce this.",
+      "category": "observation",
+      "confidence": "medium",
+      "firstSeen": "2026-04-14",
+      "lastConfirmed": "2026-04-14",
+      "context": "Hotspot count rose 29→34. Test hotspots include withCache.test.ts (accelerating), withMembers.test.ts (accelerating), seed.test.ts (accelerating), commands.test.ts (accelerating)."
+    },
+    {
+      "id": "L004",
+      "insight": "connect.ts is the single highest-complexity file (86 cyc, 410L, hotspot score 77.8) but is cooling — active refactoring is paying off. Continue current trajectory.",
       "category": "observation",
       "confidence": "low",
       "firstSeen": "2026-04-14",
       "lastConfirmed": "2026-04-14",
-      "context": "First snapshot. Expected during active pre-1.0 test writing."
+      "context": "Hotspot score 77.8 (highest) but trend is 'cooling'. 35 commits in 6mo. 44 tests cover it. Commands.ts (34.8) and bin/storium.ts (33.7) also cooling."
+    },
+    {
+      "id": "L005",
+      "insight": "100% of source files have test coverage mappings (18/18). No source file is untested. This is a strong foundation — the gap is coverage depth, not breadth.",
+      "category": "observation",
+      "confidence": "low",
+      "firstSeen": "2026-04-14",
+      "lastConfirmed": "2026-04-14",
+      "context": "All 18 source files have coveredByTests entries. 371 tests tracked total."
     }
   ]
 }

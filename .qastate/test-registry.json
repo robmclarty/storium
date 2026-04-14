@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextId": 10379,
+  "nextId": 10401,
   "entries": [
     {
       "id": "QA-10000",
@@ -14,7 +14,7 @@
         "src/migrate/commands.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.459Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10001",
@@ -28,7 +28,7 @@
         "src/migrate/commands.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.460Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10002",
@@ -42,7 +42,7 @@
         "src/migrate/commands.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.460Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10003",
@@ -56,7 +56,7 @@
         "src/migrate/commands.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.460Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10004",
@@ -71,7 +71,7 @@
         "src/store/define.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.460Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10005",
@@ -86,7 +86,7 @@
         "src/store/define.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.460Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10006",
@@ -101,7 +101,7 @@
         "src/store/define.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.460Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10007",
@@ -116,7 +116,7 @@
         "src/store/define.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.460Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10008",
@@ -131,7 +131,7 @@
         "src/store/define.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.460Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10009",
@@ -146,7 +146,7 @@
         "src/store/define.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.460Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10010",
@@ -161,7 +161,7 @@
         "src/store/define.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.460Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10011",
@@ -176,7 +176,7 @@
         "src/store/define.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.460Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10012",
@@ -191,7 +191,7 @@
         "src/store/define.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.460Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10013",
@@ -206,7 +206,7 @@
         "src/store/define.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.460Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10014",
@@ -221,7 +221,7 @@
         "src/store/define.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.460Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10015",
@@ -236,7 +236,7 @@
         "src/store/define.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.460Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10016",
@@ -251,7 +251,7 @@
         "src/store/define.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.460Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10017",
@@ -266,7 +266,7 @@
         "src/store/define.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.460Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10018",
@@ -281,7 +281,7 @@
         "src/store/define.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.460Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10019",
@@ -295,7 +295,7 @@
         "src/errors.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.461Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10020",
@@ -309,7 +309,7 @@
         "src/errors.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.461Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10021",
@@ -323,7 +323,7 @@
         "src/errors.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.461Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10022",
@@ -337,7 +337,7 @@
         "src/errors.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.461Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10023",
@@ -351,7 +351,7 @@
         "src/errors.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.461Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10024",
@@ -365,7 +365,7 @@
         "src/errors.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.461Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10025",
@@ -379,7 +379,7 @@
         "src/errors.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.461Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10026",
@@ -393,7 +393,7 @@
         "src/connect.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.461Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10027",
@@ -407,7 +407,7 @@
         "src/connect.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.462Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10028",
@@ -421,7 +421,7 @@
         "src/migrate/commands.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.462Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10029",
@@ -435,7 +435,7 @@
         "src/migrate/commands.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.462Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10030",
@@ -449,7 +449,7 @@
         "src/migrate/commands.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.462Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10031",
@@ -463,7 +463,7 @@
         "src/migrate/commands.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.462Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10032",
@@ -478,7 +478,7 @@
         "src/migrate/config.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.462Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10033",
@@ -493,7 +493,7 @@
         "src/migrate/config.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.462Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10034",
@@ -508,7 +508,7 @@
         "src/migrate/config.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.462Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10035",
@@ -523,7 +523,7 @@
         "src/migrate/config.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.462Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10036",
@@ -538,7 +538,7 @@
         "src/migrate/config.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.462Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10037",
@@ -553,7 +553,7 @@
         "src/migrate/config.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.462Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10038",
@@ -568,7 +568,7 @@
         "src/migrate/config.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.462Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10039",
@@ -583,7 +583,7 @@
         "src/migrate/config.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.462Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10040",
@@ -597,7 +597,7 @@
         "src/migrate/collector.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.463Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10041",
@@ -611,7 +611,7 @@
         "src/migrate/collector.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.463Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10042",
@@ -625,7 +625,7 @@
         "src/migrate/collector.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.463Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10043",
@@ -639,7 +639,7 @@
         "src/migrate/collector.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.463Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10044",
@@ -653,7 +653,7 @@
         "src/migrate/collector.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.463Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10045",
@@ -667,7 +667,7 @@
         "src/migrate/seed.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.463Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10046",
@@ -681,7 +681,7 @@
         "src/migrate/seed.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.464Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10047",
@@ -695,7 +695,7 @@
         "src/migrate/seed.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.464Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10048",
@@ -709,7 +709,7 @@
         "src/migrate/seed.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.464Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10049",
@@ -723,7 +723,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.464Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10050",
@@ -737,7 +737,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.464Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10051",
@@ -751,7 +751,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.464Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10052",
@@ -765,7 +765,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.464Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10053",
@@ -779,7 +779,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.464Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10054",
@@ -793,7 +793,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.464Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10055",
@@ -807,7 +807,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.464Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10056",
@@ -821,7 +821,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.464Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10057",
@@ -835,7 +835,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.464Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10058",
@@ -849,7 +849,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.464Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10059",
@@ -863,7 +863,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.464Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10060",
@@ -877,7 +877,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.464Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10061",
@@ -891,7 +891,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.464Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10062",
@@ -905,7 +905,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.464Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10063",
@@ -919,7 +919,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.464Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10064",
@@ -933,7 +933,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.464Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10065",
@@ -947,7 +947,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.465Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10066",
@@ -961,7 +961,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.465Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10067",
@@ -975,7 +975,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.465Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10068",
@@ -989,7 +989,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.465Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10069",
@@ -1003,7 +1003,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.465Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10070",
@@ -1018,7 +1018,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.465Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10071",
@@ -1033,7 +1033,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.465Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10072",
@@ -1048,7 +1048,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.465Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10073",
@@ -1063,7 +1063,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.465Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10074",
@@ -1078,7 +1078,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.465Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10075",
@@ -1093,7 +1093,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.465Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10076",
@@ -1108,7 +1108,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.465Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10077",
@@ -1123,7 +1123,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.465Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10078",
@@ -1137,7 +1137,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.466Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10079",
@@ -1151,7 +1151,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.466Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10080",
@@ -1165,7 +1165,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.466Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10081",
@@ -1179,7 +1179,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.466Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10082",
@@ -1193,7 +1193,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.466Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10083",
@@ -1207,7 +1207,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.466Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10084",
@@ -1221,7 +1221,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.466Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10085",
@@ -1235,7 +1235,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.466Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10086",
@@ -1249,7 +1249,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.466Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10087",
@@ -1263,7 +1263,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.466Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10088",
@@ -1277,7 +1277,7 @@
         "src/mixins/withPagination.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.467Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10089",
@@ -1291,7 +1291,7 @@
         "src/mixins/withPagination.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.467Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10090",
@@ -1305,7 +1305,7 @@
         "src/mixins/withPagination.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.467Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10091",
@@ -1319,7 +1319,7 @@
         "src/mixins/withPagination.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.467Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10092",
@@ -1333,7 +1333,7 @@
         "src/mixins/withPagination.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.467Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10093",
@@ -1347,7 +1347,7 @@
         "src/mixins/withPagination.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.467Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10094",
@@ -1361,7 +1361,7 @@
         "src/mixins/withPagination.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.467Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10095",
@@ -1375,7 +1375,7 @@
         "src/mixins/withPagination.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.467Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10096",
@@ -1389,7 +1389,7 @@
         "src/mixins/withPagination.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.467Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10097",
@@ -1403,7 +1403,7 @@
         "src/mixins/withPagination.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.467Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10098",
@@ -1417,7 +1417,7 @@
         "src/mixins/withPagination.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.467Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10099",
@@ -1431,7 +1431,7 @@
         "src/mixins/withPagination.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.467Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10100",
@@ -1445,7 +1445,7 @@
         "src/mixins/withPagination.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.467Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10101",
@@ -1459,7 +1459,7 @@
         "src/mixins/withPagination.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.467Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10102",
@@ -1473,7 +1473,7 @@
         "src/mixins/withPagination.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.467Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10103",
@@ -1487,7 +1487,7 @@
         "src/mixins/withPagination.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.467Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10104",
@@ -1501,7 +1501,7 @@
         "src/mixins/withPagination.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.467Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10105",
@@ -1515,7 +1515,7 @@
         "src/mixins/withPagination.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.467Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10106",
@@ -1529,7 +1529,7 @@
         "src/mixins/withPagination.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.467Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10107",
@@ -1543,7 +1543,7 @@
         "src/mixins/withPagination.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.467Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10108",
@@ -1559,7 +1559,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.467Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10109",
@@ -1575,7 +1575,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.467Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10110",
@@ -1591,7 +1591,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.467Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10111",
@@ -1607,7 +1607,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.467Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10112",
@@ -1623,7 +1623,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.467Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10113",
@@ -1639,7 +1639,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.467Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10114",
@@ -1655,7 +1655,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.467Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10115",
@@ -1671,7 +1671,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.467Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10116",
@@ -1687,7 +1687,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.467Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10117",
@@ -1703,7 +1703,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.467Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10118",
@@ -1719,7 +1719,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.467Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10119",
@@ -1735,7 +1735,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.467Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10120",
@@ -1751,7 +1751,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.467Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10121",
@@ -1767,7 +1767,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.467Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10122",
@@ -1783,7 +1783,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.467Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10123",
@@ -1799,7 +1799,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.467Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10124",
@@ -1815,7 +1815,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.467Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10125",
@@ -1831,7 +1831,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.467Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10126",
@@ -1847,7 +1847,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.467Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10127",
@@ -1863,7 +1863,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.467Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10128",
@@ -1879,7 +1879,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.467Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10129",
@@ -1895,7 +1895,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.467Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10130",
@@ -1911,7 +1911,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.467Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10131",
@@ -1926,7 +1926,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.468Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10132",
@@ -1941,7 +1941,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.468Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10133",
@@ -1956,7 +1956,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.468Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10134",
@@ -1971,7 +1971,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.468Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10135",
@@ -1986,7 +1986,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.468Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10136",
@@ -2001,7 +2001,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.468Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10137",
@@ -2016,7 +2016,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.468Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10138",
@@ -2031,7 +2031,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.468Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10139",
@@ -2046,7 +2046,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.468Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10140",
@@ -2061,7 +2061,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.468Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10141",
@@ -2076,7 +2076,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.468Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10142",
@@ -2091,7 +2091,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.468Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10143",
@@ -2106,7 +2106,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.468Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10144",
@@ -2121,7 +2121,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.468Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10145",
@@ -2136,7 +2136,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.468Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10146",
@@ -2151,7 +2151,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.468Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10147",
@@ -2167,7 +2167,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.469Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10148",
@@ -2183,7 +2183,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.469Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10149",
@@ -2199,7 +2199,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.469Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10150",
@@ -2215,7 +2215,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.469Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10151",
@@ -2231,7 +2231,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.469Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10152",
@@ -2247,7 +2247,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.469Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10153",
@@ -2263,7 +2263,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.469Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10154",
@@ -2279,7 +2279,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.469Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10155",
@@ -2294,7 +2294,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.469Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10156",
@@ -2309,7 +2309,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.469Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10157",
@@ -2324,7 +2324,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.469Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10158",
@@ -2339,7 +2339,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.469Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10159",
@@ -2354,7 +2354,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.469Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10160",
@@ -2369,7 +2369,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.469Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10161",
@@ -2384,7 +2384,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.469Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10162",
@@ -2399,7 +2399,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.469Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10163",
@@ -2414,7 +2414,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.469Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10164",
@@ -2429,7 +2429,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.469Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10165",
@@ -2444,7 +2444,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.469Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10166",
@@ -2458,7 +2458,7 @@
         "src/assertions.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.470Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10167",
@@ -2472,7 +2472,7 @@
         "src/assertions.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.470Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10168",
@@ -2486,7 +2486,7 @@
         "src/assertions.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.470Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10170",
@@ -2500,7 +2500,7 @@
         "src/assertions.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.470Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10171",
@@ -2514,7 +2514,7 @@
         "src/assertions.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.470Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10173",
@@ -2528,7 +2528,7 @@
         "src/assertions.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.470Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10174",
@@ -2542,7 +2542,7 @@
         "src/assertions.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.470Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10175",
@@ -2556,7 +2556,7 @@
         "src/assertions.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.470Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10176",
@@ -2570,7 +2570,7 @@
         "src/assertions.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.470Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10177",
@@ -2584,7 +2584,7 @@
         "src/assertions.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.470Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10178",
@@ -2598,7 +2598,7 @@
         "src/assertions.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.470Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10179",
@@ -2612,7 +2612,7 @@
         "src/assertions.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.470Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10180",
@@ -2626,7 +2626,7 @@
         "src/assertions.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.470Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10181",
@@ -2640,7 +2640,7 @@
         "src/assertions.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.470Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10183",
@@ -2654,7 +2654,7 @@
         "src/assertions.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.470Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10185",
@@ -2668,7 +2668,7 @@
         "src/assertions.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.470Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10186",
@@ -2682,7 +2682,7 @@
         "src/assertions.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.470Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10188",
@@ -2696,7 +2696,7 @@
         "src/assertions.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.470Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10190",
@@ -2710,7 +2710,7 @@
         "src/assertions.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.470Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10193",
@@ -2724,7 +2724,7 @@
         "src/assertions.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.470Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10194",
@@ -2738,7 +2738,7 @@
         "src/assertions.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.470Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10195",
@@ -2752,7 +2752,7 @@
         "src/assertions.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.470Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10196",
@@ -2766,7 +2766,7 @@
         "src/assertions.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.470Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10197",
@@ -2781,7 +2781,7 @@
         "src/store/define.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.470Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10198",
@@ -2796,7 +2796,7 @@
         "src/store/define.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.470Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10199",
@@ -2811,7 +2811,7 @@
         "src/store/define.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.470Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10200",
@@ -2826,7 +2826,7 @@
         "src/store/define.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.470Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10201",
@@ -2841,7 +2841,7 @@
         "src/store/define.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.470Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10202",
@@ -2856,7 +2856,7 @@
         "src/store/define.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.470Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10203",
@@ -2871,7 +2871,7 @@
         "src/store/define.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.470Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10204",
@@ -2886,7 +2886,7 @@
         "src/store/define.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.470Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10205",
@@ -2901,7 +2901,7 @@
         "src/store/define.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.470Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10206",
@@ -2916,7 +2916,7 @@
         "src/store/define.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.470Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10207",
@@ -2931,7 +2931,7 @@
         "src/store/define.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.470Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10208",
@@ -2946,7 +2946,7 @@
         "src/store/define.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.470Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10209",
@@ -2961,7 +2961,7 @@
         "src/store/define.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.470Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10210",
@@ -2976,7 +2976,7 @@
         "src/store/define.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.470Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10211",
@@ -2991,7 +2991,7 @@
         "src/store/define.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.470Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10212",
@@ -3006,7 +3006,7 @@
         "src/store/define.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.470Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10213",
@@ -3021,7 +3021,7 @@
         "src/store/define.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.470Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10214",
@@ -3036,7 +3036,7 @@
         "src/store/define.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.470Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10215",
@@ -3051,7 +3051,7 @@
         "src/store/define.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.470Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10216",
@@ -3066,7 +3066,7 @@
         "src/store/define.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.470Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10217",
@@ -3081,7 +3081,7 @@
         "src/store/define.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.470Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10218",
@@ -3096,7 +3096,7 @@
         "src/store/define.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.470Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10219",
@@ -3111,7 +3111,7 @@
         "src/store/define.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.470Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10220",
@@ -3126,7 +3126,7 @@
         "src/store/define.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.470Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10221",
@@ -3141,7 +3141,7 @@
         "src/store/define.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.470Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10222",
@@ -3156,7 +3156,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.471Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10223",
@@ -3171,7 +3171,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.471Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10224",
@@ -3186,7 +3186,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.471Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10225",
@@ -3201,7 +3201,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.471Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10226",
@@ -3216,7 +3216,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.471Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10227",
@@ -3231,7 +3231,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.471Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10228",
@@ -3246,7 +3246,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.471Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10229",
@@ -3261,7 +3261,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.471Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10230",
@@ -3276,7 +3276,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.471Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10231",
@@ -3291,7 +3291,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.471Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10232",
@@ -3306,7 +3306,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.471Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10233",
@@ -3321,7 +3321,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.471Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10234",
@@ -3336,7 +3336,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.471Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10235",
@@ -3351,7 +3351,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.471Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10236",
@@ -3366,7 +3366,7 @@
         "src/types.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.471Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10237",
@@ -3382,7 +3382,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.472Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10238",
@@ -3398,7 +3398,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.472Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10239",
@@ -3414,7 +3414,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.472Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10240",
@@ -3430,7 +3430,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.472Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10241",
@@ -3446,7 +3446,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.472Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10242",
@@ -3462,7 +3462,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.472Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10243",
@@ -3478,7 +3478,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.472Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10244",
@@ -3494,7 +3494,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.472Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10245",
@@ -3510,7 +3510,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.472Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10246",
@@ -3526,7 +3526,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.472Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10247",
@@ -3542,7 +3542,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.472Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10248",
@@ -3558,7 +3558,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.472Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10249",
@@ -3574,7 +3574,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.472Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10250",
@@ -3590,7 +3590,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.472Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10251",
@@ -3606,7 +3606,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.472Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10252",
@@ -3622,7 +3622,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.472Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10253",
@@ -3638,7 +3638,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.472Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10254",
@@ -3654,7 +3654,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.472Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10255",
@@ -3670,7 +3670,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.472Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10256",
@@ -3686,7 +3686,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.472Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10257",
@@ -3702,7 +3702,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.472Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10258",
@@ -3718,7 +3718,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.472Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10259",
@@ -3734,7 +3734,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.472Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10260",
@@ -3750,7 +3750,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.472Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10261",
@@ -3766,7 +3766,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.472Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10262",
@@ -3782,7 +3782,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.472Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10263",
@@ -3798,7 +3798,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.472Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10264",
@@ -3814,7 +3814,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.472Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10265",
@@ -3830,7 +3830,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.472Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10266",
@@ -3846,7 +3846,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.472Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10267",
@@ -3862,7 +3862,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.472Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10268",
@@ -3878,7 +3878,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.472Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10269",
@@ -3894,7 +3894,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.472Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10270",
@@ -3910,7 +3910,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.472Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10271",
@@ -3926,7 +3926,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.472Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10272",
@@ -3942,7 +3942,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.472Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10273",
@@ -3958,7 +3958,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.472Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10274",
@@ -3974,7 +3974,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.472Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10275",
@@ -3990,7 +3990,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.472Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10276",
@@ -4006,7 +4006,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.472Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10277",
@@ -4022,7 +4022,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.472Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10278",
@@ -4038,7 +4038,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.472Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10279",
@@ -4054,7 +4054,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.472Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10280",
@@ -4070,7 +4070,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.472Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10281",
@@ -4086,7 +4086,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.472Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10282",
@@ -4102,7 +4102,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.472Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10283",
@@ -4118,7 +4118,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.472Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10284",
@@ -4133,7 +4133,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.472Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10285",
@@ -4148,7 +4148,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.472Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10286",
@@ -4163,7 +4163,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.472Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10287",
@@ -4178,7 +4178,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.472Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10288",
@@ -4193,7 +4193,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.472Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10289",
@@ -4208,7 +4208,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.472Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10290",
@@ -4223,7 +4223,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.472Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10291",
@@ -4238,7 +4238,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.472Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10292",
@@ -4253,7 +4253,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.472Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10293",
@@ -4268,7 +4268,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.472Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10294",
@@ -4283,7 +4283,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.472Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10295",
@@ -4298,7 +4298,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.472Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10296",
@@ -4313,7 +4313,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.472Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10297",
@@ -4327,7 +4327,7 @@
         "src/store/define.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.473Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10298",
@@ -4341,7 +4341,7 @@
         "src/store/define.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.473Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10299",
@@ -4356,7 +4356,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.473Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10300",
@@ -4371,7 +4371,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.473Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10301",
@@ -4385,7 +4385,7 @@
         "src/connect.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.473Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10302",
@@ -4399,7 +4399,7 @@
         "src/connect.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.473Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10303",
@@ -4413,7 +4413,7 @@
         "src/connect.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.473Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10304",
@@ -4427,7 +4427,7 @@
         "src/connect.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.473Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10305",
@@ -4441,7 +4441,7 @@
         "src/connect.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.473Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10306",
@@ -4455,7 +4455,7 @@
         "src/connect.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.473Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10307",
@@ -4471,7 +4471,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.474Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10308",
@@ -4487,7 +4487,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.474Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10309",
@@ -4503,7 +4503,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.474Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10310",
@@ -4519,7 +4519,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.474Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10311",
@@ -4535,7 +4535,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.474Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10312",
@@ -4551,7 +4551,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.474Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10313",
@@ -4567,7 +4567,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.474Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10314",
@@ -4583,7 +4583,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.474Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10315",
@@ -4599,7 +4599,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.474Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10316",
@@ -4615,7 +4615,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.474Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10317",
@@ -4631,7 +4631,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.474Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10318",
@@ -4647,7 +4647,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.474Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10319",
@@ -4663,7 +4663,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.474Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10320",
@@ -4679,7 +4679,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.474Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10321",
@@ -4695,7 +4695,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.474Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10322",
@@ -4711,7 +4711,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.474Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10323",
@@ -4727,7 +4727,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.474Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10324",
@@ -4743,7 +4743,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.474Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10325",
@@ -4759,7 +4759,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.474Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10326",
@@ -4775,7 +4775,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.474Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10327",
@@ -4791,7 +4791,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.474Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10328",
@@ -4807,7 +4807,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.474Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10329",
@@ -4823,7 +4823,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.474Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10330",
@@ -4839,7 +4839,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.474Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10331",
@@ -4855,7 +4855,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.474Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10332",
@@ -4871,7 +4871,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.474Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10333",
@@ -4887,7 +4887,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.474Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10334",
@@ -4903,7 +4903,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.474Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10335",
@@ -4919,7 +4919,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.474Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10336",
@@ -4934,7 +4934,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.474Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10337",
@@ -4949,7 +4949,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.474Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10338",
@@ -4964,7 +4964,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.474Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10339",
@@ -4979,7 +4979,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.474Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10340",
@@ -4994,7 +4994,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.474Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10341",
@@ -5008,7 +5008,7 @@
         "src/migrate/commands.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.475Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10342",
@@ -5022,7 +5022,7 @@
         "src/migrate/commands.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.475Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10343",
@@ -5036,7 +5036,7 @@
         "src/mixins/withPagination.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.475Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10344",
@@ -5050,7 +5050,7 @@
         "src/mixins/withPagination.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.475Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10345",
@@ -5064,7 +5064,7 @@
         "src/mixins/withPagination.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.475Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10346",
@@ -5078,7 +5078,7 @@
         "src/mixins/withPagination.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.475Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10347",
@@ -5092,7 +5092,7 @@
         "src/mixins/withPagination.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.475Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10348",
@@ -5108,7 +5108,7 @@
         "src/mixins/hasOne.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.475Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10349",
@@ -5124,7 +5124,7 @@
         "src/mixins/hasOne.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.475Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10350",
@@ -5140,7 +5140,7 @@
         "src/mixins/hasOne.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.475Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10351",
@@ -5156,7 +5156,7 @@
         "src/mixins/hasOne.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.475Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10352",
@@ -5172,7 +5172,7 @@
         "src/mixins/hasOne.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.475Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10353",
@@ -5188,7 +5188,7 @@
         "src/mixins/hasOne.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.475Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10354",
@@ -5204,7 +5204,7 @@
         "src/mixins/hasOne.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.475Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10355",
@@ -5219,7 +5219,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.476Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10356",
@@ -5234,7 +5234,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.476Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10357",
@@ -5249,7 +5249,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.476Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10358",
@@ -5264,7 +5264,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.476Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10359",
@@ -5279,7 +5279,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.476Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10360",
@@ -5294,7 +5294,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.476Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10361",
@@ -5309,7 +5309,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.476Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10362",
@@ -5324,7 +5324,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.476Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10363",
@@ -5339,7 +5339,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.476Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10364",
@@ -5354,7 +5354,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.476Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10365",
@@ -5369,7 +5369,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.476Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10366",
@@ -5384,7 +5384,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.476Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10367",
@@ -5399,7 +5399,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.476Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10368",
@@ -5414,7 +5414,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.476Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10369",
@@ -5429,7 +5429,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.476Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10370",
@@ -5443,7 +5443,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.477Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10371",
@@ -5457,7 +5457,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.477Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10372",
@@ -5471,7 +5471,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.477Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10373",
@@ -5485,7 +5485,7 @@
         "src/store/repository.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.477Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10374",
@@ -5499,7 +5499,7 @@
         "src/mixins/withMembers.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.477Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10375",
@@ -5513,7 +5513,7 @@
         "src/mixins/withMembers.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.477Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10376",
@@ -5527,7 +5527,7 @@
         "src/mixins/withMembers.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.477Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10377",
@@ -5541,7 +5541,7 @@
         "src/mixins/withMembers.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.477Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
     },
     {
       "id": "QA-10378",
@@ -5555,7 +5555,337 @@
         "src/mixins/withMembers.ts"
       ],
       "assignedAt": "2026-04-14T04:44:41.477Z",
-      "lastVerified": null
+      "lastVerified": "2026-04-14"
+    },
+    {
+      "id": "QA-10379",
+      "name": "includes health score and grade",
+      "suite": "renderHealthReport",
+      "file": ".claude/tools/qa/__tests__/templates.test.ts",
+      "line": 28,
+      "type": "unit",
+      "coveredFiles": [
+        ".claude/tools/qa/templates.ts"
+      ],
+      "status": "active",
+      "coveredFunctions": [],
+      "assignedAt": "2026-04-14T05:13:11.261939+00:00",
+      "lastVerified": "2026-04-14"
+    },
+    {
+      "id": "QA-10380",
+      "name": "includes key metrics table",
+      "suite": "renderHealthReport",
+      "file": ".claude/tools/qa/__tests__/templates.test.ts",
+      "line": 34,
+      "type": "unit",
+      "coveredFiles": [
+        ".claude/tools/qa/templates.ts"
+      ],
+      "status": "active",
+      "coveredFunctions": [],
+      "assignedAt": "2026-04-14T05:13:11.261939+00:00",
+      "lastVerified": "2026-04-14"
+    },
+    {
+      "id": "QA-10381",
+      "name": "lists hotspot files",
+      "suite": "renderHotspotsReport",
+      "file": ".claude/tools/qa/__tests__/templates.test.ts",
+      "line": 42,
+      "type": "unit",
+      "coveredFiles": [
+        ".claude/tools/qa/templates.ts"
+      ],
+      "status": "active",
+      "coveredFunctions": [],
+      "assignedAt": "2026-04-14T05:13:11.261939+00:00",
+      "lastVerified": "2026-04-14"
+    },
+    {
+      "id": "QA-10382",
+      "name": "shows no-data message when no coverage",
+      "suite": "renderCoverageReport",
+      "file": ".claude/tools/qa/__tests__/templates.test.ts",
+      "line": 66,
+      "type": "unit",
+      "coveredFiles": [
+        ".claude/tools/qa/templates.ts"
+      ],
+      "status": "active",
+      "coveredFunctions": [],
+      "assignedAt": "2026-04-14T05:13:11.261939+00:00",
+      "lastVerified": "2026-04-14"
+    },
+    {
+      "id": "QA-10383",
+      "name": "lists low coverage files when data is available",
+      "suite": "renderCoverageReport",
+      "file": ".claude/tools/qa/__tests__/templates.test.ts",
+      "line": 71,
+      "type": "unit",
+      "coveredFiles": [
+        ".claude/tools/qa/templates.ts"
+      ],
+      "status": "active",
+      "coveredFunctions": [],
+      "assignedAt": "2026-04-14T05:13:11.261939+00:00",
+      "lastVerified": "2026-04-14"
+    },
+    {
+      "id": "QA-10384",
+      "name": "shows diff summary when available",
+      "suite": "renderChangelogReport",
+      "file": ".claude/tools/qa/__tests__/templates.test.ts",
+      "line": 94,
+      "type": "unit",
+      "coveredFiles": [
+        ".claude/tools/qa/templates.ts"
+      ],
+      "status": "active",
+      "coveredFunctions": [],
+      "assignedAt": "2026-04-14T05:13:11.261939+00:00",
+      "lastVerified": "2026-04-14"
+    },
+    {
+      "id": "QA-10385",
+      "name": "shows first snapshot when no diff",
+      "suite": "renderChangelogReport",
+      "file": ".claude/tools/qa/__tests__/templates.test.ts",
+      "line": 107,
+      "type": "unit",
+      "coveredFiles": [
+        ".claude/tools/qa/templates.ts"
+      ],
+      "status": "active",
+      "coveredFunctions": [],
+      "assignedAt": "2026-04-14T05:13:11.261939+00:00",
+      "lastVerified": "2026-04-14"
+    },
+    {
+      "id": "QA-10386",
+      "name": "Snapshot structure is well-typed",
+      "suite": "types",
+      "file": ".claude/tools/qa/__tests__/snapshot.test.ts",
+      "line": 17,
+      "type": "unit",
+      "coveredFiles": [
+        ".claude/tools/qa/types.ts"
+      ],
+      "status": "active",
+      "coveredFunctions": [],
+      "assignedAt": "2026-04-14T05:13:11.261939+00:00",
+      "lastVerified": "2026-04-14"
+    },
+    {
+      "id": "QA-10387",
+      "name": "Learning structure is well-typed",
+      "suite": "types",
+      "file": ".claude/tools/qa/__tests__/snapshot.test.ts",
+      "line": 78,
+      "type": "unit",
+      "coveredFiles": [
+        ".claude/tools/qa/types.ts"
+      ],
+      "status": "active",
+      "coveredFunctions": [],
+      "assignedAt": "2026-04-14T05:13:11.261939+00:00",
+      "lastVerified": "2026-04-14"
+    },
+    {
+      "id": "QA-10388",
+      "name": "TestRegistryEntry structure is well-typed",
+      "suite": "types",
+      "file": ".claude/tools/qa/__tests__/snapshot.test.ts",
+      "line": 96,
+      "type": "unit",
+      "coveredFiles": [
+        ".claude/tools/qa/types.ts"
+      ],
+      "status": "active",
+      "coveredFunctions": [],
+      "assignedAt": "2026-04-14T05:13:11.261939+00:00",
+      "lastVerified": "2026-04-14"
+    },
+    {
+      "id": "QA-10389",
+      "name": "merges fallow file_scores into FileEntry records",
+      "suite": "mergeToolOutputs",
+      "file": ".claude/tools/qa/__tests__/snapshot.test.ts",
+      "line": 117,
+      "type": "unit",
+      "coveredFiles": [
+        ".claude/tools/qa/snapshot.ts"
+      ],
+      "status": "active",
+      "coveredFunctions": [],
+      "assignedAt": "2026-04-14T05:13:11.261939+00:00",
+      "lastVerified": "2026-04-14"
+    },
+    {
+      "id": "QA-10390",
+      "name": "merges hotspot data into matching FileEntry",
+      "suite": "mergeToolOutputs",
+      "file": ".claude/tools/qa/__tests__/snapshot.test.ts",
+      "line": 152,
+      "type": "unit",
+      "coveredFiles": [
+        ".claude/tools/qa/snapshot.ts"
+      ],
+      "status": "active",
+      "coveredFunctions": [],
+      "assignedAt": "2026-04-14T05:13:11.261939+00:00",
+      "lastVerified": "2026-04-14"
+    },
+    {
+      "id": "QA-10391",
+      "name": "merges ast-grep violations into FileEntry",
+      "suite": "mergeToolOutputs",
+      "file": ".claude/tools/qa/__tests__/snapshot.test.ts",
+      "line": 190,
+      "type": "unit",
+      "coveredFiles": [
+        ".claude/tools/qa/snapshot.ts"
+      ],
+      "status": "active",
+      "coveredFunctions": [],
+      "assignedAt": "2026-04-14T05:13:11.261939+00:00",
+      "lastVerified": "2026-04-14"
+    },
+    {
+      "id": "QA-10392",
+      "name": "returns null when no previous snapshot",
+      "suite": "diffSnapshots",
+      "file": ".claude/tools/qa/__tests__/snapshot.test.ts",
+      "line": 221,
+      "type": "unit",
+      "coveredFiles": [
+        ".claude/tools/qa/snapshot.ts"
+      ],
+      "status": "active",
+      "coveredFunctions": [],
+      "assignedAt": "2026-04-14T05:13:11.261939+00:00",
+      "lastVerified": "2026-04-14"
+    },
+    {
+      "id": "QA-10393",
+      "name": "detects added and removed files",
+      "suite": "diffSnapshots",
+      "file": ".claude/tools/qa/__tests__/snapshot.test.ts",
+      "line": 226,
+      "type": "unit",
+      "coveredFiles": [
+        ".claude/tools/qa/snapshot.ts"
+      ],
+      "status": "active",
+      "coveredFunctions": [],
+      "assignedAt": "2026-04-14T05:13:11.261939+00:00",
+      "lastVerified": "2026-04-14"
+    },
+    {
+      "id": "QA-10394",
+      "name": "detects improved and regressed files by maintainability",
+      "suite": "diffSnapshots",
+      "file": ".claude/tools/qa/__tests__/snapshot.test.ts",
+      "line": 235,
+      "type": "unit",
+      "coveredFiles": [
+        ".claude/tools/qa/snapshot.ts"
+      ],
+      "status": "active",
+      "coveredFunctions": [],
+      "assignedAt": "2026-04-14T05:13:11.261939+00:00",
+      "lastVerified": "2026-04-14"
+    },
+    {
+      "id": "QA-10395",
+      "name": "aggregates file entries into summary metrics",
+      "suite": "buildSummary",
+      "file": ".claude/tools/qa/__tests__/snapshot.test.ts",
+      "line": 252,
+      "type": "unit",
+      "coveredFiles": [
+        ".claude/tools/qa/snapshot.ts"
+      ],
+      "status": "active",
+      "coveredFunctions": [],
+      "assignedAt": "2026-04-14T05:13:11.261939+00:00",
+      "lastVerified": "2026-04-14"
+    },
+    {
+      "id": "QA-10396",
+      "name": "assigns QA-10000 on empty registry",
+      "suite": "assignNextId",
+      "file": ".claude/tools/qa/__tests__/registry.test.ts",
+      "line": 23,
+      "type": "unit",
+      "coveredFiles": [
+        ".claude/tools/qa/registry.ts"
+      ],
+      "status": "active",
+      "coveredFunctions": [],
+      "assignedAt": "2026-04-14T05:13:11.261939+00:00",
+      "lastVerified": "2026-04-14"
+    },
+    {
+      "id": "QA-10397",
+      "name": "increments ID on subsequent assignments",
+      "suite": "assignNextId",
+      "file": ".claude/tools/qa/__tests__/registry.test.ts",
+      "line": 41,
+      "type": "unit",
+      "coveredFiles": [
+        ".claude/tools/qa/registry.ts"
+      ],
+      "status": "active",
+      "coveredFunctions": [],
+      "assignedAt": "2026-04-14T05:13:11.261939+00:00",
+      "lastVerified": "2026-04-14"
+    },
+    {
+      "id": "QA-10398",
+      "name": "returns the entry for a valid ID",
+      "suite": "lookupTest",
+      "file": ".claude/tools/qa/__tests__/registry.test.ts",
+      "line": 58,
+      "type": "unit",
+      "coveredFiles": [
+        ".claude/tools/qa/registry.ts"
+      ],
+      "status": "active",
+      "coveredFunctions": [],
+      "assignedAt": "2026-04-14T05:13:11.261939+00:00",
+      "lastVerified": "2026-04-14"
+    },
+    {
+      "id": "QA-10399",
+      "name": "returns null for unknown ID",
+      "suite": "lookupTest",
+      "file": ".claude/tools/qa/__tests__/registry.test.ts",
+      "line": 69,
+      "type": "unit",
+      "coveredFiles": [
+        ".claude/tools/qa/registry.ts"
+      ],
+      "status": "active",
+      "coveredFunctions": [],
+      "assignedAt": "2026-04-14T05:13:11.261939+00:00",
+      "lastVerified": "2026-04-14"
+    },
+    {
+      "id": "QA-10400",
+      "name": "marks tests as missing when file does not exist",
+      "suite": "verifyRegistry",
+      "file": ".claude/tools/qa/__tests__/registry.test.ts",
+      "line": 76,
+      "type": "unit",
+      "coveredFiles": [
+        ".claude/tools/qa/registry.ts"
+      ],
+      "status": "active",
+      "coveredFunctions": [],
+      "assignedAt": "2026-04-14T05:13:11.261939+00:00",
+      "lastVerified": "2026-04-14"
     }
   ]
 }
