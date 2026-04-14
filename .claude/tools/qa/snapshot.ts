@@ -513,6 +513,12 @@ export async function runSnapshot(opts: { coverage?: boolean; force?: boolean } 
   writeJSON(qastatePath('snapshots', 'history', `${fileTimestamp()}.json`), snapshot)
 
   console.log('  Snapshot saved.')
+
+  // Generate templated reports
+  const { generateAllReports } = await import('./templates.js')
+  generateAllReports(snapshot)
+  console.log('  Reports generated in .qastate/reports/.')
+
   return snapshot
 }
 
