@@ -317,7 +317,7 @@ function runFallowHealth(): FallowHealthOutput {
 
 function runFallowScore(): { score: number; grade: string } | null {
   const result = execJSON<any>('fallow --format json --quiet --score')
-  return result?.health_score ?? null
+  return result?.health?.health_score ?? null
 }
 
 function runFallowDeadCode(): FallowDeadCodeOutput {

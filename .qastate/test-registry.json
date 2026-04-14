@@ -5564,9 +5564,7 @@
       "file": ".claude/tools/qa/__tests__/templates.test.ts",
       "line": 28,
       "type": "unit",
-      "coveredFiles": [
-        ".claude/tools/qa/templates.ts"
-      ],
+      "coveredFiles": [],
       "status": "active",
       "coveredFunctions": [],
       "assignedAt": "2026-04-14T05:13:11.261939+00:00",
@@ -5579,9 +5577,7 @@
       "file": ".claude/tools/qa/__tests__/templates.test.ts",
       "line": 34,
       "type": "unit",
-      "coveredFiles": [
-        ".claude/tools/qa/templates.ts"
-      ],
+      "coveredFiles": [],
       "status": "active",
       "coveredFunctions": [],
       "assignedAt": "2026-04-14T05:13:11.261939+00:00",
@@ -5594,9 +5590,7 @@
       "file": ".claude/tools/qa/__tests__/templates.test.ts",
       "line": 42,
       "type": "unit",
-      "coveredFiles": [
-        ".claude/tools/qa/templates.ts"
-      ],
+      "coveredFiles": [],
       "status": "active",
       "coveredFunctions": [],
       "assignedAt": "2026-04-14T05:13:11.261939+00:00",
@@ -5609,9 +5603,7 @@
       "file": ".claude/tools/qa/__tests__/templates.test.ts",
       "line": 66,
       "type": "unit",
-      "coveredFiles": [
-        ".claude/tools/qa/templates.ts"
-      ],
+      "coveredFiles": [],
       "status": "active",
       "coveredFunctions": [],
       "assignedAt": "2026-04-14T05:13:11.261939+00:00",
@@ -5624,9 +5616,7 @@
       "file": ".claude/tools/qa/__tests__/templates.test.ts",
       "line": 71,
       "type": "unit",
-      "coveredFiles": [
-        ".claude/tools/qa/templates.ts"
-      ],
+      "coveredFiles": [],
       "status": "active",
       "coveredFunctions": [],
       "assignedAt": "2026-04-14T05:13:11.261939+00:00",
@@ -5639,9 +5629,7 @@
       "file": ".claude/tools/qa/__tests__/templates.test.ts",
       "line": 94,
       "type": "unit",
-      "coveredFiles": [
-        ".claude/tools/qa/templates.ts"
-      ],
+      "coveredFiles": [],
       "status": "active",
       "coveredFunctions": [],
       "assignedAt": "2026-04-14T05:13:11.261939+00:00",
@@ -5654,9 +5642,7 @@
       "file": ".claude/tools/qa/__tests__/templates.test.ts",
       "line": 107,
       "type": "unit",
-      "coveredFiles": [
-        ".claude/tools/qa/templates.ts"
-      ],
+      "coveredFiles": [],
       "status": "active",
       "coveredFunctions": [],
       "assignedAt": "2026-04-14T05:13:11.261939+00:00",
@@ -5669,9 +5655,7 @@
       "file": ".claude/tools/qa/__tests__/snapshot.test.ts",
       "line": 17,
       "type": "unit",
-      "coveredFiles": [
-        ".claude/tools/qa/types.ts"
-      ],
+      "coveredFiles": [],
       "status": "active",
       "coveredFunctions": [],
       "assignedAt": "2026-04-14T05:13:11.261939+00:00",
@@ -5684,9 +5668,7 @@
       "file": ".claude/tools/qa/__tests__/snapshot.test.ts",
       "line": 78,
       "type": "unit",
-      "coveredFiles": [
-        ".claude/tools/qa/types.ts"
-      ],
+      "coveredFiles": [],
       "status": "active",
       "coveredFunctions": [],
       "assignedAt": "2026-04-14T05:13:11.261939+00:00",
@@ -5699,9 +5681,7 @@
       "file": ".claude/tools/qa/__tests__/snapshot.test.ts",
       "line": 96,
       "type": "unit",
-      "coveredFiles": [
-        ".claude/tools/qa/types.ts"
-      ],
+      "coveredFiles": [],
       "status": "active",
       "coveredFunctions": [],
       "assignedAt": "2026-04-14T05:13:11.261939+00:00",
@@ -5714,9 +5694,7 @@
       "file": ".claude/tools/qa/__tests__/snapshot.test.ts",
       "line": 117,
       "type": "unit",
-      "coveredFiles": [
-        ".claude/tools/qa/snapshot.ts"
-      ],
+      "coveredFiles": [],
       "status": "active",
       "coveredFunctions": [],
       "assignedAt": "2026-04-14T05:13:11.261939+00:00",
@@ -5729,9 +5707,7 @@
       "file": ".claude/tools/qa/__tests__/snapshot.test.ts",
       "line": 152,
       "type": "unit",
-      "coveredFiles": [
-        ".claude/tools/qa/snapshot.ts"
-      ],
+      "coveredFiles": [],
       "status": "active",
       "coveredFunctions": [],
       "assignedAt": "2026-04-14T05:13:11.261939+00:00",
@@ -5744,9 +5720,7 @@
       "file": ".claude/tools/qa/__tests__/snapshot.test.ts",
       "line": 190,
       "type": "unit",
-      "coveredFiles": [
-        ".claude/tools/qa/snapshot.ts"
-      ],
+      "coveredFiles": [],
       "status": "active",
       "coveredFunctions": [],
       "assignedAt": "2026-04-14T05:13:11.261939+00:00",
@@ -5759,9 +5733,7 @@
       "file": ".claude/tools/qa/__tests__/snapshot.test.ts",
       "line": 221,
       "type": "unit",
-      "coveredFiles": [
-        ".claude/tools/qa/snapshot.ts"
-      ],
+      "coveredFiles": [],
       "status": "active",
       "coveredFunctions": [],
       "assignedAt": "2026-04-14T05:13:11.261939+00:00",
@@ -5774,9 +5746,7 @@
       "file": ".claude/tools/qa/__tests__/snapshot.test.ts",
       "line": 226,
       "type": "unit",
-      "coveredFiles": [
-        ".claude/tools/qa/snapshot.ts"
-      ],
+      "coveredFiles": [],
       "status": "active",
       "coveredFunctions": [],
       "assignedAt": "2026-04-14T05:13:11.261939+00:00",
@@ -5789,9 +5759,7 @@
       "file": ".claude/tools/qa/__tests__/snapshot.test.ts",
       "line": 235,
       "type": "unit",
-      "coveredFiles": [
-        ".claude/tools/qa/snapshot.ts"
-      ],
+      "coveredFiles": [],
       "status": "active",
       "coveredFunctions": [],
       "assignedAt": "2026-04-14T05:13:11.261939+00:00",
@@ -5804,9 +5772,7 @@
       "file": ".claude/tools/qa/__tests__/snapshot.test.ts",
       "line": 252,
       "type": "unit",
-      "coveredFiles": [
-        ".claude/tools/qa/snapshot.ts"
-      ],
+      "coveredFiles": [],
       "status": "active",
       "coveredFunctions": [],
       "assignedAt": "2026-04-14T05:13:11.261939+00:00",
@@ -5819,9 +5785,7 @@
       "file": ".claude/tools/qa/__tests__/registry.test.ts",
       "line": 23,
       "type": "unit",
-      "coveredFiles": [
-        ".claude/tools/qa/registry.ts"
-      ],
+      "coveredFiles": [],
       "status": "active",
       "coveredFunctions": [],
       "assignedAt": "2026-04-14T05:13:11.261939+00:00",
@@ -5834,9 +5798,7 @@
       "file": ".claude/tools/qa/__tests__/registry.test.ts",
       "line": 41,
       "type": "unit",
-      "coveredFiles": [
-        ".claude/tools/qa/registry.ts"
-      ],
+      "coveredFiles": [],
       "status": "active",
       "coveredFunctions": [],
       "assignedAt": "2026-04-14T05:13:11.261939+00:00",
@@ -5849,9 +5811,7 @@
       "file": ".claude/tools/qa/__tests__/registry.test.ts",
       "line": 58,
       "type": "unit",
-      "coveredFiles": [
-        ".claude/tools/qa/registry.ts"
-      ],
+      "coveredFiles": [],
       "status": "active",
       "coveredFunctions": [],
       "assignedAt": "2026-04-14T05:13:11.261939+00:00",
@@ -5864,9 +5824,7 @@
       "file": ".claude/tools/qa/__tests__/registry.test.ts",
       "line": 69,
       "type": "unit",
-      "coveredFiles": [
-        ".claude/tools/qa/registry.ts"
-      ],
+      "coveredFiles": [],
       "status": "active",
       "coveredFunctions": [],
       "assignedAt": "2026-04-14T05:13:11.261939+00:00",
@@ -5879,9 +5837,7 @@
       "file": ".claude/tools/qa/__tests__/registry.test.ts",
       "line": 76,
       "type": "unit",
-      "coveredFiles": [
-        ".claude/tools/qa/registry.ts"
-      ],
+      "coveredFiles": [],
       "status": "active",
       "coveredFunctions": [],
       "assignedAt": "2026-04-14T05:13:11.261939+00:00",
