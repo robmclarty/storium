@@ -8,7 +8,7 @@
       "confidence": "medium",
       "firstSeen": "2026-04-14",
       "lastConfirmed": "2026-04-14",
-      "context": "Confirmed across 6 snapshots. repository.ts: cyc 179, cog 124, 803 lines (25% of all source complexity alone). prep.ts: cyc 59, cog 46, 310L. define.ts: cyc 56, cog 34, 329L. Combined: 42% of all source complexity, all accelerating. Hotspot count rose from 29→34 across sessions. Recommend decomposing repository.ts before next CRUD feature work — extract soft-delete, upsert/conflict, or read/write split."
+      "context": "Confirmed across 6 snapshots. repository.ts: cyc 179, cog 124, 803 lines (25% of all source complexity alone). prep.ts: cyc 59, cog 46, 310L. define.ts: cyc 56, cog 34, 329L. Combined: 42% of all source complexity, all accelerating. Hotspot count rose from 29→34 across sessions. Recommend decomposing repository.ts before next CRUD feature work — extract soft-delete, upsert/conflict, or read/write split.\nrepository.ts still leads at 179 cyclomatic, 803 lines, 74% coverage — highest risk source file"
     },
     {
       "id": "L002",
@@ -35,7 +35,7 @@
       "confidence": "low",
       "firstSeen": "2026-04-14",
       "lastConfirmed": "2026-04-14",
-      "context": "Hotspot score 77.8 (highest) but trend is 'cooling'. 35 commits in 6mo. 44 tests cover it. Commands.ts (34.8) and bin/storium.ts (33.7) also cooling. While connect.ts has the highest raw hotspot score, repository.ts (accelerating, 179 cyc) is the more urgent concern."
+      "context": "Hotspot score 77.8 (highest) but trend is 'cooling'. 35 commits in 6mo. 44 tests cover it. Commands.ts (34.8) and bin/storium.ts (33.7) also cooling. While connect.ts has the highest raw hotspot score, repository.ts (accelerating, 179 cyc) is the more urgent concern.\nconnect.ts has highest hotspot score (77.8) but trend is cooling; coverage still low at 68%/64%"
     },
     {
       "id": "L005",
@@ -45,6 +45,33 @@
       "firstSeen": "2026-04-14",
       "lastConfirmed": "2026-04-14",
       "context": "All 18 source files have coveredByTests entries. 393 tests tracked (up from 371). Confirmed in analysis cycle 2026-04-14."
+    },
+    {
+      "id": "L006",
+      "category": "risk",
+      "insight": "migrate/commands.ts has lowest branch coverage of any source file (34%) with high churn (17 commits). CRAP score of 12 suggests untested complex paths.",
+      "confidence": "low",
+      "firstSeen": "2026-04-14",
+      "lastConfirmed": "2026-04-14",
+      "context": "60% line / 34% branch coverage, 40 cyclomatic, hotspot score 34.8 but cooling\nmigrate/commands.ts ranks #2 fragile: only 10 tests, 34% branch cov, no error-path or rollback tests"
+    },
+    {
+      "id": "L007",
+      "category": "observation",
+      "insight": "Five source files have accelerating hotspot trends simultaneously (repository, prep, define, zod, withMembers). All are core store-layer files — suggests active development pressure on the store subsystem.",
+      "confidence": "low",
+      "firstSeen": "2026-04-14",
+      "lastConfirmed": "2026-04-14",
+      "context": "All accelerating files are in src/store/ or src/schema/ or src/mixins/"
+    },
+    {
+      "id": "L008",
+      "category": "risk",
+      "insight": "seed.ts has only 4 tests covering 251 lines (32 cyclomatic). No tests for error paths (missing directory, malformed seed files, partial failures). Ranks #4 fragile.",
+      "confidence": "low",
+      "firstSeen": "2026-04-14",
+      "lastConfirmed": "2026-04-14",
+      "context": "Fragility score 2.75, 85% line but 60% branch coverage, hotspot cooling"
     }
   ]
 }
