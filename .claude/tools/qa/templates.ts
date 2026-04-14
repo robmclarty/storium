@@ -1,3 +1,4 @@
+import { writeFileSync, mkdirSync } from 'node:fs'
 import type { Snapshot, FileEntry } from './types.js'
 
 function pct(n: number | null): string {
@@ -150,7 +151,6 @@ ${removed}
  * Generate all reports from a snapshot and write to .qastate/reports/.
  */
 export function generateAllReports(snapshot: Snapshot): void {
-  const { writeFileSync, mkdirSync } = require('node:fs')
   const reportsDir = `${process.cwd()}/.qastate/reports`
   mkdirSync(reportsDir, { recursive: true })
 
