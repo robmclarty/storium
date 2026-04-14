@@ -38,7 +38,7 @@ export function renderHealthReport(snapshot: Snapshot): string {
 
   const allFiles = Object.values(snapshot.files)
   const sourceFiles = allFiles.filter(f => f.classification === 'source')
-  const accelerating = sourceFiles.filter(f => f.hotspotTrend === 'heating')
+  const accelerating = sourceFiles.filter(f => f.hotspotTrend === 'accelerating')
   if (accelerating.length > 0) {
     concerns.push(`${accelerating.length} accelerating hotspot(s)`)
   }
@@ -195,7 +195,7 @@ export function renderHotspotsReport(snapshot: Snapshot): string {
   const sourceHotspots = allFiles.filter(f => f.isHotspot && f.classification === 'source')
   const testHotspots = allFiles.filter(f => f.isHotspot && f.classification === 'test')
 
-  const accelerating = sourceHotspots.filter(f => f.hotspotTrend === 'heating').sort((a, b) => (b.hotspotScore ?? 0) - (a.hotspotScore ?? 0))
+  const accelerating = sourceHotspots.filter(f => f.hotspotTrend === 'accelerating').sort((a, b) => (b.hotspotScore ?? 0) - (a.hotspotScore ?? 0))
   const stable = sourceHotspots.filter(f => f.hotspotTrend === 'stable').sort((a, b) => (b.hotspotScore ?? 0) - (a.hotspotScore ?? 0))
   const cooling = sourceHotspots.filter(f => f.hotspotTrend === 'cooling').sort((a, b) => (b.hotspotScore ?? 0) - (a.hotspotScore ?? 0))
 

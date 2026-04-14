@@ -28,7 +28,7 @@ export type FileEntry = {
   // From fallow health --hotspots
   isHotspot: boolean
   hotspotScore: number | null
-  hotspotTrend: 'heating' | 'cooling' | 'stable' | null
+  hotspotTrend: 'accelerating' | 'cooling' | 'stable' | null
 
   // From fallow dead-code
   hasDeadExports: boolean

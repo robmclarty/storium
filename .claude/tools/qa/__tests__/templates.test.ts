@@ -92,7 +92,7 @@ describe('renderHotspotsReport', () => {
       maintainability: 70, complexityDensity: 0.3, totalCyclomatic: 50,
       totalCognitive: 40, functionCount: 15, lines: 200, crapMax: 60,
       fanIn: 3, fanOut: 5, deadCodeRatio: 0,
-      isHotspot: true, hotspotScore: 80, hotspotTrend: 'heating',
+      isHotspot: true, hotspotScore: 80, hotspotTrend: 'accelerating',
       hasDeadExports: false, deadExportCount: 0,
       hasDuplicates: false, duplicateLineCount: 0,
       circularWith: [], dependencyDepth: 0, patternViolations: [],

@@ -48,7 +48,7 @@ type FallowHotspot = {
   lines_deleted: number
   complexity_density: number
   fan_in: number
-  trend: 'heating' | 'cooling' | 'stable'
+  trend: 'accelerating' | 'cooling' | 'stable'
 }
 
 type FallowHealthOutput = {
