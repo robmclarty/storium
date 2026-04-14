@@ -38,7 +38,7 @@ for (const dialect of getTestDialects()) {
       await ctx.teardown()
     })
 
-    it('10 parallel creates all succeed', async () => {
+    /* QA-10299 */ it('[QA-10299] 10 parallel creates all succeed', async () => {
       const promises = Array.from({ length: 10 }, (_, i) =>
         users.create({ email: `conc_create_${i}@test.com`, name: `Conc${i}` })
       )
@@ -48,7 +48,7 @@ for (const dialect of getTestDialects()) {
       expect(new Set(results.map((r: any) => r.id)).size).toBe(10) // All unique IDs
     })
 
-    it('parallel reads during writes do not error', async () => {
+    /* QA-10300 */ it('[QA-10300] parallel reads during writes do not error', async () => {
       // Start some writes
       const writes = Array.from({ length: 5 }, (_, i) =>
         users.create({ email: `conc_rw_${i}@test.com`, name: 'ConcRW' })

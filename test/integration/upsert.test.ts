@@ -40,14 +40,14 @@ for (const dialect of getTestDialects()) {
       await ctx.teardown()
     })
 
-    it('inserts when row does not exist', async () => {
+    /* QA-10370 */ it('[QA-10370] inserts when row does not exist', async () => {
       const row = await users.upsert({ email: 'upsert_new@test.com', name: 'New' })
       expect(row.email).toBe('upsert_new@test.com')
       expect(row.name).toBe('New')
       expect(row.id).toBeDefined()
     })
 
-    it('updates when row with same PK exists', async () => {
+    /* QA-10371 */ it('[QA-10371] updates when row with same PK exists', async () => {
       const created = await users.create({ email: 'upsert_exist@test.com', name: 'Before' })
 
       const upserted = await users.upsert({
@@ -60,7 +60,7 @@ for (const dialect of getTestDialects()) {
       expect(upserted.name).toBe('After')
     })
 
-    it('idempotent — same data twice returns same row', async () => {
+    /* QA-10372 */ it('[QA-10372] idempotent — same data twice returns same row', async () => {
       const first = await users.upsert({ email: 'upsert_idem@test.com', name: 'Idem' })
       const second = await users.upsert({
         id: first.id,
@@ -73,7 +73,7 @@ for (const dialect of getTestDialects()) {
       expect(second.name).toBe(first.name)
     })
 
-    it('upsert with composite PK table', async () => {
+    /* QA-10373 */ it('[QA-10373] upsert with composite PK table', async () => {
       const uid = crypto.randomUUID()
       const gid = crypto.randomUUID()
 

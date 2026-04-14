@@ -42,14 +42,14 @@ describe('withCache', () => {
   })
 
   describe('cache-aside reads', () => {
-    it('calls the original on cache miss and stores the result', async () => {
+    /* QA-10070 */ it('[QA-10070] calls the original on cache miss and stores the result', async () => {
       const result = await cached.findById('123')
       expect(result).toEqual({ id: '123', email: '123@test.com' })
       expect(store.findById).toHaveBeenCalledTimes(1)
       expect(cache.set).toHaveBeenCalledWith('users:123', JSON.stringify(result), 300)
     })
 
-    it('returns cached value on cache hit without calling original', async () => {
+    /* QA-10071 */ it('[QA-10071] returns cached value on cache hit without calling original', async () => {
       await cached.findById('123')
       store.findById.mockClear()
 
@@ -60,7 +60,7 @@ describe('withCache', () => {
   })
 
   describe('write invalidation', () => {
-    it('invalidates cache entries on create', async () => {
+    /* QA-10072 */ it('[QA-10072] invalidates cache entries on create', async () => {
       await cached.findById('123') // populate cache
       expect(cache.store.size).toBe(1)
 
@@ -69,19 +69,19 @@ describe('withCache', () => {
       expect(cache.store.size).toBe(0)
     })
 
-    it('invalidates cache entries on update', async () => {
+    /* QA-10073 */ it('[QA-10073] invalidates cache entries on update', async () => {
       await cached.findById('123')
       await cached.update('123', { email: 'updated@test.com' })
       expect(cache.delPattern).toHaveBeenCalledWith('users:*')
     })
 
-    it('invalidates cache entries on destroy', async () => {
+    /* QA-10074 */ it('[QA-10074] invalidates cache entries on destroy', async () => {
       await cached.findById('123')
       await cached.destroy('123')
       expect(cache.delPattern).toHaveBeenCalledWith('users:*')
     })
 
-    it('invalidates cache entries on destroyAll', async () => {
+    /* QA-10075 */ it('[QA-10075] invalidates cache entries on destroyAll', async () => {
       await cached.findById('123')
       await cached.destroyAll({ active: false })
       expect(cache.delPattern).toHaveBeenCalledWith('users:*')
@@ -89,7 +89,7 @@ describe('withCache', () => {
   })
 
   describe('passthrough', () => {
-    it('passes through uncached methods unchanged', async () => {
+    /* QA-10076 */ it('[QA-10076] passes through uncached methods unchanged', async () => {
       const result = await cached.findByEmail('test@test.com')
       expect(result).toEqual({ id: '1', email: 'test@test.com' })
       expect(store.findByEmail).toHaveBeenCalledTimes(1)
@@ -99,7 +99,7 @@ describe('withCache', () => {
   })
 
   describe('corrupted cache', () => {
-    it('falls back to origin on corrupted cache entry', async () => {
+    /* QA-10077 */ it('[QA-10077] falls back to origin on corrupted cache entry', async () => {
       cache.store.set('users:123', 'not-json{{{')
       const result = await cached.findById('123')
       expect(result).toEqual({ id: '123', email: '123@test.com' })

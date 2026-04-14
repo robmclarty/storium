@@ -49,11 +49,11 @@ beforeAll(() => {
 })
 
 describe('belongsTo', () => {
-  it('generates a findWith{Alias} method', () => {
+  /* QA-10049 */ it('[QA-10049] generates a findWith{Alias} method', () => {
     expect(typeof posts.findWithAuthor).toBe('function')
   })
 
-  it('returns the entity with inlined related fields', async () => {
+  /* QA-10050 */ it('[QA-10050] returns the entity with inlined related fields', async () => {
     const author = await authors.create({ id: 'a1', name: 'Alice', email: 'alice@test.com' })
     const post = await posts.create({ id: 'p1', title: 'Hello', author_id: author.id })
 
@@ -64,7 +64,7 @@ describe('belongsTo', () => {
     expect(result.author_email).toBe('alice@test.com')
   })
 
-  it('returns null fields when the related entity does not exist', async () => {
+  /* QA-10051 */ it('[QA-10051] returns null fields when the related entity does not exist', async () => {
     const post = await posts.create({
       id: 'p2',
       title: 'Orphan',
@@ -77,12 +77,12 @@ describe('belongsTo', () => {
     expect(result.author_name).toBeNull()
   })
 
-  it('returns null when the entity itself does not exist', async () => {
+  /* QA-10052 */ it('[QA-10052] returns null when the entity itself does not exist', async () => {
     const result = await posts.findWithAuthor('00000000-0000-0000-0000-000000000000')
     expect(result).toBeNull()
   })
 
-  it('throws StoreError for unknown select column', async () => {
+  /* QA-10053 */ it('[QA-10053] throws StoreError for unknown select column', async () => {
     const badAuthorsTable = sqliteTable('authors', {
       id: text('id').primaryKey(),
       name: text('name').notNull(),
@@ -146,14 +146,14 @@ describe('belongsTo soft-delete filtering', () => {
     await items.create({ id: 'i2', title: 'Item with deleted cat', category_id: 'c2' })
   })
 
-  it('returns null for related fields when the related row is soft-deleted', async () => {
+  /* QA-10054 */ it('[QA-10054] returns null for related fields when the related row is soft-deleted', async () => {
     const result = await items.findWithCategory('i2')
     expect(result).not.toBeNull()
     expect(result.title).toBe('Item with deleted cat')
     expect(result.category_name).toBeNull()
   })
 
-  it('returns related fields when the related row is not soft-deleted', async () => {
+  /* QA-10055 */ it('[QA-10055] returns related fields when the related row is not soft-deleted', async () => {
     const result = await items.findWithCategory('i1')
     expect(result).not.toBeNull()
     expect(result.category_name).toBe('Active Category')

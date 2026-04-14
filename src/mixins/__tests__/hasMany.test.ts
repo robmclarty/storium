@@ -50,11 +50,11 @@ beforeAll(async () => {
 })
 
 describe('hasMany', () => {
-  it('generates a find{Alias}For method', () => {
+  /* QA-10056 */ it('[QA-10056] generates a find{Alias}For method', () => {
     expect(typeof authors.findPostsFor).toBe('function')
   })
 
-  it('returns related rows as a flat array', async () => {
+  /* QA-10057 */ it('[QA-10057] returns related rows as a flat array', async () => {
     const [alice] = await authors.find({ name: 'Alice' })
     const result = await authors.findPostsFor(alice.id)
     expect(Array.isArray(result)).toBe(true)
@@ -63,18 +63,18 @@ describe('hasMany', () => {
     expect(result[0]).toHaveProperty('id')
   })
 
-  it('returns an empty array when no related rows exist', async () => {
+  /* QA-10058 */ it('[QA-10058] returns an empty array when no related rows exist', async () => {
     const result = await authors.findPostsFor('00000000-0000-0000-0000-000000000000')
     expect(result).toEqual([])
   })
 
-  it('supports limit option', async () => {
+  /* QA-10059 */ it('[QA-10059] supports limit option', async () => {
     const [alice] = await authors.find({ name: 'Alice' })
     const result = await authors.findPostsFor(alice.id, { limit: 2 })
     expect(result).toHaveLength(2)
   })
 
-  it('supports orderBy option', async () => {
+  /* QA-10060 */ it('[QA-10060] supports orderBy option', async () => {
     const [alice] = await authors.find({ name: 'Alice' })
     const result = await authors.findPostsFor(alice.id, {
       orderBy: { column: 'title', direction: 'asc' },
@@ -83,7 +83,7 @@ describe('hasMany', () => {
     expect(result[2].title).toBe('Post C')
   })
 
-  it('supports where callback', async () => {
+  /* QA-10061 */ it('[QA-10061] supports where callback', async () => {
     const [alice] = await authors.find({ name: 'Alice' })
     const result = await authors.findPostsFor(alice.id, {
       where: (t: any) => like(t.title, '%A'),
@@ -92,7 +92,7 @@ describe('hasMany', () => {
     expect(result[0].title).toBe('Post A')
   })
 
-  it('throws StoreError for unknown select column', async () => {
+  /* QA-10062 */ it('[QA-10062] throws StoreError for unknown select column', async () => {
     const badPostsTable = sqliteTable('posts', {
       id: text('id').primaryKey(),
       title: text('title').notNull(),
@@ -115,7 +115,7 @@ describe('hasMany', () => {
     await expect(badAuthors.findPostsFor('alice-1')).rejects.toThrow(StoreError)
   })
 
-  it('respects select option to limit returned columns', async () => {
+  /* QA-10063 */ it('[QA-10063] respects select option to limit returned columns', async () => {
     // Attach .storium with select restriction
     const postsTable2 = sqliteTable('posts', {
       id: text('id').primaryKey(),
@@ -177,7 +177,7 @@ describe('hasMany soft-delete filtering', () => {
     await articles.destroy('art2')
   })
 
-  it('excludes soft-deleted related rows', async () => {
+  /* QA-10064 */ it('[QA-10064] excludes soft-deleted related rows', async () => {
     const result = await authors2.findArticlesFor('a1')
     expect(result).toHaveLength(1)
     expect(result[0].title).toBe('Live Article')

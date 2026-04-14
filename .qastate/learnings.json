@@ -1,4 +1,32 @@
 {
   "version": 1,
-  "entries": []
+  "entries": [
+    {
+      "id": "L001",
+      "insight": "Complexity is concentrated in the store layer (repository.ts, prep.ts, define.ts) — all three are accelerating hotspots. This cluster represents the core API surface and is the highest-risk area for regressions.",
+      "category": "risk",
+      "confidence": "low",
+      "firstSeen": "2026-04-14",
+      "lastConfirmed": "2026-04-14",
+      "context": "First snapshot baseline. repository.ts: cyc 179, cog 124, 803 lines. prep.ts: cyc 59, cog 46. define.ts: cyc 56, cog 34. Fragility analysis confirms: store layer has 3 of top 7 fragile files, all accelerating."
+    },
+    {
+      "id": "L002",
+      "insight": "No test coverage data is being collected. CRAP scores are static estimates only. Coverage tracking is the highest-leverage QA improvement available.",
+      "category": "gap",
+      "confidence": "low",
+      "firstSeen": "2026-04-14",
+      "lastConfirmed": "2026-04-14",
+      "context": "All files show lineCoverage: null, branchCoverage: null in snapshot."
+    },
+    {
+      "id": "L003",
+      "insight": "Test files account for 10 of 29 hotspots. repository.test.ts (cyc: 111, 858 lines) is itself a complexity risk — test helpers or shared fixtures could reduce this.",
+      "category": "observation",
+      "confidence": "low",
+      "firstSeen": "2026-04-14",
+      "lastConfirmed": "2026-04-14",
+      "context": "First snapshot. Expected during active pre-1.0 test writing."
+    }
+  ]
 }

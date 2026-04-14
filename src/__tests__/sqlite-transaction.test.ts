@@ -24,7 +24,7 @@ describe('SQLite transaction', () => {
     return { db, items }
   }
 
-  it('commits on success', async () => {
+  /* QA-10026 */ it('[QA-10026] commits on success', async () => {
     const { db, items } = setup()
 
     await db.transaction(async (tx) => {
@@ -37,7 +37,7 @@ describe('SQLite transaction', () => {
     await db.disconnect()
   })
 
-  it('rolls back on error', async () => {
+  /* QA-10027 */ it('[QA-10027] rolls back on error', async () => {
     const { db, items } = setup()
 
     await expect(

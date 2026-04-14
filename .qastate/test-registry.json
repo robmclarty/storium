@@ -1,5 +1,5561 @@
 {
   "version": 1,
-  "nextId": 10000,
-  "entries": []
+  "nextId": 10379,
+  "entries": [
+    {
+      "id": "QA-10000",
+      "name": "--help prints usage and exits 0",
+      "suite": "storium CLI",
+      "file": "bin/__tests__/cli.test.ts",
+      "line": 22,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/migrate/commands.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.459Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10001",
+      "name": "-h prints usage and exits 0",
+      "suite": "storium CLI",
+      "file": "bin/__tests__/cli.test.ts",
+      "line": 31,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/migrate/commands.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.460Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10002",
+      "name": "no args prints usage and exits 1",
+      "suite": "storium CLI",
+      "file": "bin/__tests__/cli.test.ts",
+      "line": 36,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/migrate/commands.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.460Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10003",
+      "name": "unknown command prints error and exits 1",
+      "suite": "storium CLI",
+      "file": "bin/__tests__/cli.test.ts",
+      "line": 42,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/migrate/commands.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.460Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10004",
+      "name": "returns a StoriumInstance with all expected properties",
+      "suite": "connect",
+      "file": "src/__tests__/connect.test.ts",
+      "line": 11,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.460Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10005",
+      "name": "throws ConfigError when dialect is missing",
+      "suite": "connect",
+      "file": "src/__tests__/connect.test.ts",
+      "line": 22,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.460Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10006",
+      "name": "throws ConfigError for unknown dialect",
+      "suite": "connect",
+      "file": "src/__tests__/connect.test.ts",
+      "line": 26,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.460Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10007",
+      "name": "auto-detects sqlite dialect from a better-sqlite3 Drizzle instance",
+      "suite": "connect > fromDrizzle",
+      "file": "src/__tests__/connect.test.ts",
+      "line": 32,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.460Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10008",
+      "name": "throws ConfigError for invalid Drizzle instance",
+      "suite": "connect > fromDrizzle",
+      "file": "src/__tests__/connect.test.ts",
+      "line": 42,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.460Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10009",
+      "name": "uses explicit dialect when provided, bypassing inference",
+      "suite": "connect > fromDrizzle",
+      "file": "src/__tests__/connect.test.ts",
+      "line": 47,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.460Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10010",
+      "name": "accepts assertions option",
+      "suite": "connect > fromDrizzle",
+      "file": "src/__tests__/connect.test.ts",
+      "line": 57,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.460Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10011",
+      "name": "materializes StoreDefinitions into live stores",
+      "suite": "connect > fromDrizzle > register",
+      "file": "src/__tests__/connect.test.ts",
+      "line": 70,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.460Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10012",
+      "name": "throws ConfigError for non-StoreDefinition values",
+      "suite": "connect > fromDrizzle > register",
+      "file": "src/__tests__/connect.test.ts",
+      "line": 88,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.460Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10013",
+      "name": "creates a live store from a Drizzle table",
+      "suite": "connect > fromDrizzle > register > db.defineStore (simple path)",
+      "file": "src/__tests__/connect.test.ts",
+      "line": 95,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.460Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10014",
+      "name": "throws ConfigError for non-table values",
+      "suite": "connect > fromDrizzle > register > db.defineStore (simple path)",
+      "file": "src/__tests__/connect.test.ts",
+      "line": 111,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.460Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10015",
+      "name": "commits on success",
+      "suite": "connect > fromDrizzle > register > db.defineStore (simple path) > transaction",
+      "file": "src/__tests__/connect.test.ts",
+      "line": 138,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.460Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10016",
+      "name": "rolls back on error",
+      "suite": "connect > fromDrizzle > register > db.defineStore (simple path) > transaction",
+      "file": "src/__tests__/connect.test.ts",
+      "line": 150,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.460Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10017",
+      "name": "is idempotent",
+      "suite": "connect > fromDrizzle > register > db.defineStore (simple path) > transaction > disconnect",
+      "file": "src/__tests__/connect.test.ts",
+      "line": 171,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.460Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10018",
+      "name": "passes assertions through to store validation",
+      "suite": "connect > fromDrizzle > register > db.defineStore (simple path) > transaction > disconnect > assertions integration",
+      "file": "src/__tests__/connect.test.ts",
+      "line": 179,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.460Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10019",
+      "name": "includes the error message when there is a single field error",
+      "suite": "ValidationError",
+      "file": "src/__tests__/errors.test.ts",
+      "line": 5,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.461Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10020",
+      "name": "includes the count when there are multiple field errors",
+      "suite": "ValidationError",
+      "file": "src/__tests__/errors.test.ts",
+      "line": 10,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.461Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10021",
+      "name": "exposes the errors array",
+      "suite": "ValidationError",
+      "file": "src/__tests__/errors.test.ts",
+      "line": 18,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.461Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10022",
+      "name": "has the correct name",
+      "suite": "ValidationError",
+      "file": "src/__tests__/errors.test.ts",
+      "line": 24,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.461Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10023",
+      "name": "has the correct name and message",
+      "suite": "ValidationError > ConfigError",
+      "file": "src/__tests__/errors.test.ts",
+      "line": 32,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.461Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10024",
+      "name": "has the correct name and message",
+      "suite": "ValidationError > ConfigError > SchemaError",
+      "file": "src/__tests__/errors.test.ts",
+      "line": 41,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.461Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10025",
+      "name": "has the correct name and message",
+      "suite": "ValidationError > ConfigError > SchemaError > StoreError",
+      "file": "src/__tests__/errors.test.ts",
+      "line": 50,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.461Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10026",
+      "name": "commits on success",
+      "suite": "SQLite transaction",
+      "file": "src/__tests__/sqlite-transaction.test.ts",
+      "line": 27,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/connect.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.461Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10027",
+      "name": "rolls back on error",
+      "suite": "SQLite transaction",
+      "file": "src/__tests__/sqlite-transaction.test.ts",
+      "line": 40,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/connect.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.462Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10028",
+      "name": "reports dialect and empty migrations when none exist",
+      "suite": "status",
+      "file": "src/migrate/__tests__/commands.test.ts",
+      "line": 6,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/migrate/commands.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.462Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10029",
+      "name": "lists schema files matching the glob",
+      "suite": "status",
+      "file": "src/migrate/__tests__/commands.test.ts",
+      "line": 18,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/migrate/commands.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.462Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10030",
+      "name": "returns failure result when drizzle-kit config is missing",
+      "suite": "status > generate",
+      "file": "src/migrate/__tests__/commands.test.ts",
+      "line": 33,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/migrate/commands.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.462Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10031",
+      "name": "returns failure result when drizzle-kit config is missing",
+      "suite": "status > generate > push",
+      "file": "src/migrate/__tests__/commands.test.ts",
+      "line": 46,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/migrate/commands.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.462Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10032",
+      "name": "respects STORIUM_CONFIG env var",
+      "suite": "resolveConfigPath",
+      "file": "src/migrate/__tests__/config.test.ts",
+      "line": 21,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/migrate/config.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.462Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10033",
+      "name": "respects DRIZZLE_CONFIG env var when STORIUM_CONFIG is not set",
+      "suite": "resolveConfigPath",
+      "file": "src/migrate/__tests__/config.test.ts",
+      "line": 28,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/migrate/config.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.462Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10034",
+      "name": "STORIUM_CONFIG takes priority over DRIZZLE_CONFIG",
+      "suite": "resolveConfigPath",
+      "file": "src/migrate/__tests__/config.test.ts",
+      "line": 35,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/migrate/config.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.462Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10035",
+      "name": "finds storium.config.ts in cwd",
+      "suite": "resolveConfigPath",
+      "file": "src/migrate/__tests__/config.test.ts",
+      "line": 42,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/migrate/config.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.462Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10036",
+      "name": "falls back to drizzle.config.ts when storium.config.ts absent",
+      "suite": "resolveConfigPath",
+      "file": "src/migrate/__tests__/config.test.ts",
+      "line": 56,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/migrate/config.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.462Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10037",
+      "name": "defaults to storium.config.ts when no config file found",
+      "suite": "resolveConfigPath",
+      "file": "src/migrate/__tests__/config.test.ts",
+      "line": 70,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/migrate/config.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.462Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10038",
+      "name": "throws ConfigError when config has no dialect",
+      "suite": "resolveConfigPath > loadConfig",
+      "file": "src/migrate/__tests__/config.test.ts",
+      "line": 85,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/migrate/config.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.462Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10039",
+      "name": "includes tsx hint for .ts files on import failure",
+      "suite": "resolveConfigPath > loadConfig",
+      "file": "src/migrate/__tests__/config.test.ts",
+      "line": 100,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/migrate/config.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.462Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10040",
+      "name": "collects Drizzle tables from schema files",
+      "suite": "collectSchemas",
+      "file": "src/migrate/__tests__/schema.collector.test.ts",
+      "line": 8,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/migrate/collector.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.463Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10041",
+      "name": "collects StoreDefinitions from store files",
+      "suite": "collectSchemas",
+      "file": "src/migrate/__tests__/schema.collector.test.ts",
+      "line": 16,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/migrate/collector.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.463Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10042",
+      "name": "handles multiple glob patterns",
+      "suite": "collectSchemas",
+      "file": "src/migrate/__tests__/schema.collector.test.ts",
+      "line": 24,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/migrate/collector.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.463Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10043",
+      "name": "returns empty map when no files match",
+      "suite": "collectSchemas",
+      "file": "src/migrate/__tests__/schema.collector.test.ts",
+      "line": 33,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/migrate/collector.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.463Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10044",
+      "name": "deduplicates tables by name",
+      "suite": "collectSchemas",
+      "file": "src/migrate/__tests__/schema.collector.test.ts",
+      "line": 38,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/migrate/collector.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.463Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10045",
+      "name": "returns a seed module with __isSeed marker",
+      "suite": "defineSeed",
+      "file": "src/migrate/__tests__/seed.test.ts",
+      "line": 9,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/migrate/seed.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.463Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10046",
+      "name": "wraps the provided function as .run",
+      "suite": "defineSeed",
+      "file": "src/migrate/__tests__/seed.test.ts",
+      "line": 15,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/migrate/seed.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.464Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10047",
+      "name": "runs seed files from a directory and returns success",
+      "suite": "defineSeed > seed runner",
+      "file": "src/migrate/__tests__/seed.test.ts",
+      "line": 37,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/migrate/seed.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.464Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10048",
+      "name": "returns count 0 when no seed files exist",
+      "suite": "defineSeed > seed runner",
+      "file": "src/migrate/__tests__/seed.test.ts",
+      "line": 51,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/migrate/seed.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.464Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10049",
+      "name": "generates a findWith{Alias} method",
+      "suite": "belongsTo",
+      "file": "src/mixins/__tests__/belongsTo.test.ts",
+      "line": 52,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.464Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10050",
+      "name": "returns the entity with inlined related fields",
+      "suite": "belongsTo",
+      "file": "src/mixins/__tests__/belongsTo.test.ts",
+      "line": 56,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.464Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10051",
+      "name": "returns null fields when the related entity does not exist",
+      "suite": "belongsTo",
+      "file": "src/mixins/__tests__/belongsTo.test.ts",
+      "line": 67,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.464Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10052",
+      "name": "returns null when the entity itself does not exist",
+      "suite": "belongsTo",
+      "file": "src/mixins/__tests__/belongsTo.test.ts",
+      "line": 80,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.464Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10053",
+      "name": "throws StoreError for unknown select column",
+      "suite": "belongsTo",
+      "file": "src/mixins/__tests__/belongsTo.test.ts",
+      "line": 85,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.464Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10054",
+      "name": "returns null for related fields when the related row is soft-deleted",
+      "suite": "belongsTo > belongsTo soft-delete filtering",
+      "file": "src/mixins/__tests__/belongsTo.test.ts",
+      "line": 149,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.464Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10055",
+      "name": "returns related fields when the related row is not soft-deleted",
+      "suite": "belongsTo > belongsTo soft-delete filtering",
+      "file": "src/mixins/__tests__/belongsTo.test.ts",
+      "line": 156,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.464Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10056",
+      "name": "generates a find{Alias}For method",
+      "suite": "hasMany",
+      "file": "src/mixins/__tests__/hasMany.test.ts",
+      "line": 53,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.464Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10057",
+      "name": "returns related rows as a flat array",
+      "suite": "hasMany",
+      "file": "src/mixins/__tests__/hasMany.test.ts",
+      "line": 57,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.464Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10058",
+      "name": "returns an empty array when no related rows exist",
+      "suite": "hasMany",
+      "file": "src/mixins/__tests__/hasMany.test.ts",
+      "line": 66,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.464Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10059",
+      "name": "supports limit option",
+      "suite": "hasMany",
+      "file": "src/mixins/__tests__/hasMany.test.ts",
+      "line": 71,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.464Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10060",
+      "name": "supports orderBy option",
+      "suite": "hasMany",
+      "file": "src/mixins/__tests__/hasMany.test.ts",
+      "line": 77,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.464Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10061",
+      "name": "supports where callback",
+      "suite": "hasMany",
+      "file": "src/mixins/__tests__/hasMany.test.ts",
+      "line": 86,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.464Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10062",
+      "name": "throws StoreError for unknown select column",
+      "suite": "hasMany",
+      "file": "src/mixins/__tests__/hasMany.test.ts",
+      "line": 95,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.464Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10063",
+      "name": "respects select option to limit returned columns",
+      "suite": "hasMany",
+      "file": "src/mixins/__tests__/hasMany.test.ts",
+      "line": 118,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.464Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10064",
+      "name": "excludes soft-deleted related rows",
+      "suite": "hasMany > hasMany soft-delete filtering",
+      "file": "src/mixins/__tests__/hasMany.test.ts",
+      "line": 180,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.464Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10065",
+      "name": "generates a find{Alias}For method",
+      "suite": "hasOne",
+      "file": "src/mixins/__tests__/hasOne.test.ts",
+      "line": 49,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.465Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10066",
+      "name": "returns the related row",
+      "suite": "hasOne",
+      "file": "src/mixins/__tests__/hasOne.test.ts",
+      "line": 53,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.465Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10067",
+      "name": "returns null when no related row exists",
+      "suite": "hasOne",
+      "file": "src/mixins/__tests__/hasOne.test.ts",
+      "line": 63,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.465Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10068",
+      "name": "returns null for a non-existent parent ID",
+      "suite": "hasOne",
+      "file": "src/mixins/__tests__/hasOne.test.ts",
+      "line": 69,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.465Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10069",
+      "name": "respects select option",
+      "suite": "hasOne",
+      "file": "src/mixins/__tests__/hasOne.test.ts",
+      "line": 74,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.465Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10070",
+      "name": "calls the original on cache miss and stores the result",
+      "suite": "withCache > cache-aside reads",
+      "file": "src/mixins/__tests__/withCache.test.ts",
+      "line": 45,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/mixins/withCache.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.465Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10071",
+      "name": "returns cached value on cache hit without calling original",
+      "suite": "withCache > cache-aside reads",
+      "file": "src/mixins/__tests__/withCache.test.ts",
+      "line": 52,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/mixins/withCache.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.465Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10072",
+      "name": "invalidates cache entries on create",
+      "suite": "withCache > cache-aside reads > write invalidation",
+      "file": "src/mixins/__tests__/withCache.test.ts",
+      "line": 63,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/mixins/withCache.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.465Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10073",
+      "name": "invalidates cache entries on update",
+      "suite": "withCache > cache-aside reads > write invalidation",
+      "file": "src/mixins/__tests__/withCache.test.ts",
+      "line": 72,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/mixins/withCache.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.465Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10074",
+      "name": "invalidates cache entries on destroy",
+      "suite": "withCache > cache-aside reads > write invalidation",
+      "file": "src/mixins/__tests__/withCache.test.ts",
+      "line": 78,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/mixins/withCache.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.465Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10075",
+      "name": "invalidates cache entries on destroyAll",
+      "suite": "withCache > cache-aside reads > write invalidation",
+      "file": "src/mixins/__tests__/withCache.test.ts",
+      "line": 84,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/mixins/withCache.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.465Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10076",
+      "name": "passes through uncached methods unchanged",
+      "suite": "withCache > cache-aside reads > write invalidation > passthrough",
+      "file": "src/mixins/__tests__/withCache.test.ts",
+      "line": 92,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/mixins/withCache.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.465Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10077",
+      "name": "falls back to origin on corrupted cache entry",
+      "suite": "withCache > cache-aside reads > write invalidation > passthrough > corrupted cache",
+      "file": "src/mixins/__tests__/withCache.test.ts",
+      "line": 102,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/mixins/withCache.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.465Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10078",
+      "name": "generates addMember, removeMember, getMembers, isMember, getMemberCount",
+      "suite": "withMembers",
+      "file": "src/mixins/__tests__/withMembers.test.ts",
+      "line": 56,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.466Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10079",
+      "name": "addMember inserts a join record and returns it",
+      "suite": "withMembers",
+      "file": "src/mixins/__tests__/withMembers.test.ts",
+      "line": 64,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.466Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10080",
+      "name": "getMembers returns all members for a collection",
+      "suite": "withMembers",
+      "file": "src/mixins/__tests__/withMembers.test.ts",
+      "line": 71,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.466Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10081",
+      "name": "isMember returns true for existing membership",
+      "suite": "withMembers",
+      "file": "src/mixins/__tests__/withMembers.test.ts",
+      "line": 77,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.466Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10082",
+      "name": "isMember returns false for non-members",
+      "suite": "withMembers",
+      "file": "src/mixins/__tests__/withMembers.test.ts",
+      "line": 82,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.466Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10083",
+      "name": "getMemberCount returns the count",
+      "suite": "withMembers",
+      "file": "src/mixins/__tests__/withMembers.test.ts",
+      "line": 87,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.466Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10084",
+      "name": "removeMember deletes the join record",
+      "suite": "withMembers",
+      "file": "src/mixins/__tests__/withMembers.test.ts",
+      "line": 92,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.466Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10085",
+      "name": "getMemberCount decreases after removal",
+      "suite": "withMembers",
+      "file": "src/mixins/__tests__/withMembers.test.ts",
+      "line": 98,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.466Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10086",
+      "name": "removeMember throws StoreError when membership does not exist",
+      "suite": "withMembers",
+      "file": "src/mixins/__tests__/withMembers.test.ts",
+      "line": 103,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.466Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10087",
+      "name": "methods work with tx option",
+      "suite": "withMembers",
+      "file": "src/mixins/__tests__/withMembers.test.ts",
+      "line": 109,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.466Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10088",
+      "name": "adds a paginate method to the store",
+      "suite": "withPagination",
+      "file": "src/mixins/__tests__/withPagination.test.ts",
+      "line": 34,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/mixins/withPagination.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.467Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10089",
+      "name": "preserves all original store methods",
+      "suite": "withPagination",
+      "file": "src/mixins/__tests__/withPagination.test.ts",
+      "line": 38,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/mixins/withPagination.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.467Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10090",
+      "name": "returns paginated data with correct meta",
+      "suite": "withPagination",
+      "file": "src/mixins/__tests__/withPagination.test.ts",
+      "line": 44,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/mixins/withPagination.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.467Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10091",
+      "name": "returns correct data for middle pages",
+      "suite": "withPagination",
+      "file": "src/mixins/__tests__/withPagination.test.ts",
+      "line": 55,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/mixins/withPagination.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.467Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10092",
+      "name": "returns partial data for the last page",
+      "suite": "withPagination",
+      "file": "src/mixins/__tests__/withPagination.test.ts",
+      "line": 62,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/mixins/withPagination.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.467Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10093",
+      "name": "returns empty data when page exceeds total pages",
+      "suite": "withPagination",
+      "file": "src/mixins/__tests__/withPagination.test.ts",
+      "line": 68,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/mixins/withPagination.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.467Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10094",
+      "name": "uses default pageSize of 25",
+      "suite": "withPagination",
+      "file": "src/mixins/__tests__/withPagination.test.ts",
+      "line": 74,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/mixins/withPagination.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.467Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10095",
+      "name": "respects custom default pageSize",
+      "suite": "withPagination",
+      "file": "src/mixins/__tests__/withPagination.test.ts",
+      "line": 81,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/mixins/withPagination.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.467Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10096",
+      "name": "supports equality filters",
+      "suite": "withPagination",
+      "file": "src/mixins/__tests__/withPagination.test.ts",
+      "line": 89,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/mixins/withPagination.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.467Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10097",
+      "name": "supports where callback",
+      "suite": "withPagination",
+      "file": "src/mixins/__tests__/withPagination.test.ts",
+      "line": 99,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/mixins/withPagination.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.467Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10098",
+      "name": "supports orderBy",
+      "suite": "withPagination",
+      "file": "src/mixins/__tests__/withPagination.test.ts",
+      "line": 109,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/mixins/withPagination.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.467Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10099",
+      "name": "throws on invalid page number",
+      "suite": "withPagination",
+      "file": "src/mixins/__tests__/withPagination.test.ts",
+      "line": 119,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/mixins/withPagination.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.467Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10100",
+      "name": "throws on invalid pageSize",
+      "suite": "withPagination",
+      "file": "src/mixins/__tests__/withPagination.test.ts",
+      "line": 125,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/mixins/withPagination.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.467Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10101",
+      "name": "handles empty table",
+      "suite": "withPagination",
+      "file": "src/mixins/__tests__/withPagination.test.ts",
+      "line": 131,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/mixins/withPagination.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.467Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10102",
+      "name": "does not add paginateWithDeleted for non-soft-delete stores",
+      "suite": "withPagination",
+      "file": "src/mixins/__tests__/withPagination.test.ts",
+      "line": 151,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/mixins/withPagination.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.467Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10103",
+      "name": "adds paginateWithDeleted for soft-delete stores",
+      "suite": "withPagination > withPagination + softDelete",
+      "file": "src/mixins/__tests__/withPagination.test.ts",
+      "line": 189,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/mixins/withPagination.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.467Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10104",
+      "name": "paginate excludes soft-deleted rows",
+      "suite": "withPagination > withPagination + softDelete",
+      "file": "src/mixins/__tests__/withPagination.test.ts",
+      "line": 193,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/mixins/withPagination.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.467Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10105",
+      "name": "paginateWithDeleted includes soft-deleted rows",
+      "suite": "withPagination > withPagination + softDelete",
+      "file": "src/mixins/__tests__/withPagination.test.ts",
+      "line": 199,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/mixins/withPagination.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.467Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10106",
+      "name": "paginateWithDeleted respects pagination opts",
+      "suite": "withPagination > withPagination + softDelete",
+      "file": "src/mixins/__tests__/withPagination.test.ts",
+      "line": 205,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/mixins/withPagination.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.467Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10107",
+      "name": "paginateWithDeleted supports filters",
+      "suite": "withPagination > withPagination + softDelete",
+      "file": "src/mixins/__tests__/withPagination.test.ts",
+      "line": 216,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/mixins/withPagination.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.467Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10108",
+      "name": "Zod: plain text → z.string()",
+      "suite": "string column introspection",
+      "file": "src/schema/__tests__/introspect.test.ts",
+      "line": 37,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/schema/json.ts",
+        "src/schema/zod.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.467Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10109",
+      "name": "Zod: rejects non-string for text column",
+      "suite": "string column introspection",
+      "file": "src/schema/__tests__/introspect.test.ts",
+      "line": 42,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/schema/json.ts",
+        "src/schema/zod.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.467Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10110",
+      "name": "Zod: text with length enforces maxLength",
+      "suite": "string column introspection",
+      "file": "src/schema/__tests__/introspect.test.ts",
+      "line": 47,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/schema/json.ts",
+        "src/schema/zod.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.467Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10111",
+      "name": "JSON Schema: plain text → { type: string }",
+      "suite": "string column introspection",
+      "file": "src/schema/__tests__/introspect.test.ts",
+      "line": 52,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/schema/json.ts",
+        "src/schema/zod.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.467Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10112",
+      "name": "JSON Schema: text with length → { type: string, maxLength }",
+      "suite": "string column introspection",
+      "file": "src/schema/__tests__/introspect.test.ts",
+      "line": 57,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/schema/json.ts",
+        "src/schema/zod.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.467Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10113",
+      "name": "Zod: integer → z.number().int()",
+      "suite": "string column introspection > integer column introspection",
+      "file": "src/schema/__tests__/introspect.test.ts",
+      "line": 75,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/schema/json.ts",
+        "src/schema/zod.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.467Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10114",
+      "name": "Zod: rejects float for integer column",
+      "suite": "string column introspection > integer column introspection",
+      "file": "src/schema/__tests__/introspect.test.ts",
+      "line": 80,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/schema/json.ts",
+        "src/schema/zod.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.467Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10115",
+      "name": "Zod: rejects string for integer column",
+      "suite": "string column introspection > integer column introspection",
+      "file": "src/schema/__tests__/introspect.test.ts",
+      "line": 85,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/schema/json.ts",
+        "src/schema/zod.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.467Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10116",
+      "name": "JSON Schema: integer → { type: integer }",
+      "suite": "string column introspection > integer column introspection",
+      "file": "src/schema/__tests__/introspect.test.ts",
+      "line": 90,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/schema/json.ts",
+        "src/schema/zod.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.467Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10117",
+      "name": "Zod: real → z.number() (accepts floats)",
+      "suite": "string column introspection > integer column introspection > real column introspection",
+      "file": "src/schema/__tests__/introspect.test.ts",
+      "line": 107,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/schema/json.ts",
+        "src/schema/zod.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.467Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10118",
+      "name": "JSON Schema: real → { type: number }",
+      "suite": "string column introspection > integer column introspection > real column introspection",
+      "file": "src/schema/__tests__/introspect.test.ts",
+      "line": 112,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/schema/json.ts",
+        "src/schema/zod.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.467Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10119",
+      "name": "Zod: boolean mode → z.boolean()",
+      "suite": "string column introspection > integer column introspection > real column introspection > boolean column introspection",
+      "file": "src/schema/__tests__/introspect.test.ts",
+      "line": 128,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/schema/json.ts",
+        "src/schema/zod.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.467Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10120",
+      "name": "Zod: timestamp → z.coerce.date() (accepts Date, string, number)",
+      "suite": "string column introspection > integer column introspection > real column introspection > boolean column introspection > timestamp column introspection",
+      "file": "src/schema/__tests__/introspect.test.ts",
+      "line": 148,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/schema/json.ts",
+        "src/schema/zod.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.467Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10121",
+      "name": "Zod: rejects non-coercible values for timestamp column",
+      "suite": "string column introspection > integer column introspection > real column introspection > boolean column introspection > timestamp column introspection",
+      "file": "src/schema/__tests__/introspect.test.ts",
+      "line": 154,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/schema/json.ts",
+        "src/schema/zod.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.467Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10122",
+      "name": "JSON Schema: timestamp → { type: string, format: date-time }",
+      "suite": "string column introspection > integer column introspection > real column introspection > boolean column introspection > timestamp column introspection",
+      "file": "src/schema/__tests__/introspect.test.ts",
+      "line": 158,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/schema/json.ts",
+        "src/schema/zod.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.467Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10123",
+      "name": "Zod: json → union of record and array",
+      "suite": "string column introspection > integer column introspection > real column introspection > boolean column introspection > timestamp column introspection > JSON column introspection (Zod ↔ JSON Schema alignment)",
+      "file": "src/schema/__tests__/introspect.test.ts",
+      "line": 175,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/schema/json.ts",
+        "src/schema/zod.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.467Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10124",
+      "name": "Zod: rejects non-object/non-array for json column",
+      "suite": "string column introspection > integer column introspection > real column introspection > boolean column introspection > timestamp column introspection > JSON column introspection (Zod ↔ JSON Schema alignment)",
+      "file": "src/schema/__tests__/introspect.test.ts",
+      "line": 180,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/schema/json.ts",
+        "src/schema/zod.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.467Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10125",
+      "name": "JSON Schema: json → oneOf: [object, array]",
+      "suite": "string column introspection > integer column introspection > real column introspection > boolean column introspection > timestamp column introspection > JSON column introspection (Zod ↔ JSON Schema alignment)",
+      "file": "src/schema/__tests__/introspect.test.ts",
+      "line": 185,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/schema/json.ts",
+        "src/schema/zod.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.467Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10126",
+      "name": "Zod: blob/buffer → z.any() (accepts anything)",
+      "suite": "string column introspection > integer column introspection > real column introspection > boolean column introspection > timestamp column introspection > JSON column introspection (Zod ↔ JSON Schema alignment) > blob column introspection",
+      "file": "src/schema/__tests__/introspect.test.ts",
+      "line": 202,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/schema/json.ts",
+        "src/schema/zod.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.467Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10127",
+      "name": "JSON Schema: blob/buffer → {} (empty schema, accepts anything)",
+      "suite": "string column introspection > integer column introspection > real column introspection > boolean column introspection > timestamp column introspection > JSON column introspection (Zod ↔ JSON Schema alignment) > blob column introspection",
+      "file": "src/schema/__tests__/introspect.test.ts",
+      "line": 207,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/schema/json.ts",
+        "src/schema/zod.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.467Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10128",
+      "name": "Zod createSchema: notNull+noDefault is required",
+      "suite": "string column introspection > integer column introspection > real column introspection > boolean column introspection > timestamp column introspection > JSON column introspection (Zod ↔ JSON Schema alignment) > blob column introspection > required field alignment (Zod ↔ JSON Schema)",
+      "file": "src/schema/__tests__/introspect.test.ts",
+      "line": 227,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/schema/json.ts",
+        "src/schema/zod.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.467Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10129",
+      "name": "Zod createSchema: notNull+hasDefault is optional",
+      "suite": "string column introspection > integer column introspection > real column introspection > boolean column introspection > timestamp column introspection > JSON column introspection (Zod ↔ JSON Schema alignment) > blob column introspection > required field alignment (Zod ↔ JSON Schema)",
+      "file": "src/schema/__tests__/introspect.test.ts",
+      "line": 234,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/schema/json.ts",
+        "src/schema/zod.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.467Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10130",
+      "name": "JSON Schema createSchema: same required list as Zod",
+      "suite": "string column introspection > integer column introspection > real column introspection > boolean column introspection > timestamp column introspection > JSON column introspection (Zod ↔ JSON Schema alignment) > blob column introspection > required field alignment (Zod ↔ JSON Schema)",
+      "file": "src/schema/__tests__/introspect.test.ts",
+      "line": 239,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/schema/json.ts",
+        "src/schema/zod.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.467Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10131",
+      "name": "maps text with length to string with maxLength",
+      "suite": "buildJsonSchemas > DSL type mapping",
+      "file": "src/schema/__tests__/json.test.ts",
+      "line": 40,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/schema/json.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.468Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10132",
+      "name": "maps text without length to string",
+      "suite": "buildJsonSchemas > DSL type mapping",
+      "file": "src/schema/__tests__/json.test.ts",
+      "line": 44,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/schema/json.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.468Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10133",
+      "name": "maps integer to integer",
+      "suite": "buildJsonSchemas > DSL type mapping",
+      "file": "src/schema/__tests__/json.test.ts",
+      "line": 48,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/schema/json.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.468Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10134",
+      "name": "maps real to number",
+      "suite": "buildJsonSchemas > DSL type mapping",
+      "file": "src/schema/__tests__/json.test.ts",
+      "line": 52,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/schema/json.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.468Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10135",
+      "name": "marks notNull columns as required",
+      "suite": "buildJsonSchemas > DSL type mapping > selectSchema variant",
+      "file": "src/schema/__tests__/json.test.ts",
+      "line": 60,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/schema/json.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.468Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10136",
+      "name": "includes required fields",
+      "suite": "buildJsonSchemas > DSL type mapping > selectSchema variant > createSchema variant",
+      "file": "src/schema/__tests__/json.test.ts",
+      "line": 70,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/schema/json.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.468Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10137",
+      "name": "sets additionalProperties to false by default",
+      "suite": "buildJsonSchemas > DSL type mapping > selectSchema variant > createSchema variant",
+      "file": "src/schema/__tests__/json.test.ts",
+      "line": 74,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/schema/json.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.468Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10138",
+      "name": "respects additionalProperties option",
+      "suite": "buildJsonSchemas > DSL type mapping > selectSchema variant > createSchema variant",
+      "file": "src/schema/__tests__/json.test.ts",
+      "line": 78,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/schema/json.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.468Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10139",
+      "name": "has no required fields",
+      "suite": "buildJsonSchemas > DSL type mapping > selectSchema variant > createSchema variant > updateSchema variant",
+      "file": "src/schema/__tests__/json.test.ts",
+      "line": 87,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/schema/json.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.468Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10140",
+      "name": "includes all columns",
+      "suite": "buildJsonSchemas > DSL type mapping > selectSchema variant > createSchema variant > updateSchema variant > fullSchema variant",
+      "file": "src/schema/__tests__/json.test.ts",
+      "line": 95,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/schema/json.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.468Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10141",
+      "name": "merges extra properties into the schema",
+      "suite": "buildJsonSchemas > DSL type mapping > selectSchema variant > createSchema variant > updateSchema variant > fullSchema variant > extended options",
+      "file": "src/schema/__tests__/json.test.ts",
+      "line": 103,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/schema/json.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.468Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10142",
+      "name": "appends extra required fields",
+      "suite": "buildJsonSchemas > DSL type mapping > selectSchema variant > createSchema variant > updateSchema variant > fullSchema variant > extended options",
+      "file": "src/schema/__tests__/json.test.ts",
+      "line": 111,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/schema/json.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.468Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10143",
+      "name": "sets title on the schema",
+      "suite": "buildJsonSchemas > DSL type mapping > selectSchema variant > createSchema variant > updateSchema variant > fullSchema variant > extended options",
+      "file": "src/schema/__tests__/json.test.ts",
+      "line": 119,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/schema/json.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.468Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10144",
+      "name": "sets description on the schema",
+      "suite": "buildJsonSchemas > DSL type mapping > selectSchema variant > createSchema variant > updateSchema variant > fullSchema variant > extended options",
+      "file": "src/schema/__tests__/json.test.ts",
+      "line": 124,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/schema/json.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.468Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10145",
+      "name": "sets $id on the schema",
+      "suite": "buildJsonSchemas > DSL type mapping > selectSchema variant > createSchema variant > updateSchema variant > fullSchema variant > extended options",
+      "file": "src/schema/__tests__/json.test.ts",
+      "line": 129,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/schema/json.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.468Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10146",
+      "name": "omits title/description/$id when not provided",
+      "suite": "buildJsonSchemas > DSL type mapping > selectSchema variant > createSchema variant > updateSchema variant > fullSchema variant > extended options",
+      "file": "src/schema/__tests__/json.test.ts",
+      "line": 134,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/schema/json.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.468Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10147",
+      "name": "produces all 4 schema variants",
+      "suite": "buildSchemaSet",
+      "file": "src/schema/__tests__/runtime.test.ts",
+      "line": 27,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/schema/zod.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.469Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10148",
+      "name": "returns data on valid input",
+      "suite": "buildSchemaSet > validate()",
+      "file": "src/schema/__tests__/runtime.test.ts",
+      "line": 35,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/schema/zod.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.469Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10149",
+      "name": "throws ValidationError on invalid input",
+      "suite": "buildSchemaSet > validate()",
+      "file": "src/schema/__tests__/runtime.test.ts",
+      "line": 40,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/schema/zod.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.469Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10150",
+      "name": "returns success: true with data on valid input",
+      "suite": "buildSchemaSet > validate() > tryValidate()",
+      "file": "src/schema/__tests__/runtime.test.ts",
+      "line": 46,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/schema/zod.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.469Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10151",
+      "name": "returns success: false with errors on invalid input",
+      "suite": "buildSchemaSet > validate() > tryValidate()",
+      "file": "src/schema/__tests__/runtime.test.ts",
+      "line": 54,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/schema/zod.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.469Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10152",
+      "name": "returns a JSON Schema object",
+      "suite": "buildSchemaSet > validate() > tryValidate() > toJsonSchema()",
+      "file": "src/schema/__tests__/runtime.test.ts",
+      "line": 66,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/schema/zod.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.469Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10153",
+      "name": "respects additionalProperties option",
+      "suite": "buildSchemaSet > validate() > tryValidate() > toJsonSchema()",
+      "file": "src/schema/__tests__/runtime.test.ts",
+      "line": 73,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/schema/zod.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.469Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10154",
+      "name": "exposes the underlying Zod schema",
+      "suite": "buildSchemaSet > validate() > tryValidate() > toJsonSchema() > .zod",
+      "file": "src/schema/__tests__/runtime.test.ts",
+      "line": 80,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/schema/zod.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.469Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10155",
+      "name": "accepts valid input with required fields",
+      "suite": "buildZodSchemas > createSchema",
+      "file": "src/schema/__tests__/zod.test.ts",
+      "line": 34,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/schema/zod.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.469Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10156",
+      "name": "rejects missing required fields",
+      "suite": "buildZodSchemas > createSchema",
+      "file": "src/schema/__tests__/zod.test.ts",
+      "line": 39,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/schema/zod.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.469Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10157",
+      "name": "does not apply transforms (transforms are handled by the prep pipeline)",
+      "suite": "buildZodSchemas > createSchema",
+      "file": "src/schema/__tests__/zod.test.ts",
+      "line": 44,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/schema/zod.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.469Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10158",
+      "name": "enforces varchar maxLength",
+      "suite": "buildZodSchemas > createSchema",
+      "file": "src/schema/__tests__/zod.test.ts",
+      "line": 53,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/schema/zod.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.469Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10159",
+      "name": "accepts optional fields when omitted",
+      "suite": "buildZodSchemas > createSchema",
+      "file": "src/schema/__tests__/zod.test.ts",
+      "line": 58,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/schema/zod.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.469Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10160",
+      "name": "makes all fields optional",
+      "suite": "buildZodSchemas > createSchema > updateSchema",
+      "file": "src/schema/__tests__/zod.test.ts",
+      "line": 65,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/schema/zod.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.469Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10161",
+      "name": "validates provided fields",
+      "suite": "buildZodSchemas > createSchema > updateSchema",
+      "file": "src/schema/__tests__/zod.test.ts",
+      "line": 70,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/schema/zod.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.469Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10162",
+      "name": "validates output data types",
+      "suite": "buildZodSchemas > createSchema > updateSchema > selectSchema",
+      "file": "src/schema/__tests__/zod.test.ts",
+      "line": 77,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/schema/zod.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.469Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10163",
+      "name": "rejects wrong type for integer",
+      "suite": "buildZodSchemas > createSchema > updateSchema > selectSchema > type validation",
+      "file": "src/schema/__tests__/zod.test.ts",
+      "line": 92,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/schema/zod.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.469Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10164",
+      "name": "rejects wrong type for boolean",
+      "suite": "buildZodSchemas > createSchema > updateSchema > selectSchema > type validation",
+      "file": "src/schema/__tests__/zod.test.ts",
+      "line": 97,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/schema/zod.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.469Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10165",
+      "name": "accumulates errors from validate callbacks via superRefine",
+      "suite": "buildZodSchemas > createSchema > updateSchema > selectSchema > type validation > validate callbacks",
+      "file": "src/schema/__tests__/zod.test.ts",
+      "line": 105,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/schema/zod.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.469Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10166",
+      "name": "is_email accepts valid emails",
+      "suite": "built-in assertions",
+      "file": "src/store/__tests__/assertions.test.ts",
+      "line": 10,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/assertions.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.470Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10167",
+      "name": "is_email rejects invalid emails",
+      "suite": "built-in assertions",
+      "file": "src/store/__tests__/assertions.test.ts",
+      "line": 15,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/assertions.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.470Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10168",
+      "name": "is_url accepts http and https URLs",
+      "suite": "built-in assertions",
+      "file": "src/store/__tests__/assertions.test.ts",
+      "line": 20,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/assertions.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.470Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10170",
+      "name": "is_url rejects non-URLs",
+      "suite": "built-in assertions",
+      "file": "src/store/__tests__/assertions.test.ts",
+      "line": 26,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/assertions.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.470Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10171",
+      "name": "is_numeric accepts numbers and numeric strings",
+      "suite": "built-in assertions",
+      "file": "src/store/__tests__/assertions.test.ts",
+      "line": 31,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/assertions.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.470Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10173",
+      "name": "is_numeric rejects non-numeric values",
+      "suite": "built-in assertions",
+      "file": "src/store/__tests__/assertions.test.ts",
+      "line": 37,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/assertions.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.470Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10174",
+      "name": "is_uuid accepts valid UUIDs",
+      "suite": "built-in assertions",
+      "file": "src/store/__tests__/assertions.test.ts",
+      "line": 42,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/assertions.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.470Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10175",
+      "name": "is_uuid rejects invalid UUIDs",
+      "suite": "built-in assertions",
+      "file": "src/store/__tests__/assertions.test.ts",
+      "line": 47,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/assertions.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.470Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10176",
+      "name": "is_boolean accepts true and false",
+      "suite": "built-in assertions",
+      "file": "src/store/__tests__/assertions.test.ts",
+      "line": 52,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/assertions.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.470Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10177",
+      "name": "is_boolean rejects non-boolean values",
+      "suite": "built-in assertions",
+      "file": "src/store/__tests__/assertions.test.ts",
+      "line": 58,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/assertions.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.470Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10178",
+      "name": "is_integer accepts whole numbers",
+      "suite": "built-in assertions",
+      "file": "src/store/__tests__/assertions.test.ts",
+      "line": 63,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/assertions.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.470Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10179",
+      "name": "is_integer rejects floats",
+      "suite": "built-in assertions",
+      "file": "src/store/__tests__/assertions.test.ts",
+      "line": 68,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/assertions.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.470Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10180",
+      "name": "not_empty accepts non-empty values",
+      "suite": "built-in assertions",
+      "file": "src/store/__tests__/assertions.test.ts",
+      "line": 73,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/assertions.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.470Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10181",
+      "name": "not_empty rejects empty strings, null, undefined",
+      "suite": "built-in assertions",
+      "file": "src/store/__tests__/assertions.test.ts",
+      "line": 79,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/assertions.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.470Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10183",
+      "name": "pushes error for unregistered named assertion",
+      "suite": "built-in assertions > createTestFn",
+      "file": "src/store/__tests__/assertions.test.ts",
+      "line": 89,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/assertions.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.470Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10185",
+      "name": "supports inline function assertions",
+      "suite": "built-in assertions > createTestFn",
+      "file": "src/store/__tests__/assertions.test.ts",
+      "line": 98,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/assertions.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.470Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10186",
+      "name": "uses custom error string when provided",
+      "suite": "built-in assertions > createTestFn",
+      "file": "src/store/__tests__/assertions.test.ts",
+      "line": 107,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/assertions.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.470Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10188",
+      "name": "uses custom error callback when provided",
+      "suite": "built-in assertions > createTestFn",
+      "file": "src/store/__tests__/assertions.test.ts",
+      "line": 114,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/assertions.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.470Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10190",
+      "name": "uses custom assertions from registry",
+      "suite": "built-in assertions > createTestFn",
+      "file": "src/store/__tests__/assertions.test.ts",
+      "line": 121,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/assertions.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.470Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10193",
+      "name": "includes all built-in assertions",
+      "suite": "built-in assertions > createTestFn > createAssertionRegistry",
+      "file": "src/store/__tests__/assertions.test.ts",
+      "line": 134,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/assertions.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.470Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10194",
+      "name": "merges custom assertions",
+      "suite": "built-in assertions > createTestFn > createAssertionRegistry",
+      "file": "src/store/__tests__/assertions.test.ts",
+      "line": 140,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/assertions.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.470Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10195",
+      "name": "custom assertions override built-ins",
+      "suite": "built-in assertions > createTestFn > createAssertionRegistry",
+      "file": "src/store/__tests__/assertions.test.ts",
+      "line": 146,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/assertions.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.470Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10196",
+      "name": "lists all 7 built-in assertion names",
+      "suite": "built-in assertions > createTestFn > createAssertionRegistry > BUILTIN_ASSERTIONS",
+      "file": "src/store/__tests__/assertions.test.ts",
+      "line": 153,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/assertions.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.470Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10197",
+      "name": "creates a StoreDefinition from a Drizzle table",
+      "suite": "defineStore",
+      "file": "src/store/__tests__/define.test.ts",
+      "line": 14,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.470Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10198",
+      "name": "surfaces .table as the Drizzle table",
+      "suite": "defineStore",
+      "file": "src/store/__tests__/define.test.ts",
+      "line": 19,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.470Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10199",
+      "name": "surfaces .name from the Drizzle table name",
+      "suite": "defineStore",
+      "file": "src/store/__tests__/define.test.ts",
+      "line": 24,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.470Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10200",
+      "name": "defaults queryFns to empty object when no .queries() called",
+      "suite": "defineStore",
+      "file": "src/store/__tests__/define.test.ts",
+      "line": 29,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.470Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10201",
+      "name": "stores provided queries via .queries() chain",
+      "suite": "defineStore",
+      "file": "src/store/__tests__/define.test.ts",
+      "line": 34,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.470Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10202",
+      "name": ".queries() is chainable",
+      "suite": "defineStore",
+      "file": "src/store/__tests__/define.test.ts",
+      "line": 41,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.470Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10203",
+      "name": "throws SchemaError for non-table values",
+      "suite": "defineStore",
+      "file": "src/store/__tests__/define.test.ts",
+      "line": 49,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.470Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10204",
+      "name": "accepts optional StoreConfig with column annotations",
+      "suite": "defineStore",
+      "file": "src/store/__tests__/define.test.ts",
+      "line": 55,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.470Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10205",
+      "name": "throws SchemaError when annotation references a non-existent column",
+      "suite": "defineStore > annotation validation",
+      "file": "src/store/__tests__/define.test.ts",
+      "line": 64,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.470Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10206",
+      "name": "throws SchemaError when a column is both readonly and hidden",
+      "suite": "defineStore > annotation validation",
+      "file": "src/store/__tests__/define.test.ts",
+      "line": 76,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.470Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10207",
+      "name": "throws SchemaError when a column is both readonly and required",
+      "suite": "defineStore > annotation validation",
+      "file": "src/store/__tests__/define.test.ts",
+      "line": 89,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.470Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10208",
+      "name": "marks primary key columns as readonly",
+      "suite": "defineStore > annotation validation > access derivation",
+      "file": "src/store/__tests__/define.test.ts",
+      "line": 104,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.470Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10209",
+      "name": "marks hidden columns as not selectable",
+      "suite": "defineStore > annotation validation > access derivation",
+      "file": "src/store/__tests__/define.test.ts",
+      "line": 117,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.470Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10210",
+      "name": "marks readonly columns as not writable",
+      "suite": "defineStore > annotation validation > access derivation",
+      "file": "src/store/__tests__/define.test.ts",
+      "line": 132,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.470Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10211",
+      "name": "detects a single primary key column",
+      "suite": "defineStore > annotation validation > access derivation > primary key detection",
+      "file": "src/store/__tests__/define.test.ts",
+      "line": 149,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.470Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10212",
+      "name": "returns undefined when no column is marked as primary key",
+      "suite": "defineStore > annotation validation > access derivation > primary key detection",
+      "file": "src/store/__tests__/define.test.ts",
+      "line": 159,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.470Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10213",
+      "name": "throws SchemaError when softDelete is enabled but no deletedAt column",
+      "suite": "defineStore > annotation validation > access derivation > primary key detection > soft delete validation",
+      "file": "src/store/__tests__/define.test.ts",
+      "line": 171,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.470Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10214",
+      "name": "accepts softDelete when deletedAt column exists",
+      "suite": "defineStore > annotation validation > access derivation > primary key detection > soft delete validation",
+      "file": "src/store/__tests__/define.test.ts",
+      "line": 182,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.470Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10215",
+      "name": "returns true for tables with storium metadata",
+      "suite": "defineStore > annotation validation > access derivation > primary key detection > soft delete validation > hasMeta",
+      "file": "src/store/__tests__/define.test.ts",
+      "line": 196,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.470Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10216",
+      "name": "returns false for plain Drizzle tables",
+      "suite": "defineStore > annotation validation > access derivation > primary key detection > soft delete validation > hasMeta",
+      "file": "src/store/__tests__/define.test.ts",
+      "line": 204,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.470Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10217",
+      "name": "returns false for non-objects",
+      "suite": "defineStore > annotation validation > access derivation > primary key detection > soft delete validation > hasMeta",
+      "file": "src/store/__tests__/define.test.ts",
+      "line": 211,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.470Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10218",
+      "name": "returns true for valid StoreDefinitions",
+      "suite": "defineStore > annotation validation > access derivation > primary key detection > soft delete validation > hasMeta > isStoreDefinition",
+      "file": "src/store/__tests__/define.test.ts",
+      "line": 219,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.470Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10219",
+      "name": "returns true for StoreDefinitions with queries",
+      "suite": "defineStore > annotation validation > access derivation > primary key detection > soft delete validation > hasMeta > isStoreDefinition",
+      "file": "src/store/__tests__/define.test.ts",
+      "line": 224,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.470Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10220",
+      "name": "returns false for plain objects",
+      "suite": "defineStore > annotation validation > access derivation > primary key detection > soft delete validation > hasMeta > isStoreDefinition",
+      "file": "src/store/__tests__/define.test.ts",
+      "line": 229,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.470Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10221",
+      "name": "returns false for null and primitives",
+      "suite": "defineStore > annotation validation > access derivation > primary key detection > soft delete validation > hasMeta > isStoreDefinition",
+      "file": "src/store/__tests__/define.test.ts",
+      "line": 234,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.470Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10222",
+      "name": "filters unknown keys from input",
+      "suite": "prep pipeline",
+      "file": "src/store/__tests__/prep.test.ts",
+      "line": 32,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/store/prep.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.471Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10223",
+      "name": "transforms values through column transform functions",
+      "suite": "prep pipeline",
+      "file": "src/store/__tests__/prep.test.ts",
+      "line": 41,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/store/prep.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.471Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10224",
+      "name": "rejects invalid types",
+      "suite": "prep pipeline",
+      "file": "src/store/__tests__/prep.test.ts",
+      "line": 50,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/store/prep.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.471Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10225",
+      "name": "enforces required fields when validateRequired is true",
+      "suite": "prep pipeline",
+      "file": "src/store/__tests__/prep.test.ts",
+      "line": 56,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/store/prep.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.471Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10226",
+      "name": "skips required check when validateRequired is false",
+      "suite": "prep pipeline",
+      "file": "src/store/__tests__/prep.test.ts",
+      "line": 62,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/store/prep.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.471Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10227",
+      "name": "passes input through raw when skipPrep is true",
+      "suite": "prep pipeline",
+      "file": "src/store/__tests__/prep.test.ts",
+      "line": 71,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/store/prep.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.471Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10228",
+      "name": "resolves Promise values in input (Stage 0)",
+      "suite": "prep pipeline",
+      "file": "src/store/__tests__/prep.test.ts",
+      "line": 78,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/store/prep.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.471Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10229",
+      "name": "strips non-writable columns when onlyWritable is true",
+      "suite": "prep pipeline",
+      "file": "src/store/__tests__/prep.test.ts",
+      "line": 87,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/store/prep.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.471Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10230",
+      "name": "accumulates multiple validation errors in a single throw",
+      "suite": "prep pipeline",
+      "file": "src/store/__tests__/prep.test.ts",
+      "line": 97,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/store/prep.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.471Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10231",
+      "name": "resolves async transform functions",
+      "suite": "prep pipeline > async transforms",
+      "file": "src/store/__tests__/prep.test.ts",
+      "line": 126,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/store/prep.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.471Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10232",
+      "name": "catches throwing transforms and wraps in ValidationError",
+      "suite": "prep pipeline > async transforms",
+      "file": "src/store/__tests__/prep.test.ts",
+      "line": 150,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/store/prep.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.471Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10233",
+      "name": "catches async transform rejections",
+      "suite": "prep pipeline > async transforms",
+      "file": "src/store/__tests__/prep.test.ts",
+      "line": 178,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/store/prep.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.471Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10234",
+      "name": "enforces notNull columns without hasDefault as required",
+      "suite": "prep pipeline > async transforms > notNull enforcement",
+      "file": "src/store/__tests__/prep.test.ts",
+      "line": 207,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/store/prep.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.471Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10235",
+      "name": "uses custom assertions from the registry",
+      "suite": "prep pipeline > async transforms > notNull enforcement > prep with custom assertions",
+      "file": "src/store/__tests__/prep.test.ts",
+      "line": 254,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/store/prep.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.471Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10236",
+      "name": "rejects values that fail custom assertions",
+      "suite": "prep pipeline > async transforms > notNull enforcement > prep with custom assertions",
+      "file": "src/store/__tests__/prep.test.ts",
+      "line": 263,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/store/prep.ts",
+        "src/types.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.471Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10237",
+      "name": "creates a record and returns it with an ID",
+      "suite": "CRUD operations",
+      "file": "src/store/__tests__/repository.test.ts",
+      "line": 55,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.472Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10238",
+      "name": "findById returns the created record",
+      "suite": "CRUD operations",
+      "file": "src/store/__tests__/repository.test.ts",
+      "line": 62,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.472Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10239",
+      "name": "findById returns null for non-existent ID",
+      "suite": "CRUD operations",
+      "file": "src/store/__tests__/repository.test.ts",
+      "line": 69,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.472Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10240",
+      "name": "update modifies the record and returns it",
+      "suite": "CRUD operations",
+      "file": "src/store/__tests__/repository.test.ts",
+      "line": 74,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.472Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10241",
+      "name": "destroy deletes the record",
+      "suite": "CRUD operations",
+      "file": "src/store/__tests__/repository.test.ts",
+      "line": 81,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.472Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10242",
+      "name": "find returns matching records",
+      "suite": "CRUD operations > find and findAll",
+      "file": "src/store/__tests__/repository.test.ts",
+      "line": 120,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.472Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10243",
+      "name": "findOne returns first match or null",
+      "suite": "CRUD operations > find and findAll",
+      "file": "src/store/__tests__/repository.test.ts",
+      "line": 127,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.472Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10244",
+      "name": "findByIdIn returns multiple records",
+      "suite": "CRUD operations > find and findAll",
+      "file": "src/store/__tests__/repository.test.ts",
+      "line": 137,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.472Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10245",
+      "name": "findByIdIn with empty array returns empty",
+      "suite": "CRUD operations > find and findAll",
+      "file": "src/store/__tests__/repository.test.ts",
+      "line": 144,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.472Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10246",
+      "name": "findAll supports limit",
+      "suite": "CRUD operations > find and findAll",
+      "file": "src/store/__tests__/repository.test.ts",
+      "line": 149,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.472Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10247",
+      "name": "findAll supports multi-column orderBy",
+      "suite": "CRUD operations > find and findAll",
+      "file": "src/store/__tests__/repository.test.ts",
+      "line": 157,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.472Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10248",
+      "name": "returns the primary key of a matching record",
+      "suite": "CRUD operations > find and findAll > ref",
+      "file": "src/store/__tests__/repository.test.ts",
+      "line": 205,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.472Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10249",
+      "name": "throws StoreError when no record matches",
+      "suite": "CRUD operations > find and findAll > ref",
+      "file": "src/store/__tests__/repository.test.ts",
+      "line": 211,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.472Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10250",
+      "name": "deletes matching records and returns count",
+      "suite": "CRUD operations > find and findAll > ref > destroyAll",
+      "file": "src/store/__tests__/repository.test.ts",
+      "line": 243,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.472Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10251",
+      "name": "throws StoreError with empty filters",
+      "suite": "CRUD operations > find and findAll > ref > destroyAll",
+      "file": "src/store/__tests__/repository.test.ts",
+      "line": 250,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.472Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10252",
+      "name": "applies transforms on create",
+      "suite": "CRUD operations > find and findAll > ref > destroyAll > prep pipeline integration",
+      "file": "src/store/__tests__/repository.test.ts",
+      "line": 285,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.472Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10253",
+      "name": "enforces required fields on create",
+      "suite": "CRUD operations > find and findAll > ref > destroyAll > prep pipeline integration",
+      "file": "src/store/__tests__/repository.test.ts",
+      "line": 290,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.472Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10254",
+      "name": "bypasses prep with skipPrep: true",
+      "suite": "CRUD operations > find and findAll > ref > destroyAll > prep pipeline integration",
+      "file": "src/store/__tests__/repository.test.ts",
+      "line": 294,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.472Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10255",
+      "name": "receives ctx with original CRUD methods",
+      "suite": "CRUD operations > find and findAll > ref > destroyAll > prep pipeline integration > custom queries",
+      "file": "src/store/__tests__/repository.test.ts",
+      "line": 304,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.472Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10256",
+      "name": "creates a record with composite PK",
+      "suite": "CRUD operations > find and findAll > ref > destroyAll > prep pipeline integration > custom queries > composite primary keys",
+      "file": "src/store/__tests__/repository.test.ts",
+      "line": 385,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.472Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10257",
+      "name": "findById with composite PK array",
+      "suite": "CRUD operations > find and findAll > ref > destroyAll > prep pipeline integration > custom queries > composite primary keys",
+      "file": "src/store/__tests__/repository.test.ts",
+      "line": 395,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.472Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10258",
+      "name": "findById returns null for non-existent composite PK",
+      "suite": "CRUD operations > find and findAll > ref > destroyAll > prep pipeline integration > custom queries > composite primary keys",
+      "file": "src/store/__tests__/repository.test.ts",
+      "line": 405,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.472Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10259",
+      "name": "update with composite PK",
+      "suite": "CRUD operations > find and findAll > ref > destroyAll > prep pipeline integration > custom queries > composite primary keys",
+      "file": "src/store/__tests__/repository.test.ts",
+      "line": 410,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.472Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10260",
+      "name": "destroy with composite PK",
+      "suite": "CRUD operations > find and findAll > ref > destroyAll > prep pipeline integration > custom queries > composite primary keys",
+      "file": "src/store/__tests__/repository.test.ts",
+      "line": 422,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.472Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10261",
+      "name": "findByIdIn throws StoreError for composite PKs",
+      "suite": "CRUD operations > find and findAll > ref > destroyAll > prep pipeline integration > custom queries > composite primary keys",
+      "file": "src/store/__tests__/repository.test.ts",
+      "line": 432,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.472Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10262",
+      "name": "ref returns composite PK as array",
+      "suite": "CRUD operations > find and findAll > ref > destroyAll > prep pipeline integration > custom queries > composite primary keys",
+      "file": "src/store/__tests__/repository.test.ts",
+      "line": 436,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.472Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10263",
+      "name": "find supports where callback with Drizzle expressions",
+      "suite": "CRUD operations > find and findAll > ref > destroyAll > prep pipeline integration > custom queries > composite primary keys > where clause",
+      "file": "src/store/__tests__/repository.test.ts",
+      "line": 476,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.472Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10264",
+      "name": "find allows where-only (no equality filters)",
+      "suite": "CRUD operations > find and findAll > ref > destroyAll > prep pipeline integration > custom queries > composite primary keys > where clause",
+      "file": "src/store/__tests__/repository.test.ts",
+      "line": 485,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.472Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10265",
+      "name": "findAll supports where callback",
+      "suite": "CRUD operations > find and findAll > ref > destroyAll > prep pipeline integration > custom queries > composite primary keys > where clause",
+      "file": "src/store/__tests__/repository.test.ts",
+      "line": 493,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.472Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10266",
+      "name": "destroyAll supports where callback",
+      "suite": "CRUD operations > find and findAll > ref > destroyAll > prep pipeline integration > custom queries > composite primary keys > where clause",
+      "file": "src/store/__tests__/repository.test.ts",
+      "line": 501,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.472Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10267",
+      "name": "counts all rows when no filters",
+      "suite": "CRUD operations > find and findAll > ref > destroyAll > prep pipeline integration > custom queries > composite primary keys > where clause > count",
+      "file": "src/store/__tests__/repository.test.ts",
+      "line": 540,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.472Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10268",
+      "name": "counts rows matching equality filters",
+      "suite": "CRUD operations > find and findAll > ref > destroyAll > prep pipeline integration > custom queries > composite primary keys > where clause > count",
+      "file": "src/store/__tests__/repository.test.ts",
+      "line": 545,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.472Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10269",
+      "name": "counts rows matching where callback",
+      "suite": "CRUD operations > find and findAll > ref > destroyAll > prep pipeline integration > custom queries > composite primary keys > where clause > count",
+      "file": "src/store/__tests__/repository.test.ts",
+      "line": 550,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.472Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10270",
+      "name": "returns true when a matching row exists",
+      "suite": "CRUD operations > find and findAll > ref > destroyAll > prep pipeline integration > custom queries > composite primary keys > where clause > count > exists",
+      "file": "src/store/__tests__/repository.test.ts",
+      "line": 585,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.472Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10271",
+      "name": "returns false when no matching row exists",
+      "suite": "CRUD operations > find and findAll > ref > destroyAll > prep pipeline integration > custom queries > composite primary keys > where clause > count > exists",
+      "file": "src/store/__tests__/repository.test.ts",
+      "line": 590,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.472Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10272",
+      "name": "supports where callback",
+      "suite": "CRUD operations > find and findAll > ref > destroyAll > prep pipeline integration > custom queries > composite primary keys > where clause > count > exists",
+      "file": "src/store/__tests__/repository.test.ts",
+      "line": 595,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.472Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10273",
+      "name": "throws StoreError with no filters and no where",
+      "suite": "CRUD operations > find and findAll > ref > destroyAll > prep pipeline integration > custom queries > composite primary keys > where clause > count > exists",
+      "file": "src/store/__tests__/repository.test.ts",
+      "line": 602,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.472Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10274",
+      "name": "inserts multiple rows and returns them",
+      "suite": "CRUD operations > find and findAll > ref > destroyAll > prep pipeline integration > custom queries > composite primary keys > where clause > count > exists > createMany",
+      "file": "src/store/__tests__/repository.test.ts",
+      "line": 637,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.472Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10275",
+      "name": "returns empty array for empty input",
+      "suite": "CRUD operations > find and findAll > ref > destroyAll > prep pipeline integration > custom queries > composite primary keys > where clause > count > exists > createMany",
+      "file": "src/store/__tests__/repository.test.ts",
+      "line": 647,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.472Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10276",
+      "name": "applies prep pipeline to each row",
+      "suite": "CRUD operations > find and findAll > ref > destroyAll > prep pipeline integration > custom queries > composite primary keys > where clause > count > exists > createMany",
+      "file": "src/store/__tests__/repository.test.ts",
+      "line": 652,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.472Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10277",
+      "name": "inserts a new row when no conflict",
+      "suite": "CRUD operations > find and findAll > ref > destroyAll > prep pipeline integration > custom queries > composite primary keys > where clause > count > exists > createMany > upsert",
+      "file": "src/store/__tests__/repository.test.ts",
+      "line": 693,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.472Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10278",
+      "name": "updates an existing row on conflict",
+      "suite": "CRUD operations > find and findAll > ref > destroyAll > prep pipeline integration > custom queries > composite primary keys > where clause > count > exists > createMany > upsert",
+      "file": "src/store/__tests__/repository.test.ts",
+      "line": 705,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.472Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10279",
+      "name": "exposes the table name on the store",
+      "suite": "CRUD operations > find and findAll > ref > destroyAll > prep pipeline integration > custom queries > composite primary keys > where clause > count > exists > createMany > upsert > store name",
+      "file": "src/store/__tests__/repository.test.ts",
+      "line": 729,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.472Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10280",
+      "name": "excludes hidden columns by default and includes them with includeHidden",
+      "suite": "CRUD operations > find and findAll > ref > destroyAll > prep pipeline integration > custom queries > composite primary keys > where clause > count > exists > createMany > upsert > store name > includeHidden",
+      "file": "src/store/__tests__/repository.test.ts",
+      "line": 748,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.472Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10281",
+      "name": "returns the destroyed row",
+      "suite": "CRUD operations > find and findAll > ref > destroyAll > prep pipeline integration > custom queries > composite primary keys > where clause > count > exists > createMany > upsert > store name > includeHidden > destroy returns deleted row",
+      "file": "src/store/__tests__/repository.test.ts",
+      "line": 789,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.472Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10282",
+      "name": "throws StoreError for unknown orderBy column",
+      "suite": "CRUD operations > find and findAll > ref > destroyAll > prep pipeline integration > custom queries > composite primary keys > where clause > count > exists > createMany > upsert > store name > includeHidden > destroy returns deleted row > orderBy column validation",
+      "file": "src/store/__tests__/repository.test.ts",
+      "line": 820,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.472Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10283",
+      "name": "wraps unique constraint violations in StoreError",
+      "suite": "CRUD operations > find and findAll > ref > destroyAll > prep pipeline integration > custom queries > composite primary keys > where clause > count > exists > createMany > upsert > store name > includeHidden > destroy returns deleted row > orderBy column validation > constraint error wrapping",
+      "file": "src/store/__tests__/repository.test.ts",
+      "line": 841,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.472Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10284",
+      "name": "marks the row as deleted instead of removing it",
+      "suite": "soft delete > destroy() soft deletes",
+      "file": "src/store/__tests__/softDelete.test.ts",
+      "line": 46,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.472Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10285",
+      "name": "find() excludes deleted rows",
+      "suite": "soft delete > destroy() soft deletes > read methods auto-filter deleted rows",
+      "file": "src/store/__tests__/softDelete.test.ts",
+      "line": 70,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.472Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10286",
+      "name": "findAll() excludes deleted rows",
+      "suite": "soft delete > destroy() soft deletes > read methods auto-filter deleted rows",
+      "file": "src/store/__tests__/softDelete.test.ts",
+      "line": 79,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.472Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10287",
+      "name": "findOne() excludes deleted rows",
+      "suite": "soft delete > destroy() soft deletes > read methods auto-filter deleted rows",
+      "file": "src/store/__tests__/softDelete.test.ts",
+      "line": 86,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.472Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10288",
+      "name": "findById() excludes deleted rows",
+      "suite": "soft delete > destroy() soft deletes > read methods auto-filter deleted rows",
+      "file": "src/store/__tests__/softDelete.test.ts",
+      "line": 91,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.472Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10289",
+      "name": "count() excludes deleted rows",
+      "suite": "soft delete > destroy() soft deletes > read methods auto-filter deleted rows",
+      "file": "src/store/__tests__/softDelete.test.ts",
+      "line": 96,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.472Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10290",
+      "name": "exists() excludes deleted rows",
+      "suite": "soft delete > destroy() soft deletes > read methods auto-filter deleted rows",
+      "file": "src/store/__tests__/softDelete.test.ts",
+      "line": 102,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.472Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10291",
+      "name": "sets deletedAt instead of deleting",
+      "suite": "soft delete > destroy() soft deletes > read methods auto-filter deleted rows > destroyAll() soft deletes matching rows",
+      "file": "src/store/__tests__/softDelete.test.ts",
+      "line": 112,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.472Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10292",
+      "name": "clears deletedAt and makes the row visible again",
+      "suite": "soft delete > destroy() soft deletes > read methods auto-filter deleted rows > destroyAll() soft deletes matching rows > restore()",
+      "file": "src/store/__tests__/softDelete.test.ts",
+      "line": 130,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.472Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10293",
+      "name": "permanently deletes the row",
+      "suite": "soft delete > destroy() soft deletes > read methods auto-filter deleted rows > destroyAll() soft deletes matching rows > restore() > forceDestroy()",
+      "file": "src/store/__tests__/softDelete.test.ts",
+      "line": 146,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.472Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10294",
+      "name": "permanently deletes matching rows",
+      "suite": "soft delete > destroy() soft deletes > read methods auto-filter deleted rows > destroyAll() soft deletes matching rows > restore() > forceDestroy() > forceDestroyAll()",
+      "file": "src/store/__tests__/softDelete.test.ts",
+      "line": 156,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.472Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10295",
+      "name": "returns all rows including soft-deleted ones",
+      "suite": "soft delete > destroy() soft deletes > read methods auto-filter deleted rows > destroyAll() soft deletes matching rows > restore() > forceDestroy() > forceDestroyAll() > findWithDeleted()",
+      "file": "src/store/__tests__/softDelete.test.ts",
+      "line": 171,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.472Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10296",
+      "name": "supports filters",
+      "suite": "soft delete > destroy() soft deletes > read methods auto-filter deleted rows > destroyAll() soft deletes matching rows > restore() > forceDestroy() > forceDestroyAll() > findWithDeleted()",
+      "file": "src/store/__tests__/softDelete.test.ts",
+      "line": 180,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.472Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10297",
+      "name": "defineStore preserves the table type in StoreDefinition",
+      "suite": "Store<TTable> type inference",
+      "file": "src/store/__tests__/typed-store.test.ts",
+      "line": 13,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/store/define.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.473Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10298",
+      "name": "StoreDefinition.queries preserves table type",
+      "suite": "Store<TTable> type inference",
+      "file": "src/store/__tests__/typed-store.test.ts",
+      "line": 18,
+      "type": "unit",
+      "status": "active",
+      "coveredFiles": [
+        "src/store/define.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.473Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10299",
+      "name": "10 parallel creates all succeed",
+      "suite": "Concurrency [${dialect}]",
+      "file": "test/integration/concurrency.test.ts",
+      "line": 41,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/connect.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.473Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10300",
+      "name": "parallel reads during writes do not error",
+      "suite": "Concurrency [${dialect}]",
+      "file": "test/integration/concurrency.test.ts",
+      "line": 51,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/connect.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.473Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10301",
+      "name": "connect returns a working StoriumInstance",
+      "suite": "Connection lifecycle [${dialect}]",
+      "file": "test/integration/connect.test.ts",
+      "line": 14,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/connect.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.473Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10302",
+      "name": "disconnect is idempotent",
+      "suite": "Connection lifecycle [${dialect}]",
+      "file": "test/integration/connect.test.ts",
+      "line": 27,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/connect.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.473Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10303",
+      "name": "infers memory/sqlite dialect from better-sqlite3 Drizzle instance",
+      "suite": "Connection lifecycle [${dialect}] > fromDrizzle dialect inference",
+      "file": "test/integration/connect.test.ts",
+      "line": 45,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/connect.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.473Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10304",
+      "name": "memory dialect ignores pool config",
+      "suite": "Connection lifecycle [${dialect}] > fromDrizzle dialect inference > Pool configuration [${dialect}]",
+      "file": "test/integration/connect.test.ts",
+      "line": 57,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/connect.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.473Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10305",
+      "name": "connects with explicit pool config",
+      "suite": "Connection lifecycle [${dialect}] > fromDrizzle dialect inference > Pool configuration [${dialect}]",
+      "file": "test/integration/connect.test.ts",
+      "line": 65,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/connect.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.473Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10306",
+      "name": "disconnect is safe to call multiple times across dialects",
+      "suite": "Connection lifecycle [${dialect}] > fromDrizzle dialect inference > Pool configuration [${dialect}]",
+      "file": "test/integration/connect.test.ts",
+      "line": 76,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/connect.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.473Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10307",
+      "name": "creates a row and returns it with all visible fields",
+      "suite": "CRUD [${dialect}]",
+      "file": "test/integration/crud.test.ts",
+      "line": 51,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/connect.ts",
+        "src/store/prep.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.474Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10308",
+      "name": "creates with hidden column (not returned by default)",
+      "suite": "CRUD [${dialect}]",
+      "file": "test/integration/crud.test.ts",
+      "line": 60,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/connect.ts",
+        "src/store/prep.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.474Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10309",
+      "name": "finds a row by ID",
+      "suite": "CRUD [${dialect}]",
+      "file": "test/integration/crud.test.ts",
+      "line": 71,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/connect.ts",
+        "src/store/prep.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.474Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10310",
+      "name": "returns null for non-existent ID",
+      "suite": "CRUD [${dialect}]",
+      "file": "test/integration/crud.test.ts",
+      "line": 78,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/connect.ts",
+        "src/store/prep.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.474Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10311",
+      "name": "finds rows by filter",
+      "suite": "CRUD [${dialect}]",
+      "file": "test/integration/crud.test.ts",
+      "line": 85,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/connect.ts",
+        "src/store/prep.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.474Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10312",
+      "name": "respects limit and offset",
+      "suite": "CRUD [${dialect}]",
+      "file": "test/integration/crud.test.ts",
+      "line": 93,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/connect.ts",
+        "src/store/prep.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.474Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10313",
+      "name": "findOne returns a single row",
+      "suite": "CRUD [${dialect}]",
+      "file": "test/integration/crud.test.ts",
+      "line": 105,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/connect.ts",
+        "src/store/prep.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.474Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10314",
+      "name": "findOne returns null when no match",
+      "suite": "CRUD [${dialect}]",
+      "file": "test/integration/crud.test.ts",
+      "line": 112,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/connect.ts",
+        "src/store/prep.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.474Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10315",
+      "name": "updates a row and returns the result",
+      "suite": "CRUD [${dialect}]",
+      "file": "test/integration/crud.test.ts",
+      "line": 119,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/connect.ts",
+        "src/store/prep.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.474Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10316",
+      "name": "update throws StoreError for non-existent row",
+      "suite": "CRUD [${dialect}]",
+      "file": "test/integration/crud.test.ts",
+      "line": 126,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/connect.ts",
+        "src/store/prep.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.474Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10317",
+      "name": "destroys an existing row",
+      "suite": "CRUD [${dialect}]",
+      "file": "test/integration/crud.test.ts",
+      "line": 134,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/connect.ts",
+        "src/store/prep.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.474Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10318",
+      "name": "destroy throws StoreError for non-existent row",
+      "suite": "CRUD [${dialect}]",
+      "file": "test/integration/crud.test.ts",
+      "line": 141,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/connect.ts",
+        "src/store/prep.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.474Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10319",
+      "name": "creates multiple rows and returns them",
+      "suite": "CRUD [${dialect}]",
+      "file": "test/integration/crud.test.ts",
+      "line": 149,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/connect.ts",
+        "src/store/prep.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.474Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10320",
+      "name": "upsert inserts when no conflict",
+      "suite": "CRUD [${dialect}]",
+      "file": "test/integration/crud.test.ts",
+      "line": 160,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/connect.ts",
+        "src/store/prep.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.474Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10321",
+      "name": "counts rows with and without filters",
+      "suite": "CRUD [${dialect}]",
+      "file": "test/integration/crud.test.ts",
+      "line": 167,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/connect.ts",
+        "src/store/prep.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.474Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10322",
+      "name": "exists returns true for matching rows",
+      "suite": "CRUD [${dialect}]",
+      "file": "test/integration/crud.test.ts",
+      "line": 177,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/connect.ts",
+        "src/store/prep.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.474Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10323",
+      "name": "exists returns false for non-matching rows",
+      "suite": "CRUD [${dialect}]",
+      "file": "test/integration/crud.test.ts",
+      "line": 183,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/connect.ts",
+        "src/store/prep.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.474Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10324",
+      "name": "ref returns the primary key of a matching row",
+      "suite": "CRUD [${dialect}]",
+      "file": "test/integration/crud.test.ts",
+      "line": 190,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/connect.ts",
+        "src/store/prep.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.474Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10325",
+      "name": "ref throws StoreError for no match",
+      "suite": "CRUD [${dialect}]",
+      "file": "test/integration/crud.test.ts",
+      "line": 196,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/connect.ts",
+        "src/store/prep.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.474Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10326",
+      "name": "findByIdIn returns rows for given IDs",
+      "suite": "CRUD [${dialect}]",
+      "file": "test/integration/crud.test.ts",
+      "line": 204,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/connect.ts",
+        "src/store/prep.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.474Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10327",
+      "name": "findByIdIn returns empty array for empty input",
+      "suite": "CRUD [${dialect}]",
+      "file": "test/integration/crud.test.ts",
+      "line": 211,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/connect.ts",
+        "src/store/prep.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.474Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10328",
+      "name": "destroyAll removes matching rows",
+      "suite": "CRUD [${dialect}]",
+      "file": "test/integration/crud.test.ts",
+      "line": 218,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/connect.ts",
+        "src/store/prep.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.474Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10329",
+      "name": "throws StoreError for unknown filter keys",
+      "suite": "CRUD [${dialect}]",
+      "file": "test/integration/crud.test.ts",
+      "line": 227,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/connect.ts",
+        "src/store/prep.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.474Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10330",
+      "name": "creates and finds with composite primary key",
+      "suite": "CRUD [${dialect}]",
+      "file": "test/integration/crud.test.ts",
+      "line": 235,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/connect.ts",
+        "src/store/prep.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.474Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10331",
+      "name": "createMany with composite PK returns all rows",
+      "suite": "CRUD [${dialect}]",
+      "file": "test/integration/crud.test.ts",
+      "line": 249,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/connect.ts",
+        "src/store/prep.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.474Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10332",
+      "name": "find with where callback using and()",
+      "suite": "CRUD [${dialect}]",
+      "file": "test/integration/crud.test.ts",
+      "line": 264,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/connect.ts",
+        "src/store/prep.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.474Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10333",
+      "name": "find with where callback using or()",
+      "suite": "CRUD [${dialect}]",
+      "file": "test/integration/crud.test.ts",
+      "line": 275,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/connect.ts",
+        "src/store/prep.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.474Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10334",
+      "name": "findByIdIn with many IDs",
+      "suite": "CRUD [${dialect}]",
+      "file": "test/integration/crud.test.ts",
+      "line": 288,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/connect.ts",
+        "src/store/prep.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.474Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10335",
+      "name": "find with multiple equality filters",
+      "suite": "CRUD [${dialect}]",
+      "file": "test/integration/crud.test.ts",
+      "line": 299,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/connect.ts",
+        "src/store/prep.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.474Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10336",
+      "name": "UNIQUE constraint violation throws on duplicate insert",
+      "suite": "Error recovery [${dialect}]",
+      "file": "test/integration/errors.test.ts",
+      "line": 60,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.474Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10337",
+      "name": "destroy throws StoreError for non-existent row",
+      "suite": "Error recovery [${dialect}]",
+      "file": "test/integration/errors.test.ts",
+      "line": 68,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.474Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10338",
+      "name": "update throws StoreError for non-existent row",
+      "suite": "Error recovery [${dialect}]",
+      "file": "test/integration/errors.test.ts",
+      "line": 74,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.474Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10339",
+      "name": "ref throws StoreError for non-existent row",
+      "suite": "Error recovery [${dialect}]",
+      "file": "test/integration/errors.test.ts",
+      "line": 80,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.474Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10340",
+      "name": "find throws StoreError for unknown filter key",
+      "suite": "Error recovery [${dialect}]",
+      "file": "test/integration/errors.test.ts",
+      "line": 86,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/errors.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.474Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10341",
+      "name": "applies pending migrations — table appears in DB",
+      "suite": "migrate()",
+      "file": "test/integration/migrate.test.ts",
+      "line": 76,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/migrate/commands.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.475Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10342",
+      "name": "is idempotent — running twice does not error",
+      "suite": "migrate()",
+      "file": "test/integration/migrate.test.ts",
+      "line": 95,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/migrate/commands.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.475Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10343",
+      "name": "returns correct data and meta for first page",
+      "suite": "Pagination [${dialect}]",
+      "file": "test/integration/pagination.test.ts",
+      "line": 48,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/mixins/withPagination.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.475Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10344",
+      "name": "last page has fewer items than pageSize",
+      "suite": "Pagination [${dialect}]",
+      "file": "test/integration/pagination.test.ts",
+      "line": 61,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/mixins/withPagination.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.475Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10345",
+      "name": "empty result set pagination",
+      "suite": "Pagination [${dialect}]",
+      "file": "test/integration/pagination.test.ts",
+      "line": 72,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/mixins/withPagination.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.475Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10346",
+      "name": "paginate with custom pageSize override",
+      "suite": "Pagination [${dialect}]",
+      "file": "test/integration/pagination.test.ts",
+      "line": 83,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/mixins/withPagination.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.475Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10347",
+      "name": "paginate with filters",
+      "suite": "Pagination [${dialect}]",
+      "file": "test/integration/pagination.test.ts",
+      "line": 94,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/mixins/withPagination.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.475Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10348",
+      "name": "belongsTo: LEFT JOIN returns entity with inlined related fields",
+      "suite": "Relationships [${dialect}]",
+      "file": "test/integration/relationships.test.ts",
+      "line": 72,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/mixins/belongsTo.ts",
+        "src/mixins/hasMany.ts",
+        "src/mixins/hasOne.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.475Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10349",
+      "name": "belongsTo: returns null related fields when no relation exists",
+      "suite": "Relationships [${dialect}]",
+      "file": "test/integration/relationships.test.ts",
+      "line": 85,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/mixins/belongsTo.ts",
+        "src/mixins/hasMany.ts",
+        "src/mixins/hasOne.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.475Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10350",
+      "name": "hasMany: returns array of related rows",
+      "suite": "Relationships [${dialect}]",
+      "file": "test/integration/relationships.test.ts",
+      "line": 100,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/mixins/belongsTo.ts",
+        "src/mixins/hasMany.ts",
+        "src/mixins/hasOne.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.475Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10351",
+      "name": "hasMany: respects limit option",
+      "suite": "Relationships [${dialect}]",
+      "file": "test/integration/relationships.test.ts",
+      "line": 110,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/mixins/belongsTo.ts",
+        "src/mixins/hasMany.ts",
+        "src/mixins/hasOne.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.475Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10352",
+      "name": "hasMany: returns empty array when no related rows",
+      "suite": "Relationships [${dialect}]",
+      "file": "test/integration/relationships.test.ts",
+      "line": 120,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/mixins/belongsTo.ts",
+        "src/mixins/hasMany.ts",
+        "src/mixins/hasOne.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.475Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10353",
+      "name": "hasOne: returns single related row",
+      "suite": "Relationships [${dialect}]",
+      "file": "test/integration/relationships.test.ts",
+      "line": 128,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/mixins/belongsTo.ts",
+        "src/mixins/hasMany.ts",
+        "src/mixins/hasOne.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.475Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10354",
+      "name": "hasOne: returns null when no related row",
+      "suite": "Relationships [${dialect}]",
+      "file": "test/integration/relationships.test.ts",
+      "line": 138,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/mixins/belongsTo.ts",
+        "src/mixins/hasMany.ts",
+        "src/mixins/hasOne.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.475Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10355",
+      "name": "destroy sets deletedAt and excludes row from find",
+      "suite": "Soft delete [${dialect}]",
+      "file": "test/integration/soft-delete.test.ts",
+      "line": 44,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.476Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10356",
+      "name": "destroy excludes row from findAll",
+      "suite": "Soft delete [${dialect}]",
+      "file": "test/integration/soft-delete.test.ts",
+      "line": 52,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.476Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10357",
+      "name": "destroy excludes row from find with filters",
+      "suite": "Soft delete [${dialect}]",
+      "file": "test/integration/soft-delete.test.ts",
+      "line": 61,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.476Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10358",
+      "name": "restore clears deletedAt and makes row visible again",
+      "suite": "Soft delete [${dialect}]",
+      "file": "test/integration/soft-delete.test.ts",
+      "line": 71,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.476Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10359",
+      "name": "forceDestroy permanently removes the row",
+      "suite": "Soft delete [${dialect}]",
+      "file": "test/integration/soft-delete.test.ts",
+      "line": 91,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.476Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10360",
+      "name": "destroyAll soft-deletes matching rows and returns count",
+      "suite": "Soft delete [${dialect}]",
+      "file": "test/integration/soft-delete.test.ts",
+      "line": 105,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.476Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10361",
+      "name": "count excludes soft-deleted rows",
+      "suite": "Soft delete [${dialect}]",
+      "file": "test/integration/soft-delete.test.ts",
+      "line": 123,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.476Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10362",
+      "name": "countWithDeleted includes soft-deleted rows",
+      "suite": "Soft delete [${dialect}]",
+      "file": "test/integration/soft-delete.test.ts",
+      "line": 134,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.476Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10363",
+      "name": "findWithDeleted returns both active and soft-deleted rows",
+      "suite": "Soft delete [${dialect}]",
+      "file": "test/integration/soft-delete.test.ts",
+      "line": 147,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.476Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10364",
+      "name": "deletedAt timestamp round-trips correctly",
+      "suite": "Soft delete [${dialect}]",
+      "file": "test/integration/soft-delete.test.ts",
+      "line": 160,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/store/define.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.476Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10365",
+      "name": "commits on success — row is visible after",
+      "suite": "Transactions [${dialect}]",
+      "file": "test/integration/transactions.test.ts",
+      "line": 41,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/connect.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.476Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10366",
+      "name": "rolls back on thrown error — row is not visible",
+      "suite": "Transactions [${dialect}]",
+      "file": "test/integration/transactions.test.ts",
+      "line": 51,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/connect.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.476Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10367",
+      "name": "rolls back on rejected promise — row is not visible",
+      "suite": "Transactions [${dialect}]",
+      "file": "test/integration/transactions.test.ts",
+      "line": 63,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/connect.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.476Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10368",
+      "name": "multiple operations within a transaction share state",
+      "suite": "Transactions [${dialect}]",
+      "file": "test/integration/transactions.test.ts",
+      "line": 75,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/connect.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.476Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10369",
+      "name": "update within transaction returns correct data (UPDATE+SELECT path)",
+      "suite": "Transactions [${dialect}]",
+      "file": "test/integration/transactions.test.ts",
+      "line": 89,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/connect.ts",
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.476Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10370",
+      "name": "inserts when row does not exist",
+      "suite": "Upsert [${dialect}]",
+      "file": "test/integration/upsert.test.ts",
+      "line": 43,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.477Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10371",
+      "name": "updates when row with same PK exists",
+      "suite": "Upsert [${dialect}]",
+      "file": "test/integration/upsert.test.ts",
+      "line": 50,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.477Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10372",
+      "name": "idempotent — same data twice returns same row",
+      "suite": "Upsert [${dialect}]",
+      "file": "test/integration/upsert.test.ts",
+      "line": 63,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.477Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10373",
+      "name": "upsert with composite PK table",
+      "suite": "Upsert [${dialect}]",
+      "file": "test/integration/upsert.test.ts",
+      "line": 76,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/store/repository.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.477Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10374",
+      "name": "addMember inserts and returns the membership row",
+      "suite": "withMembers [${dialect}]",
+      "file": "test/integration/with-members.test.ts",
+      "line": 49,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/mixins/withMembers.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.477Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10375",
+      "name": "getMembers returns all members for a collection",
+      "suite": "withMembers [${dialect}]",
+      "file": "test/integration/with-members.test.ts",
+      "line": 60,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/mixins/withMembers.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.477Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10376",
+      "name": "isMember returns true/false correctly",
+      "suite": "withMembers [${dialect}]",
+      "file": "test/integration/with-members.test.ts",
+      "line": 74,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/mixins/withMembers.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.477Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10377",
+      "name": "getMemberCount returns correct count",
+      "suite": "withMembers [${dialect}]",
+      "file": "test/integration/with-members.test.ts",
+      "line": 85,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/mixins/withMembers.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.477Z",
+      "lastVerified": null
+    },
+    {
+      "id": "QA-10378",
+      "name": "removeMember deletes the membership",
+      "suite": "withMembers [${dialect}]",
+      "file": "test/integration/with-members.test.ts",
+      "line": 97,
+      "type": "integration",
+      "status": "active",
+      "coveredFiles": [
+        "src/mixins/withMembers.ts"
+      ],
+      "assignedAt": "2026-04-14T04:44:41.477Z",
+      "lastVerified": null
+    }
+  ]
 }

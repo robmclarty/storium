@@ -48,7 +48,7 @@ for (const dialect of getTestDialects()) {
 
     // -------------------------------------------------------- create --
 
-    it('creates a row and returns it with all visible fields', async () => {
+    /* QA-10307 */ it('[QA-10307] creates a row and returns it with all visible fields', async () => {
       const user = await users.create({ email: 'alice@test.com', name: 'Alice' })
       expect(user.email).toBe('alice@test.com')
       expect(user.name).toBe('Alice')
@@ -57,7 +57,7 @@ for (const dialect of getTestDialects()) {
       expect(user.password_hash).toBeUndefined()
     })
 
-    it('creates with hidden column (not returned by default)', async () => {
+    /* QA-10308 */ it('[QA-10308] creates with hidden column (not returned by default)', async () => {
       const user = await users.create({
         email: 'hidden@test.com',
         name: 'Hidden',
@@ -68,21 +68,21 @@ for (const dialect of getTestDialects()) {
 
     // -------------------------------------------------------- findById --
 
-    it('finds a row by ID', async () => {
+    /* QA-10309 */ it('[QA-10309] finds a row by ID', async () => {
       const created = await users.create({ email: 'findme@test.com', name: 'FindMe' })
       const found = await users.findById(created.id)
       expect(found).not.toBeNull()
       expect(found.email).toBe('findme@test.com')
     })
 
-    it('returns null for non-existent ID', async () => {
+    /* QA-10310 */ it('[QA-10310] returns null for non-existent ID', async () => {
       const found = await users.findById('00000000-0000-0000-0000-000000000000')
       expect(found).toBeNull()
     })
 
     // -------------------------------------------------------- find --
 
-    it('finds rows by filter', async () => {
+    /* QA-10311 */ it('[QA-10311] finds rows by filter', async () => {
       await users.create({ email: 'filter1@test.com', name: 'FilterGroup' })
       await users.create({ email: 'filter2@test.com', name: 'FilterGroup' })
       const results = await users.find({ name: 'FilterGroup' })
@@ -90,7 +90,7 @@ for (const dialect of getTestDialects()) {
       expect(results.every((r: any) => r.name === 'FilterGroup')).toBe(true)
     })
 
-    it('respects limit and offset', async () => {
+    /* QA-10312 */ it('[QA-10312] respects limit and offset', async () => {
       const all = await users.find({ name: 'FilterGroup' })
       const limited = await users.find({ name: 'FilterGroup' }, { limit: 1 })
       expect(limited).toHaveLength(1)
@@ -102,28 +102,28 @@ for (const dialect of getTestDialects()) {
 
     // -------------------------------------------------------- findOne --
 
-    it('findOne returns a single row', async () => {
+    /* QA-10313 */ it('[QA-10313] findOne returns a single row', async () => {
       await users.create({ email: 'unique_one@test.com', name: 'Unique' })
       const found = await users.findOne({ email: 'unique_one@test.com' })
       expect(found).not.toBeNull()
       expect(found.email).toBe('unique_one@test.com')
     })
 
-    it('findOne returns null when no match', async () => {
+    /* QA-10314 */ it('[QA-10314] findOne returns null when no match', async () => {
       const found = await users.findOne({ email: 'nonexistent_xyz@test.com' })
       expect(found).toBeNull()
     })
 
     // -------------------------------------------------------- update --
 
-    it('updates a row and returns the result', async () => {
+    /* QA-10315 */ it('[QA-10315] updates a row and returns the result', async () => {
       const created = await users.create({ email: 'update_me@test.com', name: 'Before' })
       const updated = await users.update(created.id, { name: 'After' })
       expect(updated.name).toBe('After')
       expect(updated.email).toBe('update_me@test.com')
     })
 
-    it('update throws StoreError for non-existent row', async () => {
+    /* QA-10316 */ it('[QA-10316] update throws StoreError for non-existent row', async () => {
       await expect(
         users.update('00000000-0000-0000-0000-000000000000', { name: 'X' })
       ).rejects.toThrow(StoreError)
@@ -131,14 +131,14 @@ for (const dialect of getTestDialects()) {
 
     // -------------------------------------------------------- destroy --
 
-    it('destroys an existing row', async () => {
+    /* QA-10317 */ it('[QA-10317] destroys an existing row', async () => {
       const created = await users.create({ email: 'delete_me@test.com', name: 'DeleteMe' })
       await users.destroy(created.id)
       const found = await users.findById(created.id)
       expect(found).toBeNull()
     })
 
-    it('destroy throws StoreError for non-existent row', async () => {
+    /* QA-10318 */ it('[QA-10318] destroy throws StoreError for non-existent row', async () => {
       await expect(
         users.destroy('00000000-0000-0000-0000-000000000000')
       ).rejects.toThrow(StoreError)
@@ -146,7 +146,7 @@ for (const dialect of getTestDialects()) {
 
     // -------------------------------------------------------- createMany --
 
-    it('creates multiple rows and returns them', async () => {
+    /* QA-10319 */ it('[QA-10319] creates multiple rows and returns them', async () => {
       const rows = await users.createMany([
         { email: 'many1@test.com', name: 'Many1' },
         { email: 'many2@test.com', name: 'Many2' },
@@ -157,14 +157,14 @@ for (const dialect of getTestDialects()) {
 
     // -------------------------------------------------------- upsert --
 
-    it('upsert inserts when no conflict', async () => {
+    /* QA-10320 */ it('[QA-10320] upsert inserts when no conflict', async () => {
       const row = await users.upsert({ email: 'upsert_new@test.com', name: 'UpsertNew' })
       expect(row.email).toBe('upsert_new@test.com')
     })
 
     // -------------------------------------------------------- count --
 
-    it('counts rows with and without filters', async () => {
+    /* QA-10321 */ it('[QA-10321] counts rows with and without filters', async () => {
       const total = await users.count()
       expect(total).toBeGreaterThan(0)
 
@@ -174,26 +174,26 @@ for (const dialect of getTestDialects()) {
 
     // -------------------------------------------------------- exists --
 
-    it('exists returns true for matching rows', async () => {
+    /* QA-10322 */ it('[QA-10322] exists returns true for matching rows', async () => {
       await users.create({ email: 'exists_check@test.com', name: 'ExistsCheck' })
       const result = await users.exists({ email: 'exists_check@test.com' })
       expect(result).toBe(true)
     })
 
-    it('exists returns false for non-matching rows', async () => {
+    /* QA-10323 */ it('[QA-10323] exists returns false for non-matching rows', async () => {
       const result = await users.exists({ email: 'does_not_exist_xyz@test.com' })
       expect(result).toBe(false)
     })
 
     // -------------------------------------------------------- ref --
 
-    it('ref returns the primary key of a matching row', async () => {
+    /* QA-10324 */ it('[QA-10324] ref returns the primary key of a matching row', async () => {
       const created = await users.create({ email: 'ref_test@test.com', name: 'RefTest' })
       const pk = await users.ref({ email: 'ref_test@test.com' })
       expect(pk).toBe(created.id)
     })
 
-    it('ref throws StoreError for no match', async () => {
+    /* QA-10325 */ it('[QA-10325] ref throws StoreError for no match', async () => {
       await expect(
         users.ref({ email: 'ref_missing_xyz@test.com' })
       ).rejects.toThrow(StoreError)
@@ -201,21 +201,21 @@ for (const dialect of getTestDialects()) {
 
     // -------------------------------------------------------- findByIdIn --
 
-    it('findByIdIn returns rows for given IDs', async () => {
+    /* QA-10326 */ it('[QA-10326] findByIdIn returns rows for given IDs', async () => {
       const a = await users.create({ email: 'idin_a@test.com', name: 'A' })
       const b = await users.create({ email: 'idin_b@test.com', name: 'B' })
       const results = await users.findByIdIn([a.id, b.id])
       expect(results).toHaveLength(2)
     })
 
-    it('findByIdIn returns empty array for empty input', async () => {
+    /* QA-10327 */ it('[QA-10327] findByIdIn returns empty array for empty input', async () => {
       const results = await users.findByIdIn([])
       expect(results).toEqual([])
     })
 
     // ------------------------------------------------ destroyAll --
 
-    it('destroyAll removes matching rows', async () => {
+    /* QA-10328 */ it('[QA-10328] destroyAll removes matching rows', async () => {
       await users.create({ email: 'da1@test.com', name: 'DestroyAllGroup' })
       await users.create({ email: 'da2@test.com', name: 'DestroyAllGroup' })
       const count = await users.destroyAll({ name: 'DestroyAllGroup' })
@@ -224,7 +224,7 @@ for (const dialect of getTestDialects()) {
 
     // -------------------------------------------- filter validation --
 
-    it('throws StoreError for unknown filter keys', async () => {
+    /* QA-10329 */ it('[QA-10329] throws StoreError for unknown filter keys', async () => {
       await expect(
         users.find({ nonExistentColumn: 'value' })
       ).rejects.toThrow(StoreError)
@@ -232,7 +232,7 @@ for (const dialect of getTestDialects()) {
 
     // ------------------------------------------- composite PK --
 
-    it('creates and finds with composite primary key', async () => {
+    /* QA-10330 */ it('[QA-10330] creates and finds with composite primary key', async () => {
       const uid = crypto.randomUUID()
       const gid = crypto.randomUUID()
       await memberships.create(
@@ -246,7 +246,7 @@ for (const dialect of getTestDialects()) {
 
     // -------------------------------- createMany with composite PK --
 
-    it('createMany with composite PK returns all rows', async () => {
+    /* QA-10331 */ it('[QA-10331] createMany with composite PK returns all rows', async () => {
       const gid = crypto.randomUUID()
       const rows = await memberships.createMany([
         { user_id: crypto.randomUUID(), group_id: gid, role: 'admin' },
@@ -261,7 +261,7 @@ for (const dialect of getTestDialects()) {
 
     // ---------------------------------------- complex WHERE clauses --
 
-    it('find with where callback using and()', async () => {
+    /* QA-10332 */ it('[QA-10332] find with where callback using and()', async () => {
       await users.create({ email: 'where_and@test.com', name: 'WhereAnd' })
 
       const results = await users.find(
@@ -272,7 +272,7 @@ for (const dialect of getTestDialects()) {
       expect(results[0].name).toBe('WhereAnd')
     })
 
-    it('find with where callback using or()', async () => {
+    /* QA-10333 */ it('[QA-10333] find with where callback using or()', async () => {
       await users.create({ email: 'where_or1@test.com', name: 'WhereOr1' })
       await users.create({ email: 'where_or2@test.com', name: 'WhereOr2' })
 
@@ -285,7 +285,7 @@ for (const dialect of getTestDialects()) {
       expect(results.length).toBeGreaterThanOrEqual(2)
     })
 
-    it('findByIdIn with many IDs', async () => {
+    /* QA-10334 */ it('[QA-10334] findByIdIn with many IDs', async () => {
       const ids: string[] = []
       for (let i = 0; i < 20; i++) {
         const user = await users.create({ email: `bulkid_${i}@test.com`, name: 'BulkId' })
@@ -296,7 +296,7 @@ for (const dialect of getTestDialects()) {
       expect(results).toHaveLength(20)
     })
 
-    it('find with multiple equality filters', async () => {
+    /* QA-10335 */ it('[QA-10335] find with multiple equality filters', async () => {
       await users.create({ email: 'multi_eq@test.com', name: 'MultiEq' })
 
       const results = await users.find({ email: 'multi_eq@test.com', name: 'MultiEq' })

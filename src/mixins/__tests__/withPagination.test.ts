@@ -31,17 +31,17 @@ beforeAll(async () => {
 })
 
 describe('withPagination', () => {
-  it('adds a paginate method to the store', () => {
+  /* QA-10088 */ it('[QA-10088] adds a paginate method to the store', () => {
     expect(typeof paginatedUsers.paginate).toBe('function')
   })
 
-  it('preserves all original store methods', () => {
+  /* QA-10089 */ it('[QA-10089] preserves all original store methods', () => {
     expect(typeof paginatedUsers.findById).toBe('function')
     expect(typeof paginatedUsers.create).toBe('function')
     expect(typeof paginatedUsers.find).toBe('function')
   })
 
-  it('returns paginated data with correct meta', async () => {
+  /* QA-10090 */ it('[QA-10090] returns paginated data with correct meta', async () => {
     const result = await paginatedUsers.paginate({}, { page: 1, pageSize: 10 })
     expect(result.data).toHaveLength(10)
     expect(result.meta).toEqual({
@@ -52,33 +52,33 @@ describe('withPagination', () => {
     })
   })
 
-  it('returns correct data for middle pages', async () => {
+  /* QA-10091 */ it('[QA-10091] returns correct data for middle pages', async () => {
     const result = await paginatedUsers.paginate({}, { page: 3, pageSize: 10 })
     expect(result.data).toHaveLength(10)
     expect(result.meta.page).toBe(3)
     expect(result.meta.totalPages).toBe(5)
   })
 
-  it('returns partial data for the last page', async () => {
+  /* QA-10092 */ it('[QA-10092] returns partial data for the last page', async () => {
     const result = await paginatedUsers.paginate({}, { page: 4, pageSize: 15 })
     expect(result.data).toHaveLength(5)
     expect(result.meta.totalPages).toBe(4)
   })
 
-  it('returns empty data when page exceeds total pages', async () => {
+  /* QA-10093 */ it('[QA-10093] returns empty data when page exceeds total pages', async () => {
     const result = await paginatedUsers.paginate({}, { page: 100, pageSize: 10 })
     expect(result.data).toHaveLength(0)
     expect(result.meta.total).toBe(50)
   })
 
-  it('uses default pageSize of 25', async () => {
+  /* QA-10094 */ it('[QA-10094] uses default pageSize of 25', async () => {
     const result = await paginatedUsers.paginate({}, { page: 1 })
     expect(result.data).toHaveLength(25)
     expect(result.meta.pageSize).toBe(25)
     expect(result.meta.totalPages).toBe(2)
   })
 
-  it('respects custom default pageSize', async () => {
+  /* QA-10095 */ it('[QA-10095] respects custom default pageSize', async () => {
     const custom = withPagination(users, { pageSize: 5 })
     const result = await custom.paginate({}, { page: 1 })
     expect(result.data).toHaveLength(5)
@@ -86,7 +86,7 @@ describe('withPagination', () => {
     expect(result.meta.totalPages).toBe(10)
   })
 
-  it('supports equality filters', async () => {
+  /* QA-10096 */ it('[QA-10096] supports equality filters', async () => {
     const result = await paginatedUsers.paginate(
       { name: 'User 01' },
       { page: 1, pageSize: 10 }
@@ -96,7 +96,7 @@ describe('withPagination', () => {
     expect(result.meta.totalPages).toBe(1)
   })
 
-  it('supports where callback', async () => {
+  /* QA-10097 */ it('[QA-10097] supports where callback', async () => {
     const result = await paginatedUsers.paginate({}, {
       page: 1,
       pageSize: 100,
@@ -106,7 +106,7 @@ describe('withPagination', () => {
     expect(result.meta.total).toBe(10)
   })
 
-  it('supports orderBy', async () => {
+  /* QA-10098 */ it('[QA-10098] supports orderBy', async () => {
     const result = await paginatedUsers.paginate({}, {
       page: 1,
       pageSize: 3,
@@ -116,19 +116,19 @@ describe('withPagination', () => {
     expect(result.data[1].name).toBe('User 49')
   })
 
-  it('throws on invalid page number', async () => {
+  /* QA-10099 */ it('[QA-10099] throws on invalid page number', async () => {
     await expect(
       paginatedUsers.paginate({}, { page: 0, pageSize: 10 })
     ).rejects.toThrow('page must be >= 1')
   })
 
-  it('throws on invalid pageSize', async () => {
+  /* QA-10100 */ it('[QA-10100] throws on invalid pageSize', async () => {
     await expect(
       paginatedUsers.paginate({}, { page: 1, pageSize: 0 })
     ).rejects.toThrow('pageSize must be >= 1')
   })
 
-  it('handles empty table', async () => {
+  /* QA-10101 */ it('[QA-10101] handles empty table', async () => {
     const pgEmptyTable = sqliteTable('pg_empty', {
       id: text('id').primaryKey(),
     })
@@ -148,7 +148,7 @@ describe('withPagination', () => {
     })
   })
 
-  it('does not add paginateWithDeleted for non-soft-delete stores', () => {
+  /* QA-10102 */ it('[QA-10102] does not add paginateWithDeleted for non-soft-delete stores', () => {
     expect(paginatedUsers.paginateWithDeleted).toBeUndefined()
   })
 })
@@ -186,23 +186,23 @@ describe('withPagination + softDelete', () => {
     await tasks.destroy('task-3')
   })
 
-  it('adds paginateWithDeleted for soft-delete stores', () => {
+  /* QA-10103 */ it('[QA-10103] adds paginateWithDeleted for soft-delete stores', () => {
     expect(typeof paginatedTasks.paginateWithDeleted).toBe('function')
   })
 
-  it('paginate excludes soft-deleted rows', async () => {
+  /* QA-10104 */ it('[QA-10104] paginate excludes soft-deleted rows', async () => {
     const result = await paginatedTasks.paginate({}, { page: 1, pageSize: 100 })
     expect(result.meta.total).toBe(7)
     expect(result.data).toHaveLength(7)
   })
 
-  it('paginateWithDeleted includes soft-deleted rows', async () => {
+  /* QA-10105 */ it('[QA-10105] paginateWithDeleted includes soft-deleted rows', async () => {
     const result = await paginatedTasks.paginateWithDeleted({}, { page: 1, pageSize: 100 })
     expect(result.meta.total).toBe(10)
     expect(result.data).toHaveLength(10)
   })
 
-  it('paginateWithDeleted respects pagination opts', async () => {
+  /* QA-10106 */ it('[QA-10106] paginateWithDeleted respects pagination opts', async () => {
     const result = await paginatedTasks.paginateWithDeleted({}, { page: 1, pageSize: 4 })
     expect(result.data).toHaveLength(4)
     expect(result.meta).toEqual({
@@ -213,7 +213,7 @@ describe('withPagination + softDelete', () => {
     })
   })
 
-  it('paginateWithDeleted supports filters', async () => {
+  /* QA-10107 */ it('[QA-10107] paginateWithDeleted supports filters', async () => {
     const result = await paginatedTasks.paginateWithDeleted(
       { title: 'Task 1' },
       { page: 1, pageSize: 10 }

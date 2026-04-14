@@ -57,7 +57,7 @@ for (const dialect of getTestDialects()) {
       await ctx.teardown()
     })
 
-    it('UNIQUE constraint violation throws on duplicate insert', async () => {
+    /* QA-10336 */ it('[QA-10336] UNIQUE constraint violation throws on duplicate insert', async () => {
       await users.create({ email: 'unique_constraint@test.com', name: 'First' })
 
       await expect(
@@ -65,25 +65,25 @@ for (const dialect of getTestDialects()) {
       ).rejects.toThrow()
     })
 
-    it('destroy throws StoreError for non-existent row', async () => {
+    /* QA-10337 */ it('[QA-10337] destroy throws StoreError for non-existent row', async () => {
       await expect(
         users.destroy('00000000-0000-0000-0000-000000000000')
       ).rejects.toThrow(StoreError)
     })
 
-    it('update throws StoreError for non-existent row', async () => {
+    /* QA-10338 */ it('[QA-10338] update throws StoreError for non-existent row', async () => {
       await expect(
         users.update('00000000-0000-0000-0000-000000000000', { name: 'X' })
       ).rejects.toThrow(StoreError)
     })
 
-    it('ref throws StoreError for non-existent row', async () => {
+    /* QA-10339 */ it('[QA-10339] ref throws StoreError for non-existent row', async () => {
       await expect(
         users.ref({ email: 'definitely_not_here@test.com' })
       ).rejects.toThrow(StoreError)
     })
 
-    it('find throws StoreError for unknown filter key', async () => {
+    /* QA-10340 */ it('[QA-10340] find throws StoreError for unknown filter key', async () => {
       await expect(
         users.find({ bogusColumn: 'value' })
       ).rejects.toThrow(StoreError)

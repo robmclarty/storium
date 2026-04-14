@@ -5,7 +5,7 @@ import { collectSchemas } from '../collector'
 const fixturesDir = path.resolve(__dirname, 'fixtures')
 
 describe('collectSchemas', () => {
-  it('collects Drizzle tables from schema files', async () => {
+  /* QA-10040 */ it('[QA-10040] collects Drizzle tables from schema files', async () => {
     const schemas = await collectSchemas(
       path.join(fixturesDir, 'entities/*.table.ts')
     )
@@ -13,7 +13,7 @@ describe('collectSchemas', () => {
     expect(schemas).toHaveProperty('widgets')
   })
 
-  it('collects StoreDefinitions from store files', async () => {
+  /* QA-10041 */ it('[QA-10041] collects StoreDefinitions from store files', async () => {
     const schemas = await collectSchemas(
       path.join(fixturesDir, 'entities/*.store.ts')
     )
@@ -21,7 +21,7 @@ describe('collectSchemas', () => {
     expect(schemas).toHaveProperty('widgets')
   })
 
-  it('handles multiple glob patterns', async () => {
+  /* QA-10042 */ it('[QA-10042] handles multiple glob patterns', async () => {
     const schemas = await collectSchemas([
       path.join(fixturesDir, 'entities/*.table.ts'),
       path.join(fixturesDir, 'entities/*.store.ts'),
@@ -30,12 +30,12 @@ describe('collectSchemas', () => {
     expect(schemas).toHaveProperty('widgets')
   })
 
-  it('returns empty map when no files match', async () => {
+  /* QA-10043 */ it('[QA-10043] returns empty map when no files match', async () => {
     const schemas = await collectSchemas('./no-such-path/**/*.ts')
     expect(Object.keys(schemas)).toHaveLength(0)
   })
 
-  it('deduplicates tables by name', async () => {
+  /* QA-10044 */ it('[QA-10044] deduplicates tables by name', async () => {
     const schemas = await collectSchemas([
       path.join(fixturesDir, 'entities/*.table.ts'),
       path.join(fixturesDir, 'entities/*.store.ts'),

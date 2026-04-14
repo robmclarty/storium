@@ -10,12 +10,12 @@ const usersTable = sqliteTable('users', {
 })
 
 describe('Store<TTable> type inference', () => {
-  it('defineStore preserves the table type in StoreDefinition', () => {
+  /* QA-10297 */ it('[QA-10297] defineStore preserves the table type in StoreDefinition', () => {
     const store = defineStore(usersTable)
     expectTypeOf(store.tableDef).toEqualTypeOf<typeof usersTable>()
   })
 
-  it('StoreDefinition.queries preserves table type', () => {
+  /* QA-10298 */ it('[QA-10298] StoreDefinition.queries preserves table type', () => {
     const store = defineStore(usersTable).queries({
       findByEmail: (ctx) => async (email: string) => ctx.findOne({ email }),
     })

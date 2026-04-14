@@ -52,33 +52,33 @@ describe('CRUD operations', () => {
     users = createRepository(usersTable as any)
   })
 
-  it('creates a record and returns it with an ID', async () => {
+  /* QA-10237 */ it('[QA-10237] creates a record and returns it with an ID', async () => {
     const user = await users.create({ email: 'alice@example.com', name: 'Alice' })
     expect(user).toHaveProperty('id')
     expect(user.email).toBe('alice@example.com')
     expect(user.name).toBe('Alice')
   })
 
-  it('findById returns the created record', async () => {
+  /* QA-10238 */ it('[QA-10238] findById returns the created record', async () => {
     const user = await users.create({ email: 'find@example.com' })
     const found = await users.findById(user.id)
     expect(found).not.toBeNull()
     expect(found.id).toBe(user.id)
   })
 
-  it('findById returns null for non-existent ID', async () => {
+  /* QA-10239 */ it('[QA-10239] findById returns null for non-existent ID', async () => {
     const found = await users.findById('00000000-0000-0000-0000-000000000000')
     expect(found).toBeNull()
   })
 
-  it('update modifies the record and returns it', async () => {
+  /* QA-10240 */ it('[QA-10240] update modifies the record and returns it', async () => {
     const user = await users.create({ email: 'update@example.com', name: 'Before' })
     const updated = await users.update(user.id, { name: 'After' })
     expect(updated.name).toBe('After')
     expect(updated.id).toBe(user.id)
   })
 
-  it('destroy deletes the record', async () => {
+  /* QA-10241 */ it('[QA-10241] destroy deletes the record', async () => {
     const user = await users.create({ email: 'delete@example.com' })
     await users.destroy(user.id)
     const found = await users.findById(user.id)
@@ -117,14 +117,14 @@ describe('find and findAll', () => {
     users = createRepository(usersTable as any)
   })
 
-  it('find returns matching records', async () => {
+  /* QA-10242 */ it('[QA-10242] find returns matching records', async () => {
     await users.create({ email: 'find1@test.com', name: 'Finder' })
     const results = await users.find({ name: 'Finder' })
     expect(results.length).toBeGreaterThanOrEqual(1)
     expect(results[0].name).toBe('Finder')
   })
 
-  it('findOne returns first match or null', async () => {
+  /* QA-10243 */ it('[QA-10243] findOne returns first match or null', async () => {
     await users.create({ email: 'one@test.com', name: 'OneTest' })
     const found = await users.findOne({ name: 'OneTest' })
     expect(found).not.toBeNull()
@@ -134,19 +134,19 @@ describe('find and findAll', () => {
     expect(notFound).toBeNull()
   })
 
-  it('findByIdIn returns multiple records', async () => {
+  /* QA-10244 */ it('[QA-10244] findByIdIn returns multiple records', async () => {
     const u1 = await users.create({ email: 'in1@test.com' })
     const u2 = await users.create({ email: 'in2@test.com' })
     const results = await users.findByIdIn([u1.id, u2.id])
     expect(results).toHaveLength(2)
   })
 
-  it('findByIdIn with empty array returns empty', async () => {
+  /* QA-10245 */ it('[QA-10245] findByIdIn with empty array returns empty', async () => {
     const results = await users.findByIdIn([])
     expect(results).toEqual([])
   })
 
-  it('findAll supports limit', async () => {
+  /* QA-10246 */ it('[QA-10246] findAll supports limit', async () => {
     await users.create({ email: 'l1@test.com' })
     await users.create({ email: 'l2@test.com' })
     await users.create({ email: 'l3@test.com' })
@@ -154,7 +154,7 @@ describe('find and findAll', () => {
     expect(results.length).toBeLessThanOrEqual(2)
   })
 
-  it('findAll supports multi-column orderBy', async () => {
+  /* QA-10247 */ it('[QA-10247] findAll supports multi-column orderBy', async () => {
     await users.create({ email: 'a@test.com', name: 'Alice', age: 30 })
     await users.create({ email: 'b@test.com', name: 'Alice', age: 25 })
     await users.create({ email: 'c@test.com', name: 'Bob', age: 40 })
@@ -202,13 +202,13 @@ describe('ref', () => {
     users = createRepository(usersTable as any)
   })
 
-  it('returns the primary key of a matching record', async () => {
+  /* QA-10248 */ it('[QA-10248] returns the primary key of a matching record', async () => {
     const user = await users.create({ email: 'ref@test.com', name: 'RefTest' })
     const pk = await users.ref({ email: 'ref@test.com' })
     expect(pk).toBe(user.id)
   })
 
-  it('throws StoreError when no record matches', async () => {
+  /* QA-10249 */ it('[QA-10249] throws StoreError when no record matches', async () => {
     await expect(
       users.ref({ email: 'nonexistent_' + Date.now() + '@test.com' })
     ).rejects.toThrow(StoreError)
@@ -240,14 +240,14 @@ describe('destroyAll', () => {
     users = createRepository(usersTable as any)
   })
 
-  it('deletes matching records and returns count', async () => {
+  /* QA-10250 */ it('[QA-10250] deletes matching records and returns count', async () => {
     await users.create({ email: 'da1@test.com', name: 'DestroyAll' })
     await users.create({ email: 'da2@test.com', name: 'DestroyAll' })
     const count = await users.destroyAll({ name: 'DestroyAll' })
     expect(count).toBeGreaterThanOrEqual(2)
   })
 
-  it('throws StoreError with empty filters', async () => {
+  /* QA-10251 */ it('[QA-10251] throws StoreError with empty filters', async () => {
     await expect(users.destroyAll({})).rejects.toThrow(StoreError)
   })
 })
@@ -282,16 +282,16 @@ describe('prep pipeline integration', () => {
     users = createRepository(usersTable as any)
   })
 
-  it('applies transforms on create', async () => {
+  /* QA-10252 */ it('[QA-10252] applies transforms on create', async () => {
     const user = await users.create({ email: '  UPPER@CASE.COM  ' })
     expect(user.email).toBe('upper@case.com')
   })
 
-  it('enforces required fields on create', async () => {
+  /* QA-10253 */ it('[QA-10253] enforces required fields on create', async () => {
     await expect(users.create({ name: 'NoEmail' })).rejects.toThrow()
   })
 
-  it('bypasses prep with skipPrep: true', async () => {
+  /* QA-10254 */ it('[QA-10254] bypasses prep with skipPrep: true', async () => {
     const user = await users.create(
       { id: 'custom-id', email: 'skipPrep@test.com' },
       { skipPrep: true }
@@ -301,7 +301,7 @@ describe('prep pipeline integration', () => {
 })
 
 describe('custom queries', () => {
-  it('receives ctx with original CRUD methods', async () => {
+  /* QA-10255 */ it('[QA-10255] receives ctx with original CRUD methods', async () => {
     const db = createDb()
 
     const itemsTable = sqliteTable('items', {
@@ -382,7 +382,7 @@ describe('composite primary keys', () => {
     memberships = createRepository(membershipsTable as any)
   })
 
-  it('creates a record with composite PK', async () => {
+  /* QA-10256 */ it('[QA-10256] creates a record with composite PK', async () => {
     const record = await memberships.create(
       { user_id: 'u1', group_id: 'g1', role: 'admin' },
       { skipPrep: true }
@@ -392,7 +392,7 @@ describe('composite primary keys', () => {
     expect(record.role).toBe('admin')
   })
 
-  it('findById with composite PK array', async () => {
+  /* QA-10257 */ it('[QA-10257] findById with composite PK array', async () => {
     await memberships.create(
       { user_id: 'u1', group_id: 'g1', role: 'admin' },
       { skipPrep: true }
@@ -402,12 +402,12 @@ describe('composite primary keys', () => {
     expect(found.role).toBe('admin')
   })
 
-  it('findById returns null for non-existent composite PK', async () => {
+  /* QA-10258 */ it('[QA-10258] findById returns null for non-existent composite PK', async () => {
     const found = await memberships.findById(['u1', 'nonexistent'])
     expect(found).toBeNull()
   })
 
-  it('update with composite PK', async () => {
+  /* QA-10259 */ it('[QA-10259] update with composite PK', async () => {
     await memberships.create(
       { user_id: 'u1', group_id: 'g1', role: 'admin' },
       { skipPrep: true }
@@ -419,7 +419,7 @@ describe('composite primary keys', () => {
     expect(updated.role).toBe('member')
   })
 
-  it('destroy with composite PK', async () => {
+  /* QA-10260 */ it('[QA-10260] destroy with composite PK', async () => {
     await memberships.create(
       { user_id: 'u2', group_id: 'g2', role: 'viewer' },
       { skipPrep: true }
@@ -429,11 +429,11 @@ describe('composite primary keys', () => {
     expect(found).toBeNull()
   })
 
-  it('findByIdIn throws StoreError for composite PKs', async () => {
+  /* QA-10261 */ it('[QA-10261] findByIdIn throws StoreError for composite PKs', async () => {
     await expect(memberships.findByIdIn(['u1'])).rejects.toThrow(StoreError)
   })
 
-  it('ref returns composite PK as array', async () => {
+  /* QA-10262 */ it('[QA-10262] ref returns composite PK as array', async () => {
     await memberships.create(
       { user_id: 'u1', group_id: 'g1', role: 'admin' },
       { skipPrep: true }
@@ -473,7 +473,7 @@ describe('where clause', () => {
     await users.create({ email: 'where3@test.com', name: 'WhereTest', age: 35 })
   })
 
-  it('find supports where callback with Drizzle expressions', async () => {
+  /* QA-10263 */ it('[QA-10263] find supports where callback with Drizzle expressions', async () => {
     const results = await users.find(
       { name: 'WhereTest' },
       { where: (t: any) => gt(t.age, 28) }
@@ -482,7 +482,7 @@ describe('where clause', () => {
     expect(results.every((r: any) => r.age > 28)).toBe(true)
   })
 
-  it('find allows where-only (no equality filters)', async () => {
+  /* QA-10264 */ it('[QA-10264] find allows where-only (no equality filters)', async () => {
     const results = await users.find(
       {},
       { where: (t: any) => like(t.email, '%where%@test.com') }
@@ -490,7 +490,7 @@ describe('where clause', () => {
     expect(results.length).toBeGreaterThanOrEqual(3)
   })
 
-  it('findAll supports where callback', async () => {
+  /* QA-10265 */ it('[QA-10265] findAll supports where callback', async () => {
     const results = await users.findAll({
       where: (t: any) => gt(t.age, 30),
     })
@@ -498,7 +498,7 @@ describe('where clause', () => {
     expect(results.every((r: any) => r.age > 30)).toBe(true)
   })
 
-  it('destroyAll supports where callback', async () => {
+  /* QA-10266 */ it('[QA-10266] destroyAll supports where callback', async () => {
     await users.create({ email: 'wd1@test.com', name: 'WhereDestroy', age: 99 })
     await users.create({ email: 'wd2@test.com', name: 'WhereDestroy', age: 99 })
     const count = await users.destroyAll(
@@ -537,17 +537,17 @@ describe('count', () => {
     await users.create({ email: 'count2@test.com', name: 'CountTest' })
   })
 
-  it('counts all rows when no filters', async () => {
+  /* QA-10267 */ it('[QA-10267] counts all rows when no filters', async () => {
     const total = await users.count()
     expect(total).toBeGreaterThanOrEqual(2)
   })
 
-  it('counts rows matching equality filters', async () => {
+  /* QA-10268 */ it('[QA-10268] counts rows matching equality filters', async () => {
     const n = await users.count({ name: 'CountTest' })
     expect(n).toBeGreaterThanOrEqual(2)
   })
 
-  it('counts rows matching where callback', async () => {
+  /* QA-10269 */ it('[QA-10269] counts rows matching where callback', async () => {
     const n = await users.count({}, {
       where: (t: any) => like(t.email, '%count%@test.com'),
     })
@@ -582,24 +582,24 @@ describe('exists', () => {
     await users.create({ email: 'exists@test.com', name: 'ExistsTest' })
   })
 
-  it('returns true when a matching row exists', async () => {
+  /* QA-10270 */ it('[QA-10270] returns true when a matching row exists', async () => {
     const result = await users.exists({ name: 'ExistsTest' })
     expect(result).toBe(true)
   })
 
-  it('returns false when no matching row exists', async () => {
+  /* QA-10271 */ it('[QA-10271] returns false when no matching row exists', async () => {
     const result = await users.exists({ name: 'NoSuchName_' + Date.now() })
     expect(result).toBe(false)
   })
 
-  it('supports where callback', async () => {
+  /* QA-10272 */ it('[QA-10272] supports where callback', async () => {
     const result = await users.exists({}, {
       where: (t: any) => like(t.email, '%exists@test.com'),
     })
     expect(result).toBe(true)
   })
 
-  it('throws StoreError with no filters and no where', async () => {
+  /* QA-10273 */ it('[QA-10273] throws StoreError with no filters and no where', async () => {
     await expect(users.exists({})).rejects.toThrow(StoreError)
   })
 })
@@ -634,7 +634,7 @@ describe('createMany', () => {
     users = createRepository(usersTable as any)
   })
 
-  it('inserts multiple rows and returns them', async () => {
+  /* QA-10274 */ it('[QA-10274] inserts multiple rows and returns them', async () => {
     const rows = await users.createMany([
       { email: 'batch1@test.com', name: 'Batch' },
       { email: 'batch2@test.com', name: 'Batch' },
@@ -644,12 +644,12 @@ describe('createMany', () => {
     expect(rows.every((r: any) => r.id && r.name === 'Batch')).toBe(true)
   })
 
-  it('returns empty array for empty input', async () => {
+  /* QA-10275 */ it('[QA-10275] returns empty array for empty input', async () => {
     const rows = await users.createMany([])
     expect(rows).toEqual([])
   })
 
-  it('applies prep pipeline to each row', async () => {
+  /* QA-10276 */ it('[QA-10276] applies prep pipeline to each row', async () => {
     const rows = await users.createMany([
       { email: '  UPPER1@TEST.COM  ' },
       { email: '  UPPER2@TEST.COM  ' },
@@ -690,7 +690,7 @@ describe('upsert', () => {
     products = createRepository(productsTable as any)
   })
 
-  it('inserts a new row when no conflict', async () => {
+  /* QA-10277 */ it('[QA-10277] inserts a new row when no conflict', async () => {
     const row = await products.upsert({
       sku: 'SKU-001',
       name: 'Widget',
@@ -702,7 +702,7 @@ describe('upsert', () => {
     expect(row.price).toBe(100)
   })
 
-  it('updates an existing row on conflict', async () => {
+  /* QA-10278 */ it('[QA-10278] updates an existing row on conflict', async () => {
     await products.upsert({
       sku: 'SKU-001',
       name: 'Widget',
@@ -726,7 +726,7 @@ describe('upsert', () => {
 })
 
 describe('store name', () => {
-  it('exposes the table name on the store', () => {
+  /* QA-10279 */ it('[QA-10279] exposes the table name on the store', () => {
     const db = createDb()
 
     const usersTable = sqliteTable('users', {
@@ -745,7 +745,7 @@ describe('store name', () => {
 })
 
 describe('includeHidden', () => {
-  it('excludes hidden columns by default and includes them with includeHidden', async () => {
+  /* QA-10280 */ it('[QA-10280] excludes hidden columns by default and includes them with includeHidden', async () => {
     const db = createDb()
 
     const usersTable = sqliteTable('users', {
@@ -786,7 +786,7 @@ describe('includeHidden', () => {
 })
 
 describe('destroy returns deleted row', () => {
-  it('returns the destroyed row', async () => {
+  /* QA-10281 */ it('[QA-10281] returns the destroyed row', async () => {
     const db = createDb()
 
     const usersTable = sqliteTable('users', {
@@ -817,7 +817,7 @@ describe('destroy returns deleted row', () => {
 })
 
 describe('orderBy column validation', () => {
-  it('throws StoreError for unknown orderBy column', async () => {
+  /* QA-10282 */ it('[QA-10282] throws StoreError for unknown orderBy column', async () => {
     const db = createDb()
 
     const usersTable = sqliteTable('users', {
@@ -838,7 +838,7 @@ describe('orderBy column validation', () => {
 })
 
 describe('constraint error wrapping', () => {
-  it('wraps unique constraint violations in StoreError', async () => {
+  /* QA-10283 */ it('[QA-10283] wraps unique constraint violations in StoreError', async () => {
     const db = createDb()
 
     const usersTable = sqliteTable('users', {

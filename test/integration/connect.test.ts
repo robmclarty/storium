@@ -11,7 +11,7 @@ import { createTestDatabase, getTestDialects, type TestDatabase } from '../diale
 
 for (const dialect of getTestDialects()) {
   describe(`Connection lifecycle [${dialect}]`, () => {
-    it('connect returns a working StoriumInstance', async () => {
+    /* QA-10301 */ it('[QA-10301] connect returns a working StoriumInstance', async () => {
       const ctx = await createTestDatabase(dialect)
 
       expect(ctx.storium.dialect).toBe(dialect)
@@ -24,7 +24,7 @@ for (const dialect of getTestDialects()) {
       await ctx.teardown()
     })
 
-    it('disconnect is idempotent', async () => {
+    /* QA-10302 */ it('[QA-10302] disconnect is idempotent', async () => {
       const ctx = await createTestDatabase(dialect)
 
       await ctx.storium.disconnect()
@@ -42,7 +42,7 @@ for (const dialect of getTestDialects()) {
 
 // fromDrizzle tests (only run for dialects that support it)
 describe('fromDrizzle dialect inference', () => {
-  it('infers memory/sqlite dialect from better-sqlite3 Drizzle instance', () => {
+  /* QA-10303 */ it('[QA-10303] infers memory/sqlite dialect from better-sqlite3 Drizzle instance', () => {
     const memDb = storium.connect({ dialect: 'memory' })
     const fromDrizzleDb = storium.fromDrizzle(memDb.drizzle)
     expect(fromDrizzleDb.dialect).toBe('sqlite')
@@ -54,7 +54,7 @@ describe('fromDrizzle dialect inference', () => {
 for (const dialect of getTestDialects()) {
   describe(`Pool configuration [${dialect}]`, () => {
     if (dialect === 'memory') {
-      it('memory dialect ignores pool config', async () => {
+      /* QA-10304 */ it('[QA-10304] memory dialect ignores pool config', async () => {
         const db = storium.connect({ dialect: 'memory', pool: { max: 5 } } as any)
         expect(db.dialect).toBe('memory')
         await db.disconnect()
@@ -62,7 +62,7 @@ for (const dialect of getTestDialects()) {
     }
 
     if (dialect === 'postgresql' || dialect === 'mysql') {
-      it(`connects with explicit pool config`, async () => {
+      /* QA-10305 */ it(`[QA-10305] connects with explicit pool config`, async () => {
         const ctx = await createTestDatabase(dialect)
 
         // Verify the connection works (pool was created successfully)
@@ -73,7 +73,7 @@ for (const dialect of getTestDialects()) {
       })
     }
 
-    it('disconnect is safe to call multiple times across dialects', async () => {
+    /* QA-10306 */ it('[QA-10306] disconnect is safe to call multiple times across dialects', async () => {
       const ctx = await createTestDatabase(dialect)
       await ctx.storium.disconnect()
       // Second disconnect should not throw

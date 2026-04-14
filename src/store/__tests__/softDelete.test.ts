@@ -43,7 +43,7 @@ describe('soft delete', () => {
   })
 
   describe('destroy() soft deletes', () => {
-    it('marks the row as deleted instead of removing it', async () => {
+    /* QA-10284 */ it('[QA-10284] marks the row as deleted instead of removing it', async () => {
       const user = await users.create({ name: 'Alice', email: 'alice@test.com' })
       await users.destroy(user.id)
 
@@ -67,7 +67,7 @@ describe('soft delete', () => {
       await users.destroy(deletedUser.id)
     })
 
-    it('find() excludes deleted rows', async () => {
+    /* QA-10285 */ it('[QA-10285] find() excludes deleted rows', async () => {
       const result = await users.find({ name: 'Bob' })
       expect(result).toHaveLength(1)
       expect(result[0].name).toBe('Bob')
@@ -76,30 +76,30 @@ describe('soft delete', () => {
       expect(deleted).toHaveLength(0)
     })
 
-    it('findAll() excludes deleted rows', async () => {
+    /* QA-10286 */ it('[QA-10286] findAll() excludes deleted rows', async () => {
       const all = await users.findAll()
       const names = all.map((r: any) => r.name)
       expect(names).toContain('Bob')
       expect(names).not.toContain('Charlie')
     })
 
-    it('findOne() excludes deleted rows', async () => {
+    /* QA-10287 */ it('[QA-10287] findOne() excludes deleted rows', async () => {
       const result = await users.findOne({ name: 'Charlie' })
       expect(result).toBeNull()
     })
 
-    it('findById() excludes deleted rows', async () => {
+    /* QA-10288 */ it('[QA-10288] findById() excludes deleted rows', async () => {
       const result = await users.findById(activeUser.id)
       expect(result).not.toBeNull()
     })
 
-    it('count() excludes deleted rows', async () => {
+    /* QA-10289 */ it('[QA-10289] count() excludes deleted rows', async () => {
       const total = await users.count()
       const names = (await users.findAll()).map((r: any) => r.name)
       expect(total).toBe(names.length)
     })
 
-    it('exists() excludes deleted rows', async () => {
+    /* QA-10290 */ it('[QA-10290] exists() excludes deleted rows', async () => {
       const exists = await users.exists({ name: 'Charlie' })
       expect(exists).toBe(false)
 
@@ -109,7 +109,7 @@ describe('soft delete', () => {
   })
 
   describe('destroyAll() soft deletes matching rows', () => {
-    it('sets deletedAt instead of deleting', async () => {
+    /* QA-10291 */ it('[QA-10291] sets deletedAt instead of deleting', async () => {
       await users.create({ name: 'Temp1', email: 't1@test.com' })
       const u2 = await users.create({ name: 'Temp2', email: 't2@test.com' })
 
@@ -127,7 +127,7 @@ describe('soft delete', () => {
   })
 
   describe('restore()', () => {
-    it('clears deletedAt and makes the row visible again', async () => {
+    /* QA-10292 */ it('[QA-10292] clears deletedAt and makes the row visible again', async () => {
       const user = await users.create({ name: 'Revived', email: 'revived@test.com' })
       await users.destroy(user.id)
 
@@ -143,7 +143,7 @@ describe('soft delete', () => {
   })
 
   describe('forceDestroy()', () => {
-    it('permanently deletes the row', async () => {
+    /* QA-10293 */ it('[QA-10293] permanently deletes the row', async () => {
       const user = await users.create({ name: 'Gone', email: 'gone@test.com' })
       await users.forceDestroy(user.id)
 
@@ -153,7 +153,7 @@ describe('soft delete', () => {
   })
 
   describe('forceDestroyAll()', () => {
-    it('permanently deletes matching rows', async () => {
+    /* QA-10294 */ it('[QA-10294] permanently deletes matching rows', async () => {
       await users.create({ name: 'Perm1', email: 'p1@test.com' })
       await users.create({ name: 'Perm2', email: 'p2@test.com' })
 
@@ -168,7 +168,7 @@ describe('soft delete', () => {
   })
 
   describe('findWithDeleted()', () => {
-    it('returns all rows including soft-deleted ones', async () => {
+    /* QA-10295 */ it('[QA-10295] returns all rows including soft-deleted ones', async () => {
       await users.create({ name: 'Active', email: 'active@test.com' })
       const deleted = await users.create({ name: 'Deleted', email: 'deleted@test.com' })
       await users.destroy(deleted.id)
@@ -177,7 +177,7 @@ describe('soft delete', () => {
       expect(all.length).toBeGreaterThan(0)
     })
 
-    it('supports filters', async () => {
+    /* QA-10296 */ it('[QA-10296] supports filters', async () => {
       const user = await users.create({ name: 'FilterTest', email: 'ft@test.com' })
       await users.destroy(user.id)
 

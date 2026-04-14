@@ -6,13 +6,13 @@ import { defineSeed, seed } from '../seed'
 
 
 describe('defineSeed', () => {
-  it('returns a seed module with __isSeed marker', () => {
+  /* QA-10045 */ it('[QA-10045] returns a seed module with __isSeed marker', () => {
     const seedModule = defineSeed(async () => {})
     expect(seedModule.__isSeed).toBe(true)
     expect(typeof seedModule.run).toBe('function')
   })
 
-  it('wraps the provided function as .run', async () => {
+  /* QA-10046 */ it('[QA-10046] wraps the provided function as .run', async () => {
     let called = false
     const seedModule = defineSeed(async () => { called = true })
     await seedModule.run({} as any)
@@ -34,7 +34,7 @@ describe('seed runner', () => {
     `)
   })
 
-  it('runs seed files from a directory and returns success', async () => {
+  /* QA-10047 */ it('[QA-10047] runs seed files from a directory and returns success', async () => {
     const fixturesDir = path.resolve(__dirname, 'fixtures')
 
     const result = await seed(db, {
@@ -48,7 +48,7 @@ describe('seed runner', () => {
     expect(result.count).toBe(1)
   })
 
-  it('returns count 0 when no seed files exist', async () => {
+  /* QA-10048 */ it('[QA-10048] returns count 0 when no seed files exist', async () => {
     const result = await seed(db, {
       dialect: 'memory',
       seeds: './nonexistent-seeds-dir',

@@ -29,7 +29,7 @@ const access: TableAccess = {
 describe('prep pipeline', () => {
   const prep = createPrepFn(usersTable, annotations, access)
 
-  it('filters unknown keys from input', async () => {
+  /* QA-10222 */ it('[QA-10222] filters unknown keys from input', async () => {
     const result = await prep(
       { email: 'alice@example.com', unknown: 'ignored' },
       { validateRequired: false }
@@ -38,7 +38,7 @@ describe('prep pipeline', () => {
     expect(result).not.toHaveProperty('unknown')
   })
 
-  it('transforms values through column transform functions', async () => {
+  /* QA-10223 */ it('[QA-10223] transforms values through column transform functions', async () => {
     const result = await prep(
       { email: '  ALICE@Example.COM  ' },
       { validateRequired: false }
@@ -47,19 +47,19 @@ describe('prep pipeline', () => {
     expect(result.email).toBe('alice@example.com')
   })
 
-  it('rejects invalid types', async () => {
+  /* QA-10224 */ it('[QA-10224] rejects invalid types', async () => {
     await expect(
       prep({ email: 123 }, { validateRequired: false })
     ).rejects.toThrow()
   })
 
-  it('enforces required fields when validateRequired is true', async () => {
+  /* QA-10225 */ it('[QA-10225] enforces required fields when validateRequired is true', async () => {
     await expect(
       prep({ name: 'Alice' }, { validateRequired: true })
     ).rejects.toThrow()
   })
 
-  it('skips required check when validateRequired is false', async () => {
+  /* QA-10226 */ it('[QA-10226] skips required check when validateRequired is false', async () => {
     const result = await prep(
       { name: 'Alice' },
       { validateRequired: false }
@@ -68,14 +68,14 @@ describe('prep pipeline', () => {
     expect(result).toEqual({ name: 'Alice' })
   })
 
-  it('passes input through raw when skipPrep is true', async () => {
+  /* QA-10227 */ it('[QA-10227] passes input through raw when skipPrep is true', async () => {
     const raw = { anything: 'goes', foo: 42 }
     const result = await prep(raw, { skipPrep: true })
 
     expect(result).toBe(raw)
   })
 
-  it('resolves Promise values in input (Stage 0)', async () => {
+  /* QA-10228 */ it('[QA-10228] resolves Promise values in input (Stage 0)', async () => {
     const result = await prep(
       { email: Promise.resolve('async@example.com') },
       { validateRequired: true }
@@ -84,7 +84,7 @@ describe('prep pipeline', () => {
     expect(result.email).toBe('async@example.com')
   })
 
-  it('strips non-writable columns when onlyWritable is true', async () => {
+  /* QA-10229 */ it('[QA-10229] strips non-writable columns when onlyWritable is true', async () => {
     const result = await prep(
       { id: 'should-be-removed', email: 'test@example.com' },
       { validateRequired: false, onlyWritable: true }
@@ -94,7 +94,7 @@ describe('prep pipeline', () => {
     expect(result).toHaveProperty('email')
   })
 
-  it('accumulates multiple validation errors in a single throw', async () => {
+  /* QA-10230 */ it('[QA-10230] accumulates multiple validation errors in a single throw', async () => {
     const plainTable = sqliteTable('plain_prep', {
       a: text('a', { length: 255 }),
       b: integer('b'),
@@ -123,7 +123,7 @@ describe('prep pipeline', () => {
 })
 
 describe('async transforms', () => {
-  it('resolves async transform functions', async () => {
+  /* QA-10231 */ it('[QA-10231] resolves async transform functions', async () => {
     const asyncTable = sqliteTable('async_t', {
       email: text('email', { length: 255 }).notNull(),
     })
@@ -147,7 +147,7 @@ describe('async transforms', () => {
     expect(result.email).toBe('hello@test.com')
   })
 
-  it('catches throwing transforms and wraps in ValidationError', async () => {
+  /* QA-10232 */ it('[QA-10232] catches throwing transforms and wraps in ValidationError', async () => {
     const throwTable = sqliteTable('throw_t', {
       val: text('val', { length: 255 }),
     })
@@ -175,7 +175,7 @@ describe('async transforms', () => {
     }
   })
 
-  it('catches async transform rejections', async () => {
+  /* QA-10233 */ it('[QA-10233] catches async transform rejections', async () => {
     const rejectTable = sqliteTable('reject_t', {
       val: text('val', { length: 255 }),
     })
@@ -204,7 +204,7 @@ describe('async transforms', () => {
 })
 
 describe('notNull enforcement', () => {
-  it('enforces notNull columns without hasDefault as required', async () => {
+  /* QA-10234 */ it('[QA-10234] enforces notNull columns without hasDefault as required', async () => {
     const strictTable = sqliteTable('strict_t', {
       id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
       required_col: text('required_col').notNull(),
@@ -251,7 +251,7 @@ describe('prep with custom assertions', () => {
     readonly: [],
   }
 
-  it('uses custom assertions from the registry', async () => {
+  /* QA-10235 */ it('[QA-10235] uses custom assertions from the registry', async () => {
     const prep = createPrepFn(slugTable, slugAnnotations, slugAccess, {
       is_slug: (v) => typeof v === 'string' && /^[a-z0-9-]+$/.test(v),
     })
@@ -260,7 +260,7 @@ describe('prep with custom assertions', () => {
     expect(result.slug).toBe('valid-slug')
   })
 
-  it('rejects values that fail custom assertions', async () => {
+  /* QA-10236 */ it('[QA-10236] rejects values that fail custom assertions', async () => {
     const prep = createPrepFn(slugTable, slugAnnotations, slugAccess, {
       is_slug: (v) => typeof v === 'string' && /^[a-z0-9-]+$/.test(v),
     })

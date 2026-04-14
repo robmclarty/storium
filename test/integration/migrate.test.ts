@@ -73,7 +73,7 @@ describe('migrate()', () => {
     fs.rmSync(tmpDir, { recursive: true })
   })
 
-  it('applies pending migrations — table appears in DB', async () => {
+  /* QA-10341 */ it('[QA-10341] applies pending migrations — table appears in DB', async () => {
     const db = storium.connect({ dialect: 'memory' })
 
     const result = await migrate(db, {
@@ -92,7 +92,7 @@ describe('migrate()', () => {
     await db.disconnect()
   })
 
-  it('is idempotent — running twice does not error', async () => {
+  /* QA-10342 */ it('[QA-10342] is idempotent — running twice does not error', async () => {
     const db = storium.connect({ dialect: 'memory' })
 
     const first = await migrate(db, { dialect: 'memory', out: migrationsDir })

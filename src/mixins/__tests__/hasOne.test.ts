@@ -46,11 +46,11 @@ beforeAll(async () => {
 })
 
 describe('hasOne', () => {
-  it('generates a find{Alias}For method', () => {
+  /* QA-10065 */ it('[QA-10065] generates a find{Alias}For method', () => {
     expect(typeof users.findProfileFor).toBe('function')
   })
 
-  it('returns the related row', async () => {
+  /* QA-10066 */ it('[QA-10066] returns the related row', async () => {
     const user = await users.create({ id: 'u1', name: 'Alice' })
     await profiles.create({ id: 'pr1', user_id: user.id, bio: 'Hello', avatar: 'alice.png' })
 
@@ -60,18 +60,18 @@ describe('hasOne', () => {
     expect(result.avatar).toBe('alice.png')
   })
 
-  it('returns null when no related row exists', async () => {
+  /* QA-10067 */ it('[QA-10067] returns null when no related row exists', async () => {
     const user = await users.create({ id: 'u2', name: 'Bob' })
     const result = await users.findProfileFor(user.id)
     expect(result).toBeNull()
   })
 
-  it('returns null for a non-existent parent ID', async () => {
+  /* QA-10068 */ it('[QA-10068] returns null for a non-existent parent ID', async () => {
     const result = await users.findProfileFor('00000000-0000-0000-0000-000000000000')
     expect(result).toBeNull()
   })
 
-  it('respects select option', async () => {
+  /* QA-10069 */ it('[QA-10069] respects select option', async () => {
     const profilesTable2 = sqliteTable('has_one_profiles', {
       id: text('id').primaryKey(),
       user_id: text('user_id').notNull(),

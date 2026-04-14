@@ -38,7 +38,7 @@ for (const dialect of getTestDialects()) {
       await ctx.teardown()
     })
 
-    it('commits on success — row is visible after', async () => {
+    /* QA-10365 */ it('[QA-10365] commits on success — row is visible after', async () => {
       await ctx.storium.transaction(async (tx) => {
         await users.create({ email: 'tx_commit@test.com', name: 'Committed' }, { tx })
       })
@@ -48,7 +48,7 @@ for (const dialect of getTestDialects()) {
       expect(found.name).toBe('Committed')
     })
 
-    it('rolls back on thrown error — row is not visible', async () => {
+    /* QA-10366 */ it('[QA-10366] rolls back on thrown error — row is not visible', async () => {
       await expect(
         ctx.storium.transaction(async (tx) => {
           await users.create({ email: 'tx_rollback@test.com', name: 'Rolledback' }, { tx })
@@ -60,7 +60,7 @@ for (const dialect of getTestDialects()) {
       expect(found).toBeNull()
     })
 
-    it('rolls back on rejected promise — row is not visible', async () => {
+    /* QA-10367 */ it('[QA-10367] rolls back on rejected promise — row is not visible', async () => {
       await expect(
         ctx.storium.transaction(async (tx) => {
           await users.create({ email: 'tx_reject@test.com', name: 'Rejected' }, { tx })
@@ -72,7 +72,7 @@ for (const dialect of getTestDialects()) {
       expect(found).toBeNull()
     })
 
-    it('multiple operations within a transaction share state', async () => {
+    /* QA-10368 */ it('[QA-10368] multiple operations within a transaction share state', async () => {
       await ctx.storium.transaction(async (tx) => {
         const user = await users.create(
           { email: 'tx_multi@test.com', name: 'Before' },
@@ -86,7 +86,7 @@ for (const dialect of getTestDialects()) {
       expect(found.name).toBe('After')
     })
 
-    it('update within transaction returns correct data (UPDATE+SELECT path)', async () => {
+    /* QA-10369 */ it('[QA-10369] update within transaction returns correct data (UPDATE+SELECT path)', async () => {
       const user = await users.create({ email: 'tx_update@test.com', name: 'TxBefore' })
 
       await ctx.storium.transaction(async (tx) => {

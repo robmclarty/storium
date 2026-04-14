@@ -3,7 +3,7 @@ import path from 'node:path'
 import { status, generate, push } from '../commands'
 
 describe('status', () => {
-  it('reports dialect and empty migrations when none exist', async () => {
+  /* QA-10028 */ it('[QA-10028] reports dialect and empty migrations when none exist', async () => {
     const result = await status({
       dialect: 'sqlite',
       out: './no-such-migrations',
@@ -15,7 +15,7 @@ describe('status', () => {
     expect(result.message).toContain('(none)')
   })
 
-  it('lists schema files matching the glob', async () => {
+  /* QA-10029 */ it('[QA-10029] lists schema files matching the glob', async () => {
     const fixturesDir = path.resolve(__dirname, 'fixtures')
 
     const result = await status({
@@ -30,7 +30,7 @@ describe('status', () => {
 })
 
 describe('generate', () => {
-  it('returns failure result when drizzle-kit config is missing', async () => {
+  /* QA-10030 */ it('[QA-10030] returns failure result when drizzle-kit config is missing', async () => {
     // Point at a non-existent config so drizzle-kit fails
     vi.stubEnv('STORIUM_CONFIG', '/nonexistent/config.ts')
 
@@ -43,7 +43,7 @@ describe('generate', () => {
 })
 
 describe('push', () => {
-  it('returns failure result when drizzle-kit config is missing', async () => {
+  /* QA-10031 */ it('[QA-10031] returns failure result when drizzle-kit config is missing', async () => {
     vi.stubEnv('STORIUM_CONFIG', '/nonexistent/config.ts')
 
     const result = await push()

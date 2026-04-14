@@ -6,6 +6,7 @@ import type {
   QAConfig,
   TestRegistry,
 } from './types.js'
+import { updateAllCoveredFiles } from './registry.js'
 import {
   exec,
   execJSON,
@@ -404,10 +405,25 @@ function runKnip(): any | null {
 }
 
 function runCoverage(): Record<string, { lines: number; branches: number }> | null {
+  // Check if coverage provider is available before running
+  try {
+    require.resolve('@vitest/coverage-v8')
+  } catch {
+    console.warn('  ⚠ @vitest/coverage-v8 not installed — skipping coverage collection.')
+    console.warn('    Install it: npm install -D @vitest/coverage-v8')
+    return null
+  }
+
   const result = exec('npx vitest run --coverage --reporter=json', { timeout: 300_000 })
-  if (result.exitCode !== 0) return null
+  if (result.exitCode !== 0) {
+    console.warn('  ⚠ vitest coverage exited with code', result.exitCode)
+    return null
+  }
   const coveragePath = `${process.cwd()}/coverage/coverage-final.json`
-  if (!fileExists(coveragePath)) return null
+  if (!fileExists(coveragePath)) {
+    console.warn('  ⚠ coverage-final.json not found at', coveragePath)
+    return null
+  }
 
   const raw = readJSON<Record<string, any>>(coveragePath)
   const parsed: Record<string, { lines: number; branches: number }> = {}
@@ -472,6 +488,16 @@ export async function runSnapshot(opts: { coverage?: boolean; force?: boolean } 
     coverage = runCoverage()
   }
 
+  // Update test→source mappings from import analysis before merge
+  const registryPath = qastatePath('test-registry.json')
+  if (fileExists(registryPath)) {
+    console.log('  Updating test→source mappings...')
+    const mapReport = updateAllCoveredFiles(registryPath, process.cwd())
+    if (mapReport.updated > 0) {
+      console.log(`    Updated ${mapReport.updated} entries, ${mapReport.unchanged} unchanged.`)
+    }
+  }
+
   console.log('  Merging tool outputs...')
   const files = mergeToolOutputs({
     fallowHealth,
@@ -489,7 +515,6 @@ export async function runSnapshot(opts: { coverage?: boolean; force?: boolean } 
   const prevSnapshot = fileExists(latestPath) ? readJSON<Snapshot>(latestPath) : null
   const diff = diffSnapshots(prevSnapshot?.files ?? null, files)
 
-  const registryPath = qastatePath('test-registry.json')
   const registry = fileExists(registryPath) ? readJSON<TestRegistry>(registryPath) : null
   const testsTracked = registry?.entries.filter(e => e.status === 'active').length ?? 0
 

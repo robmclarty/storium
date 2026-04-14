@@ -8,7 +8,7 @@ import { ConfigError } from '../errors'
 import { defineStore } from '../store/define'
 
 describe('connect', () => {
-  it('returns a StoriumInstance with all expected properties', () => {
+  /* QA-10004 */ it('[QA-10004] returns a StoriumInstance with all expected properties', () => {
     const db = storium.connect({ dialect: 'memory' })
     expect(db).toHaveProperty('drizzle')
     expect(db).toHaveProperty('zod')
@@ -19,17 +19,17 @@ describe('connect', () => {
     expect(typeof db.disconnect).toBe('function')
   })
 
-  it('throws ConfigError when dialect is missing', () => {
+  /* QA-10005 */ it('[QA-10005] throws ConfigError when dialect is missing', () => {
     expect(() => storium.connect({} as any)).toThrow(ConfigError)
   })
 
-  it('throws ConfigError for unknown dialect', () => {
+  /* QA-10006 */ it('[QA-10006] throws ConfigError for unknown dialect', () => {
     expect(() => storium.connect({ dialect: 'oracle' as any })).toThrow(ConfigError)
   })
 })
 
 describe('fromDrizzle', () => {
-  it('auto-detects sqlite dialect from a better-sqlite3 Drizzle instance', () => {
+  /* QA-10007 */ it('[QA-10007] auto-detects sqlite dialect from a better-sqlite3 Drizzle instance', () => {
     const sqlite = new Database(':memory:')
     const drizzleDb = drizzle(sqlite)
     const db = storium.fromDrizzle(drizzleDb)
@@ -39,12 +39,12 @@ describe('fromDrizzle', () => {
     sqlite.close()
   })
 
-  it('throws ConfigError for invalid Drizzle instance', () => {
+  /* QA-10008 */ it('[QA-10008] throws ConfigError for invalid Drizzle instance', () => {
     expect(() => storium.fromDrizzle({})).toThrow(ConfigError)
     expect(() => storium.fromDrizzle(null)).toThrow(ConfigError)
   })
 
-  it('uses explicit dialect when provided, bypassing inference', () => {
+  /* QA-10009 */ it('[QA-10009] uses explicit dialect when provided, bypassing inference', () => {
     const sqlite = new Database(':memory:')
     const drizzleDb = drizzle(sqlite)
 
@@ -54,7 +54,7 @@ describe('fromDrizzle', () => {
     sqlite.close()
   })
 
-  it('accepts assertions option', () => {
+  /* QA-10010 */ it('[QA-10010] accepts assertions option', () => {
     const sqlite = new Database(':memory:')
     const drizzleDb = drizzle(sqlite)
     const db = storium.fromDrizzle(drizzleDb, {
@@ -67,7 +67,7 @@ describe('fromDrizzle', () => {
 })
 
 describe('register', () => {
-  it('materializes StoreDefinitions into live stores', () => {
+  /* QA-10011 */ it('[QA-10011] materializes StoreDefinitions into live stores', () => {
     const db = storium.connect({ dialect: 'memory' })
 
     const itemsTable = sqliteTable('items', {
@@ -85,14 +85,14 @@ describe('register', () => {
     expect(items.schemas).toBeDefined()
   })
 
-  it('throws ConfigError for non-StoreDefinition values', () => {
+  /* QA-10012 */ it('[QA-10012] throws ConfigError for non-StoreDefinition values', () => {
     const db = storium.connect({ dialect: 'memory' })
     expect(() => db.register({ bad: {} as any })).toThrow(ConfigError)
   })
 })
 
 describe('db.defineStore (simple path)', () => {
-  it('creates a live store from a Drizzle table', () => {
+  /* QA-10013 */ it('[QA-10013] creates a live store from a Drizzle table', () => {
     const db = storium.connect({ dialect: 'memory' })
 
     const widgetsTable = sqliteTable('widgets', {
@@ -108,7 +108,7 @@ describe('db.defineStore (simple path)', () => {
     expect(typeof widgets.findById).toBe('function')
   })
 
-  it('throws ConfigError for non-table values', () => {
+  /* QA-10014 */ it('[QA-10014] throws ConfigError for non-table values', () => {
     const db = storium.connect({ dialect: 'memory' })
     expect(() => db.defineStore({} as any)).toThrow()
   })
@@ -135,7 +135,7 @@ describe('transaction', () => {
     })
   })
 
-  it('commits on success', async () => {
+  /* QA-10015 */ it('[QA-10015] commits on success', async () => {
     const result = await db.transaction(async (tx: any) => {
       const a = await items.create({ label: 'A' }, { tx })
       const b = await items.create({ label: 'B' }, { tx })
@@ -147,7 +147,7 @@ describe('transaction', () => {
     expect(found).not.toBeNull()
   })
 
-  it('rolls back on error', async () => {
+  /* QA-10016 */ it('[QA-10016] rolls back on error', async () => {
     let createdId: string | undefined
 
     try {
@@ -168,7 +168,7 @@ describe('transaction', () => {
 })
 
 describe('disconnect', () => {
-  it('is idempotent', async () => {
+  /* QA-10017 */ it('[QA-10017] is idempotent', async () => {
     const db = storium.connect({ dialect: 'memory' })
     await db.disconnect()
     await db.disconnect() // should not throw
@@ -176,7 +176,7 @@ describe('disconnect', () => {
 })
 
 describe('assertions integration', () => {
-  it('passes assertions through to store validation', async () => {
+  /* QA-10018 */ it('[QA-10018] passes assertions through to store validation', async () => {
     const db = storium.connect({
       dialect: 'memory',
       assertions: {

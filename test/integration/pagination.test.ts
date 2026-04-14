@@ -45,7 +45,7 @@ for (const dialect of getTestDialects()) {
       await ctx.teardown()
     })
 
-    it('returns correct data and meta for first page', async () => {
+    /* QA-10343 */ it('[QA-10343] returns correct data and meta for first page', async () => {
       const result = await paginatedUsers.paginate(
         { name: 'PageGroup' },
         { page: 1 }
@@ -58,7 +58,7 @@ for (const dialect of getTestDialects()) {
       expect(result.meta.totalPages).toBe(3)
     })
 
-    it('last page has fewer items than pageSize', async () => {
+    /* QA-10344 */ it('[QA-10344] last page has fewer items than pageSize', async () => {
       const result = await paginatedUsers.paginate(
         { name: 'PageGroup' },
         { page: 3 }
@@ -69,7 +69,7 @@ for (const dialect of getTestDialects()) {
       expect(result.meta.total).toBe(7)
     })
 
-    it('empty result set pagination', async () => {
+    /* QA-10345 */ it('[QA-10345] empty result set pagination', async () => {
       const result = await paginatedUsers.paginate(
         { name: 'NonexistentGroup' },
         { page: 1 }
@@ -80,7 +80,7 @@ for (const dialect of getTestDialects()) {
       expect(result.meta.totalPages).toBe(0)
     })
 
-    it('paginate with custom pageSize override', async () => {
+    /* QA-10346 */ it('[QA-10346] paginate with custom pageSize override', async () => {
       const result = await paginatedUsers.paginate(
         { name: 'PageGroup' },
         { page: 1, pageSize: 5 }
@@ -91,7 +91,7 @@ for (const dialect of getTestDialects()) {
       expect(result.meta.totalPages).toBe(2)
     })
 
-    it('paginate with filters', async () => {
+    /* QA-10347 */ it('[QA-10347] paginate with filters', async () => {
       const result = await paginatedUsers.paginate(
         { email: 'page_user1@test.com' },
         { page: 1 }

@@ -19,7 +19,7 @@ const runFail = (...args: string[]) => {
 }
 
 describe('storium CLI', () => {
-  it('--help prints usage and exits 0', () => {
+  /* QA-10000 */ it('[QA-10000] --help prints usage and exits 0', () => {
     const out = run('--help')
     expect(out).toContain('storium')
     expect(out).toContain('Commands:')
@@ -28,18 +28,18 @@ describe('storium CLI', () => {
     expect(out).toContain('seed')
   })
 
-  it('-h prints usage and exits 0', () => {
+  /* QA-10001 */ it('[QA-10001] -h prints usage and exits 0', () => {
     const out = run('-h')
     expect(out).toContain('Commands:')
   })
 
-  it('no args prints usage and exits 1', () => {
+  /* QA-10002 */ it('[QA-10002] no args prints usage and exits 1', () => {
     const { status, output } = runFail()
     expect(status).toBe(1)
     expect(output).toContain('Commands:')
   })
 
-  it('unknown command prints error and exits 1', () => {
+  /* QA-10003 */ it('[QA-10003] unknown command prints error and exits 1', () => {
     const { status, output } = runFail('bogus')
     expect(status).toBe(1)
     expect(output).toContain("Unknown command: 'bogus'")

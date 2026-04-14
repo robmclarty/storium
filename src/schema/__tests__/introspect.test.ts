@@ -34,27 +34,27 @@ describe('string column introspection', () => {
   const zodSchemas = buildZodSchemas(table, {}, access(keys))
   const jsonSchemas = buildJsonSchemas(table, {}, access(keys))
 
-  it('Zod: plain text → z.string()', () => {
+  /* QA-10108 */ it('[QA-10108] Zod: plain text → z.string()', () => {
     const result = zodSchemas.createSchema.safeParse({ notNullPlain: 'x', plain: 'hello' })
     expect(result.success).toBe(true)
   })
 
-  it('Zod: rejects non-string for text column', () => {
+  /* QA-10109 */ it('[QA-10109] Zod: rejects non-string for text column', () => {
     const result = zodSchemas.createSchema.safeParse({ notNullPlain: 'x', plain: 123 })
     expect(result.success).toBe(false)
   })
 
-  it('Zod: text with length enforces maxLength', () => {
+  /* QA-10110 */ it('[QA-10110] Zod: text with length enforces maxLength', () => {
     const result = zodSchemas.createSchema.safeParse({ notNullPlain: 'x', withLength: 'a'.repeat(101) })
     expect(result.success).toBe(false)
   })
 
-  it('JSON Schema: plain text → { type: string }', () => {
+  /* QA-10111 */ it('[QA-10111] JSON Schema: plain text → { type: string }', () => {
     const schema = jsonSchemas.createSchema()
     expect(schema.properties.plain).toEqual({ type: 'string' })
   })
 
-  it('JSON Schema: text with length → { type: string, maxLength }', () => {
+  /* QA-10112 */ it('[QA-10112] JSON Schema: text with length → { type: string, maxLength }', () => {
     const schema = jsonSchemas.createSchema()
     expect(schema.properties.withLength).toEqual({ type: 'string', maxLength: 100 })
   })
@@ -72,22 +72,22 @@ describe('integer column introspection', () => {
   const zodSchemas = buildZodSchemas(table, {}, access(keys))
   const jsonSchemas = buildJsonSchemas(table, {}, access(keys))
 
-  it('Zod: integer → z.number().int()', () => {
+  /* QA-10113 */ it('[QA-10113] Zod: integer → z.number().int()', () => {
     const result = zodSchemas.createSchema.safeParse({ count: 42 })
     expect(result.success).toBe(true)
   })
 
-  it('Zod: rejects float for integer column', () => {
+  /* QA-10114 */ it('[QA-10114] Zod: rejects float for integer column', () => {
     const result = zodSchemas.createSchema.safeParse({ count: 3.14 })
     expect(result.success).toBe(false)
   })
 
-  it('Zod: rejects string for integer column', () => {
+  /* QA-10115 */ it('[QA-10115] Zod: rejects string for integer column', () => {
     const result = zodSchemas.createSchema.safeParse({ count: 'five' })
     expect(result.success).toBe(false)
   })
 
-  it('JSON Schema: integer → { type: integer }', () => {
+  /* QA-10116 */ it('[QA-10116] JSON Schema: integer → { type: integer }', () => {
     const schema = jsonSchemas.createSchema()
     expect(schema.properties.age).toEqual({ type: 'integer' })
   })
@@ -104,12 +104,12 @@ describe('real column introspection', () => {
   const zodSchemas = buildZodSchemas(table, {}, access(keys))
   const jsonSchemas = buildJsonSchemas(table, {}, access(keys))
 
-  it('Zod: real → z.number() (accepts floats)', () => {
+  /* QA-10117 */ it('[QA-10117] Zod: real → z.number() (accepts floats)', () => {
     const result = zodSchemas.createSchema.safeParse({ score: 3.14 })
     expect(result.success).toBe(true)
   })
 
-  it('JSON Schema: real → { type: number }', () => {
+  /* QA-10118 */ it('[QA-10118] JSON Schema: real → { type: number }', () => {
     const schema = jsonSchemas.createSchema()
     expect(schema.properties.score).toEqual({ type: 'number' })
   })
@@ -125,7 +125,7 @@ describe('boolean column introspection', () => {
   const keys = ['active']
   const zodSchemas = buildZodSchemas(table, {}, access(keys))
 
-  it('Zod: boolean mode → z.boolean()', () => {
+  /* QA-10119 */ it('[QA-10119] Zod: boolean mode → z.boolean()', () => {
     const good = zodSchemas.createSchema.safeParse({ active: true })
     expect(good.success).toBe(true)
 
@@ -145,17 +145,17 @@ describe('timestamp column introspection', () => {
   const zodSchemas = buildZodSchemas(table, {}, access(keys))
   const jsonSchemas = buildJsonSchemas(table, {}, access(keys))
 
-  it('Zod: timestamp → z.coerce.date() (accepts Date, string, number)', () => {
+  /* QA-10120 */ it('[QA-10120] Zod: timestamp → z.coerce.date() (accepts Date, string, number)', () => {
     expect(zodSchemas.createSchema.safeParse({ createdAt: new Date() }).success).toBe(true)
     expect(zodSchemas.createSchema.safeParse({ createdAt: '2024-01-01' }).success).toBe(true)
     expect(zodSchemas.createSchema.safeParse({ createdAt: Date.now() }).success).toBe(true)
   })
 
-  it('Zod: rejects non-coercible values for timestamp column', () => {
+  /* QA-10121 */ it('[QA-10121] Zod: rejects non-coercible values for timestamp column', () => {
     expect(zodSchemas.createSchema.safeParse({ createdAt: 'not-a-date' }).success).toBe(false)
   })
 
-  it('JSON Schema: timestamp → { type: string, format: date-time }', () => {
+  /* QA-10122 */ it('[QA-10122] JSON Schema: timestamp → { type: string, format: date-time }', () => {
     const schema = jsonSchemas.createSchema()
     expect(schema.properties.createdAt).toEqual({ type: 'string', format: 'date-time' })
   })
@@ -172,17 +172,17 @@ describe('JSON column introspection (Zod ↔ JSON Schema alignment)', () => {
   const zodSchemas = buildZodSchemas(table, {}, access(keys))
   const jsonSchemas = buildJsonSchemas(table, {}, access(keys))
 
-  it('Zod: json → union of record and array', () => {
+  /* QA-10123 */ it('[QA-10123] Zod: json → union of record and array', () => {
     expect(zodSchemas.createSchema.safeParse({ data: { key: 'val' } }).success).toBe(true)
     expect(zodSchemas.createSchema.safeParse({ data: [1, 2, 3] }).success).toBe(true)
   })
 
-  it('Zod: rejects non-object/non-array for json column', () => {
+  /* QA-10124 */ it('[QA-10124] Zod: rejects non-object/non-array for json column', () => {
     expect(zodSchemas.createSchema.safeParse({ data: 'plain string' }).success).toBe(false)
     expect(zodSchemas.createSchema.safeParse({ data: 42 }).success).toBe(false)
   })
 
-  it('JSON Schema: json → oneOf: [object, array]', () => {
+  /* QA-10125 */ it('[QA-10125] JSON Schema: json → oneOf: [object, array]', () => {
     const schema = jsonSchemas.createSchema()
     expect(schema.properties.data).toEqual({ oneOf: [{ type: 'object' }, { type: 'array' }] })
   })
@@ -199,12 +199,12 @@ describe('blob column introspection', () => {
   const zodSchemas = buildZodSchemas(table, {}, access(keys))
   const jsonSchemas = buildJsonSchemas(table, {}, access(keys))
 
-  it('Zod: blob/buffer → z.any() (accepts anything)', () => {
+  /* QA-10126 */ it('[QA-10126] Zod: blob/buffer → z.any() (accepts anything)', () => {
     expect(zodSchemas.createSchema.safeParse({ data: Buffer.from('hello') }).success).toBe(true)
     expect(zodSchemas.createSchema.safeParse({ data: 'anything' }).success).toBe(true)
   })
 
-  it('JSON Schema: blob/buffer → {} (empty schema, accepts anything)', () => {
+  /* QA-10127 */ it('[QA-10127] JSON Schema: blob/buffer → {} (empty schema, accepts anything)', () => {
     const schema = jsonSchemas.createSchema()
     expect(schema.properties.data).toEqual({})
   })
@@ -224,19 +224,19 @@ describe('required field alignment (Zod ↔ JSON Schema)', () => {
   const zodSchemas = buildZodSchemas(table, {}, access(keys))
   const jsonSchemas = buildJsonSchemas(table, {}, access(keys))
 
-  it('Zod createSchema: notNull+noDefault is required', () => {
+  /* QA-10128 */ it('[QA-10128] Zod createSchema: notNull+noDefault is required', () => {
     // Missing requiredCol should fail
     expect(zodSchemas.createSchema.safeParse({ optionalCol: 'ok' }).success).toBe(false)
     // Providing it should pass
     expect(zodSchemas.createSchema.safeParse({ requiredCol: 'val' }).success).toBe(true)
   })
 
-  it('Zod createSchema: notNull+hasDefault is optional', () => {
+  /* QA-10129 */ it('[QA-10129] Zod createSchema: notNull+hasDefault is optional', () => {
     // hasDefaultCol should be optional — omitting it should not fail
     expect(zodSchemas.createSchema.safeParse({ requiredCol: 'val' }).success).toBe(true)
   })
 
-  it('JSON Schema createSchema: same required list as Zod', () => {
+  /* QA-10130 */ it('[QA-10130] JSON Schema createSchema: same required list as Zod', () => {
     const schema = jsonSchemas.createSchema()
     expect(schema.required).toContain('requiredCol')
     expect(schema.required).not.toContain('optionalCol')

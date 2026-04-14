@@ -24,7 +24,7 @@ const access: TableAccess = {
 describe('buildSchemaSet', () => {
   const schemas = buildSchemaSet(usersTable, annotations, access)
 
-  it('produces all 4 schema variants', () => {
+  /* QA-10147 */ it('[QA-10147] produces all 4 schema variants', () => {
     expect(schemas).toHaveProperty('createSchema')
     expect(schemas).toHaveProperty('updateSchema')
     expect(schemas).toHaveProperty('selectSchema')
@@ -32,18 +32,18 @@ describe('buildSchemaSet', () => {
   })
 
   describe('validate()', () => {
-    it('returns data on valid input', () => {
+    /* QA-10148 */ it('[QA-10148] returns data on valid input', () => {
       const result = schemas.createSchema.validate({ email: 'alice@example.com' })
       expect(result).toHaveProperty('email', 'alice@example.com')
     })
 
-    it('throws ValidationError on invalid input', () => {
+    /* QA-10149 */ it('[QA-10149] throws ValidationError on invalid input', () => {
       expect(() => schemas.createSchema.validate({})).toThrow(ValidationError)
     })
   })
 
   describe('tryValidate()', () => {
-    it('returns success: true with data on valid input', () => {
+    /* QA-10150 */ it('[QA-10150] returns success: true with data on valid input', () => {
       const result = schemas.createSchema.tryValidate({ email: 'alice@example.com' })
       expect(result.success).toBe(true)
       if (result.success) {
@@ -51,7 +51,7 @@ describe('buildSchemaSet', () => {
       }
     })
 
-    it('returns success: false with errors on invalid input', () => {
+    /* QA-10151 */ it('[QA-10151] returns success: false with errors on invalid input', () => {
       const result = schemas.createSchema.tryValidate({})
       expect(result.success).toBe(false)
       if (!result.success) {
@@ -63,21 +63,21 @@ describe('buildSchemaSet', () => {
   })
 
   describe('toJsonSchema()', () => {
-    it('returns a JSON Schema object', () => {
+    /* QA-10152 */ it('[QA-10152] returns a JSON Schema object', () => {
       const jsonSchema = schemas.createSchema.toJsonSchema()
       expect(jsonSchema).toHaveProperty('type', 'object')
       expect(jsonSchema).toHaveProperty('properties')
       expect(jsonSchema.properties).toHaveProperty('email')
     })
 
-    it('respects additionalProperties option', () => {
+    /* QA-10153 */ it('[QA-10153] respects additionalProperties option', () => {
       const permissive = schemas.createSchema.toJsonSchema({ additionalProperties: true })
       expect(permissive.additionalProperties).toBe(true)
     })
   })
 
   describe('.zod', () => {
-    it('exposes the underlying Zod schema', () => {
+    /* QA-10154 */ it('[QA-10154] exposes the underlying Zod schema', () => {
       expect(schemas.createSchema.zod).toBeDefined()
       expect(typeof schemas.createSchema.zod.safeParse).toBe('function')
     })

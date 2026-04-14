@@ -37,19 +37,19 @@ describe('buildJsonSchemas', () => {
   describe('DSL type mapping', () => {
     const schema = schemas.createSchema()
 
-    it('maps text with length to string with maxLength', () => {
+    /* QA-10131 */ it('[QA-10131] maps text with length to string with maxLength', () => {
       expect(schema.properties.email).toEqual({ type: 'string', maxLength: 255 })
     })
 
-    it('maps text without length to string', () => {
+    /* QA-10132 */ it('[QA-10132] maps text without length to string', () => {
       expect(schema.properties.bio).toEqual({ type: 'string' })
     })
 
-    it('maps integer to integer', () => {
+    /* QA-10133 */ it('[QA-10133] maps integer to integer', () => {
       expect(schema.properties.age).toEqual({ type: 'integer' })
     })
 
-    it('maps real to number', () => {
+    /* QA-10134 */ it('[QA-10134] maps real to number', () => {
       expect(schema.properties.score).toEqual({ type: 'number' })
     })
   })
@@ -57,7 +57,7 @@ describe('buildJsonSchemas', () => {
   describe('selectSchema variant', () => {
     const schema = schemas.selectSchema()
 
-    it('marks notNull columns as required', () => {
+    /* QA-10135 */ it('[QA-10135] marks notNull columns as required', () => {
       expect(schema.required).toContain('id')
       expect(schema.required).toContain('email')
       expect(schema.required).toContain('created_at')
@@ -67,15 +67,15 @@ describe('buildJsonSchemas', () => {
   describe('createSchema variant', () => {
     const schema = schemas.createSchema()
 
-    it('includes required fields', () => {
+    /* QA-10136 */ it('[QA-10136] includes required fields', () => {
       expect(schema.required).toContain('email')
     })
 
-    it('sets additionalProperties to false by default', () => {
+    /* QA-10137 */ it('[QA-10137] sets additionalProperties to false by default', () => {
       expect(schema.additionalProperties).toBe(false)
     })
 
-    it('respects additionalProperties option', () => {
+    /* QA-10138 */ it('[QA-10138] respects additionalProperties option', () => {
       const permissive = schemas.createSchema({ additionalProperties: true })
       expect(permissive.additionalProperties).toBe(true)
     })
@@ -84,7 +84,7 @@ describe('buildJsonSchemas', () => {
   describe('updateSchema variant', () => {
     const schema = schemas.updateSchema()
 
-    it('has no required fields', () => {
+    /* QA-10139 */ it('[QA-10139] has no required fields', () => {
       expect(schema.required).toBeUndefined()
     })
   })
@@ -92,7 +92,7 @@ describe('buildJsonSchemas', () => {
   describe('fullSchema variant', () => {
     const schema = schemas.fullSchema()
 
-    it('includes all columns', () => {
+    /* QA-10140 */ it('[QA-10140] includes all columns', () => {
       expect(Object.keys(schema.properties)).toContain('id')
       expect(Object.keys(schema.properties)).toContain('email')
       expect(Object.keys(schema.properties)).toContain('created_at')
@@ -100,7 +100,7 @@ describe('buildJsonSchemas', () => {
   })
 
   describe('extended options', () => {
-    it('merges extra properties into the schema', () => {
+    /* QA-10141 */ it('[QA-10141] merges extra properties into the schema', () => {
       const schema = schemas.createSchema({
         properties: { invite_code: { type: 'string', minLength: 8 } },
       })
@@ -108,7 +108,7 @@ describe('buildJsonSchemas', () => {
       expect(schema.properties.email).toBeDefined()
     })
 
-    it('appends extra required fields', () => {
+    /* QA-10142 */ it('[QA-10142] appends extra required fields', () => {
       const schema = schemas.createSchema({
         required: ['invite_code'],
       })
@@ -116,22 +116,22 @@ describe('buildJsonSchemas', () => {
       expect(schema.required).toContain('invite_code')
     })
 
-    it('sets title on the schema', () => {
+    /* QA-10143 */ it('[QA-10143] sets title on the schema', () => {
       const schema = schemas.createSchema({ title: 'CreateUser' })
       expect(schema.title).toBe('CreateUser')
     })
 
-    it('sets description on the schema', () => {
+    /* QA-10144 */ it('[QA-10144] sets description on the schema', () => {
       const schema = schemas.createSchema({ description: 'Create a new user' })
       expect(schema.description).toBe('Create a new user')
     })
 
-    it('sets $id on the schema', () => {
+    /* QA-10145 */ it('[QA-10145] sets $id on the schema', () => {
       const schema = schemas.createSchema({ $id: 'User' })
       expect(schema.$id).toBe('User')
     })
 
-    it('omits title/description/$id when not provided', () => {
+    /* QA-10146 */ it('[QA-10146] omits title/description/$id when not provided', () => {
       const schema = schemas.createSchema()
       expect(schema.title).toBeUndefined()
       expect(schema.description).toBeUndefined()

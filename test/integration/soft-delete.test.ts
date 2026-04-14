@@ -41,7 +41,7 @@ for (const dialect of getTestDialects()) {
 
     // ------------------------------------------------ destroy (soft) --
 
-    it('destroy sets deletedAt and excludes row from find', async () => {
+    /* QA-10355 */ it('[QA-10355] destroy sets deletedAt and excludes row from find', async () => {
       const user = await users.create({ email: 'soft1@test.com', name: 'Soft1' })
       await users.destroy(user.id)
 
@@ -49,7 +49,7 @@ for (const dialect of getTestDialects()) {
       expect(found).toBeNull()
     })
 
-    it('destroy excludes row from findAll', async () => {
+    /* QA-10356 */ it('[QA-10356] destroy excludes row from findAll', async () => {
       const user = await users.create({ email: 'soft2@test.com', name: 'SoftAll' })
       await users.destroy(user.id)
 
@@ -58,7 +58,7 @@ for (const dialect of getTestDialects()) {
       expect(ids).not.toContain(user.id)
     })
 
-    it('destroy excludes row from find with filters', async () => {
+    /* QA-10357 */ it('[QA-10357] destroy excludes row from find with filters', async () => {
       const user = await users.create({ email: 'soft3@test.com', name: 'SoftFind' })
       await users.destroy(user.id)
 
@@ -68,7 +68,7 @@ for (const dialect of getTestDialects()) {
 
     // ------------------------------------------------ restore --
 
-    it('restore clears deletedAt and makes row visible again', async () => {
+    /* QA-10358 */ it('[QA-10358] restore clears deletedAt and makes row visible again', async () => {
       const user = await users.create({ email: 'restore1@test.com', name: 'Restore1' })
       await users.destroy(user.id)
 
@@ -88,7 +88,7 @@ for (const dialect of getTestDialects()) {
 
     // ------------------------------------------------ forceDestroy --
 
-    it('forceDestroy permanently removes the row', async () => {
+    /* QA-10359 */ it('[QA-10359] forceDestroy permanently removes the row', async () => {
       const user = await users.create({ email: 'force1@test.com', name: 'Force1' })
       await users.forceDestroy(user.id)
 
@@ -102,7 +102,7 @@ for (const dialect of getTestDialects()) {
 
     // ------------------------------------------------ destroyAll (soft) --
 
-    it('destroyAll soft-deletes matching rows and returns count', async () => {
+    /* QA-10360 */ it('[QA-10360] destroyAll soft-deletes matching rows and returns count', async () => {
       await users.create({ email: 'da1@test.com', name: 'SoftDestroyAll' })
       await users.create({ email: 'da2@test.com', name: 'SoftDestroyAll' })
 
@@ -120,7 +120,7 @@ for (const dialect of getTestDialects()) {
 
     // ------------------------------------------------ count --
 
-    it('count excludes soft-deleted rows', async () => {
+    /* QA-10361 */ it('[QA-10361] count excludes soft-deleted rows', async () => {
       const user = await users.create({ email: 'count1@test.com', name: 'CountSD' })
       const beforeCount = await users.count({ name: 'CountSD' })
       expect(beforeCount).toBe(1)
@@ -131,7 +131,7 @@ for (const dialect of getTestDialects()) {
       expect(afterCount).toBe(0)
     })
 
-    it('countWithDeleted includes soft-deleted rows', async () => {
+    /* QA-10362 */ it('[QA-10362] countWithDeleted includes soft-deleted rows', async () => {
       const user = await users.create({ email: 'countwd@test.com', name: 'CountWD' })
       await users.destroy(user.id)
 
@@ -144,7 +144,7 @@ for (const dialect of getTestDialects()) {
 
     // ------------------------------------------------ findWithDeleted --
 
-    it('findWithDeleted returns both active and soft-deleted rows', async () => {
+    /* QA-10363 */ it('[QA-10363] findWithDeleted returns both active and soft-deleted rows', async () => {
       const active = await users.create({ email: 'fwd_active@test.com', name: 'FWDGroup' })
       const deleted = await users.create({ email: 'fwd_deleted@test.com', name: 'FWDGroup' })
       await users.destroy(deleted.id)
@@ -157,7 +157,7 @@ for (const dialect of getTestDialects()) {
 
     // ---------------------------------------- deletedAt round-trip --
 
-    it('deletedAt timestamp round-trips correctly', async () => {
+    /* QA-10364 */ it('[QA-10364] deletedAt timestamp round-trips correctly', async () => {
       const user = await users.create({ email: 'ts_rt@test.com', name: 'TimestampRT' })
       await users.destroy(user.id)
 

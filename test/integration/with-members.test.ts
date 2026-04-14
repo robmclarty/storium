@@ -46,7 +46,7 @@ for (const dialect of getTestDialects()) {
       await ctx.teardown()
     })
 
-    it('addMember inserts and returns the membership row', async () => {
+    /* QA-10374 */ it('[QA-10374] addMember inserts and returns the membership row', async () => {
       const team = await teams.create({ email: 'team1@test.com', name: 'Team1' })
       const memberId = crypto.randomUUID()
 
@@ -57,7 +57,7 @@ for (const dialect of getTestDialects()) {
       expect(membership.role).toBe('captain')
     })
 
-    it('getMembers returns all members for a collection', async () => {
+    /* QA-10375 */ it('[QA-10375] getMembers returns all members for a collection', async () => {
       const team = await teams.create({ email: 'team2@test.com', name: 'Team2' })
       const m1 = crypto.randomUUID()
       const m2 = crypto.randomUUID()
@@ -71,7 +71,7 @@ for (const dialect of getTestDialects()) {
       expect(memberIds).toEqual([m1, m2].toSorted())
     })
 
-    it('isMember returns true/false correctly', async () => {
+    /* QA-10376 */ it('[QA-10376] isMember returns true/false correctly', async () => {
       const team = await teams.create({ email: 'team3@test.com', name: 'Team3' })
       const memberId = crypto.randomUUID()
       const nonMemberId = crypto.randomUUID()
@@ -82,7 +82,7 @@ for (const dialect of getTestDialects()) {
       expect(await teams.isMember(team.id, nonMemberId)).toBe(false)
     })
 
-    it('getMemberCount returns correct count', async () => {
+    /* QA-10377 */ it('[QA-10377] getMemberCount returns correct count', async () => {
       const team = await teams.create({ email: 'team4@test.com', name: 'Team4' })
 
       expect(await teams.getMemberCount(team.id)).toBe(0)
@@ -94,7 +94,7 @@ for (const dialect of getTestDialects()) {
       expect(await teams.getMemberCount(team.id)).toBe(3)
     })
 
-    it('removeMember deletes the membership', async () => {
+    /* QA-10378 */ it('[QA-10378] removeMember deletes the membership', async () => {
       const team = await teams.create({ email: 'team5@test.com', name: 'Team5' })
       const memberId = crypto.randomUUID()
 

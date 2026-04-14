@@ -31,17 +31,17 @@ describe('buildZodSchemas', () => {
   const schemas = buildZodSchemas(usersTable, annotations, access)
 
   describe('createSchema', () => {
-    it('accepts valid input with required fields', () => {
+    /* QA-10155 */ it('[QA-10155] accepts valid input with required fields', () => {
       const result = schemas.createSchema.safeParse({ email: 'hi@x.com' })
       expect(result.success).toBe(true)
     })
 
-    it('rejects missing required fields', () => {
+    /* QA-10156 */ it('[QA-10156] rejects missing required fields', () => {
       const result = schemas.createSchema.safeParse({ name: 'Alice' })
       expect(result.success).toBe(false)
     })
 
-    it('does not apply transforms (transforms are handled by the prep pipeline)', () => {
+    /* QA-10157 */ it('[QA-10157] does not apply transforms (transforms are handled by the prep pipeline)', () => {
       const result = schemas.createSchema.safeParse({ email: ' HI@X.COM' })
       expect(result.success).toBe(true)
       if (result.success) {
@@ -50,31 +50,31 @@ describe('buildZodSchemas', () => {
       }
     })
 
-    it('enforces varchar maxLength', () => {
+    /* QA-10158 */ it('[QA-10158] enforces varchar maxLength', () => {
       const result = schemas.createSchema.safeParse({ email: 'a'.repeat(20) })
       expect(result.success).toBe(false)
     })
 
-    it('accepts optional fields when omitted', () => {
+    /* QA-10159 */ it('[QA-10159] accepts optional fields when omitted', () => {
       const result = schemas.createSchema.safeParse({ email: 'hi@x.com' })
       expect(result.success).toBe(true)
     })
   })
 
   describe('updateSchema', () => {
-    it('makes all fields optional', () => {
+    /* QA-10160 */ it('[QA-10160] makes all fields optional', () => {
       const result = schemas.updateSchema.safeParse({})
       expect(result.success).toBe(true)
     })
 
-    it('validates provided fields', () => {
+    /* QA-10161 */ it('[QA-10161] validates provided fields', () => {
       const result = schemas.updateSchema.safeParse({ age: 'not a number' })
       expect(result.success).toBe(false)
     })
   })
 
   describe('selectSchema', () => {
-    it('validates output data types', () => {
+    /* QA-10162 */ it('[QA-10162] validates output data types', () => {
       const result = schemas.selectSchema.safeParse({
         id: '550e8400-e29b-41d4-a716-446655440000',
         email: 'a@b.com',
@@ -89,12 +89,12 @@ describe('buildZodSchemas', () => {
   })
 
   describe('type validation', () => {
-    it('rejects wrong type for integer', () => {
+    /* QA-10163 */ it('[QA-10163] rejects wrong type for integer', () => {
       const result = schemas.createSchema.safeParse({ email: 'a@b.com', age: 'thirty' })
       expect(result.success).toBe(false)
     })
 
-    it('rejects wrong type for boolean', () => {
+    /* QA-10164 */ it('[QA-10164] rejects wrong type for boolean', () => {
       const result = schemas.createSchema.safeParse({ email: 'a@b.com', active: 'yes' })
       expect(result.success).toBe(false)
     })
@@ -102,7 +102,7 @@ describe('buildZodSchemas', () => {
 })
 
 describe('validate callbacks', () => {
-  it('accumulates errors from validate callbacks via superRefine', () => {
+  /* QA-10165 */ it('[QA-10165] accumulates errors from validate callbacks via superRefine', () => {
     const table = sqliteTable('slug_table', {
       slug: text('slug', { length: 255 }).notNull(),
     })
