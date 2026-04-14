@@ -26,3 +26,7 @@ docs/superpowers/
 dist/
 build/
 coverage/
+
+# QA toolkit (regenerable)
+.qastate/snapshots/
+.qastate/reports/

@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "tools": {
+    "fallow": "fallow",
+    "depcruise": "npx depcruise",
+    "astgrep": "npx sg",
+    "knip": "npx knip",
+    "tsc": "npx tsc",
+    "vitest": "npx vitest"
+  },
+  "thresholds": {
+    "hotspotScore": 30,
+    "lowCoverage": 50,
+    "highComplexity": 25
+  },
+  "domainWeights": {
+    "auth": 95, "authentication": 95, "payments": 95, "billing": 90,
+    "checkout": 90, "security": 90, "crypto": 85, "session": 85,
+    "users": 75, "accounts": 75, "api": 70, "core": 70,
+    "database": 70, "db": 70, "middleware": 65, "routes": 65,
+    "services": 55, "models": 55, "controllers": 50,
+    "hooks": 50, "stores": 50, "state": 50,
+    "utils": 30, "helpers": 30, "lib": 35, "shared": 35,
+    "config": 25, "constants": 20, "types": 20,
+    "test": 5, "tests": 5, "fixtures": 5, "mocks": 5,
+    "scripts": 10, "docs": 5, "examples": 5
+  }
+}

@@ -3,7 +3,11 @@ import path from 'path'
 
 export default defineConfig({
   test: {
-    include: ['src/**/__tests__/**/*.test.ts', 'bin/__tests__/**/*.test.ts'],
+    include: [
+      'src/**/__tests__/**/*.test.ts',
+      'bin/__tests__/**/*.test.ts',
+      '.claude/tools/qa/**/__tests__/**/*.test.ts',
+    ],
     setupFiles: ['./test/setup.ts'],
     alias: {
       storium: path.resolve(__dirname, './src/index.ts'),
