@@ -4,6 +4,13 @@ All notable changes to Storium are documented here.
 
 This project uses [Semantic Versioning](https://semver.org/). Pre-1.0 releases may include breaking changes in minor versions.
 
+## 0.14.19
+
+- Fix all oxlint errors in QA tools (strict equality, unused imports, function scoping)
+- Add knip configuration for dead-code detection across project and QA tooling
+- Add ast-grep and knip dev dependencies, unify lint scripts
+- Accept test ID in name as sufficient QA annotation (comment now optional)
+
 ## 0.14.18
 
 - Add QA automation toolkit: snapshot pipeline, test registry, learnings system, and CLI entry point
