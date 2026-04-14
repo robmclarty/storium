@@ -13,5 +13,8 @@ export default defineConfig({
       storium: path.resolve(__dirname, './src/index.ts'),
       'storium/*': path.resolve(__dirname, './src/*/index.ts'),
     },
+    coverage: {
+      provider: 'istanbul',
+    },
   },
 })

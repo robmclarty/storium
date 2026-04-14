@@ -448,11 +448,9 @@ function runKnip(): any | null {
 
 function runCoverage(): Record<string, { lines: number; branches: number }> | null {
   // Check if coverage provider is available before running
-  try {
-    require.resolve('@vitest/coverage-v8')
-  } catch {
-    console.warn('  ⚠ @vitest/coverage-v8 not installed — skipping coverage collection.')
-    console.warn('    Install it: npm install -D @vitest/coverage-v8')
+  if (!fileExists(`${process.cwd()}/node_modules/@vitest/coverage-istanbul/package.json`)) {
+    console.warn('  ⚠ @vitest/coverage-istanbul not installed — skipping coverage collection.')
+    console.warn('    Install it: npm install -D @vitest/coverage-istanbul')
     return null
   }
 
