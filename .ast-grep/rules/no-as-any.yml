@@ -1,0 +1,6 @@
+id: no-as-any
+language: typescript
+rule:
+  pattern: $EXPR as any
+message: "Type assertion to `any` bypasses type safety. Use a specific type or `unknown`."
+severity: warning
