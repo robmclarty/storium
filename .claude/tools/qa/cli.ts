@@ -1,7 +1,7 @@
 import { readdirSync } from 'node:fs'
 import { lookupTest, verifyRegistry } from './registry.js'
 import { diffSnapshots } from './snapshot.js'
-import { readJSON, qastatePath, fileExists } from './utils.js'
+import { readJSON, healthPath, fileExists } from './utils.js'
 import type { TestRegistry, Snapshot, FileEntry } from './types.js'
 
 // ------------------------------------------------------------------ Helpers --
@@ -57,7 +57,7 @@ function outputResult(data: unknown, flags: ParsedFlags, formatted: string): voi
 // ------------------------------------------------------------ Data loaders --
 
 function loadRegistry(): TestRegistry {
-  const path = qastatePath('test-registry.json')
+  const path = healthPath('test-registry.json')
   if (!fileExists(path)) die('No test registry found. Run /qa-snapshot first.')
   return readJSON<TestRegistry>(path)
 }
@@ -65,16 +65,16 @@ function loadRegistry(): TestRegistry {
 function loadSnapshot(target: string = 'latest'): Snapshot {
   let path: string
   if (target === 'latest') {
-    path = qastatePath('snapshots', 'latest.json')
+    path = healthPath('snapshots', 'latest.json')
   } else {
-    path = qastatePath('snapshots', 'history', `${target}.json`)
+    path = healthPath('snapshots', 'history', `${target}.json`)
   }
   if (!fileExists(path)) die(`Snapshot not found: ${path}`)
   return readJSON<Snapshot>(path)
 }
 
 function listHistory(): string[] {
-  const dir = qastatePath('snapshots', 'history')
+  const dir = healthPath('snapshots', 'history')
   if (!fileExists(dir)) return []
   return readdirSync(dir)
     .filter(f => f.endsWith('.json'))
@@ -93,7 +93,7 @@ type LearningEntry = {
 }
 
 function loadLearnings(): LearningEntry[] {
-  const path = qastatePath('learnings.json')
+  const path = healthPath('learnings.json')
   if (!fileExists(path)) die('No learnings file found. Run /qa-analyze first.')
   const data = readJSON<{ entries: LearningEntry[] }>(path)
   return data.entries
@@ -102,7 +102,7 @@ function loadLearnings(): LearningEntry[] {
 // -------------------------------------------------------------- Subcommands --
 
 function cmdVerify(flags: ParsedFlags): void {
-  const path = qastatePath('test-registry.json')
+  const path = healthPath('test-registry.json')
   if (!fileExists(path)) die('No test registry found. Run /qa-snapshot first.')
   const report = verifyRegistry(path)
 
@@ -298,7 +298,7 @@ function cmdTrace(flags: ParsedFlags): void {
   if (!target) die('Usage: qa trace <QA-ID|file-path>')
 
   const reg = loadRegistry()
-  const snapshotPath = qastatePath('snapshots', 'latest.json')
+  const snapshotPath = healthPath('snapshots', 'latest.json')
   const hasSnapshot = fileExists(snapshotPath)
   const snapshot = hasSnapshot ? readJSON<Snapshot>(snapshotPath) : null
 

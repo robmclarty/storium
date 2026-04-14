@@ -1,5 +1,6 @@
 import { writeFileSync, mkdirSync } from 'node:fs'
 import type { Snapshot, FileEntry } from './types.js'
+import { healthPath } from './utils.js'
 
 function pct(n: number | null): string {
   return n != null ? `${Math.round(n * 10) / 10}%` : 'N/A'
@@ -148,10 +149,10 @@ ${removed}
 }
 
 /**
- * Generate all reports from a snapshot and write to .qastate/reports/.
+ * Generate all reports from a snapshot and write to .health/reports/.
  */
 export function generateAllReports(snapshot: Snapshot): void {
-  const reportsDir = `${process.cwd()}/.qastate/reports`
+  const reportsDir = healthPath('reports')
   mkdirSync(reportsDir, { recursive: true })
 
   writeFileSync(`${reportsDir}/health.md`, renderHealthReport(snapshot), 'utf8')

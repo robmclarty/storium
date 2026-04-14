@@ -8,7 +8,7 @@
       "confidence": "medium",
       "firstSeen": "2026-04-14",
       "lastConfirmed": "2026-04-14",
-      "context": "Confirmed across 6 snapshots. repository.ts: cyc 179, cog 124, 803 lines. prep.ts: cyc 59, cog 46, 310L. define.ts: cyc 56, cog 34, 329L. All remain accelerating with no trend change. Hotspot count rose from 29→34 across sessions."
+      "context": "Confirmed across 6 snapshots. repository.ts: cyc 179, cog 124, 803 lines (25% of all source complexity alone). prep.ts: cyc 59, cog 46, 310L. define.ts: cyc 56, cog 34, 329L. Combined: 42% of all source complexity, all accelerating. Hotspot count rose from 29→34 across sessions. Recommend decomposing repository.ts before next CRUD feature work — extract soft-delete, upsert/conflict, or read/write split."
     },
     {
       "id": "L002",
@@ -35,16 +35,16 @@
       "confidence": "low",
       "firstSeen": "2026-04-14",
       "lastConfirmed": "2026-04-14",
-      "context": "Hotspot score 77.8 (highest) but trend is 'cooling'. 35 commits in 6mo. 44 tests cover it. Commands.ts (34.8) and bin/storium.ts (33.7) also cooling."
+      "context": "Hotspot score 77.8 (highest) but trend is 'cooling'. 35 commits in 6mo. 44 tests cover it. Commands.ts (34.8) and bin/storium.ts (33.7) also cooling. While connect.ts has the highest raw hotspot score, repository.ts (accelerating, 179 cyc) is the more urgent concern."
     },
     {
       "id": "L005",
       "insight": "100% of source files have test coverage mappings (18/18). No source file is untested. This is a strong foundation — the gap is coverage depth, not breadth.",
       "category": "observation",
-      "confidence": "low",
+      "confidence": "medium",
       "firstSeen": "2026-04-14",
       "lastConfirmed": "2026-04-14",
-      "context": "All 18 source files have coveredByTests entries. 371 tests tracked total."
+      "context": "All 18 source files have coveredByTests entries. 393 tests tracked (up from 371). Confirmed in analysis cycle 2026-04-14."
     }
   ]
 }

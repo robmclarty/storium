@@ -28,5 +28,5 @@ build/
 coverage/
 
 # QA toolkit (regenerable)
-.qastate/snapshots/
-.qastate/reports/
+.health/snapshots/
+.health/reports/

@@ -13,7 +13,7 @@ import {
   readJSON,
   writeJSON,
   fileExists,
-  qastatePath,
+  healthPath,
   ensureDir,
   fileTimestamp,
   inferDomain,
@@ -92,8 +92,8 @@ type ToolOutputs = {
 export function mergeToolOutputs(outputs: ToolOutputs): Record<string, FileEntry> {
   const files: Record<string, FileEntry> = {}
 
-  const config = fileExists(qastatePath('config.json'))
-    ? readJSON<QAConfig>(qastatePath('config.json'))
+  const config = fileExists(healthPath('config.json'))
+    ? readJSON<QAConfig>(healthPath('config.json'))
     : null
   const domainWeights = config?.domainWeights ?? {}
 
@@ -222,8 +222,8 @@ export function mergeToolOutputs(outputs: ToolOutputs): Record<string, FileEntry
   }
 
   // Overlay test registry
-  if (fileExists(qastatePath('test-registry.json'))) {
-    const registry = readJSON<TestRegistry>(qastatePath('test-registry.json'))
+  if (fileExists(healthPath('test-registry.json'))) {
+    const registry = readJSON<TestRegistry>(healthPath('test-registry.json'))
     for (const test of registry.entries) {
       for (const coveredFile of test.coveredFiles) {
         const entry = files[coveredFile]
@@ -489,7 +489,7 @@ export async function runSnapshot(opts: { coverage?: boolean; force?: boolean } 
   }
 
   // Update test→source mappings from import analysis before merge
-  const registryPath = qastatePath('test-registry.json')
+  const registryPath = healthPath('test-registry.json')
   if (fileExists(registryPath)) {
     console.log('  Updating test→source mappings...')
     const mapReport = updateAllCoveredFiles(registryPath, process.cwd())
@@ -511,7 +511,7 @@ export async function runSnapshot(opts: { coverage?: boolean; force?: boolean } 
     coverage,
   })
 
-  const latestPath = qastatePath('snapshots', 'latest.json')
+  const latestPath = healthPath('snapshots', 'latest.json')
   const prevSnapshot = fileExists(latestPath) ? readJSON<Snapshot>(latestPath) : null
   const diff = diffSnapshots(prevSnapshot?.files ?? null, files)
 
@@ -533,16 +533,16 @@ export async function runSnapshot(opts: { coverage?: boolean; force?: boolean } 
     diff,
   }
 
-  ensureDir(qastatePath('snapshots', 'history'))
+  ensureDir(healthPath('snapshots', 'history'))
   writeJSON(latestPath, snapshot)
-  writeJSON(qastatePath('snapshots', 'history', `${fileTimestamp()}.json`), snapshot)
+  writeJSON(healthPath('snapshots', 'history', `${fileTimestamp()}.json`), snapshot)
 
   console.log('  Snapshot saved.')
 
   // Generate templated reports
   const { generateAllReports } = await import('./templates.js')
   generateAllReports(snapshot)
-  console.log('  Reports generated in .qastate/reports/.')
+  console.log('  Reports generated in .health/reports/.')
 
   return snapshot
 }

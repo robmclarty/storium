@@ -3,10 +3,10 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs'
 import { dirname } from 'node:path'
 
 const PROJECT_ROOT = process.cwd()
-const QASTATE_DIR = `${PROJECT_ROOT}/.qastate`
+const HEALTH_DIR = `${PROJECT_ROOT}/.health`
 
-export function qastatePath(...segments: string[]): string {
-  return [QASTATE_DIR, ...segments].join('/')
+export function healthPath(...segments: string[]): string {
+  return [HEALTH_DIR, ...segments].join('/')
 }
 
 export function ensureDir(path: string): void {
