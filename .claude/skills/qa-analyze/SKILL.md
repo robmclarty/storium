@@ -19,27 +19,31 @@ Ensure `.qastate/snapshots/latest.json` exists. If not, tell the user:
 
 ## Steps
 
-1. Read the current snapshot:
+1. Read the current snapshot summary:
+
+```bash
+npx tsx .claude/tools/qa/cli.ts snapshot show
+```
+
+2. Compare against the previous snapshot:
+
+```bash
+npx tsx .claude/tools/qa/cli.ts snapshot diff
+```
+
+3. Read accumulated learnings:
+
+```bash
+npx tsx .claude/tools/qa/cli.ts learnings list
+```
+
+4. For deeper context, read the full snapshot JSON:
 
 ```bash
 cat .qastate/snapshots/latest.json
 ```
 
-2. Read historical snapshots for trend analysis:
-
-```bash
-ls -t .qastate/snapshots/history/ | head -5
-```
-
-Read the most recent 2-3 historical snapshots for comparison.
-
-3. Read accumulated learnings:
-
-```bash
-cat .qastate/learnings.json
-```
-
-4. Produce a structured analysis covering:
+5. Produce a structured analysis covering:
 
    **Health Trend:** Is the codebase getting better or worse? Which domains are improving, which are regressing? Use snapshot diffs and historical comparisons.
 
@@ -51,15 +55,15 @@ cat .qastate/learnings.json
 
    **Progress Tracking:** What improved since the last analysis? Was a previous recommendation addressed?
 
-5. If `--focus <domain>` was passed, narrow the analysis to files in that domain only.
+6. If `--focus <domain>` was passed, narrow the analysis to files in that domain only.
 
-6. Update `.qastate/learnings.json` with any new strategic insights discovered during analysis. Follow the merge rules:
+7. Update `.qastate/learnings.json` with any new strategic insights discovered during analysis. Follow the merge rules:
    - New insight, nothing similar → append with `confidence: 'low'`
    - Confirms existing → update `lastConfirmed`, bump confidence
    - Contradicts existing → add new with `supersedes` pointing to old
    - Refines existing → synthesize into existing entry's `insight` text
 
-7. Print the full report to the terminal.
+8. Print the full report to the terminal.
 
 ## Output Tone
 

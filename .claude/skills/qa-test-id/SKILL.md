@@ -34,24 +34,20 @@ find . -path '*/node_modules' -prune -o -name '*.test.ts' -print -o -name '*.spe
 
 ### lookup <QA-NNNNN>
 
-1. Read `.qastate/test-registry.json`
-2. Find the entry with matching ID
-3. Print full metadata: name, suite, file, line, type, status, covered files, dates
+Run the trace CLI to look up test metadata:
+
+```bash
+npx tsx .claude/tools/qa/cli.ts trace <QA-NNNNN>
+```
+
+This shows: name, suite, file, line, type, status, covered files, and sibling tests.
 
 ### verify
 
-Walk the registry and verify each test:
-
-1. Run the registry verifier:
+Run the registry verifier:
 
 ```bash
-npx tsx -e "
-  const { verifyRegistry } = require('./.claude/tools/qa/registry.js');
-  const report = verifyRegistry('.qastate/test-registry.json');
-  console.log(JSON.stringify(report, null, 2));
-"
+npx tsx .claude/tools/qa/cli.ts verify
 ```
 
-2. Print the report: how many active, missing, stale tests found.
-
-3. For missing tests, suggest whether to remove from registry or investigate.
+This checks every registered test still exists at its recorded path and prints active/missing/stale counts. For missing tests, suggest whether to remove from registry or investigate.

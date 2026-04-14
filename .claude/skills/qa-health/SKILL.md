@@ -10,7 +10,7 @@ Quick health check — runs `fallow --score` and prints the letter grade and key
 
 **Arguments:** `[--trend]`
 
-- `--trend`: Compare against the most recent snapshot in `.qastate/snapshots/latest.json`
+- `--trend`: Compare against the most recent snapshot
 
 ## Steps
 
@@ -42,6 +42,12 @@ Circular deps: {circular_dep_count}
 Avg cyclomatic: {avg_cyclomatic}
 ```
 
-4. If `--trend` was passed and `.qastate/snapshots/latest.json` exists, compare key metrics against the snapshot and show deltas with arrows (↑/↓).
+4. If `--trend` was passed, show the previous snapshot for comparison:
+
+```bash
+npx tsx .claude/tools/qa/cli.ts snapshot show
+```
+
+Compare key metrics and show deltas with arrows (up/down).
 
 5. If `--trend` was passed but no snapshot exists, tell the user to run `/qa-snapshot` first to enable trending.

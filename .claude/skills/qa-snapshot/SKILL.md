@@ -21,22 +21,10 @@ Capture a deterministic codebase health snapshot. Runs all external analysis too
 npx tsx .claude/tools/qa/snapshot.ts $ARGUMENTS
 ```
 
-2. Read the generated snapshot summary:
+2. Show the snapshot summary:
 
 ```bash
-cat .qastate/snapshots/latest.json | npx tsx -e "
-  const s = JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));
-  console.log('Health:', s.summary.healthScore + '/100 (' + s.summary.healthGrade + ')');
-  console.log('Files:', s.summary.totalFiles, '| Scored:', s.summary.filesScored);
-  console.log('Hotspots:', s.summary.hotspotCount);
-  console.log('Dead exports:', s.summary.deadCodeExports);
-  console.log('Circular deps:', s.summary.circularDeps);
-  console.log('TSC errors:', s.summary.tscErrors);
-  console.log('Pattern violations:', s.summary.patternViolationCount);
-  console.log('Tests tracked:', s.summary.testsTracked);
-  if (s.diff) console.log('Changes:', s.diff.summary);
-  else console.log('First snapshot — no previous data to compare.');
-"
+npx tsx .claude/tools/qa/cli.ts snapshot show
 ```
 
 3. Print the summary to the user. If `--coverage` was used, also mention coverage stats.

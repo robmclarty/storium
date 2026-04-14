@@ -18,13 +18,11 @@ Generate missing unit tests for a source file.
 cat <file-path>
 ```
 
-2. Check for existing metrics in the snapshot:
+2. Check for existing test coverage and metrics:
 
 ```bash
-cat .qastate/snapshots/latest.json
+npx tsx .claude/tools/qa/cli.ts trace <file-path>
 ```
-
-Look up the file's entry for coverage data, complexity, and existing test IDs.
 
 3. Run fallow on the specific file for current complexity data:
 
@@ -50,7 +48,7 @@ Filter to the target file's entry.
 
 ```bash
 npx tsx -e "
-  const { assignNextId } = require('./.claude/tools/qa/registry.js');
+  import { assignNextId } from './.claude/tools/qa/registry.js';
   const id = assignNextId('.qastate/test-registry.json', {
     name: '<test-name>',
     suite: '<suite-name>',

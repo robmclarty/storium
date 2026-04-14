@@ -12,30 +12,18 @@ Map tests to the files they cover, or files to the tests that cover them.
 
 ## Steps
 
-1. Read both data sources:
+1. Run the trace CLI:
 
 ```bash
-cat .qastate/snapshots/latest.json
-cat .qastate/test-registry.json
+npx tsx .claude/tools/qa/cli.ts trace $ARGUMENTS
 ```
 
-2. Determine the argument type:
-   - If it matches `QA-\d+`: it's a test ID → look up `coveredFiles` from the registry
-   - Otherwise: it's a file path → look up `coveredByTests` from the snapshot
+2. Review the output:
+   - For a **test ID** (`QA-NNNNN`): shows test metadata, covered source files with metrics, and sibling tests covering the same files.
+   - For a **source file**: shows file metrics from the latest snapshot and all tests that cover it.
 
-3. For a **test ID**:
-   - Show the test metadata (name, suite, file, line, type, status)
-   - List all source files it covers
-   - For each covered file, show its maintainability score and coverage
+3. Identify coverage gaps — which functions or areas have no covering tests.
 
-4. For a **source file**:
-   - Show the file's metrics from the snapshot
-   - List all tests that cover it (from `coveredByTests`)
-   - For each test, show its metadata from the registry
-   - Identify coverage gaps: which functions/areas have no covering tests
+4. Read `.qastate/learnings.json` and update if new tracing insights are found.
 
-5. Present the dependency chain and highlight gaps.
-
-6. Read `.qastate/learnings.json` and update if new tracing insights are found.
-
-7. Print results to terminal.
+5. Print results to terminal.

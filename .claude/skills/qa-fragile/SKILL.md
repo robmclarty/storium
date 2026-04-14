@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # /qa-fragile
 
-Find the most fragile files in the codebase. Fragility = high churn × high complexity ÷ low coverage. These are the files most likely to break in production.
+Find the most fragile files in the codebase. Fragility = high churn x high complexity / low coverage. These are the files most likely to break in production.
 
 **Arguments:** `[--top N] [--domain <name>]`
 
@@ -38,11 +38,17 @@ Also boost files that are hotspots (fallow's `isHotspot` flag) or have pattern v
 
 4. Take the top N (default 20).
 
-5. For each file, provide LLM analysis:
+5. For each file, check test coverage status:
+
+```bash
+npx tsx .claude/tools/qa/cli.ts trace <file-path>
+```
+
+6. For each file, provide LLM analysis:
    - **Why it's fragile:** Explain the specific combination of factors
    - **What the risk is:** What could go wrong if this file breaks
    - **Concrete fix plan:** Specific refactoring steps, what tests to add, what to split
 
-6. Read `.qastate/learnings.json` and update with any new fragility-related insights.
+7. Read `.qastate/learnings.json` and update with any new fragility-related insights.
 
-7. Print the ranked list with narratives to the terminal.
+8. Print the ranked list with narratives to the terminal.
