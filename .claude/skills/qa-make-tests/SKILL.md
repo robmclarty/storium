@@ -40,7 +40,7 @@ Filter to the target file's entry.
 5. Generate unit tests following these conventions:
    - Use vitest (`import { describe, it, expect } from 'vitest'`)
    - Match the project's existing test file naming: `__tests__/<name>.test.ts`
-   - Each test gets a QA ID: `/* QA-NNNNN */ it('[QA-NNNNN] description', ...)`
+   - Each test gets a QA ID in the name: `it('[QA-NNNNN] description', ...)`
    - Test the public interface, not implementation details
    - Include edge cases for complex functions
 

@@ -68,7 +68,7 @@ export function verifyRegistry(registryPath: string): VerifyReport {
       entry.status = 'missing'
       report.missing.push(entry.id)
     } else {
-      // File exists — check if the test ID comment is still present
+      // File exists — check if the test ID is still present (in name or comment)
       const content = readFileSync(entry.file, 'utf8')
       if (!content.includes(entry.id)) {
         entry.status = 'stale'
