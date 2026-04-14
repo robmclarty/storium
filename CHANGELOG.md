@@ -4,6 +4,17 @@ All notable changes to Storium are documented here.
 
 This project uses [Semantic Versioning](https://semver.org/). Pre-1.0 releases may include breaking changes in minor versions.
 
+## 0.14.18
+
+- Add QA automation toolkit: snapshot pipeline, test registry, learnings system, and CLI entry point
+- Add QA skills: snapshot, health, analyze, fragile, trace, review, make-tests, test-id
+- Add ast-grep config with starter anti-pattern rules
+- Add templated markdown report generation (narrative dashboards)
+- Add learnings CLI commands (add, confirm, update, supersede, remove, merge)
+- Switch coverage provider from v8 to istanbul
+- Rename `.qastate` to `.health` for QA state storage
+- Fix incorrect `$schema` in `.fallowrc.json`
+
 ## 0.14.17
 
 - Fix strict equality checks to satisfy eqeqeq lint rule
