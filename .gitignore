@@ -30,3 +30,4 @@ coverage/
 # QA toolkit (regenerable)
 .health/snapshots/
 .health/reports/
+.health/learnings.json
