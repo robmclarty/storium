@@ -76,6 +76,7 @@ export type SnapshotSummary = {
   hotspotCount: number
   patternViolationCount: number
   testsTracked: number             // from test registry
+  penalties: Record<string, number> | null  // from fallow health_score.penalties
 }
 
 export type SnapshotDiff = {
@@ -84,6 +85,13 @@ export type SnapshotDiff = {
   added: string[]                  // new files
   removed: string[]                // deleted files
   summary: string                  // one-line human-readable
+  deltas: Record<string, { from: number; to: number }> // per-file maintainability changes
+}
+
+export type ChangelogEntry = {
+  from: string    // timestamp of older snapshot
+  to: string      // timestamp of newer snapshot
+  diff: SnapshotDiff
 }
 
 export type Snapshot = {
@@ -99,18 +107,15 @@ export type Snapshot = {
 export type LearningConfidence = 'low' | 'medium' | 'high'
 
 export type Learning = {
-  id: string
-  domain: string                   // 'coverage' | 'fragility' | 'testing' | 'architecture' | 'tooling'
-  insight: string
-  confidence: LearningConfidence
-  source: string                   // which skill: 'qa-analyze', 'qa-make-tests', etc.
-  context: {
-    files?: string[]
-    metrics?: Record<string, number>
-  }
-  firstSeen: string
-  lastConfirmed: string
-  supersedes?: string              // id of learning this one replaced
+  id: string                        // L001, L002, ...
+  category: string                  // 'risk' | 'gap' | 'observation' | 'recommendation'
+  insight: string                   // 1-2 sentence finding
+  confidence: LearningConfidence    // 'low' | 'medium' | 'high'
+  firstSeen: string                 // ISO date (YYYY-MM-DD)
+  lastConfirmed: string             // ISO date (YYYY-MM-DD)
+  context: string                   // Supporting evidence (plain text)
+  supersedes?: string               // ID of learning this replaced
+  mergedFrom?: string[]             // IDs that were merged into this
 }
 
 export type LearningsFile = {
