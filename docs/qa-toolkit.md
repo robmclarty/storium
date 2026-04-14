@@ -15,7 +15,7 @@ The QA skills and tooling live entirely within the project:
 ```
 .claude/tools/qa/     # TypeScript modules (snapshot, registry, CLI, utils)
 .claude/skills/qa-*/  # Claude Code slash commands
-.qastate/             # Persistent state (snapshots, registry, learnings, reports)
+.health/             # Persistent state (snapshots, registry, learnings, reports)
 ```
 
 No global installs are required. The CLI entry point is:
@@ -77,16 +77,25 @@ npx tsx .claude/tools/qa/cli.ts verify
 npx tsx .claude/tools/qa/cli.ts snapshot show
 npx tsx .claude/tools/qa/cli.ts snapshot diff
 
-# List learnings
-npx tsx .claude/tools/qa/cli.ts learnings list --category risk
-
 # JSON output (any command)
 npx tsx .claude/tools/qa/cli.ts trace QA-10386 --json
 ```
 
+### Learnings Management
+
+```bash
+npx tsx .claude/tools/qa/cli.ts learnings list [--category C] [--confidence L]
+npx tsx .claude/tools/qa/cli.ts learnings add --category <C> --insight "<text>" [--confidence L] [--context "<text>"]
+npx tsx .claude/tools/qa/cli.ts learnings confirm <ID> [--confidence L] [--context "<text>"]
+npx tsx .claude/tools/qa/cli.ts learnings update <ID> [--insight T] [--category C] [--confidence L] [--context T]
+npx tsx .claude/tools/qa/cli.ts learnings supersede <ID> --insight "<text>" [--category C]
+npx tsx .claude/tools/qa/cli.ts learnings remove <ID>
+npx tsx .claude/tools/qa/cli.ts learnings merge <ID1> <ID2> [...] --insight "<text>" [--category C]
+```
+
 ## Data Files
 
-All persistent state lives in `.qastate/`:
+All persistent state lives in `.health/`:
 
 | File | Committed | Purpose |
 |------|-----------|---------|
