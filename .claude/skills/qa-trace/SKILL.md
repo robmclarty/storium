@@ -24,6 +24,7 @@ npx tsx .claude/tools/qa/cli.ts trace $ARGUMENTS
 
 3. Identify coverage gaps — which functions or areas have no covering tests.
 
-4. Read `.qastate/learnings.json` and update if new tracing insights are found.
+4. If new tracing insights are found, record them via CLI:
+   `npx tsx .claude/tools/qa/cli.ts learnings add --category observation --insight "<text>"`
 
 5. Print results to terminal.

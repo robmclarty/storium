@@ -45,13 +45,14 @@ npx sg scan <space-separated changed files> --json 2>/dev/null
 npx depcruise --output-type json --no-config --ts-pre-compilation-deps --reaches <changed-files> src/ 2>/dev/null
 ```
 
-3. Read `.qastate/snapshots/latest.json` for baseline context (if it exists). For each changed file, note:
+3. Read `.health/snapshots/latest.json` for baseline context (if it exists). For each changed file, note:
    - Was it already a hotspot?
    - What was its maintainability score before?
    - Did it have existing pattern violations?
    - What was its coverage?
 
-4. Read `.qastate/learnings.json` for domain-specific gotchas relevant to the changed files.
+4. Check learnings for domain-specific gotchas relevant to changed files:
+   `npx tsx .claude/tools/qa/cli.ts learnings list --category risk`
 
 5. Read the actual diff:
 

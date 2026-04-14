@@ -28,7 +28,7 @@ find . -path '*/node_modules' -prune -o -name '*.test.ts' -print -o -name '*.spe
    - Assign the next ID from the registry
    - Add `/* QA-NNNNN */` before the `it()`/`test()` call
    - Prefix the test name: `'[QA-NNNNN] original name'`
-   - Update `.qastate/test-registry.json`
+   - Update `.health/test-registry.json`
 
 4. Print how many tests were assigned IDs.
 

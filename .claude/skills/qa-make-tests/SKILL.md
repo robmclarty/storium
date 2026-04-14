@@ -49,7 +49,7 @@ Filter to the target file's entry.
 ```bash
 npx tsx -e "
   import { assignNextId } from './.claude/tools/qa/registry.js';
-  const id = assignNextId('.qastate/test-registry.json', {
+  const id = assignNextId('.health/test-registry.json', {
     name: '<test-name>',
     suite: '<suite-name>',
     file: '<test-file-path>',

@@ -29,4 +29,4 @@ npx tsx .claude/tools/qa/cli.ts snapshot show
 
 3. Print the summary to the user. If `--coverage` was used, also mention coverage stats.
 
-4. Point the user to generated reports in `.qastate/reports/` for details.
+4. Point the user to generated reports in `.health/reports/` for details.

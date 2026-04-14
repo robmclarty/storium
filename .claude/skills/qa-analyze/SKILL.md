@@ -14,7 +14,7 @@ Generate a comprehensive QA analysis report from snapshot data. This is what the
 
 ## Prerequisites
 
-Ensure `.qastate/snapshots/latest.json` exists. If not, tell the user:
+Ensure `.health/snapshots/latest.json` exists. If not, tell the user:
 > Run `/qa-snapshot` first to collect codebase metrics.
 
 ## Steps
@@ -40,7 +40,7 @@ npx tsx .claude/tools/qa/cli.ts learnings list
 4. For deeper context, read the full snapshot JSON:
 
 ```bash
-cat .qastate/snapshots/latest.json
+cat .health/snapshots/latest.json
 ```
 
 5. Produce a structured analysis covering:
@@ -57,13 +57,21 @@ cat .qastate/snapshots/latest.json
 
 6. If `--focus <domain>` was passed, narrow the analysis to files in that domain only.
 
-7. Update `.qastate/learnings.json` with any new strategic insights discovered during analysis. Follow the merge rules:
-   - New insight, nothing similar → append with `confidence: 'low'`
-   - Confirms existing → update `lastConfirmed`, bump confidence
-   - Contradicts existing → add new with `supersedes` pointing to old
-   - Refines existing → synthesize into existing entry's `insight` text
+7. Update learnings using CLI commands. For each insight discovered:
+   - New insight, nothing similar:
+     `npx tsx .claude/tools/qa/cli.ts learnings add --category <C> --insight "<text>" [--context "<text>"]`
+   - Confirms existing:
+     `npx tsx .claude/tools/qa/cli.ts learnings confirm <ID> [--confidence <level>] [--context "<text>"]`
+   - Contradicts existing:
+     `npx tsx .claude/tools/qa/cli.ts learnings supersede <ID> --insight "<text>" [--category <C>]`
+   - Refines existing:
+     `npx tsx .claude/tools/qa/cli.ts learnings update <ID> --insight "<text>" [--context "<text>"]`
+   - Compact related learnings:
+     `npx tsx .claude/tools/qa/cli.ts learnings merge <ID1> <ID2> --insight "<text>"`
 
 8. Print the full report to the terminal.
+
+9. Write the full analysis report to `.health/reports/analysis.md`.
 
 ## Output Tone
 

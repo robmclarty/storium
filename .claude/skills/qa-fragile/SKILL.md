@@ -15,7 +15,7 @@ Find the most fragile files in the codebase. Fragility = high churn x high compl
 
 ## Prerequisites
 
-Ensure `.qastate/snapshots/latest.json` exists. If not:
+Ensure `.health/snapshots/latest.json` exists. If not:
 > Run `/qa-snapshot` first to collect codebase metrics.
 
 ## Steps
@@ -23,7 +23,7 @@ Ensure `.qastate/snapshots/latest.json` exists. If not:
 1. Read the snapshot:
 
 ```bash
-cat .qastate/snapshots/latest.json
+cat .health/snapshots/latest.json
 ```
 
 2. Filter to source files. If `--domain` is set, filter to that domain.
@@ -49,6 +49,8 @@ npx tsx .claude/tools/qa/cli.ts trace <file-path>
    - **What the risk is:** What could go wrong if this file breaks
    - **Concrete fix plan:** Specific refactoring steps, what tests to add, what to split
 
-7. Read `.qastate/learnings.json` and update with any new fragility-related insights.
+7. Update learnings with fragility insights via CLI:
+   - New insight: `npx tsx .claude/tools/qa/cli.ts learnings add --category risk --insight "<text>" --context "<text>"`
+   - Confirm existing: `npx tsx .claude/tools/qa/cli.ts learnings confirm <ID>`
 
 8. Print the ranked list with narratives to the terminal.
