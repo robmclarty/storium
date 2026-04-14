@@ -118,7 +118,7 @@ const HEURISTIC_MAPPINGS: Record<string, string[]> = {
  * For integration tests: uses naming-convention heuristics since they import
  * from the `storium` package alias, not relative paths.
  */
-export function inferCoveredFiles(testFilePath: string, projectRoot: string): string[] {
+function inferCoveredFiles(testFilePath: string, projectRoot: string): string[] {
   if (!existsSync(testFilePath)) return []
 
   const content = readFileSync(testFilePath, 'utf8')
@@ -188,8 +188,8 @@ export function updateAllCoveredFiles(registryPath: string, projectRoot: string)
     const covered = inferCoveredFiles(absPath, projectRoot)
 
     for (const entry of entries) {
-      const prev = JSON.stringify(entry.coveredFiles.sort())
-      const next = JSON.stringify(covered.sort())
+      const prev = JSON.stringify(entry.coveredFiles.toSorted())
+      const next = JSON.stringify(covered.toSorted())
       if (prev !== next) {
         entry.coveredFiles = covered
         report.updated++

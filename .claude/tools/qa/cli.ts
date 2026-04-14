@@ -1,8 +1,8 @@
 import { readdirSync } from 'node:fs'
-import { lookupTest, verifyRegistry } from './registry.js'
+import { verifyRegistry } from './registry.js'
 import { diffSnapshots } from './snapshot.js'
 import { readJSON, writeJSON, healthPath, fileExists, isoDate } from './utils.js'
-import type { TestRegistry, Snapshot, FileEntry } from './types.js'
+import type { TestRegistry, Snapshot } from './types.js'
 
 // ------------------------------------------------------------------ Helpers --
 
@@ -78,7 +78,7 @@ function listHistory(): string[] {
   if (!fileExists(dir)) return []
   return readdirSync(dir)
     .filter(f => f.endsWith('.json'))
-    .sort()
+    .toSorted()
     .map(f => f.replace('.json', ''))
 }
 
@@ -228,7 +228,7 @@ function cmdSnapshotShow(flags: ParsedFlags): void {
     `Health:              ${s.healthScore}/100 (${s.healthGrade})`,
     `Files:               ${s.filesScored}/${s.totalFiles} scored`,
     `Avg Maintainability: ${s.avgMaintainability}`,
-    `Coverage:            ${s.totalCoverage != null ? s.totalCoverage + '%' : 'N/A'}`,
+    `Coverage:            ${s.totalCoverage !== null ? s.totalCoverage + '%' : 'N/A'}`,
     `Hotspots:            ${s.hotspotCount}`,
     `Dead Code Files:     ${s.deadCodeFiles}`,
     `Dead Code Exports:   ${s.deadCodeExports}`,
@@ -534,7 +534,7 @@ function cmdTrace(flags: ParsedFlags): void {
         `Maintainability: ${fe.maintainability}`,
         `Cyclomatic:      ${fe.totalCyclomatic}`,
         `Lines:           ${fe.lines}`,
-        `Coverage:        ${fe.lineCoverage != null ? fe.lineCoverage + '%' : 'N/A'}`,
+        `Coverage:        ${fe.lineCoverage !== null ? fe.lineCoverage + '%' : 'N/A'}`,
         `Hotspot:         ${fe.isHotspot ? `yes (score: ${fe.hotspotScore}, trend: ${fe.hotspotTrend})` : 'no'}`,
       )
     } else {

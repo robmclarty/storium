@@ -3,7 +3,17 @@ import type { Snapshot, FileEntry, ChangelogEntry } from './types.js'
 import { healthPath } from './utils.js'
 
 function pct(n: number | null): string {
-  return n != null ? `${Math.round(n * 10) / 10}%` : 'N/A'
+  return n !== null ? `${Math.round(n * 10) / 10}%` : 'N/A'
+}
+
+function assessFile(f: FileEntry): string {
+  const tests = f.coveredByTests.length
+  const cyc = f.totalCyclomatic ?? 0
+  if (tests >= 10 && cyc > 50) return 'Well-tested, high complexity'
+  if (tests >= 5 && cyc <= 50) return 'Adequate'
+  if (tests < 5 && cyc > 20) return 'Under-tested for complexity'
+  if (tests === 0) return 'No test coverage'
+  return 'Light coverage'
 }
 
 // ---------------------------------------------------------------------------
@@ -47,8 +57,7 @@ export function renderHealthReport(snapshot: Snapshot): string {
   const totalCyc = sourceFiles.reduce((sum, f) => sum + (f.totalCyclomatic ?? 0), 0)
   if (totalCyc > 0) {
     const top3Cyc = sourceFiles
-      .slice()
-      .sort((a, b) => (b.totalCyclomatic ?? 0) - (a.totalCyclomatic ?? 0))
+      .toSorted((a, b) => (b.totalCyclomatic ?? 0) - (a.totalCyclomatic ?? 0))
       .slice(0, 3)
       .reduce((sum, f) => sum + (f.totalCyclomatic ?? 0), 0)
     if (top3Cyc / totalCyc > 0.3) {
@@ -105,7 +114,7 @@ export function renderHealthReport(snapshot: Snapshot): string {
   if (summary.penalties && Object.keys(summary.penalties).length > 0) {
     const penaltyEntries = Object.entries(summary.penalties)
       .filter(([, v]) => v > 0)
-      .sort((a, b) => b[1] - a[1])
+      .toSorted((a, b) => b[1] - a[1])
 
     if (penaltyEntries.length > 0) {
       const total = penaltyEntries.reduce((sum, [, v]) => sum + v, 0)
@@ -127,11 +136,11 @@ ${rows}
   const cooling = sourceFiles.filter(f => f.hotspotTrend === 'cooling')
   const top5Accel = accelerating
     .slice()
-    .sort((a, b) => (b.hotspotScore ?? 0) - (a.hotspotScore ?? 0))
+    .toSorted((a, b) => (b.hotspotScore ?? 0) - (a.hotspotScore ?? 0))
     .slice(0, 5)
   const top5Cool = cooling
     .slice()
-    .sort((a, b) => (b.hotspotScore ?? 0) - (a.hotspotScore ?? 0))
+    .toSorted((a, b) => (b.hotspotScore ?? 0) - (a.hotspotScore ?? 0))
     .slice(0, 5)
 
   let riskProfile = '\n## Risk Profile\n\n'
@@ -160,7 +169,7 @@ ${rows}
   }
 
   const distRows = Object.entries(classMap)
-    .sort((a, b) => b[1].files - a[1].files)
+    .toSorted((a, b) => b[1].files - a[1].files)
     .map(([cls, data]) => `| ${cls} | ${data.files} | ${data.hotspots} |`)
     .join('\n')
 
@@ -188,6 +197,14 @@ ${scoreBreakdown}${riskProfile}${fileDistSection}`
 // Hotspots Dashboard
 // ---------------------------------------------------------------------------
 
+function sourceRow(f: FileEntry): string {
+  return `| ${f.path} | ${f.hotspotScore ?? 'N/A'} | ${f.totalCyclomatic ?? 'N/A'} | ${f.totalCognitive ?? 'N/A'} | ${f.lines ?? 'N/A'} | ${f.commits6mo} | ${f.fanIn ?? 0} | ${f.coveredByTests.length} |`
+}
+
+function testRow(f: FileEntry): string {
+  return `| ${f.path} | ${f.hotspotScore ?? 'N/A'} | ${f.hotspotTrend ?? '—'} | ${f.commits6mo} |`
+}
+
 export function renderHotspotsReport(snapshot: Snapshot): string {
   const { timestamp } = snapshot
   const allFiles = Object.values(snapshot.files)
@@ -195,9 +212,9 @@ export function renderHotspotsReport(snapshot: Snapshot): string {
   const sourceHotspots = allFiles.filter(f => f.isHotspot && f.classification === 'source')
   const testHotspots = allFiles.filter(f => f.isHotspot && f.classification === 'test')
 
-  const accelerating = sourceHotspots.filter(f => f.hotspotTrend === 'accelerating').sort((a, b) => (b.hotspotScore ?? 0) - (a.hotspotScore ?? 0))
-  const stable = sourceHotspots.filter(f => f.hotspotTrend === 'stable').sort((a, b) => (b.hotspotScore ?? 0) - (a.hotspotScore ?? 0))
-  const cooling = sourceHotspots.filter(f => f.hotspotTrend === 'cooling').sort((a, b) => (b.hotspotScore ?? 0) - (a.hotspotScore ?? 0))
+  const accelerating = sourceHotspots.filter(f => f.hotspotTrend === 'accelerating').toSorted((a, b) => (b.hotspotScore ?? 0) - (a.hotspotScore ?? 0))
+  const stable = sourceHotspots.filter(f => f.hotspotTrend === 'stable').toSorted((a, b) => (b.hotspotScore ?? 0) - (a.hotspotScore ?? 0))
+  const cooling = sourceHotspots.filter(f => f.hotspotTrend === 'cooling').toSorted((a, b) => (b.hotspotScore ?? 0) - (a.hotspotScore ?? 0))
 
   // Overview line
   let overview = `${accelerating.length} accelerating, ${stable.length} stable, ${cooling.length} cooling.`
@@ -210,21 +227,13 @@ export function renderHotspotsReport(snapshot: Snapshot): string {
       const dir = parts.length > 1 ? parts.slice(0, -1).join('/') : '.'
       dirCounts[dir] = (dirCounts[dir] ?? 0) + 1
     }
-    const topDir = Object.entries(dirCounts).sort((a, b) => b[1] - a[1])[0]
+    const topDir = Object.entries(dirCounts).toSorted((a, b) => b[1] - a[1])[0]
     if (topDir && topDir[1] / accelerating.length > 0.5) {
       overview += ` Cluster detected in \`${topDir[0]}\` (${topDir[1]} of ${accelerating.length} accelerating files).`
     }
   }
 
   const sourceHeader = '| File | Score | Cyc | Cog | Lines | Commits (6mo) | Fan-In | Tests |\n|------|-------|-----|-----|-------|---------------|--------|-------|'
-
-  function sourceRow(f: FileEntry): string {
-    return `| ${f.path} | ${f.hotspotScore ?? 'N/A'} | ${f.totalCyclomatic ?? 'N/A'} | ${f.totalCognitive ?? 'N/A'} | ${f.lines ?? 'N/A'} | ${f.commits6mo} | ${f.fanIn ?? 0} | ${f.coveredByTests.length} |`
-  }
-
-  function testRow(f: FileEntry): string {
-    return `| ${f.path} | ${f.hotspotScore ?? 'N/A'} | ${f.hotspotTrend ?? '—'} | ${f.commits6mo} |`
-  }
 
   const sections: string[] = []
 
@@ -269,7 +278,7 @@ export function renderCoverageReport(snapshot: Snapshot): string {
   const { timestamp } = snapshot
   const allFiles = Object.values(snapshot.files)
   const sourceFiles = allFiles.filter(f => f.classification === 'source')
-  const withCoverage = sourceFiles.filter(f => f.lineCoverage != null)
+  const withCoverage = sourceFiles.filter(f => f.lineCoverage !== null)
 
   // --- Istanbul Coverage section ---
   let istanbulSection: string
@@ -280,7 +289,7 @@ No istanbul data. Run with \`--coverage\` to collect line/branch metrics.`
   } else {
     const uncovered = withCoverage
       .filter(f => (f.lineCoverage ?? 0) < 50)
-      .sort((a, b) => (a.lineCoverage ?? 0) - (b.lineCoverage ?? 0))
+      .toSorted((a, b) => (a.lineCoverage ?? 0) - (b.lineCoverage ?? 0))
 
     const rows = uncovered
       .map(f => `| ${f.path} | ${pct(f.lineCoverage)} | ${pct(f.branchCoverage)} | ${f.domain ?? '—'} |`)
@@ -301,19 +310,8 @@ ${uncovered.length > 0 ? `| File | Line Coverage | Branch Coverage | Domain |\n|
     ? Math.round((sourcesWithTests / sourceFiles.length) * 1000) / 10
     : 0
 
-  function assessFile(f: FileEntry): string {
-    const tests = f.coveredByTests.length
-    const cyc = f.totalCyclomatic ?? 0
-    if (tests >= 10 && cyc > 50) return 'Well-tested, high complexity'
-    if (tests >= 5 && cyc <= 50) return 'Adequate'
-    if (tests < 5 && cyc > 20) return 'Under-tested for complexity'
-    if (tests === 0) return 'No test coverage'
-    return 'Light coverage'
-  }
-
   const mappingRows = sourceFiles
-    .slice()
-    .sort((a, b) => a.coveredByTests.length - b.coveredByTests.length)
+    .toSorted((a, b) => a.coveredByTests.length - b.coveredByTests.length)
     .map(f => `| ${f.path} | ${f.coveredByTests.length} | ${f.totalCyclomatic ?? 'N/A'} | ${assessFile(f)} |`)
     .join('\n')
 
@@ -324,7 +322,7 @@ ${uncovered.length > 0 ? `| File | Line Coverage | Branch Coverage | Domain |\n|
   // Potential Gaps: files where coveredByTests.length < totalCyclomatic / 10
   const gaps = sourceFiles
     .filter(f => (f.totalCyclomatic ?? 0) > 0 && f.coveredByTests.length < (f.totalCyclomatic ?? 0) / 10)
-    .sort((a, b) => (b.totalCyclomatic ?? 0) - (a.totalCyclomatic ?? 0))
+    .toSorted((a, b) => (b.totalCyclomatic ?? 0) - (a.totalCyclomatic ?? 0))
 
   const gapRows = gaps
     .map(f => `| ${f.path} | ${f.coveredByTests.length} | ${f.totalCyclomatic ?? 'N/A'} |`)

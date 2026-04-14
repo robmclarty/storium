@@ -14,6 +14,22 @@ function makeSummary(overrides: Partial<SnapshotSummary> = {}): SnapshotSummary 
   }
 }
 
+function makeHotspot(path: string): FileEntry {
+  return {
+    path, classification: 'source', domain: 'core',
+    maintainability: 70, complexityDensity: 0.3, totalCyclomatic: 50,
+    totalCognitive: 40, functionCount: 15, lines: 200, crapMax: 60,
+    fanIn: 3, fanOut: 5, deadCodeRatio: 0,
+    isHotspot: true, hotspotScore: 80, hotspotTrend: 'accelerating',
+    hasDeadExports: false, deadExportCount: 0,
+    hasDuplicates: false, duplicateLineCount: 0,
+    circularWith: [], dependencyDepth: 0, patternViolations: [],
+    tscErrorCount: 0, lineCoverage: null, branchCoverage: null,
+    commits6mo: 40, authors6mo: 2, lastModified: '2026-04-13',
+    coveredByTests: [],
+  }
+}
+
 function makeSnapshot(overrides: Partial<Snapshot> = {}): Snapshot {
   return {
     timestamp: '2026-04-13T14:30:00Z',
@@ -87,19 +103,6 @@ describe('renderHotspotsReport', () => {
   })
 
   it('detects directory cluster for accelerating hotspots', () => {
-    const makeHotspot = (path: string): FileEntry => ({
-      path, classification: 'source', domain: 'core',
-      maintainability: 70, complexityDensity: 0.3, totalCyclomatic: 50,
-      totalCognitive: 40, functionCount: 15, lines: 200, crapMax: 60,
-      fanIn: 3, fanOut: 5, deadCodeRatio: 0,
-      isHotspot: true, hotspotScore: 80, hotspotTrend: 'accelerating',
-      hasDeadExports: false, deadExportCount: 0,
-      hasDuplicates: false, duplicateLineCount: 0,
-      circularWith: [], dependencyDepth: 0, patternViolations: [],
-      tscErrorCount: 0, lineCoverage: null, branchCoverage: null,
-      commits6mo: 40, authors6mo: 2, lastModified: '2026-04-13',
-      coveredByTests: [],
-    })
     const files: Record<string, FileEntry> = {
       'src/core/a.ts': makeHotspot('src/core/a.ts'),
       'src/core/b.ts': makeHotspot('src/core/b.ts'),

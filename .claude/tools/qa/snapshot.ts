@@ -259,7 +259,7 @@ export function diffSnapshots(
     if (!prevPaths.has(path)) continue
     const prev = prevFiles[path]
     const curr = currFiles[path]
-    if (prev.maintainability != null && curr.maintainability != null) {
+    if (prev.maintainability !== null && curr.maintainability !== null) {
       const delta = curr.maintainability - prev.maintainability
       if (delta > 0) {
         improved.push(path)
@@ -286,7 +286,7 @@ export function buildChangelog(historyDir: string, limit: number = 10): Changelo
 
   const files = readdirSync(historyDir)
     .filter(f => f.endsWith('.json'))
-    .sort()
+    .toSorted()
 
   if (files.length < 2) return []
 
@@ -308,7 +308,7 @@ export function buildChangelog(historyDir: string, limit: number = 10): Changelo
     }
   }
 
-  return entries.reverse()
+  return entries.toReversed()
 }
 
 export function buildSummary(
@@ -319,11 +319,11 @@ export function buildSummary(
 ): SnapshotSummary {
   const entries = Object.values(files)
   const sourceFiles = entries.filter(e => e.classification === 'source')
-  const scored = sourceFiles.filter(e => e.maintainability != null)
+  const scored = sourceFiles.filter(e => e.maintainability !== null)
   const avgMaint = scored.length
     ? scored.reduce((sum, e) => sum + (e.maintainability ?? 0), 0) / scored.length
     : null
-  const withCoverage = sourceFiles.filter(e => e.lineCoverage != null)
+  const withCoverage = sourceFiles.filter(e => e.lineCoverage !== null)
   const totalCoverage = withCoverage.length
     ? withCoverage.reduce((sum, e) => sum + (e.lineCoverage ?? 0), 0) / withCoverage.length
     : null
@@ -590,9 +590,9 @@ export async function runSnapshot(opts: { coverage?: boolean; force?: boolean } 
 
 // CLI entry point
 if (process.argv[1] && process.argv[1].endsWith('snapshot.ts')) {
-  const args = process.argv.slice(2)
-  const withCoverage = args.includes('--coverage')
-  const force = args.includes('--force')
+  const args = new Set(process.argv.slice(2))
+  const withCoverage = args.has('--coverage')
+  const force = args.has('--force')
   runSnapshot({ coverage: withCoverage, force }).catch(err => {
     console.error('Snapshot failed:', err)
     process.exit(1)

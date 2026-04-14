@@ -26,7 +26,7 @@ export function fileExists(path: string): boolean {
   return existsSync(path)
 }
 
-export type ExecResult = {
+type ExecResult = {
   stdout: string
   exitCode: number
 }

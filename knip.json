@@ -1,0 +1,21 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "entry": [
+    "test/integration/**/*.test.ts",
+    "test/tables.ts",
+    ".claude/tools/qa/cli.ts",
+    ".claude/tools/qa/snapshot.ts",
+    "src/migrate/__tests__/fixtures/**/*.ts"
+  ],
+  "project": [
+    "src/**/*.ts",
+    "bin/**/*.ts",
+    "test/**/*.ts",
+    ".claude/tools/qa/**/*.ts"
+  ],
+  "ignoreDependencies": [
+    "@vitest/coverage-v8",
+    "drizzle-kit",
+    "testcontainers"
+  ]
+}
