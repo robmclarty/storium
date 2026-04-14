@@ -1,8 +1,10 @@
+import { readdirSync } from 'node:fs'
 import type {
   FileEntry,
   Snapshot,
   SnapshotSummary,
   SnapshotDiff,
+  ChangelogEntry,
   QAConfig,
   TestRegistry,
 } from './types.js'
@@ -251,14 +253,21 @@ export function diffSnapshots(
 
   const improved: string[] = []
   const regressed: string[] = []
+  const deltas: Record<string, { from: number; to: number }> = {}
 
   for (const path of currPaths) {
     if (!prevPaths.has(path)) continue
     const prev = prevFiles[path]
     const curr = currFiles[path]
     if (prev.maintainability != null && curr.maintainability != null) {
-      if (curr.maintainability > prev.maintainability + 1) improved.push(path)
-      else if (curr.maintainability < prev.maintainability - 1) regressed.push(path)
+      const delta = curr.maintainability - prev.maintainability
+      if (delta > 0) {
+        improved.push(path)
+        deltas[path] = { from: prev.maintainability, to: curr.maintainability }
+      } else if (delta < 0) {
+        regressed.push(path)
+        deltas[path] = { from: prev.maintainability, to: curr.maintainability }
+      }
     }
   }
 
@@ -269,12 +278,42 @@ export function diffSnapshots(
   if (regressed.length) parts.push(`${regressed.length} regressed`)
   const summary = parts.length ? parts.join(', ') : 'No changes'
 
-  return { improved, regressed, added, removed, summary }
+  return { improved, regressed, added, removed, summary, deltas }
+}
+
+export function buildChangelog(historyDir: string, limit: number = 10): ChangelogEntry[] {
+  if (!fileExists(historyDir)) return []
+
+  const files = readdirSync(historyDir)
+    .filter(f => f.endsWith('.json'))
+    .sort()
+
+  if (files.length < 2) return []
+
+  const recent = files.slice(-(limit + 1))
+  const entries: ChangelogEntry[] = []
+
+  for (let i = 0; i < recent.length - 1; i++) {
+    const prevPath = `${historyDir}/${recent[i]}`
+    const currPath = `${historyDir}/${recent[i + 1]}`
+    const prev = readJSON<Snapshot>(prevPath)
+    const curr = readJSON<Snapshot>(currPath)
+    const diff = diffSnapshots(prev.files, curr.files)
+    if (diff) {
+      entries.push({
+        from: prev.timestamp,
+        to: curr.timestamp,
+        diff,
+      })
+    }
+  }
+
+  return entries.reverse()
 }
 
 export function buildSummary(
   files: Record<string, FileEntry>,
-  healthScore: { score: number; grade: string } | null,
+  healthScore: { score: number; grade: string; penalties: Record<string, number> } | null,
   dupesStats: { duplication_percentage: number } | null,
   testsTracked: number,
 ): SnapshotSummary {
@@ -304,6 +343,7 @@ export function buildSummary(
     hotspotCount: entries.filter(e => e.isHotspot).length,
     patternViolationCount: entries.reduce((sum, e) => sum + e.patternViolations.length, 0),
     testsTracked,
+    penalties: healthScore?.penalties ?? null,
   }
 }
 
@@ -315,9 +355,11 @@ function runFallowHealth(): FallowHealthOutput {
   ) ?? { file_scores: [], hotspots: [] }
 }
 
-function runFallowScore(): { score: number; grade: string } | null {
+function runFallowScore(): { score: number; grade: string; penalties: Record<string, number> } | null {
   const result = execJSON<any>('fallow --format json --quiet --score')
-  return result?.health?.health_score ?? null
+  const hs = result?.health?.health_score
+  if (!hs) return null
+  return { score: hs.score, grade: hs.grade, penalties: hs.penalties ?? {} }
 }
 
 function runFallowDeadCode(): FallowDeadCodeOutput {
@@ -541,7 +583,8 @@ export async function runSnapshot(opts: { coverage?: boolean; force?: boolean } 
 
   // Generate templated reports
   const { generateAllReports } = await import('./templates.js')
-  generateAllReports(snapshot)
+  const changelog = buildChangelog(healthPath('snapshots', 'history'))
+  generateAllReports(snapshot, changelog)
   console.log('  Reports generated in .health/reports/.')
 
   return snapshot
