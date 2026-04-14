@@ -20,7 +20,7 @@ beforeEach(() => {
 })
 
 describe('assignNextId', () => {
-  it('assigns QA-10000 on empty registry', () => {
+  /* QA-10396 */ it('[QA-10396] assigns QA-10000 on empty registry', () => {
     seedRegistry()
     const id = assignNextId(REGISTRY_PATH, {
       name: 'should hash password',
@@ -38,7 +38,7 @@ describe('assignNextId', () => {
     expect(reg.entries[0].status).toBe('active')
   })
 
-  it('increments ID on subsequent assignments', () => {
+  /* QA-10397 */ it('[QA-10397] increments ID on subsequent assignments', () => {
     seedRegistry([], 10005)
     const id = assignNextId(REGISTRY_PATH, {
       name: 'test2',
@@ -55,7 +55,7 @@ describe('assignNextId', () => {
 })
 
 describe('lookupTest', () => {
-  it('returns the entry for a valid ID', () => {
+  /* QA-10398 */ it('[QA-10398] returns the entry for a valid ID', () => {
     seedRegistry([{
       id: 'QA-10000', name: 'test1', suite: 'S', file: 'a.ts', line: 1,
       type: 'unit', status: 'active', coveredFiles: [], coveredFunctions: [],
@@ -66,14 +66,14 @@ describe('lookupTest', () => {
     expect(result!.name).toBe('test1')
   })
 
-  it('returns null for unknown ID', () => {
+  /* QA-10399 */ it('[QA-10399] returns null for unknown ID', () => {
     seedRegistry()
     expect(lookupTest(REGISTRY_PATH, 'QA-99999')).toBeNull()
   })
 })
 
 describe('verifyRegistry', () => {
-  it('marks tests as missing when file does not exist', () => {
+  /* QA-10400 */ it('[QA-10400] marks tests as missing when file does not exist', () => {
     seedRegistry([{
       id: 'QA-10000', name: 'test1', suite: 'S',
       file: '/tmp/nonexistent.test.ts', line: 1,

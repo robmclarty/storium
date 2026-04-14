@@ -25,13 +25,13 @@ function makeSnapshot(overrides: Partial<Snapshot> = {}): Snapshot {
 }
 
 describe('renderHealthReport', () => {
-  it('includes health score and grade', () => {
+  /* QA-10379 */ it('[QA-10379] includes health score and grade', () => {
     const md = renderHealthReport(makeSnapshot())
     expect(md).toContain('72/100')
     expect(md).toContain('C')
   })
 
-  it('includes key metrics table', () => {
+  /* QA-10380 */ it('[QA-10380] includes key metrics table', () => {
     const md = renderHealthReport(makeSnapshot())
     expect(md).toContain('Dead Code Exports')
     expect(md).toContain('Duplication')
@@ -39,7 +39,7 @@ describe('renderHealthReport', () => {
 })
 
 describe('renderHotspotsReport', () => {
-  it('lists hotspot files', () => {
+  /* QA-10381 */ it('[QA-10381] lists hotspot files', () => {
     const files: Record<string, FileEntry> = {
       'src/connect.ts': {
         path: 'src/connect.ts', classification: 'source', domain: 'core',
@@ -63,12 +63,12 @@ describe('renderHotspotsReport', () => {
 })
 
 describe('renderCoverageReport', () => {
-  it('shows no-data message when no coverage', () => {
+  /* QA-10382 */ it('[QA-10382] shows no-data message when no coverage', () => {
     const md = renderCoverageReport(makeSnapshot())
     expect(md).toContain('No coverage data')
   })
 
-  it('lists low coverage files when data is available', () => {
+  /* QA-10383 */ it('[QA-10383] lists low coverage files when data is available', () => {
     const files: Record<string, FileEntry> = {
       'src/weak.ts': {
         path: 'src/weak.ts', classification: 'source', domain: 'core',
@@ -91,7 +91,7 @@ describe('renderCoverageReport', () => {
 })
 
 describe('renderChangelogReport', () => {
-  it('shows diff summary when available', () => {
+  /* QA-10384 */ it('[QA-10384] shows diff summary when available', () => {
     const md = renderChangelogReport(makeSnapshot({
       diff: {
         improved: ['src/a.ts'], regressed: ['src/b.ts'],
@@ -104,7 +104,7 @@ describe('renderChangelogReport', () => {
     expect(md).toContain('src/b.ts')
   })
 
-  it('shows "first snapshot" when no diff', () => {
+  /* QA-10385 */ it('[QA-10385] shows "first snapshot" when no diff', () => {
     const md = renderChangelogReport(makeSnapshot({ diff: null }))
     expect(md).toContain('first snapshot')
   })

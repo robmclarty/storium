@@ -14,7 +14,7 @@ import type {
 import { mergeToolOutputs, diffSnapshots, buildSummary } from '../snapshot.js'
 
 describe('types', () => {
-  it('Snapshot structure is well-typed', () => {
+  /* QA-10386 */ it('[QA-10386] Snapshot structure is well-typed', () => {
     const entry: FileEntry = {
       path: 'src/index.ts',
       classification: 'source',
@@ -75,7 +75,7 @@ describe('types', () => {
     expect(snapshot.files['src/index.ts'].maintainability).toBe(85.9)
   })
 
-  it('Learning structure is well-typed', () => {
+  /* QA-10387 */ it('[QA-10387] Learning structure is well-typed', () => {
     const learning: Learning = {
       id: 'abc123',
       domain: 'coverage',
@@ -93,7 +93,7 @@ describe('types', () => {
     expect(learning.confidence).toBe('medium')
   })
 
-  it('TestRegistryEntry structure is well-typed', () => {
+  /* QA-10388 */ it('[QA-10388] TestRegistryEntry structure is well-typed', () => {
     const entry: TestRegistryEntry = {
       id: 'QA-10000',
       name: 'should hash password before storing',
@@ -114,7 +114,7 @@ describe('types', () => {
 })
 
 describe('mergeToolOutputs', () => {
-  it('merges fallow file_scores into FileEntry records', () => {
+  /* QA-10389 */ it('[QA-10389] merges fallow file_scores into FileEntry records', () => {
     const fallowHealth = {
       file_scores: [{
         path: 'src/index.ts',
@@ -149,7 +149,7 @@ describe('mergeToolOutputs', () => {
     expect(file.classification).toBe('source')
   })
 
-  it('merges hotspot data into matching FileEntry', () => {
+  /* QA-10390 */ it('[QA-10390] merges hotspot data into matching FileEntry', () => {
     const fallowHealth = {
       file_scores: [{
         path: 'src/connect.ts',
@@ -187,7 +187,7 @@ describe('mergeToolOutputs', () => {
     expect(file.hotspotTrend).toBe('cooling')
   })
 
-  it('merges ast-grep violations into FileEntry', () => {
+  /* QA-10391 */ it('[QA-10391] merges ast-grep violations into FileEntry', () => {
     const fallowHealth = {
       file_scores: [{ path: 'src/handler.ts', fan_in: 0, fan_out: 1, dead_code_ratio: 0, complexity_density: 0.1, maintainability_index: 90, total_cyclomatic: 5, total_cognitive: 3, function_count: 2, lines: 50, crap_max: 5, crap_above_threshold: 0 }],
       hotspots: [],
@@ -218,12 +218,12 @@ describe('mergeToolOutputs', () => {
 })
 
 describe('diffSnapshots', () => {
-  it('returns null when no previous snapshot', () => {
+  /* QA-10392 */ it('[QA-10392] returns null when no previous snapshot', () => {
     const result = diffSnapshots(null, { 'src/a.ts': { maintainability: 80 } as FileEntry })
     expect(result).toBeNull()
   })
 
-  it('detects added and removed files', () => {
+  /* QA-10393 */ it('[QA-10393] detects added and removed files', () => {
     const prev = { 'src/old.ts': { maintainability: 80 } as FileEntry }
     const curr = { 'src/new.ts': { maintainability: 90 } as FileEntry }
 
@@ -232,7 +232,7 @@ describe('diffSnapshots', () => {
     expect(diff.removed).toContain('src/old.ts')
   })
 
-  it('detects improved and regressed files by maintainability', () => {
+  /* QA-10394 */ it('[QA-10394] detects improved and regressed files by maintainability', () => {
     const prev = {
       'src/a.ts': { maintainability: 80 } as FileEntry,
       'src/b.ts': { maintainability: 90 } as FileEntry,
@@ -249,7 +249,7 @@ describe('diffSnapshots', () => {
 })
 
 describe('buildSummary', () => {
-  it('aggregates file entries into summary metrics', () => {
+  /* QA-10395 */ it('[QA-10395] aggregates file entries into summary metrics', () => {
     const files: Record<string, FileEntry> = {
       'src/a.ts': {
         path: 'src/a.ts', classification: 'source', domain: 'core',
