@@ -1,7 +1,7 @@
 import { readdirSync } from 'node:fs'
 import { lookupTest, verifyRegistry } from './registry.js'
 import { diffSnapshots } from './snapshot.js'
-import { readJSON, healthPath, fileExists } from './utils.js'
+import { readJSON, writeJSON, healthPath, fileExists, isoDate } from './utils.js'
 import type { TestRegistry, Snapshot, FileEntry } from './types.js'
 
 // ------------------------------------------------------------------ Helpers --
@@ -94,9 +94,38 @@ type LearningEntry = {
 
 function loadLearnings(): LearningEntry[] {
   const path = healthPath('learnings.json')
-  if (!fileExists(path)) die('No learnings file found. Run /qa-analyze first.')
+  if (!fileExists(path)) return []
   const data = readJSON<{ entries: LearningEntry[] }>(path)
   return data.entries
+}
+
+function saveLearnings(entries: LearningEntry[]): void {
+  writeJSON(healthPath('learnings.json'), { version: 1, entries })
+}
+
+function nextLearningId(entries: LearningEntry[]): string {
+  let max = 0
+  for (const e of entries) {
+    const m = e.id.match(/^L(\d+)$/)
+    if (m) max = Math.max(max, parseInt(m[1], 10))
+  }
+  return `L${String(max + 1).padStart(3, '0')}`
+}
+
+function findLearning(entries: LearningEntry[], id: string): LearningEntry | undefined {
+  return entries.find(e => e.id.toLowerCase() === id.toLowerCase())
+}
+
+function printLearning(entry: LearningEntry): void {
+  console.log(`ID:             ${entry.id}`)
+  console.log(`Category:       ${entry.category}`)
+  console.log(`Confidence:     ${entry.confidence}`)
+  console.log(`Insight:        ${entry.insight}`)
+  console.log(`First Seen:     ${entry.firstSeen}`)
+  console.log(`Last Confirmed: ${entry.lastConfirmed}`)
+  if (entry.context) console.log(`Context:        ${entry.context}`)
+  if ((entry as any).supersedes) console.log(`Supersedes:     ${(entry as any).supersedes}`)
+  if ((entry as any).mergedFrom) console.log(`Merged From:    ${(entry as any).mergedFrom.join(', ')}`)
 }
 
 // -------------------------------------------------------------- Subcommands --
@@ -293,6 +322,156 @@ function cmdLearningsList(flags: ParsedFlags): void {
   outputResult(entries, flags, formatted)
 }
 
+function cmdLearningsAdd(flags: ParsedFlags): void {
+  const category = flags.flags.category
+  const insight = flags.flags.insight
+  if (typeof category !== 'string') die('--category is required')
+  if (typeof insight !== 'string') die('--insight is required')
+
+  const entries = loadLearnings()
+  const id = nextLearningId(entries)
+  const today = isoDate()
+  const confidence = typeof flags.flags.confidence === 'string' ? flags.flags.confidence : 'low'
+  const context = typeof flags.flags.context === 'string' ? flags.flags.context : ''
+
+  const entry: LearningEntry = {
+    id, category, insight, confidence, firstSeen: today, lastConfirmed: today, context,
+  }
+
+  entries.push(entry)
+  saveLearnings(entries)
+  console.log(`Added ${id}:`)
+  printLearning(entry)
+}
+
+function cmdLearningsConfirm(flags: ParsedFlags): void {
+  const id = flags.positional[0]
+  if (!id) die('Usage: learnings confirm <ID>')
+
+  const entries = loadLearnings()
+  const entry = findLearning(entries, id)
+  if (!entry) die(`Learning ${id} not found.`)
+
+  entry.lastConfirmed = isoDate()
+  if (typeof flags.flags.confidence === 'string') entry.confidence = flags.flags.confidence
+  if (typeof flags.flags.context === 'string') {
+    entry.context = entry.context ? entry.context + '\n' + flags.flags.context : flags.flags.context
+  }
+
+  saveLearnings(entries)
+  console.log(`Confirmed ${entry.id}:`)
+  printLearning(entry)
+}
+
+function cmdLearningsUpdate(flags: ParsedFlags): void {
+  const id = flags.positional[0]
+  if (!id) die('Usage: learnings update <ID> [--insight ...] [--category ...] [--confidence ...] [--context ...]')
+
+  const entries = loadLearnings()
+  const entry = findLearning(entries, id)
+  if (!entry) die(`Learning ${id} not found.`)
+
+  let changed = false
+  if (typeof flags.flags.insight === 'string') { entry.insight = flags.flags.insight; changed = true }
+  if (typeof flags.flags.category === 'string') { entry.category = flags.flags.category; changed = true }
+  if (typeof flags.flags.confidence === 'string') { entry.confidence = flags.flags.confidence; changed = true }
+  if (typeof flags.flags.context === 'string') { entry.context = flags.flags.context; changed = true }
+
+  if (!changed) die('No fields specified to update.')
+
+  entry.lastConfirmed = isoDate()
+  saveLearnings(entries)
+  console.log(`Updated ${entry.id}:`)
+  printLearning(entry)
+}
+
+function cmdLearningsSupersede(flags: ParsedFlags): void {
+  const oldId = flags.positional[0]
+  if (!oldId) die('Usage: learnings supersede <ID> --insight ...')
+  const insight = flags.flags.insight
+  if (typeof insight !== 'string') die('--insight is required')
+
+  const entries = loadLearnings()
+  const old = findLearning(entries, oldId)
+  if (!old) die(`Learning ${oldId} not found.`)
+
+  const newId = nextLearningId(entries)
+  const today = isoDate()
+  const category = typeof flags.flags.category === 'string' ? flags.flags.category : old.category
+  const confidence = typeof flags.flags.confidence === 'string' ? flags.flags.confidence : 'low'
+  const context = typeof flags.flags.context === 'string' ? flags.flags.context : ''
+
+  old.insight = `[superseded by ${newId}] ${old.insight}`
+
+  const newEntry: any = {
+    id: newId, category, insight, confidence,
+    firstSeen: today, lastConfirmed: today, context, supersedes: old.id,
+  }
+
+  entries.push(newEntry)
+  saveLearnings(entries)
+  console.log(`Superseded ${old.id} with ${newId}:\n`)
+  console.log('Old:')
+  printLearning(old)
+  console.log('\nNew:')
+  printLearning(newEntry)
+}
+
+function cmdLearningsRemove(flags: ParsedFlags): void {
+  const id = flags.positional[0]
+  if (!id) die('Usage: learnings remove <ID>')
+
+  const entries = loadLearnings()
+  const idx = entries.findIndex(e => e.id.toLowerCase() === id.toLowerCase())
+  if (idx === -1) die(`Learning ${id} not found.`)
+
+  const removed = entries.splice(idx, 1)[0]
+  saveLearnings(entries)
+  console.log(`Removed ${removed.id}: ${removed.insight}`)
+}
+
+function cmdLearningsMerge(flags: ParsedFlags): void {
+  const ids = flags.positional
+  if (ids.length < 2) die('Usage: learnings merge <ID1> <ID2> [<ID3>...] --insight ...')
+  const insight = flags.flags.insight
+  if (typeof insight !== 'string') die('--insight is required')
+
+  const entries = loadLearnings()
+
+  const sources: LearningEntry[] = []
+  for (const id of ids) {
+    const found = findLearning(entries, id)
+    if (!found) die(`Learning ${id} not found.`)
+    sources.push(found)
+  }
+
+  const confRank = { low: 0, medium: 1, high: 2 } as Record<string, number>
+  const highestConf = sources.reduce((best, s) =>
+    (confRank[s.confidence] ?? 0) > (confRank[best.confidence] ?? 0) ? s : best
+  ).confidence
+  const confidence = typeof flags.flags.confidence === 'string' ? flags.flags.confidence : highestConf
+
+  const earliestSeen = sources.reduce((min, s) => s.firstSeen < min ? s.firstSeen : min, sources[0].firstSeen)
+  const category = typeof flags.flags.category === 'string' ? flags.flags.category : sources[0].category
+  const context = typeof flags.flags.context === 'string' ? flags.flags.context : ''
+
+  const newId = nextLearningId(entries)
+
+  const sourceIds = new Set(ids.map(id => id.toLowerCase()))
+  const filtered = entries.filter(e => !sourceIds.has(e.id.toLowerCase()))
+
+  const newEntry: any = {
+    id: newId, category, insight, confidence,
+    firstSeen: earliestSeen, lastConfirmed: isoDate(), context,
+    mergedFrom: sources.map(s => s.id),
+  }
+
+  filtered.push(newEntry)
+  saveLearnings(filtered)
+  console.log(`Merged ${sources.map(s => s.id).join(', ')} into ${newId}:`)
+  printLearning(newEntry)
+}
+
 function cmdTrace(flags: ParsedFlags): void {
   const target = flags.positional[0]
   if (!target) die('Usage: qa trace <QA-ID|file-path>')
@@ -392,6 +571,12 @@ Commands:
   snapshot show [latest|<timestamp>]         Show snapshot summary
   snapshot diff [<ts1> <ts2>]                Compare two snapshots
   learnings list [--category C] [--confidence L]  List learnings
+  learnings add --category <C> --insight <text> [--confidence L] [--context <text>]
+  learnings confirm <ID> [--confidence L] [--context <text>]
+  learnings update <ID> [--insight T] [--category C] [--confidence L] [--context T]
+  learnings supersede <ID> --insight <text> [--category C] [--confidence L]
+  learnings remove <ID>
+  learnings merge <ID1> <ID2> [...] --insight <text> [--category C] [--confidence L]
 
 Global flags:
   --json    Output as JSON
@@ -453,6 +638,24 @@ if (process.argv[1]?.endsWith('cli.ts')) {
       switch (sub2) {
         case 'list':
           cmdLearningsList(flags)
+          break
+        case 'add':
+          cmdLearningsAdd(flags)
+          break
+        case 'confirm':
+          cmdLearningsConfirm(flags)
+          break
+        case 'update':
+          cmdLearningsUpdate(flags)
+          break
+        case 'supersede':
+          cmdLearningsSupersede(flags)
+          break
+        case 'remove':
+          cmdLearningsRemove(flags)
+          break
+        case 'merge':
+          cmdLearningsMerge(flags)
           break
         default:
           console.error(`Unknown learnings subcommand: ${sub2 ?? '(none)'}`)
