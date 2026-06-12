@@ -9,47 +9,52 @@ storium/
 ├── bin/
 │   └── storium.ts              # CLI entry point (generate, migrate, push, seed, status)
 ├── src/
-│   ├── index.ts                # Public API — named export: { storium, defineStore, ... }
-│   ├── connect.ts              # Connection factory; dialect-specific Drizzle wiring + register()
-│   └── core/
-│       ├── types.ts            # All shared TypeScript types (Dialect, ColumnAnnotation, StoreConfig, etc.)
-│       ├── defineStore.ts      # defineStore(drizzleTable, config?) — wraps Drizzle table with storium metadata; returns StoreDefinition
-│       ├── introspect.ts       # Drizzle column introspection → Zod/JSON Schema mapping
-│       ├── configLoader.ts     # loadConfig() — reads config from drizzle.config.ts
-│       ├── createRepository.ts # CRUD builder + custom query context (ctx)
-│       ├── prep.ts             # Validation/transform pipeline (filter → transform → validate → required)
-│       ├── runtime.schema.ts   # buildSchemaSet() → { createSchema, updateSchema, selectSchema, fullSchema } RuntimeSchema objects
-│       ├── zod.schema.ts       # Zod schema generation from Drizzle column introspection + annotations
-│       ├── json.schema.ts      # JSON Schema generation from Drizzle column introspection
-│       ├── errors.ts           # ValidationError, ConfigError, SchemaError
-│       └── test.ts             # createAssertionRegistry(), BUILTIN_ASSERTIONS, createTestFn()
+│   ├── index.ts                # Public API barrel — named exports: { storium, defineStore, belongsTo, ValidationError, ... }
+│   ├── connect.ts              # Connection factory — connect() / fromDrizzle(); dialect-specific Drizzle wiring + register()
+│   ├── types.ts                # All shared TypeScript types (Dialect, ColumnAnnotation, StoreConfig, Store, RepositoryContext, ...)
+│   ├── errors.ts               # ValidationError, ConfigError, SchemaError, StoreError
+│   ├── assertions.ts           # createTestFn(), createAssertionRegistry(), BUILTIN_ASSERTIONS — the test() helper for validate callbacks
+│   ├── store/
+│   │   ├── index.ts            # Store-module barrel
+│   │   ├── define.ts           # defineStore(drizzleTable, config?) — wraps a Drizzle table with storium metadata; returns StoreDefinition
+│   │   ├── repository.ts       # createRepository() — default CRUD + soft-delete ops + custom-query context (ctx)
+│   │   └── prep.ts             # Validation/transform pipeline (filter → transform → validate → required)
+│   ├── schema/
+│   │   ├── zod.ts              # Drizzle column introspection → Zod schemas; buildSchemaSet() → { create/update/select/full } RuntimeSchemas
+│   │   └── json.ts             # Drizzle column introspection → JSON Schema (Fastify/Ajv edge validation)
 │   ├── mixins/
+│   │   ├── index.ts            # Mixins barrel
 │   │   ├── belongsTo.ts        # JOIN mixin for belongs-to relationships
 │   │   ├── hasMany.ts          # One-to-many relationship mixin
 │   │   ├── hasOne.ts           # One-to-one relationship mixin
 │   │   ├── withMembers.ts      # Many-to-many membership mixin
 │   │   ├── withCache.ts        # Caching wrapper
 │   │   └── withPagination.ts   # Pagination wrapper
-│   └── migrate/
+│   └── migrate/                # Sub-path export `storium/migrate` (heavy deps, opt-in)
+│       ├── index.ts            # Migrate barrel — generate, migrate, push, status, seed, defineSeed, collectSchemas
 │       ├── commands.ts         # generate(), migrate(), push(), status() — drizzle-kit CLI + drizzle-orm migrators
-│       ├── schema.collector.ts # collectSchemas(globs) — imports schema files, extracts storium tables + raw Drizzle tables
-│       └── seed.ts             # defineSeed(), seed(seedsDir, db)
-├── examples/
-│   ├── basic/                  # In-memory CRUD fundamentals
-│   ├── custom-queries/         # Custom query patterns, raw Drizzle, overrides
-│   ├── validation/             # Validation pipeline, assertions, transforms
-│   ├── memory/                 # Multiple isolated in-memory databases
-│   ├── from-drizzle/           # Bring your own Drizzle instance via fromDrizzle()
-│   ├── postgres/               # PostgreSQL with pooling
-│   ├── mysql/                  # MySQL with migrations
-│   ├── sqlite/                 # SQLite with file DB
-│   ├── fastify/                # REST API with JSON Schema validation
-│   ├── migrations/             # Full migration workflow
-│   └── relations/              # belongsTo, hasMany, withMembers
-├── test/setup.ts               # Global vitest setup (minimal)
+│       ├── collector.ts        # collectSchemas(globs) — imports schema files, extracts storium + raw Drizzle tables (fatal on import failure)
+│       ├── config.ts           # loadConfig() — reads config from drizzle.config.ts
+│       └── seed.ts             # defineSeed(), seed(db, config?) — runs seed files (fatal on store/schema import failure)
+├── examples/                   # 11 runnable single-file examples: basic, custom-queries, validation, memory,
+│                               #   from-drizzle, postgresql, mysql, sqlite, fastify, migrations, relations
+├── test/
+│   ├── setup.ts                # Global vitest setup (minimal)
+│   ├── tables.ts               # Shared Drizzle tables for tests
+│   ├── dialects.ts             # Dialect matrix helpers (TEST_DIALECTS)
+│   └── integration/            # testcontainers integration suite (postgres + mysql) — run via vitest.integration.config.ts
+├── docs/                       # Long-form docs (type-safety, custom-queries, relationships, migrations, validation, ...)
+├── .github/workflows/ci.yml    # CI — lint, typecheck (+ examples), unit (Node 20.x/22.x), integration (Docker)
+├── CONTRIBUTING.md             # Dev setup, test suite, the better-sqlite3 rebuild note
 ├── tsup.config.ts              # Build config
-└── vitest.config.ts            # Test config — src/**/__tests__/**/*.test.ts
+├── vitest.config.ts            # Unit test config — src/**/__tests__/**/*.test.ts
+└── vitest.integration.config.ts # Integration test config — test/integration/**/*.test.ts
 ```
+
+> Note: column introspection (`drizzleColumnToZod` / `drizzleColumnToJsonSchema`)
+> lives inside `src/schema/zod.ts` and `src/schema/json.ts` — there is no separate
+> `introspect.ts`. The legacy `src/core/` layout (defineTable.ts, dialect.ts,
+> indexes.ts, runtime.schema.ts, configLoader.ts) no longer exists.
 
 ## Public API
 
