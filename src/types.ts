@@ -292,8 +292,8 @@ export type StoriumMeta = {
   schemas: SchemaSet
   /** Whether this table uses soft delete. */
   softDelete: boolean
-  /** Default conflict target columns for upsert. */
-  conflictTarget?: string[]
+  /** Default conflict target columns for upsert (undefined when unset). */
+  conflictTarget: string[] | undefined
 }
 
 // ------------------------------------------------------------ Table Def --

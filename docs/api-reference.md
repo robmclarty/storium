@@ -132,6 +132,29 @@ When a store is configured with `softDelete: true` (and the Drizzle table has a 
 | `store.forceDestroyAll(filters, opts?)` | Permanently delete all matching rows (actual `DELETE`). |
 | `store.findWithDeleted(filters?, opts?)` | Find rows including soft-deleted ones (bypasses the `deletedAt IS NULL` filter). |
 
+### Dialect Caveat: MySQL update-then-select race
+
+PostgreSQL and SQLite support `RETURNING`, so write methods that return the
+affected row (`update`, `upsert`, `restore`, `destroy`, `create`) read it back
+atomically in a single statement.
+
+MySQL has no `RETURNING` clause, so on MySQL these methods perform a separate
+`UPDATE`/`INSERT` followed by a `SELECT` to fetch the row. **Between those two
+statements a concurrent transaction can modify or delete the row, so the
+follow-up `SELECT` may return stale data — or no row at all.**
+
+For critical update-then-read paths on MySQL, run the operation inside a
+transaction so both statements share one isolation scope:
+
+```typescript
+await db.transaction(async (tx) => {
+  const updated = await users.update(id, { status: 'active' }, { tx })
+  // `updated` is now read back within the same transaction — no interleaving.
+})
+```
+
+This only affects MySQL; PostgreSQL and SQLite are unaffected.
+
 ### Store Properties
 
 | Property | Description |
