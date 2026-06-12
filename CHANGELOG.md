@@ -4,6 +4,16 @@ All notable changes to Storium are documented here.
 
 This project uses [Semantic Versioning](https://semver.org/). Pre-1.0 releases may include breaking changes in minor versions.
 
+## 0.15.2
+
+Type-safety and ergonomics follow-ups (post-readiness PRs 5–8).
+
+- **Typed mixin results** — `belongsTo` / `hasMany` / `hasOne` / `withMembers` now return a typed join row (derived from the related table type, `alias`, and a `const`-captured `select` tuple) instead of `Promise<any>`
+- **Hidden-column projection** — public store methods now `Omit` `hidden: true` columns from their returned rows (captured via a `const` config type parameter); inputs still accept hidden columns and `ctx` CRUD keeps the full row for the `includeHidden` escape hatch
+- **Optional `logger`** — `StoriumConfig` / `fromDrizzle` accept a `Logger` (`{ log, warn, error }`, defaults to `console`), exposed as `db.logger`; storium's own diagnostics route through it instead of `console.*`
+- **Configurable transaction isolation** — `db.transaction(fn, { isolationLevel })` plumbs the level to Drizzle on PostgreSQL/MySQL; ignored on SQLite/`memory` (inherently serializable)
+- Breaking (pre-1.0): `StoreConfig.conflictTarget` relaxed to `readonly string[]` to support `const`-captured configs
+
 ## 0.15.1
 
 Production-readiness hardening (plan PRs 3 + 4).
