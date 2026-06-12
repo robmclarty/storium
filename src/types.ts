@@ -97,6 +97,17 @@ type InferRow<TTable extends Table = Table> =
   Table extends TTable ? any : InferSelectModel<TTable>
 
 /**
+ * The public SELECT row: the inferred row with `hidden` columns omitted.
+ * `THidden` is the union of hidden column-name literals captured from the store
+ * config (see `HiddenKeys`). Defaults to `never`, so `Omit<…, never>` is the
+ * full row and non-hidden stores are unaffected. Preserves the `any` fallback
+ * for the base `Table` type (so `Omit<any, never>` never leaks an index-signature
+ * object in its place).
+ */
+type PublicRow<TTable extends Table = Table, THidden extends string = never> =
+  Table extends TTable ? any : Omit<InferSelectModel<TTable>, THidden>
+
+/**
  * Infer the INSERT input type from a Drizzle table.
  * When TTable is the base `Table` type (no specific table), falls back to `Record<string, any>`.
  */
@@ -169,9 +180,28 @@ export type StoreConfig<TTable extends Table = Table> = {
     : { [K in keyof TTable['_']['columns']]?: ColumnAnnotation }
   /** Enable soft delete. The Drizzle table must have a `deletedAt` column. */
   softDelete?: boolean
-  /** Default columns to target for conflict detection in `upsert()`. Overridden by per-call `opts.conflictTarget`. */
-  conflictTarget?: string[]
+  /**
+   * Default columns to target for conflict detection in `upsert()`. Overridden
+   * by per-call `opts.conflictTarget`.
+   *
+   * `readonly` so the config survives `const`-capture (which infers array
+   * literals as `readonly` tuples) — see `HiddenKeys` / `defineStore`.
+   */
+  conflictTarget?: readonly string[]
 }
+
+/**
+ * Extract the column names marked `hidden: true` from a (literally-captured)
+ * store config, as a string-literal union. Used to `Omit` hidden columns from
+ * public row types. Resolves to `never` when the config has no `columns` or no
+ * hidden columns (so the `Omit` is a no-op). Requires the config to be captured
+ * with a `const` type parameter, otherwise `hidden: true` widens to `boolean`
+ * and nothing is matched.
+ */
+export type HiddenKeys<TConfig> =
+  TConfig extends { columns: infer C }
+    ? { [K in keyof C]: C[K] extends { hidden: true } ? K : never }[keyof C] & string
+    : never
 
 // ----------------------------------------------------------- Table Access --
 
@@ -293,7 +323,7 @@ export type StoriumMeta = {
   /** Whether this table uses soft delete. */
   softDelete: boolean
   /** Default conflict target columns for upsert (undefined when unset). */
-  conflictTarget: string[] | undefined
+  conflictTarget: readonly string[] | undefined
 }
 
 // ------------------------------------------------------------ Table Def --
@@ -454,21 +484,27 @@ export type QueriesConfig = Record<string, (ctx: any) => (...args: any[]) => any
  * Default CRUD operations present on every store/repository.
  *
  * Generic over `TTable` — when a specific Drizzle table type is provided,
- * return types narrow to `InferSelectModel<TTable>` and input types narrow
- * to `InferInsertModel<TTable>`. When `TTable` is the base `Table` (default),
- * falls back to `any` / `Record<string, any>` for backward compatibility.
+ * row return types narrow to `PublicRow<TTable, THidden>` (the inferred row with
+ * any `hidden` columns omitted) and input types narrow to `InferInsertModel`.
+ * When `TTable` is the base `Table` (default), falls back to `any` /
+ * `Record<string, any>` for backward compatibility.
+ *
+ * `THidden` is the union of hidden column-name literals; it defaults to `never`,
+ * so a store with no hidden columns is unaffected. Inputs are **not** omitted —
+ * `hidden: true` implies writable, so create/update still accept hidden columns;
+ * only the returned rows strip them.
  */
-type DefaultCRUD<TTable extends Table = Table, TOpts = QueryOptions<TTable>> = {
-  find: (filters: Partial<InferInput<TTable>>, opts?: TOpts) => Promise<InferRow<TTable>[]>
-  findAll: (opts?: TOpts) => Promise<InferRow<TTable>[]>
-  findOne: (filters: Partial<InferInput<TTable>>, opts?: TOpts) => Promise<InferRow<TTable> | null>
-  findById: (id: PkValue, opts?: TOpts) => Promise<InferRow<TTable> | null>
-  findByIdIn: (ids: (string | number)[], opts?: TOpts) => Promise<InferRow<TTable>[]>
-  create: (input: InferInput<TTable>, opts?: TOpts) => Promise<InferRow<TTable>>
-  createMany: (inputs: InferInput<TTable>[], opts?: TOpts) => Promise<InferRow<TTable>[]>
-  update: (id: PkValue, input: Partial<InferInput<TTable>>, opts?: TOpts) => Promise<InferRow<TTable>>
-  upsert: (input: InferInput<TTable>, opts?: TOpts) => Promise<InferRow<TTable>>
-  destroy: (id: PkValue, opts?: TOpts) => Promise<InferRow<TTable>>
+type DefaultCRUD<TTable extends Table = Table, TOpts = QueryOptions<TTable>, THidden extends string = never> = {
+  find: (filters: Partial<InferInput<TTable>>, opts?: TOpts) => Promise<PublicRow<TTable, THidden>[]>
+  findAll: (opts?: TOpts) => Promise<PublicRow<TTable, THidden>[]>
+  findOne: (filters: Partial<InferInput<TTable>>, opts?: TOpts) => Promise<PublicRow<TTable, THidden> | null>
+  findById: (id: PkValue, opts?: TOpts) => Promise<PublicRow<TTable, THidden> | null>
+  findByIdIn: (ids: (string | number)[], opts?: TOpts) => Promise<PublicRow<TTable, THidden>[]>
+  create: (input: InferInput<TTable>, opts?: TOpts) => Promise<PublicRow<TTable, THidden>>
+  createMany: (inputs: InferInput<TTable>[], opts?: TOpts) => Promise<PublicRow<TTable, THidden>[]>
+  update: (id: PkValue, input: Partial<InferInput<TTable>>, opts?: TOpts) => Promise<PublicRow<TTable, THidden>>
+  upsert: (input: InferInput<TTable>, opts?: TOpts) => Promise<PublicRow<TTable, THidden>>
+  destroy: (id: PkValue, opts?: TOpts) => Promise<PublicRow<TTable, THidden>>
   destroyAll: (filters: Partial<InferInput<TTable>>, opts?: TOpts) => Promise<number>
   /** Count rows matching filters and/or a where clause. */
   count: (filters?: Partial<InferInput<TTable>>, opts?: TOpts) => Promise<number>
@@ -486,17 +522,18 @@ type DefaultCRUD<TTable extends Table = Table, TOpts = QueryOptions<TTable>> = {
  * A store without `softDelete: true` does not expose these methods.
  *
  * Generic over `TTable` like `DefaultCRUD` — row/filter types narrow to the
- * inferred table types, falling back to `any` for the base `Table`.
+ * inferred table types (with `hidden` columns omitted via `PublicRow`), falling
+ * back to `any` for the base `Table`.
  */
-type SoftDeleteCRUD<TTable extends Table = Table, TOpts = QueryOptions<TTable>> = {
+type SoftDeleteCRUD<TTable extends Table = Table, TOpts = QueryOptions<TTable>, THidden extends string = never> = {
   /** Restore a soft-deleted row (clears `deletedAt`). Returns the restored row. */
-  restore: (id: PkValue, opts?: TOpts) => Promise<InferRow<TTable>>
+  restore: (id: PkValue, opts?: TOpts) => Promise<PublicRow<TTable, THidden>>
   /** Permanently delete a row, bypassing soft delete. Returns the deleted row. */
-  forceDestroy: (id: PkValue, opts?: TOpts) => Promise<InferRow<TTable>>
+  forceDestroy: (id: PkValue, opts?: TOpts) => Promise<PublicRow<TTable, THidden>>
   /** Permanently delete all rows matching filters, bypassing soft delete. Returns the deleted count. */
   forceDestroyAll: (filters: Partial<InferInput<TTable>>, opts?: TOpts) => Promise<number>
   /** Find rows including soft-deleted ones (skips the `deletedAt IS NULL` filter). */
-  findWithDeleted: (filters?: Partial<InferInput<TTable>>, opts?: TOpts) => Promise<InferRow<TTable>[]>
+  findWithDeleted: (filters?: Partial<InferInput<TTable>>, opts?: TOpts) => Promise<PublicRow<TTable, THidden>[]>
   /** Count rows including soft-deleted ones. */
   countWithDeleted: (filters?: Partial<InferInput<TTable>>, opts?: TOpts) => Promise<number>
 }
@@ -509,13 +546,18 @@ type SoftDeleteCRUD<TTable extends Table = Table, TOpts = QueryOptions<TTable>> 
  * the store additionally exposes `SoftDeleteCRUD<TTable>` (restore, forceDestroy,
  * findWithDeleted, …). It defaults to `false`, so a plain store has the default
  * CRUD surface only.
+ *
+ * `THidden` is the union of columns marked `hidden: true` in the config; the
+ * public CRUD methods omit those columns from their returned rows (`PublicRow`).
+ * It defaults to `never`, so a store with no hidden columns is unaffected.
  */
 export type Store<
   TTable extends Table = Table,
   TQueries extends QueriesConfig = {},
   TSoftDelete extends boolean = false,
-> = DefaultCRUD<TTable>
-  & (TSoftDelete extends true ? SoftDeleteCRUD<TTable> : {})
+  THidden extends string = never,
+> = DefaultCRUD<TTable, QueryOptions<TTable>, THidden>
+  & (TSoftDelete extends true ? SoftDeleteCRUD<TTable, QueryOptions<TTable>, THidden> : {})
   & {
     /** The table name this store operates on. */
     name: string
@@ -531,13 +573,15 @@ export type Store<
  * StoreDefinition (which would create a circular dependency with types.ts).
  */
 export type InferStore<T> =
-  T extends { tableDef: infer TT extends Table; queryFns: infer Q extends QueriesConfig; softDelete: infer SD extends boolean }
-    ? Store<TT, Q, SD>
-    : T extends { tableDef: infer TT extends Table; queryFns: infer Q extends QueriesConfig }
-      ? Store<TT, Q>
-      : T extends { tableDef: any; queryFns: infer Q extends QueriesConfig }
-        ? Store<Table, Q>
-        : Store
+  T extends { tableDef: infer TT extends Table; queryFns: infer Q extends QueriesConfig; softDelete: infer SD extends boolean; hiddenColumns: readonly (infer H extends string)[] }
+    ? Store<TT, Q, SD, H>
+    : T extends { tableDef: infer TT extends Table; queryFns: infer Q extends QueriesConfig; softDelete: infer SD extends boolean }
+      ? Store<TT, Q, SD>
+      : T extends { tableDef: infer TT extends Table; queryFns: infer Q extends QueriesConfig }
+        ? Store<TT, Q>
+        : T extends { tableDef: any; queryFns: infer Q extends QueriesConfig }
+          ? Store<Table, Q>
+          : Store
 
 // ---------------------------------------------------------- Cache Adapter --
 
@@ -653,36 +697,40 @@ export type StoriumInstance<D extends Dialect = Dialect> = {
    *
    * Overloaded so that `{ softDelete: true }` is captured at the type level: a
    * soft-delete store additionally exposes `restore` / `forceDestroy` /
-   * `findWithDeleted` / … (both on the store and inside `ctx`). Column keys in
-   * `config.columns` are constrained to the table's columns (typos are compile
-   * errors).
+   * `findWithDeleted` / … (both on the store and inside `ctx`). The config is
+   * captured with a `const` type parameter so `columns.<col>.hidden: true`
+   * literals are recovered (`HiddenKeys`) and those columns are omitted from the
+   * store's public row types. Column keys in `config.columns` are still
+   * constrained to the table's columns (typos are compile errors).
    *
    * @example
    * const users = db.defineStore(usersTable)
    * const users = db.defineStore(usersTable, { columns: { email: { required: true } } })
    * const users = db.defineStore(usersTable).queries({ findByEmail: (ctx) => ... })
    * const users = db.defineStore(usersTable, { softDelete: true }) // exposes restore()
+   * const users = db.defineStore(usersTable, { columns: { password: { hidden: true } } })
+   * //    users.findOne(...) row type omits `password`
    */
   defineStore: {
-    <TTable extends Table>(
+    <TTable extends Table, const TConfig extends StoreConfig<TTable> & { softDelete: true }>(
       drizzleTable: TTable,
-      config: StoreConfig<TTable> & { softDelete: true }
-    ): Store<TTable, {}, true> & {
+      config: TConfig
+    ): Store<TTable, {}, true, HiddenKeys<TConfig>> & {
       queries: <
         TFns extends Record<string, (ctx: RepositoryContext<D, TTable, true>) => (...args: any[]) => any>
       >(
         queryFns: TFns
-      ) => Store<TTable, TFns, true>
+      ) => Store<TTable, TFns, true, HiddenKeys<TConfig>>
     }
-    <TTable extends Table = Table>(
+    <TTable extends Table = Table, const TConfig extends StoreConfig<TTable> = StoreConfig<TTable>>(
       drizzleTable: TTable,
-      config?: StoreConfig<TTable>
-    ): Store<TTable, {}, false> & {
+      config?: TConfig
+    ): Store<TTable, {}, false, HiddenKeys<TConfig>> & {
       queries: <
         TFns extends Record<string, (ctx: RepositoryContext<D, TTable, false>) => (...args: any[]) => any>
       >(
         queryFns: TFns
-      ) => Store<TTable, TFns, false>
+      ) => Store<TTable, TFns, false, HiddenKeys<TConfig>>
     }
   }
   /** Materialize StoreDefinitions into live stores with CRUD + queries. */
