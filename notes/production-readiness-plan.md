@@ -402,7 +402,67 @@ CONTRIBUTING for anyone switching Node versions.
 
 ---
 
-## PR 4 — Sweeps (Phase 6)
+## PR 4 — Sweeps (Phase 6) — ✅ DONE (logger deferred)
+
+**Status:** Implemented and green. Commit `1fe7ed6` on branch `pr4-sweeps`
+(off `pr3-ci-hardening`). `npm test` passes end-to-end (typecheck **with
+`exactOptionalPropertyTypes: true`** + lint + build + 335 unit tests, exit 0)
+and `npm run typecheck:examples` is clean.
+
+| Item | File | Status |
+|---|---|---|
+| Tree-shaking hint | `package.json` | ✅ `"sideEffects": false` added (after `"type": "module"`) |
+| Type precision | `tsconfig.json` | ✅ `exactOptionalPropertyTypes: true` — **kept**, fallout was tiny |
+| Stale agent docs | `AGENTS.md` | ✅ Project Structure rewritten to the real layout |
+| Library logging | `src/connect.ts`, `src/migrate/*` | ⏸️ **deferred** (low priority, plan permits) |
+| Type-safety docs | `docs/type-safety.md` | ✅ rewritten to post-PR1/PR2 reality |
+| MySQL race docs | `docs/api-reference.md` | ✅ surfaced as a "Dialect Caveat" |
+
+**`exactOptionalPropertyTypes` — kept, not reverted.** The timeboxed risk
+(#4: unknown-size fallout) turned out to be a single error:
+`StoriumMeta` is constructed with `conflictTarget: config.conflictTarget`
+(`string[] | undefined`) but the field was declared optional `?: string[]`, which
+exactOptional forbids assigning `undefined` to. Fixed by declaring
+`conflictTarget: string[] | undefined` (required-but-maybe-undefined), mirroring
+the sibling `primaryKey: string | string[] | undefined` already in `StoriumMeta`
+— `defineStore` always sets the field. No other fallout anywhere in src or the
+test suite.
+
+**AGENTS.md — verified against `ls src/`, plan's own layout corrected.** Rewrote
+the Project Structure to the actual tree (`src/store/{define,repository,prep}.ts`,
+`src/schema/{zod,json}.ts`, `src/assertions.ts`, `src/migrate/{commands,
+collector,config,seed}.ts`, barrels, `test/integration/`, `.github/`,
+`CONTRIBUTING.md`). Correction vs. this plan's PR 4 row *and* the original report:
+there is **no `src/schema/introspect.ts`** — column introspection
+(`drizzleColumnToZod` / `drizzleColumnToJsonSchema`) is co-located inside
+`schema/zod.ts` and `schema/json.ts`. Added an explicit note to that effect so the
+doc doesn't drift back.
+
+**`docs/type-safety.md` — was itself stale, fully rewritten.** The old doc
+predated PR 1/2: it claimed every CRUD method returns `Promise<any>` and listed
+`Store<T>` generics as *future work* — both delivered in PR 1/2. New version
+documents (with examples matching `typed-store.test.ts`): table→dialect
+inference (`InferTableDialect`), end-to-end custom-query signature preservation,
+soft-delete method visibility on store + `ctx`, typed `StoreConfig` column keys,
+the pgTable-on-`memory` dialect-mismatch caveat (risk #2), and an honest
+"intentional `any`" section (hidden-column projection and typed mixin results
+remain deferred; bare-`Ctx` looseness; Drizzle-internal casts).
+
+**MySQL race caveat.** Confirmed the source comment at
+`src/store/repository.ts:216-221` (`updateAndReturn`) and surfaced it in
+`docs/api-reference.md` as a "Dialect Caveat: MySQL update-then-select race",
+with the transaction-wrap remedy.
+
+**Logger — deferred (matches plan's "or defer — low priority").** A real
+`logger` abstraction would thread an interface through `connect()` → instance →
+`migrate/*` and replace the remaining `console.*` calls, with its own test
+surface. Kept out of this sweep to keep the blast radius small; PR 3's 5c already
+removed the two worst `console.warn`-and-continue paths (now fatal throws).
+Candidate for a focused follow-up.
+
+---
+
+### Original plan (for reference)
 
 | Item | File | Change |
 |---|---|---|
