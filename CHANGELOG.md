@@ -4,6 +4,19 @@ All notable changes to Storium are documented here.
 
 This project uses [Semantic Versioning](https://semver.org/). Pre-1.0 releases may include breaking changes in minor versions.
 
+## 0.15.0
+
+Production-readiness type-safety pass (plan PRs 1 + 2). Pre-1.0: public type signatures changed where it improves the API.
+
+- Restore end-to-end type pass-through: `.queries()` now infers the full function record, so custom query signatures survive onto the live store through both `register()` and `db.defineStore().queries()`
+- Add `InferTableDialect<TTable>` — the table flavor pins the dialect, giving multi-file store definitions a concrete `ctx.drizzle` and typed CRUD without a connection
+- Make `PrepOptions<TTable>` and `SchemaSet<TTable>` generic: `where` callbacks receive the typed table, and `schemas.createSchema.validate()` returns the insert model instead of `any`
+- `ctx.table` exposes typed columns when the table is bound; typed transaction handle (`DrizzleDatabase<D>`); fix `Promisable<T> = T | Promise<T>`
+- `StoreConfig<TTable>` constrains `columns` keys to the table's columns — typos are compile errors and editors autocomplete valid columns
+- Soft-delete methods (`restore`, `forceDestroy`, `forceDestroyAll`, `findWithDeleted`, `countWithDeleted`) are now visible to TypeScript on soft-delete stores and inside `ctx`, captured from `softDelete: true` via overloads
+- Expand `typed-store.test.ts` with `expectTypeOf` regression coverage for every inference point (enforced by `npm run typecheck`)
+- Gitignore local editor config directories (`.zed/`, `.idea/`, `.vscode/`)
+
 ## 0.14.19
 
 - Fix all oxlint errors in QA tools (strict equality, unused imports, function scoping)
