@@ -73,6 +73,8 @@ export type {
   QueriesConfig,
   OrderBySpec,
   QueryOptions,
+  IsolationLevel,
+  TransactionOptions,
 
   // Schema & validation
   RuntimeSchema,

@@ -95,7 +95,7 @@ Migration tooling — heavier dependencies, opt-in import.
 | `db.dialect` | The active dialect string: `'postgresql'`, `'mysql'`, `'sqlite'`, or `'memory'`. |
 | `db.defineStore(drizzleTable, config?)` | Create a live store from a Drizzle table (simple path — no `register` step needed). Chain `.queries({...})` for custom queries. |
 | `db.register(storeDefs)` | Materialize a record of `StoreDefinition` objects into live stores with CRUD + query methods. |
-| `db.transaction(fn)` | Execute an async function within a database transaction. |
+| `db.transaction(fn, opts?)` | Execute an async function within a database transaction. `opts.isolationLevel` (`'read uncommitted' \| 'read committed' \| 'repeatable read' \| 'serializable'`) is applied on PostgreSQL/MySQL and ignored on SQLite/`memory` (inherently serializable). |
 | `db.disconnect()` | Close the database connection pool (idempotent — safe to call multiple times). |
 
 ---

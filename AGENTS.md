@@ -311,6 +311,10 @@ await db.drizzle.execute(sql`CREATE TABLE ...`)
 - PostgreSQL/MySQL: uses Drizzle's native `db.transaction()` — fully async
 - SQLite: manual `BEGIN/COMMIT/ROLLBACK` (better-sqlite3 rejects async async callbacks)
 - Both: `db.transaction(async (tx) => { ... })` — same API
+- Optional isolation level: `db.transaction(fn, { isolationLevel })` where
+  `isolationLevel` is `'read uncommitted' | 'read committed' | 'repeatable read'
+  | 'serializable'`. Plumbed to Drizzle on PostgreSQL/MySQL; **ignored on
+  SQLite/`memory`** (inherently serializable).
 
 ### Seeds
 ```typescript
