@@ -25,31 +25,41 @@
 
 import { eq, and, isNull, type Column } from 'drizzle-orm'
 import type { TableDef } from '../types'
+import type { PrefixedRow } from './relation-types'
 import { StoreError } from '../errors'
 
-type BelongsToOptions<A extends string = string> = {
+type BelongsToOptions<A extends string, S extends readonly string[] | undefined> = {
   /** The alias for the related entity (used in the method name: findWith{Alias}). */
   alias: A
   /** Which columns to select from the related table. If omitted, uses all selectable columns. */
-  select?: string[]
+  select?: S
+}
+
+/** The `findWith{Alias}` method shape produced by `belongsTo`. */
+type BelongsToQuery<TRelated, A extends string, S extends readonly string[] | undefined> = {
+  [K in `findWith${Capitalize<A>}`]: (ctx: any) => (id: string | number) => Promise<PrefixedRow<TRelated, A, S> | null>
 }
 
 /**
  * Generate a "belongs to" join query for a related table.
  *
- * @param relatedTableDef - The TableDef of the related entity
+ * @param relatedTableDef - The related entity's table (a `defineStore(...).table` or a `TableDef`)
  * @param foreignKey - The column on the current table referencing the related table's PK
  * @param options - Alias and optional column selection
  * @returns A custom query function to spread into queries
  */
-export const belongsTo = <A extends string>(
-  relatedTableDef: TableDef,
+export const belongsTo = <
+  TRelated,
+  A extends string,
+  const S extends readonly string[] | undefined = undefined,
+>(
+  relatedTableDef: TRelated,
   foreignKey: string,
-  options: BelongsToOptions<A>
-): { [K in `findWith${Capitalize<A>}`]: (ctx: any) => (id: string | number) => Promise<any> } => {
+  options: BelongsToOptions<A, S>
+): BelongsToQuery<TRelated, A, S> => {
   const { alias, select: selectFields } = options
-  const relatedTable = relatedTableDef
-  const meta = relatedTableDef.storium
+  const relatedTable = relatedTableDef as unknown as TableDef
+  const meta = relatedTable.storium
   const relatedPk = meta.primaryKey as string // belongs-to always targets a single-column PK
 
   // Capitalize first letter for method name: 'school' → 'findWithSchool'
@@ -98,5 +108,5 @@ export const belongsTo = <A extends string>(
         )
       }
     },
-  } as { [K in `findWith${Capitalize<A>}`]: (ctx: any) => (id: string | number) => Promise<any> }
+  } as BelongsToQuery<TRelated, A, S>
 }

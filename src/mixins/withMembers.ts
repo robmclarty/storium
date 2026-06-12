@@ -23,23 +23,54 @@
 
 import { eq, and, sql, count } from 'drizzle-orm'
 import type { TableDef } from '../types'
+import type { RowOf } from './relation-types'
 import { StoreError } from '../errors'
 import { supportsReturning } from '../store/repository'
+
+/** Optional per-call options accepted by every `withMembers` method. */
+type MemberOpts = { tx?: any }
+
+/**
+ * The membership query functions produced by `withMembers`, typed against the
+ * join table's row (`RowOf<TJoin>`). Mutating methods that read a row back
+ * (`addMember`, `getMembers`) return the join row; the rest return their
+ * natural scalar/void result.
+ */
+type WithMembersQueries<TJoin> = {
+  addMember: (ctx: any) => (
+    collectionId: string | number,
+    memberId: string | number,
+    extra?: Record<string, any>,
+    opts?: MemberOpts
+  ) => Promise<RowOf<TJoin>>
+  removeMember: (ctx: any) => (
+    collectionId: string | number,
+    memberId: string | number,
+    opts?: MemberOpts
+  ) => Promise<void>
+  getMembers: (ctx: any) => (collectionId: string | number, opts?: MemberOpts) => Promise<RowOf<TJoin>[]>
+  isMember: (ctx: any) => (
+    collectionId: string | number,
+    memberId: string | number,
+    opts?: MemberOpts
+  ) => Promise<boolean>
+  getMemberCount: (ctx: any) => (collectionId: string | number, opts?: MemberOpts) => Promise<number>
+}
 
 /**
  * Generate membership query functions for a collection.
  *
- * @param joinTableDef - The TableDef for the join/membership table
+ * @param joinTableDef - The join/membership table (a `defineStore(...).table` or a `TableDef`)
  * @param foreignKey - The column name on the join table that references the collection
  * @param memberKey - The column name on the join table that references the member (default: 'member_id')
  * @returns An object of custom query functions to spread into queries
  */
-export const withMembers = (
-  joinTableDef: TableDef,
+export const withMembers = <TJoin>(
+  joinTableDef: TJoin,
   foreignKey: string,
   memberKey: string = 'member_id'
-) => {
-  const joinTable = joinTableDef
+): WithMembersQueries<TJoin> => {
+  const joinTable = joinTableDef as unknown as TableDef
 
   return {
     /**

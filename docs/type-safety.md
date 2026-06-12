@@ -2,7 +2,7 @@
 
 Storium wraps Drizzle ORM tables with validation, access control, and CRUD operations. This document explains what is statically typed, what remains `any`, and why.
 
-The type system was substantially tightened so that custom-query signatures, CRUD row types, dialect-aware `ctx`, soft-delete methods, and `StoreConfig` column keys all flow through end to end. The guarantees below are locked in by `expectTypeOf` tests in `src/store/__tests__/typed-store.test.ts`, enforced by `npm run typecheck`.
+The type system was substantially tightened so that custom-query signatures, CRUD row types, dialect-aware `ctx`, soft-delete methods, `StoreConfig` column keys, and relationship-mixin join results all flow through end to end. The guarantees below are locked in by `expectTypeOf` tests in `src/store/__tests__/typed-store.test.ts` and `src/mixins/__tests__/typed-mixins.test.ts`, enforced by `npm run typecheck`.
 
 ## What's typed
 
@@ -98,6 +98,29 @@ defineStore(usersTable, { columns: { email: { required: true } } })   // ✅
 defineStore(usersTable, { columns: { emial: { required: true } } })   // ❌ 'emial' is not a column
 ```
 
+### 5. Mixin join results are typed
+
+The relationship mixins derive their result row from the related table type, the `alias`, and the `select` option — so the generated method returns a typed row instead of `Promise<any>`. `select` is captured as a `const` tuple, so it narrows the row to exactly the chosen columns; omit it for the full related row.
+
+```typescript
+const authorStore = defineStore(authorsTable)   // { id, name, email }
+
+const posts = db.defineStore(postsTable).queries({
+  ...belongsTo(authorStore.table, 'author_id', { alias: 'author', select: ['name', 'email'] }),
+  ...hasMany(commentStore.table, 'post_id', { alias: 'comments' }),
+})
+
+const joined = await posts.findWithAuthor(id)
+//    joined.author_name   : string        (related column, prefixed by alias)
+//    joined.author_email  : string
+//    joined.title         : unknown       (parent column — see note)
+
+const comments = await posts.findCommentsFor(id)
+//    comments : InferSelectModel<typeof commentsTable>[]
+```
+
+`belongsTo` inlines the parent entity's own columns alongside the alias-prefixed related columns, but the mixin can't see the parent table's type (`ctx` is `any` internally), so parent columns are typed `unknown` via an open index signature. `hasMany`/`hasOne` return the related row directly (no prefix); `withMembers`' `addMember`/`getMembers` return the join-table row. These guarantees are covered by `expectTypeOf` tests in `src/mixins/__tests__/typed-mixins.test.ts`.
+
 ## Intentional `any` — and why
 
 A handful of `any`s remain on purpose. They fall into two buckets: deliberate looseness at composition boundaries, and Drizzle internals that aren't publicly typed.
@@ -110,9 +133,9 @@ A handful of `any`s remain on purpose. They fall into two buckets: deliberate lo
 
 A query factory written in its own file and typed as `(ctx: Ctx) => ...` — with no table/dialect bound — intentionally gets the loose end of the union: `ctx.drizzle` is `any` and soft-delete methods are absent (the soft-delete flag defaults to `false`). This is the same accepted looseness as any unparameterized generic. Bind the table (use the inline `.queries()` form, or a parameterized `Ctx<D, TTable>`) when you want the precise surface.
 
-### Mixin return types (`Promise<any>`)
+### Mixin `ctx: any` (internal only)
 
-`belongsTo`, `hasMany`, `hasOne`, and `withMembers` type their method *names* via template literals but return `(id) => Promise<any>`. Typing the join result as a mapped type with prefixed keys is feasible but was deferred to a focused follow-up; the mixins also use `ctx: any` internally to avoid circular imports between `types.ts` and the mixin modules. At runtime `ctx` is always a `RepositoryContext`.
+`belongsTo`, `hasMany`, `hasOne`, and `withMembers` use `ctx: any` *internally* — the query factories take `(ctx: any) => …` so the mixin modules don't have to import `RepositoryContext` from `types.ts`, which would create a circular import (`types.ts` → mixins → `types.ts`). At runtime `ctx` is always a `RepositoryContext`. This is the only `any` the mixins still carry; their **results are typed** (see [§5 below](#5-mixin-join-results-are-typed)).
 
 ### Query builder variables (`q: any`)
 
@@ -133,6 +156,5 @@ Dynamic property access on result rows using a runtime PK column name, since the
 ## Remaining future work
 
 - **Hidden-column projection** — `Omit` hidden columns from public row types (needs literal `hidden` capture; tension with `includeHidden`).
-- **Typed mixin results** — derive the join row shape (`InferRow<TTable> & prefixed related columns`) for `belongsTo`/`hasMany`/`hasOne`/`withMembers`.
 
-Both are best done while pre-1.0 breaking changes are still free, but after the core type chain (delivered here) has settled.
+Best done while pre-1.0 breaking changes are still free, but after the core type chain (delivered here) has settled. (Typed mixin results — [§5 above](#5-mixin-join-results-are-typed) — are now done.)

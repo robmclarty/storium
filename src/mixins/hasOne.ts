@@ -18,30 +18,43 @@
  */
 
 import type { TableDef } from '../types'
+import type { SelectedRow } from './relation-types'
 import { StoreError } from '../errors'
 import { buildRelatedSelect, buildRelatedWhere, prepareRelatedMixin } from './hasMany'
 
-type HasOneOptions<A extends string = string> = {
+type HasOneOptions<A extends string, S extends readonly string[] | undefined> = {
   /** The alias for the related row (used in the method name: find{Alias}For). */
   alias: A
   /** Which columns to select from the related table. If omitted, uses all selectable columns. */
-  select?: string[]
+  select?: S
+}
+
+/** The `find{Alias}For` method shape produced by `hasOne`. */
+type HasOneQuery<TRelated, A extends string, S extends readonly string[] | undefined> = {
+  [K in `find${Capitalize<A>}For`]: (ctx: any) => (id: string | number, opts?: any) => Promise<SelectedRow<TRelated, S> | null>
 }
 
 /**
  * Generate a "has one" query for a related table.
  *
- * @param relatedTableDef - The TableDef of the related entity
+ * @param relatedTableDef - The related entity's table (a `defineStore(...).table` or a `TableDef`)
  * @param foreignKey - The column on the related table referencing the parent entity's PK
  * @param options - Alias and optional column selection
  * @returns A custom query function to spread into queries
  */
-export const hasOne = <A extends string>(
-  relatedTableDef: TableDef,
+export const hasOne = <
+  TRelated,
+  A extends string,
+  const S extends readonly string[] | undefined = undefined,
+>(
+  relatedTableDef: TRelated,
   foreignKey: string,
-  options: HasOneOptions<A>
-): { [K in `find${Capitalize<A>}For`]: (ctx: any) => (id: string | number, opts?: any) => Promise<any | null> } => {
-  const { relatedTable, methodName, columns: relatedColumns } = prepareRelatedMixin(relatedTableDef, options)
+  options: HasOneOptions<A, S>
+): HasOneQuery<TRelated, A, S> => {
+  const { relatedTable, methodName, columns: relatedColumns } = prepareRelatedMixin(
+    relatedTableDef as unknown as TableDef,
+    options
+  )
 
   return {
     /**
@@ -66,5 +79,5 @@ export const hasOne = <A extends string>(
         )
       }
     },
-  } as { [K in `find${Capitalize<A>}For`]: (ctx: any) => (id: string | number, opts?: any) => Promise<any | null> }
+  } as HasOneQuery<TRelated, A, S>
 }
