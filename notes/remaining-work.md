@@ -25,10 +25,11 @@ the first thing to read before picking up an item.
   `pr7-logger` / `pr8-tx-isolation`). #2–#4 are fully locally verified; **#5's
   PG/MySQL isolation path still needs the CI Docker integration job** (couldn't
   run testcontainers locally — its memory path and types are verified).
-- **Local gate is green:** `npm test` exits 0 (335 unit tests,
+- **Local gate is green:** `npm test` exits 0 (348 unit tests,
   `exactOptionalPropertyTypes` on) and `npm run typecheck:examples` is clean.
-- **Merged local branches** `pr3-ci-hardening` / `pr4-sweeps` still exist — safe
-  to delete.
+- **Merged feature branches** `pr3-ci-hardening` / `pr4-sweeps` / `pr5-typed-mixins`
+  / `pr6-hidden-projection` / `pr7-logger` / `pr8-tx-isolation` are all merged
+  into `main` and safe to delete (item #7, after the push).
 
 ### What's already done (so we don't re-open it)
 - `.queries()` signature preservation, table→dialect ctx inference, soft-delete
@@ -85,9 +86,8 @@ runner-only fallout. Then the tracker's "CI has never run" caveat can be removed
 
 ## 2. Typed mixin results (plan PR 2 §4d) — **P1**
 
-**Status:** ✅ done on branch `pr5-typed-mixins` (impl commit `4f33263`). Not yet
-merged into `main` (waiting on item #1's first green CI run, same as the other
-unpushed work).
+**Status:** ✅ done — merged into `main` (`Merge PR 5`, impl commit `4f33263`).
+Pending only the first green CI run (item #1), like the rest of the unpushed work.
 
 **What shipped:** `belongsTo` / `hasMany` / `hasOne` / `withMembers` now return a
 typed join row instead of `(id) => Promise<any>`.
@@ -114,9 +114,8 @@ clean (`examples/relations/` still typechecks). `docs/type-safety.md` updated
 
 ## 3. Hidden-column projection (plan PR 2 §4c) — **P1**
 
-**Status:** ✅ done on branch `pr6-hidden-projection` (impl commit `2192d9f`).
-Not yet merged into `main` (waiting on item #1's first green CI run, like the
-other unpushed work).
+**Status:** ✅ done — merged into `main` (`Merge PR 6`, impl commit `2192d9f`).
+Pending only the first green CI run (item #1).
 
 **What shipped:** the one genuine type lie is fixed — public store methods now
 `Omit` `hidden: true` columns from their returned rows.
@@ -158,8 +157,8 @@ runtime but not reflected in the type.
 
 ## 4. Optional `logger` in `StoriumConfig` (plan PR 4 / report Part 2) — **P2**
 
-**Status:** ✅ done on branch `pr7-logger` (impl commit `bfe9fd8`). Not yet
-merged into `main` (waiting on item #1's first green CI run).
+**Status:** ✅ done — merged into `main` (`Merge PR 7`, impl commit `bfe9fd8`).
+Pending only the first green CI run (item #1).
 
 **What shipped:** an optional `logger` sink (defaults to `console`) routes
 storium's own diagnostics.
@@ -181,9 +180,10 @@ non-test `src/` is the `errors.ts:20` docstring example. AGENTS.md's
 
 ## 5. Configurable transaction isolation levels (report Part 2) — **P3**
 
-**Status:** 🟡 implemented on branch `pr8-tx-isolation` (impl commit `871129a`);
-**PG/MySQL behavior pending CI verification** (Docker unavailable locally — see
-caveat below). Not merged into `main`.
+**Status:** 🟡 merged into `main` (`Merge PR 8`, impl commit `871129a`);
+**PG/MySQL behavior still pending CI verification** (Docker unavailable locally —
+see caveat below). The local + type-level surface is verified; flip to ✅ once
+the integration job is green.
 
 **What shipped:** `db.transaction(fn, { isolationLevel })` plumbs the level to
 Drizzle's per-transaction config on PostgreSQL/MySQL.
@@ -230,9 +230,13 @@ passing first.
 
 **Status:** ⬜ not started.
 
-`pr3-ci-hardening` and `pr4-sweeps` are merged into `main` and can be deleted
-(`git branch -d pr3-ci-hardening pr4-sweeps`). Do this after the push (item 1),
-in case anything needs re-pushing from the original branch.
+These feature branches are all merged into `main` and can be deleted after the
+push (item 1), in case anything needs re-pushing from the original branch:
+
+```
+git branch -d pr3-ci-hardening pr4-sweeps pr5-typed-mixins \
+              pr6-hidden-projection pr7-logger pr8-tx-isolation
+```
 
 ---
 
