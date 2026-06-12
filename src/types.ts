@@ -631,6 +631,19 @@ export type PaginateResult<T = any> = {
  * Storium-specific keys (assertions, pool, seeds) are ignored by drizzle-kit,
  * so a single config object can be shared between both.
  */
+
+/**
+ * Minimal logging sink. `console` satisfies it, and it's the default. Provide a
+ * custom logger on `StoriumConfig` / `fromDrizzle` to silence or redirect
+ * storium's own diagnostics (the `defineStore` re-config warning and the seed
+ * runner's progress/error lines).
+ */
+export type Logger = {
+  log: (...args: any[]) => void
+  warn: (...args: any[]) => void
+  error: (...args: any[]) => void
+}
+
 export type StoriumConfig<D extends Dialect = Dialect> = {
   dialect: D
   /** Connection URL (storium inline style). */
@@ -661,6 +674,11 @@ export type StoriumConfig<D extends Dialect = Dialect> = {
   seeds?: string
   /** Glob path(s) to store files (storium-specific; drizzle-kit ignores this). */
   stores?: string | string[]
+  /**
+   * Sink for storium's own diagnostic output (defaults to `console`).
+   * Drizzle-kit ignores this. Storium-specific.
+   */
+  logger?: Logger
 }
 
 /**
@@ -679,6 +697,8 @@ export type FromDrizzleOptions = {
    * which are never the memory dialect (memory is resolved to sqlite at connect time).
    */
   dialect?: Exclude<Dialect, 'memory'>
+  /** Sink for storium's own diagnostic output (defaults to `console`). */
+  logger?: Logger
 }
 
 /** The Storium instance returned by `connect()` or `fromDrizzle()`. */
@@ -691,6 +711,8 @@ export type StoriumInstance<D extends Dialect = Dialect> = {
   zod: typeof ZodNamespace
   /** The active dialect. */
   dialect: D
+  /** The resolved diagnostic logger (the config's `logger`, or `console`). */
+  logger: Logger
   /**
    * Create a live store from a Drizzle table (simple path — no register step).
    * Optionally chain `.queries()` to add custom query functions with full ctx inference.

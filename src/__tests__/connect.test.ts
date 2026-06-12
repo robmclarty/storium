@@ -208,3 +208,33 @@ describe('assertions integration', () => {
     await expect(slugs.create({ slug: 'INVALID SLUG' })).rejects.toThrow()
   })
 })
+
+describe('logger', () => {
+  /* QA-10412 */ it('[QA-10412] routes the defineStore re-config warning to a custom logger (not console)', () => {
+    const warnings: string[] = []
+    const logger = {
+      log: () => {},
+      warn: (msg: string) => { warnings.push(msg) },
+      error: () => {},
+    }
+
+    const db = storium.connect({ dialect: 'memory', logger })
+    expect(db.logger).toBe(logger)
+
+    const t = sqliteTable('logger_users', {
+      id: text('id').primaryKey(),
+      name: text('name'),
+    })
+
+    db.defineStore(t)                                          // attaches metadata
+    db.defineStore(t, { columns: { name: { required: true } } }) // re-config → warn
+
+    expect(warnings).toHaveLength(1)
+    expect(warnings[0]).toContain('already has storium metadata')
+  })
+
+  /* QA-10414 */ it('[QA-10414] defaults the instance logger to console when none is configured', () => {
+    const db = storium.connect({ dialect: 'memory' })
+    expect(db.logger).toBe(console)
+  })
+})

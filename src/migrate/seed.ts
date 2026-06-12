@@ -191,6 +191,8 @@ export const seed = async (
 ): Promise<{ success: boolean; message: string; count: number }> => {
   const cfg = config ?? await loadConfig()
   const seedsDir = cfg.seeds ?? './seeds'
+  // Prefer an explicit config logger, else the connected instance's logger, else console.
+  const logger = cfg.logger ?? db.logger ?? console
 
   // Auto-discover stores from config globs
   const stores = await discoverStores(db, cfg)
@@ -224,20 +226,20 @@ export const seed = async (
       const seedModule = mod.default ?? mod
 
       if (!isSeedModule(seedModule)) {
-        console.warn(
+        logger.warn(
           `[storium] Skipping '${fileName}': not a valid seed module. ` +
           `Use defineSeed() to create seed files.`
         )
         continue
       }
 
-      console.log(`[storium] Running seed: ${fileName}`)
+      logger.log(`[storium] Running seed: ${fileName}`)
       await seedModule.run(ctx)
       count++
-      console.log(`[storium] ✓ ${fileName}`)
+      logger.log(`[storium] ✓ ${fileName}`)
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err)
-      console.error(`[storium] ✗ ${fileName}: ${message}`)
+      logger.error(`[storium] ✗ ${fileName}: ${message}`)
       return {
         success: false,
         message: `Seed '${fileName}' failed: ${message}`,

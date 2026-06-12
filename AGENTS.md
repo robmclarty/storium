@@ -99,8 +99,14 @@ storium.connect({
   assertions: { is_slug: (v) => ... },
   pool: { min: 2, max: 10 },
   seeds: './seeds',
+  logger: customLogger,  // optional Logger ({ log, warn, error }); defaults to console
 })
 ```
+
+`logger` (optional) sinks storium's own diagnostics — the `defineStore`
+re-config warning and the seed runner's progress/error lines. Defaults to
+`console`; resolved and exposed as `db.logger`. Pass a custom `Logger` to
+silence or redirect them.
 
 ### fromDrizzle (auto-detects dialect)
 ```typescript

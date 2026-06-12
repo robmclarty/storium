@@ -20,8 +20,8 @@ the first thing to read before picking up an item.
   - PR 4 (sweeps) — `41165c2` merge
 - **Not pushed:** `main` is ~15 commits ahead of `origin/main`. **CI has never
   run** — `.github/workflows/ci.yml` only executes once pushed to GitHub.
-- **Merged work (pending the first green CI):** items #2 and #3 are merged into
-  `main` from `pr5-typed-mixins` / `pr6-hidden-projection`.
+- **Merged work (pending the first green CI):** items #2, #3, and #4 are merged
+  into `main` from `pr5-typed-mixins` / `pr6-hidden-projection` / `pr7-logger`.
 - **Local gate is green:** `npm test` exits 0 (335 unit tests,
   `exactOptionalPropertyTypes` on) and `npm run typecheck:examples` is clean.
 - **Merged local branches** `pr3-ci-hardening` / `pr4-sweeps` still exist — safe
@@ -46,7 +46,7 @@ the first thing to read before picking up an item.
 | 1 | Push + first green CI run | PR 3 follow-through | **P0 — immediate** | ⬜ not started |
 | 2 | Typed mixin results (4d) | plan PR 2 §4d | P1 | ✅ done (`pr5-typed-mixins`, merged) |
 | 3 | Hidden-column projection (4c) | plan PR 2 §4c | P1 (high value / high complexity) | ✅ done (`pr6-hidden-projection`, merged) |
-| 4 | Optional `logger` in `StoriumConfig` | plan PR 4 / report | P2 | ⬜ deferred |
+| 4 | Optional `logger` in `StoriumConfig` | plan PR 4 / report | P2 | ✅ done (`pr7-logger`, merged) |
 | 5 | Configurable transaction isolation levels | report Part 2 (med/low) | P3 | ⬜ not started |
 | 6 | Release workflow (tag-triggered publish) | plan PR 3 §5a | P3 (revisit at 1.0) | ⬜ deferred |
 | 7 | Delete merged local branches | housekeeping | P3 | ⬜ not started |
@@ -155,26 +155,24 @@ runtime but not reflected in the type.
 
 ## 4. Optional `logger` in `StoriumConfig` (plan PR 4 / report Part 2) — **P2**
 
-**Status:** ⏸️ deferred in PR 4 (low priority).
+**Status:** ✅ done on branch `pr7-logger` (impl commit `bfe9fd8`). Not yet
+merged into `main` (waiting on item #1's first green CI run).
 
-**Why:** library code logs directly to the console; no way to silence or
-redirect. PR 3's 5c already removed the two worst `console.warn`-and-continue
-paths (now fatal throws), so this is now cosmetic.
+**What shipped:** an optional `logger` sink (defaults to `console`) routes
+storium's own diagnostics.
+- New `Logger` type (`{ log, warn, error }`) on the public API — `console`
+  satisfies it. `StoriumConfig.logger?` and `FromDrizzleOptions.logger?`,
+  resolved to `console` and exposed as `db.logger` (`StoriumInstance.logger`).
+- Threaded through `buildInstance`: the `defineStore` re-config warning
+  (`connect.ts`) now uses the instance logger.
+- `seed()` resolves `config.logger ?? db.logger ?? console` and routes its
+  progress / skip / error lines through it.
 
-**Remaining `console.*` sites (verified):**
-- `src/connect.ts:319` — `console.warn`
-- `src/migrate/seed.ts:227` — `console.warn` ("Skipping … not a valid seed module")
-- `src/migrate/seed.ts:234` / `:237` — `console.log` (seed progress)
-- `src/migrate/seed.ts:240` — `console.error` (seed failure)
-- (`src/errors.ts:20` is only a docstring example — not a real call.)
-
-**Approach:** add `logger?: Logger` to `StoriumConfig`, default to `console`,
-thread through `connect()` → `StoriumInstance` → `migrate/*`, replace the calls
-above.
-
-**Acceptance:** `logger` is configurable and defaults to console; no direct
-`console.*` left in non-test `src/` (except the docstring); a test asserts a
-custom logger receives the messages.
+**Verification:** `npm test` green (338 unit tests — QA-10412/10414 in
+`connect.test.ts`, QA-10413 in `seed.test.ts` assert a custom logger receives
+the messages); `npm run typecheck:examples` clean. The only `console.*` left in
+non-test `src/` is the `errors.ts:20` docstring example. AGENTS.md's
+`StoriumConfig` example documents `logger`.
 
 ---
 

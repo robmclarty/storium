@@ -72,4 +72,35 @@ describe('seed runner', () => {
       })
     ).rejects.toThrow(/Failed to import/)
   })
+
+  /* QA-10413 */ it('[QA-10413] routes seed progress to a custom logger (config.logger)', async () => {
+    // Fresh in-memory db so the fixture's fixed-PK inserts don't collide with
+    // the shared db already seeded by QA-10047.
+    const freshDb = storium.connect({ dialect: 'memory' })
+    freshDb.drizzle.run(sql`
+      CREATE TABLE IF NOT EXISTS widgets (id TEXT PRIMARY KEY, label TEXT NOT NULL)
+    `)
+
+    const logs: string[] = []
+    const logger = {
+      log: (msg: string) => { logs.push(msg) },
+      warn: () => {},
+      error: () => {},
+    }
+
+    const fixturesDir = path.resolve(__dirname, 'fixtures')
+    const result = await seed(freshDb, {
+      dialect: 'memory',
+      schema: [path.join(fixturesDir, 'entities/*.table.ts')],
+      stores: [path.join(fixturesDir, 'entities/*.store.ts')],
+      seeds: path.join(fixturesDir, 'seeds'),
+      logger,
+    })
+
+    expect(result.success).toBe(true)
+    expect(logs.some(m => m.includes('Running seed'))).toBe(true)
+    expect(logs.some(m => m.includes('✓'))).toBe(true)
+
+    await freshDb.disconnect()
+  })
 })
