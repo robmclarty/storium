@@ -68,6 +68,8 @@ describe('annotation validation', () => {
 
     expect(() =>
       defineStore(table, {
+        // The generic StoreConfig<TTable> also rejects this key at compile time;
+        // @ts-expect-error documents that guard while we exercise the runtime backstop.
         columns: { nonexistent: { required: true } },
       })
     ).toThrow(SchemaError)

@@ -185,4 +185,43 @@ describe('soft delete', () => {
       expect(result).toHaveLength(1)
     })
   })
+
+  describe('ctx exposes soft-delete operations to custom queries', () => {
+    /* QA-10299 */ it('[QA-10299] custom query can compose ctx.restore and ctx.findWithDeleted', async () => {
+      const usersTable = sqliteTable('sd_ctx_users', {
+        id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+        name: text('name').notNull(),
+        email: text('email').notNull(),
+        deletedAt: integer('deleted_at', { mode: 'timestamp' }),
+      })
+
+      db.run(sql`
+        CREATE TABLE IF NOT EXISTS sd_ctx_users (
+          id TEXT PRIMARY KEY,
+          name TEXT NOT NULL,
+          email TEXT NOT NULL,
+          deleted_at INTEGER
+        )
+      `)
+
+      attachStoriumMeta(usersTable, { softDelete: true })
+
+      const createRepository = createCreateRepository(db, {}, 'memory')
+      const store = createRepository(usersTable as any, {
+        reviveByEmail: (ctx: any) => async (email: string) => {
+          const [row] = await ctx.findWithDeleted({ email })
+          if (!row) return null
+          return ctx.restore(row.id)
+        },
+      })
+
+      const user = await store.create({ name: 'CtxRevive', email: 'ctx@test.com' })
+      await store.destroy(user.id)
+      expect(await store.findById(user.id)).toBeNull()
+
+      const revived = await store.reviveByEmail('ctx@test.com')
+      expect(revived).not.toBeNull()
+      expect(await store.findById(user.id)).not.toBeNull()
+    })
+  })
 })

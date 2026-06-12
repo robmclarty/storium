@@ -57,10 +57,20 @@ import type { Column, Table } from 'drizzle-orm'
  * Surfaces `.table` and `.name` so that schemaCollector can detect
  * StoreDefinition exports for drizzle-kit migrations.
  */
-export type StoreDefinition<TTable extends Table = Table, TQueries extends QueriesConfig = {}> = {
+export type StoreDefinition<
+  TTable extends Table = Table,
+  TQueries extends QueriesConfig = {},
+  TSoftDelete extends boolean = false,
+> = {
   readonly __storeDefinition: true
   tableDef: TTable
   queryFns: TQueries
+  /**
+   * Whether this store enables soft delete. Carries the `softDelete: true`
+   * literal captured from the config so `InferStore` can surface the
+   * soft-delete methods (`restore`, `forceDestroy`, …) on the live store.
+   */
+  softDelete: TSoftDelete
   /** The Drizzle table object with storium metadata attached (for schemaCollector / drizzle-kit / mixins). */
   table: TTable & { storium: StoriumMeta }
   /** The table name (for schemaCollector). */
@@ -70,16 +80,18 @@ export type StoreDefinition<TTable extends Table = Table, TQueries extends Queri
    *
    * Infers the entire function record (`TFns`) — not just its keys — so each
    * query's parameter list and return type survive onto the live store after
-   * `register()`. `ctx` is typed `RepositoryContext<InferTableDialect<TTable>, TTable>`:
-   * the dialect is inferred from the table flavor (a `pgTable` pins
-   * `'postgresql'`), giving a concrete `ctx.drizzle` and typed CRUD even though
-   * the store definition is inert.
+   * `register()`. `ctx` is typed
+   * `RepositoryContext<InferTableDialect<TTable>, TTable, TSoftDelete>`: the
+   * dialect is inferred from the table flavor (a `pgTable` pins `'postgresql'`),
+   * giving a concrete `ctx.drizzle` and typed CRUD even though the store
+   * definition is inert. When `softDelete: true`, `ctx` also exposes the
+   * soft-delete operations.
    */
   queries: <
-    TFns extends Record<string, (ctx: RepositoryContext<InferTableDialect<TTable>, TTable>) => (...args: any[]) => any>
+    TFns extends Record<string, (ctx: RepositoryContext<InferTableDialect<TTable>, TTable, TSoftDelete>) => (...args: any[]) => any>
   >(
     fns: TFns
-  ) => StoreDefinition<TTable, TQueries & TFns>
+  ) => StoreDefinition<TTable, TQueries & TFns, TSoftDelete>
 }
 
 /**
@@ -282,12 +294,16 @@ export const attachStoriumMeta = (
 /**
  * Create a StoreDefinition from a Drizzle table and query functions.
  */
-const makeStoreDefinition = <TTable extends Table = Table, TQueries extends QueriesConfig = {}>(
+const makeStoreDefinition = <
+  TTable extends Table = Table,
+  TQueries extends QueriesConfig = {},
+  TSoftDelete extends boolean = false,
+>(
   drizzleTable: TTable,
   config: StoreConfig,
   queryFns: TQueries,
   assertions: AssertionRegistry = {}
-): StoreDefinition<TTable, TQueries> => {
+): StoreDefinition<TTable, TQueries, TSoftDelete> => {
   // Attach storium metadata if not already present
   if (!hasMeta(drizzleTable)) {
     attachStoriumMeta(drizzleTable, config, assertions)
@@ -297,10 +313,22 @@ const makeStoreDefinition = <TTable extends Table = Table, TQueries extends Quer
     __storeDefinition: true as const,
     tableDef: drizzleTable,
     queryFns,
+    // Runtime boolean from the attached metadata; typed as the captured literal
+    // so the overloaded `defineStore` return types stay precise.
+    softDelete: ((drizzleTable as any).storium.softDelete === true) as TSoftDelete,
     table: drizzleTable as TTable & { storium: StoriumMeta },
     name: (drizzleTable as any).storium.name,
-    queries: (newQueries: any) =>
-      makeStoreDefinition(drizzleTable, config, { ...queryFns, ...newQueries }, assertions),
+    // The chained call threads TSoftDelete and merges queries at runtime. Its
+    // static return is cast to `any` because this non-generic lambda can't carry
+    // the per-call `TFns`; consumers get the precise `TQueries & TFns` type from
+    // StoreDefinition's `queries` signature, which annotates this field.
+    queries: (newQueries: any): any =>
+      makeStoreDefinition<TTable, TQueries, TSoftDelete>(
+        drizzleTable,
+        config,
+        { ...queryFns, ...newQueries },
+        assertions
+      ),
   }
 }
 
@@ -309,6 +337,12 @@ const makeStoreDefinition = <TTable extends Table = Table, TQueries extends Quer
 /**
  * Define a store — wraps a Drizzle table with storium metadata and
  * optional `.queries()` chain.
+ *
+ * Overloaded so `{ softDelete: true }` is captured at the type level: a
+ * soft-delete store carries `TSoftDelete = true` through `register()` and
+ * exposes `restore` / `forceDestroy` / `findWithDeleted` / … on the live store.
+ * `config.columns` keys are constrained to the table's columns — a typo is a
+ * compile error.
  *
  * @param drizzleTable - A raw Drizzle table (from pgTable, sqliteTable, etc.)
  * @param config - Optional store config (column annotations, soft delete)
@@ -320,13 +354,20 @@ const makeStoreDefinition = <TTable extends Table = Table, TQueries extends Quer
  *   columns: { email: { required: true } },
  * }).queries({ findByEmail: (ctx) => ... })
  *
+ * // With soft delete — `register()`'d store exposes restore(), forceDestroy(), …
+ * const userStore = defineStore(usersTable, { softDelete: true })
+ *
  * // Without annotations
  * const bareStore = defineStore(usersTable)
  */
 export function defineStore<TTable extends Table<any>>(
   drizzleTable: TTable,
-  config?: StoreConfig
-): StoreDefinition<TTable, {}>
+  config: StoreConfig<TTable> & { softDelete: true }
+): StoreDefinition<TTable, {}, true>
+export function defineStore<TTable extends Table<any>>(
+  drizzleTable: TTable,
+  config?: StoreConfig<TTable>
+): StoreDefinition<TTable, {}, false>
 
 export function defineStore(drizzleTable: any, config: StoreConfig = {}) {
   if (!isTable(drizzleTable)) {
@@ -336,5 +377,7 @@ export function defineStore(drizzleTable: any, config: StoreConfig = {}) {
     )
   }
 
-  return makeStoreDefinition(drizzleTable, config, {})
+  // Cast to satisfy both overloads (true/false TSoftDelete) — the runtime
+  // `softDelete` field carries the real boolean; the overloads pick the literal.
+  return makeStoreDefinition(drizzleTable, config, {}) as StoreDefinition<Table, {}, boolean>
 }

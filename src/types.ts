@@ -155,10 +155,18 @@ export type ColumnAnnotations = Record<string, ColumnAnnotation>
 /**
  * Configuration for `defineStore()`. Contains storium-specific metadata
  * to layer on top of a raw Drizzle table.
+ *
+ * Generic over `TTable` — when a specific Drizzle table type is provided, the
+ * `columns` keys are constrained to that table's column names, so unknown keys
+ * (typos) fail at compile time and editors autocomplete valid columns. When
+ * `TTable` is the base `Table` (default), falls back to the untyped
+ * `ColumnAnnotations` record. `validateAnnotations()` remains the runtime backstop.
  */
-export type StoreConfig = {
+export type StoreConfig<TTable extends Table = Table> = {
   /** Per-column annotations (validation, access control, transforms). */
-  columns?: ColumnAnnotations
+  columns?: Table extends TTable
+    ? ColumnAnnotations
+    : { [K in keyof TTable['_']['columns']]?: ColumnAnnotation }
   /** Enable soft delete. The Drizzle table must have a `deletedAt` column. */
   softDelete?: boolean
   /** Default columns to target for conflict detection in `upsert()`. Overridden by per-call `opts.conflictTarget`. */
@@ -374,7 +382,11 @@ export type PkValue = string | number | (string | number)[]
  * Contains the database handle, table metadata, default CRUD operations,
  * and the prep pipeline.
  */
-export type RepositoryContext<D extends Dialect = Dialect, TTable extends Table = Table> = {
+export type RepositoryContext<
+  D extends Dialect = Dialect,
+  TTable extends Table = Table,
+  TSoftDelete extends boolean = false,
+> = {
   /**
    * The Drizzle database instance (escape hatch).
    * When `D` is a specific dialect, resolves to the concrete Drizzle class
@@ -403,20 +415,28 @@ export type RepositoryContext<D extends Dialect = Dialect, TTable extends Table 
   /** The filter → transform → validate pipeline. */
   prep: (input: Record<string, any>, opts?: PrepOptions<TTable>) => Promise<Record<string, any>>
 } & DefaultCRUD<TTable, PrepOptions<TTable>>
+  & (TSoftDelete extends true ? SoftDeleteCRUD<TTable, PrepOptions<TTable>> : {})
 
 /**
  * Shorthand for `RepositoryContext` — the context object passed to custom
  * query factories.
  */
-export type Ctx<D extends Dialect = Dialect, TTable extends Table = Table> = RepositoryContext<D, TTable>
+export type Ctx<
+  D extends Dialect = Dialect,
+  TTable extends Table = Table,
+  TSoftDelete extends boolean = false,
+> = RepositoryContext<D, TTable, TSoftDelete>
 
 /**
  * A custom query function receives the repository context and returns
  * the actual query function. This enables closure over `ctx` and
  * composition with default CRUD operations.
  */
-export type CustomQueryFn<D extends Dialect = Dialect, TTable extends Table = Table> =
-  (ctx: RepositoryContext<D, TTable>) => (...args: any[]) => any
+export type CustomQueryFn<
+  D extends Dialect = Dialect,
+  TTable extends Table = Table,
+  TSoftDelete extends boolean = false,
+> = (ctx: RepositoryContext<D, TTable, TSoftDelete>) => (...args: any[]) => any
 
 /**
  * Constraint type for custom query function records.
@@ -459,16 +479,51 @@ type DefaultCRUD<TTable extends Table = Table, TOpts = QueryOptions<TTable>> = {
 }
 
 /**
+ * Soft-delete operations, present only on stores configured with
+ * `softDelete: true`. These exist at runtime whenever soft delete is enabled
+ * (see `buildDefaultCrud` in `store/repository.ts`); this type makes them
+ * visible to TypeScript so `store.restore(...)` type-checks without a cast.
+ * A store without `softDelete: true` does not expose these methods.
+ *
+ * Generic over `TTable` like `DefaultCRUD` — row/filter types narrow to the
+ * inferred table types, falling back to `any` for the base `Table`.
+ */
+type SoftDeleteCRUD<TTable extends Table = Table, TOpts = QueryOptions<TTable>> = {
+  /** Restore a soft-deleted row (clears `deletedAt`). Returns the restored row. */
+  restore: (id: PkValue, opts?: TOpts) => Promise<InferRow<TTable>>
+  /** Permanently delete a row, bypassing soft delete. Returns the deleted row. */
+  forceDestroy: (id: PkValue, opts?: TOpts) => Promise<InferRow<TTable>>
+  /** Permanently delete all rows matching filters, bypassing soft delete. Returns the deleted count. */
+  forceDestroyAll: (filters: Partial<InferInput<TTable>>, opts?: TOpts) => Promise<number>
+  /** Find rows including soft-deleted ones (skips the `deletedAt IS NULL` filter). */
+  findWithDeleted: (filters?: Partial<InferInput<TTable>>, opts?: TOpts) => Promise<InferRow<TTable>[]>
+  /** Count rows including soft-deleted ones. */
+  countWithDeleted: (filters?: Partial<InferInput<TTable>>, opts?: TOpts) => Promise<number>
+}
+
+/**
  * A Store is a live object with CRUD operations, custom queries, and
  * runtime schemas. Produced by `db.defineStore()` or `db.register()`.
+ *
+ * `TSoftDelete` is captured from `defineStore`'s config: when `softDelete: true`,
+ * the store additionally exposes `SoftDeleteCRUD<TTable>` (restore, forceDestroy,
+ * findWithDeleted, …). It defaults to `false`, so a plain store has the default
+ * CRUD surface only.
  */
-export type Store<TTable extends Table = Table, TQueries extends QueriesConfig = {}> = DefaultCRUD<TTable> & {
-  /** The table name this store operates on. */
-  name: string
-  schemas: SchemaSet<TTable>
-} & {
-  [K in keyof TQueries]: TQueries[K] extends (ctx: any) => infer R ? R : never
-}
+export type Store<
+  TTable extends Table = Table,
+  TQueries extends QueriesConfig = {},
+  TSoftDelete extends boolean = false,
+> = DefaultCRUD<TTable>
+  & (TSoftDelete extends true ? SoftDeleteCRUD<TTable> : {})
+  & {
+    /** The table name this store operates on. */
+    name: string
+    schemas: SchemaSet<TTable>
+  }
+  & {
+    [K in keyof TQueries]: TQueries[K] extends (ctx: any) => infer R ? R : never
+  }
 
 /**
  * Infer `Store<Q>` from any object with `tableDef` and `queryFns` fields.
@@ -476,11 +531,13 @@ export type Store<TTable extends Table = Table, TQueries extends QueriesConfig =
  * StoreDefinition (which would create a circular dependency with types.ts).
  */
 export type InferStore<T> =
-  T extends { tableDef: infer TT extends Table; queryFns: infer Q extends QueriesConfig }
-    ? Store<TT, Q>
-    : T extends { tableDef: any; queryFns: infer Q extends QueriesConfig }
-      ? Store<Table, Q>
-      : Store
+  T extends { tableDef: infer TT extends Table; queryFns: infer Q extends QueriesConfig; softDelete: infer SD extends boolean }
+    ? Store<TT, Q, SD>
+    : T extends { tableDef: infer TT extends Table; queryFns: infer Q extends QueriesConfig }
+      ? Store<TT, Q>
+      : T extends { tableDef: any; queryFns: infer Q extends QueriesConfig }
+        ? Store<Table, Q>
+        : Store
 
 // ---------------------------------------------------------- Cache Adapter --
 
@@ -594,20 +651,39 @@ export type StoriumInstance<D extends Dialect = Dialect> = {
    * Create a live store from a Drizzle table (simple path — no register step).
    * Optionally chain `.queries()` to add custom query functions with full ctx inference.
    *
+   * Overloaded so that `{ softDelete: true }` is captured at the type level: a
+   * soft-delete store additionally exposes `restore` / `forceDestroy` /
+   * `findWithDeleted` / … (both on the store and inside `ctx`). Column keys in
+   * `config.columns` are constrained to the table's columns (typos are compile
+   * errors).
+   *
    * @example
    * const users = db.defineStore(usersTable)
    * const users = db.defineStore(usersTable, { columns: { email: { required: true } } })
    * const users = db.defineStore(usersTable).queries({ findByEmail: (ctx) => ... })
+   * const users = db.defineStore(usersTable, { softDelete: true }) // exposes restore()
    */
-  defineStore: <TTable extends Table = Table>(
-    drizzleTable: TTable,
-    config?: StoreConfig
-  ) => Store<TTable> & {
-    queries: <
-      TFns extends Record<string, (ctx: RepositoryContext<D, TTable>) => (...args: any[]) => any>
-    >(
-      queryFns: TFns
-    ) => Store<TTable, TFns>
+  defineStore: {
+    <TTable extends Table>(
+      drizzleTable: TTable,
+      config: StoreConfig<TTable> & { softDelete: true }
+    ): Store<TTable, {}, true> & {
+      queries: <
+        TFns extends Record<string, (ctx: RepositoryContext<D, TTable, true>) => (...args: any[]) => any>
+      >(
+        queryFns: TFns
+      ) => Store<TTable, TFns, true>
+    }
+    <TTable extends Table = Table>(
+      drizzleTable: TTable,
+      config?: StoreConfig<TTable>
+    ): Store<TTable, {}, false> & {
+      queries: <
+        TFns extends Record<string, (ctx: RepositoryContext<D, TTable, false>) => (...args: any[]) => any>
+      >(
+        queryFns: TFns
+      ) => Store<TTable, TFns, false>
+    }
   }
   /** Materialize StoreDefinitions into live stores with CRUD + queries. */
   register: <T extends Record<string, any>>(
