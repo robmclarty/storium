@@ -1,6 +1,6 @@
 import { describe, it, expectTypeOf } from 'vitest'
 import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core'
-import { pgTable, uuid, varchar, integer as pgInteger, type PgDatabase } from 'drizzle-orm/pg-core'
+import { pgTable, uuid, varchar, integer as pgInteger, timestamp, type PgDatabase } from 'drizzle-orm/pg-core'
 import { defineStore } from '../define'
 import type { InferStore, StoriumInstance, Promisable } from '../../types'
 
@@ -17,6 +17,20 @@ const pgUsers = pgTable('pg_users', {
   id: uuid('id').primaryKey().defaultRandom(),
   email: varchar('email', { length: 255 }).notNull(),
   age: pgInteger('age'),
+})
+
+// Soft-delete-enabled tables (have a `deletedAt` column). Used to verify that
+// `softDelete: true` surfaces SoftDeleteCRUD on the store and ctx.
+const sdUsersTable = sqliteTable('sd_users', {
+  id: text('id').primaryKey(),
+  email: text('email').notNull(),
+  deletedAt: integer('deleted_at', { mode: 'timestamp' }),
+})
+
+const pgSdUsers = pgTable('pg_sd_users', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  email: varchar('email', { length: 255 }).notNull(),
+  deletedAt: timestamp('deleted_at'),
 })
 
 describe('Store<TTable> type inference', () => {
@@ -175,5 +189,95 @@ describe('public surface inference', () => {
 describe('Promisable<T>', () => {
   it('round-trips T (not Promise<any>)', () => {
     expectTypeOf<Promisable<number>>().toEqualTypeOf<number | Promise<number>>()
+  })
+})
+
+// ---------------------------------------------------------------------------
+// 4a — Typed column keys in StoreConfig. `columns` keys are constrained to the
+// table's columns: valid keys compile, typos are compile errors. These checks
+// live in a never-invoked closure so tsc verifies them without the runtime
+// `validateAnnotations` backstop throwing.
+// ---------------------------------------------------------------------------
+describe('StoreConfig typed column keys', () => {
+  it('accepts real column keys and rejects typos at compile time', () => {
+    const _typeOnly = () => {
+      defineStore(usersTable, { columns: { email: { required: true }, name: { hidden: true } } })
+
+      // @ts-expect-error - 'emial' is not a column of usersTable
+      defineStore(usersTable, { columns: { emial: { required: true } } })
+    }
+    void _typeOnly
+  })
+})
+
+// ---------------------------------------------------------------------------
+// 4b — Soft-delete methods become visible to TypeScript. A store created with
+// `softDelete: true` exposes SoftDeleteCRUD (restore / forceDestroy /
+// forceDestroyAll / findWithDeleted / countWithDeleted); a plain store does not.
+// Verified across both the multi-file (register) and simple (db.defineStore)
+// paths, plus on ctx inside custom queries.
+// ---------------------------------------------------------------------------
+describe('soft-delete method visibility', () => {
+  it('register() path: softDelete store exposes restore(), plain store does not', () => {
+    const sdDef = defineStore(sdUsersTable, { softDelete: true }).queries({
+      findByEmail: (ctx) => async (email: string) => ctx.findOne({ email }),
+    })
+    type SdStore = InferStore<typeof sdDef>
+
+    // restore() is present and typed (returns the row, takes a PK).
+    expectTypeOf<SdStore['restore']>().toBeFunction()
+    expectTypeOf<SdStore['restore']>().returns.resolves.not.toBeAny()
+    expectTypeOf<SdStore['forceDestroyAll']>().returns.resolves.toEqualTypeOf<number>()
+    expectTypeOf<SdStore['countWithDeleted']>().returns.resolves.toEqualTypeOf<number>()
+    expectTypeOf<SdStore['findWithDeleted']>().returns.resolves.toBeArray()
+    // Custom query still rides alongside the soft-delete surface.
+    expectTypeOf<SdStore['findByEmail']>().parameter(0).toEqualTypeOf<string>()
+
+    const plainDef = defineStore(usersTable)
+    type PlainStore = InferStore<typeof plainDef>
+    expectTypeOf<PlainStore>().not.toHaveProperty('restore')
+    expectTypeOf<PlainStore>().not.toHaveProperty('forceDestroy')
+    expectTypeOf<PlainStore>().not.toHaveProperty('findWithDeleted')
+
+    // @ts-expect-error - a non-soft-delete store has no `restore` method
+    type _NoRestore = PlainStore['restore']
+  })
+
+  it('simple path: db.defineStore({ softDelete: true }) exposes restore(), plain does not', () => {
+    const _check = (db: StoriumInstance<'postgresql'>) => {
+      const sd = db.defineStore(pgSdUsers, { softDelete: true })
+      expectTypeOf<typeof sd>().toHaveProperty('restore')
+      expectTypeOf(sd.restore).toBeFunction()
+      expectTypeOf(sd.restore).returns.resolves.not.toBeAny()
+
+      const plain = db.defineStore(pgUsers)
+      expectTypeOf<typeof plain>().not.toHaveProperty('restore')
+
+      // @ts-expect-error - plain store has no `forceDestroy`
+      void plain.forceDestroy
+    }
+    void _check
+  })
+
+  it('ctx exposes soft-delete methods only when softDelete is enabled', () => {
+    // Soft-delete store: ctx.restore / ctx.findWithDeleted are available.
+    defineStore(pgSdUsers, { softDelete: true }).queries({
+      revive: (ctx) => async (id: string) => {
+        expectTypeOf(ctx.restore).toBeFunction()
+        expectTypeOf(ctx.findWithDeleted).toBeFunction()
+        const row = await ctx.restore(id)
+        expectTypeOf(row).not.toBeAny()
+        return row
+      },
+    })
+
+    // Plain store: ctx has no soft-delete methods.
+    defineStore(pgUsers).queries({
+      probe: (ctx) => async () => {
+        // @ts-expect-error - ctx.restore is not present without softDelete
+        void ctx.restore
+        return null
+      },
+    })
   })
 })

@@ -744,8 +744,21 @@ export const createCreateRepository = (
     // Step 1: Build default CRUD operations
     const defaults = buildDefaultCrud(db, tableDef, assertions, dialect)
 
-    // Step 2: Assemble ctx with defaults + metadata
+    // Step 2: Assemble ctx with defaults + metadata.
+    // When soft delete is enabled, the soft-delete operations are also exposed
+    // on ctx so custom queries can compose them (mirrors RepositoryContext's
+    // TSoftDelete-gated SoftDeleteCRUD surface). `defaults` is a union of the
+    // plain/soft-delete CRUD shapes, so the soft-delete keys are read via cast.
     const meta = tableDef.storium
+    const softDeleteCtx = meta.softDelete === true
+      ? {
+          restore: (defaults as any).restore,
+          forceDestroy: (defaults as any).forceDestroy,
+          forceDestroyAll: (defaults as any).forceDestroyAll,
+          findWithDeleted: (defaults as any).findWithDeleted,
+          countWithDeleted: (defaults as any).countWithDeleted,
+        }
+      : {}
     const ctx = {
       drizzle: db,
       zod: z,
@@ -770,6 +783,7 @@ export const createCreateRepository = (
       count: defaults.count,
       exists: defaults.exists,
       ref: defaults.ref,
+      ...softDeleteCtx,
     }
 
     // Step 3: Invoke each custom query function with ctx

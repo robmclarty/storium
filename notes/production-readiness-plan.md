@@ -160,7 +160,90 @@ the cascade).
 
 ---
 
-## PR 2 — Design-level generics (Phase 4)
+## PR 2 — Design-level generics (Phase 4) — ✅ DONE (4a + 4b; 4c/4d deferred)
+
+**Status:** Implemented and green. Commit `aeb9d33` on branch
+`pr2-design-generics` (off `pr1-restore-type-passthrough`). `npm test` passes
+end-to-end (typecheck + lint + build + 333 unit tests across 27 files, exit 0)
+and `npm run typecheck:examples` is clean (examples symlink the freshly-built
+`dist`, so they exercise the new types). 4a and 4b shipped; 4c and 4d were
+intentionally deferred (see below). **Next up: PR 3** (CI + runtime hardening).
+
+**4a — done as written.** `StoreConfig<TTable>` constrains `columns` keys to
+`keyof TTable['_']['columns']` (typos are compile errors; valid keys
+autocomplete), falling back to untyped `ColumnAnnotations` for the base `Table`.
+`validateAnnotations()` remains the runtime backstop — the existing runtime test
+([QA-10205], which passes a non-existent column) now carries a `@ts-expect-error`
+so it documents the compile-time guard *and* exercises the runtime throw.
+
+**4b — done, with the ctx recommendation accepted.** Added module-private
+`SoftDeleteCRUD<TTable>` (mirrors the runtime shapes: `restore` / `forceDestroy`
+return the row, `forceDestroyAll` / `countWithDeleted` return `number`,
+`findWithDeleted` returns rows). Threaded a third `TSoftDelete extends boolean`
+param through `StoreDefinition → InferStore → Store` and
+`RepositoryContext → Ctx → CustomQueryFn`. The `softDelete: true` literal is
+captured via **overloads** on `defineStore()` and `StoriumInstance.defineStore`
+(not a `const`/`TConfig` capture) — overload resolution is assignability-based,
+so it sidesteps boolean-literal widening *and* the `conflictTarget: string[]`
+↔ `readonly` friction a `const` type-param would have caused (plan risk #3:
+readable > maximally-inferred). `StoreDefinition` carries a runtime
+`softDelete: TSoftDelete` field so `InferStore` can surface the methods on the
+`register()` path; the simple `db.defineStore()` path surfaces them via the
+overload return types.
+
+  - **ctx decision (4b-5): accepted — added to both runtime and type.** The
+    runtime ctx assembly (was `repository.ts:749-773`) now spreads the
+    soft-delete operations into `ctx` when `softDelete: true`, gated at the type
+    level by `RepositoryContext`'s `TSoftDelete`. Rationale: without it there's
+    an asymmetry — the store exposes `restore()` but a *custom query* (exactly
+    where you'd compose multi-step soft-delete logic) couldn't reach
+    `ctx.restore`. The cascade is bounded because the new param defaults to
+    `false`, so every bare `Ctx` / `RepositoryContext<D, TTable>` usage (incl.
+    all standalone `examples/*/entities/*/*.queries.ts` files) is unaffected.
+    Bare-`Ctx` files on a soft-delete store still won't see `ctx.restore` in the
+    type (they default `TSoftDelete = false`) — the same accepted looseness as
+    bare `Ctx` getting `any` for `ctx.drizzle`. Guarded by a runtime test
+    ([QA-10299]) that composes `ctx.findWithDeleted` + `ctx.restore`.
+
+**Refinement vs. the written plan:**
+  - The inner `.queries()` chain lambda in `makeStoreDefinition` returns `any`
+    (annotated) rather than a precise type: a non-generic lambda can't carry the
+    per-call `TFns`, and TS's higher-order assignment check rejects a fixed
+    return. Consumers still get the precise `TQueries & TFns` from
+    `StoreDefinition`'s declared `queries` signature — only the internal lambda
+    is loose. The original 2-param code got away without this because inference
+    produced `any` for the queries slot; the added `TSoftDelete` param forced an
+    explicit thread, hence the explicit cast.
+  - `SoftDeleteCRUD` is **module-private** (not exported), matching its sibling
+    `DefaultCRUD`. fallow's dead-export check flagged it when briefly exported;
+    consumers get the soft-delete method types through `Store<T, Q, true>`.
+
+**4c / 4d — intentionally deferred (not in this PR).** Both are flagged STRETCH
+in the plan and gated on "only if 4a/4b land without generics pain / don't make
+error messages worse."
+  - **4c (hidden-column `Omit` projection):** requires capturing per-column
+    `hidden: true` *literals* from config — i.e. the literal `TConfig` capture
+    the overload approach deliberately avoids. Reintroducing it (or `const` type
+    params) brings back boolean-literal widening / `readonly` friction and
+    interacts awkwardly with the `includeHidden` escape hatch (returns the full
+    row). Plan itself hedges ("pre-1.0 simplicity has value too"). Skipped.
+  - **4d (typed mixin results):** self-contained and doesn't build on the 4a/4b
+    chain; adds its own generics surface to `belongsTo`/`hasMany`/`hasOne`/
+    `withMembers`. Deferred to keep this PR's blast radius to the core type
+    chain. Candidate for a focused follow-up while breaking changes are free.
+
+**Verification (this PR):** type tests in
+`src/store/__tests__/typed-store.test.ts` (enforced by `npm run typecheck`):
+soft-delete store exposes `restore()` on both the `register()` and
+`db.defineStore()` paths and inside `ctx`; a non-soft-delete store does **not**
+(negative `@ts-expect-error` + `expectTypeOf(...).not.toHaveProperty`); a column
+typo in `columns` config is a compile error (`@ts-expect-error`, non-vacuous
+since tsc flags unused directives). Runtime guard: [QA-10299] in
+`softDelete.test.ts`.
+
+---
+
+### Original plan (for reference)
 
 Pre-1.0 breaking changes are free; these change public type signatures.
 
