@@ -28,6 +28,7 @@ import type {
   DrizzleDatabase,
   InferDialect,
   StoreConfig,
+  Logger,
 } from './types'
 import { ConfigError } from './errors'
 import { isStoreDefinition, hasMeta, attachStoriumMeta } from './store/define'
@@ -265,7 +266,8 @@ const buildInstance = <D extends Dialect>(
   db: DrizzleDatabase<D>,
   dialect: D,
   assertions: AssertionRegistry,
-  teardown: () => Promise<void>
+  teardown: () => Promise<void>,
+  logger: Logger
 ): StoriumInstance<D> => {
   const drizzleDialect = resolveDialect(dialect)
   const registry = createAssertionRegistry(assertions)
@@ -316,7 +318,7 @@ const buildInstance = <D extends Dialect>(
     if (!hasMeta(drizzleTable)) {
       attachStoriumMeta(drizzleTable, config, registry)
     } else if (config.columns || config.softDelete !== undefined) {
-      console.warn(
+      logger.warn(
         `storium: defineStore() received config for table '${(drizzleTable as any).storium.name}' ` +
         'which already has storium metadata. The config will be ignored. ' +
         'Remove the config argument or use a table without existing metadata.'
@@ -348,6 +350,7 @@ const buildInstance = <D extends Dialect>(
     drizzle: db,
     zod: z,
     dialect,
+    logger,
     defineStore: instanceDefineStore,
     register,
     transaction: createWithTransaction(db as any, drizzleDialect),
@@ -372,7 +375,8 @@ export const connect = <D extends Dialect>(config: StoriumConfig<D>): StoriumIns
       db as DrizzleDatabase<D>,
       config.dialect,
       config.assertions ?? {},
-      teardown
+      teardown,
+      config.logger ?? console
     )
   } catch (err) {
     teardown().catch(() => {})
@@ -404,6 +408,7 @@ export function fromDrizzle(
     drizzleDb,
     dialect,
     options.assertions ?? {},
-    async () => {} // No-op teardown — user manages their own connection
+    async () => {}, // No-op teardown — user manages their own connection
+    options.logger ?? console
   )
 }

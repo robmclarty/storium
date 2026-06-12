@@ -57,6 +57,7 @@ export type {
   StoriumConfig,
   FromDrizzleOptions,
   StoriumInstance,
+  Logger,
 
   // Column annotations
   ColumnAnnotation,
