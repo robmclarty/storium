@@ -28,6 +28,7 @@ import type {
   DrizzleDatabase,
   InferDialect,
   StoreConfig,
+  TransactionOptions,
 } from './types'
 import { ConfigError } from './errors'
 import { isStoreDefinition, hasMeta, attachStoriumMeta } from './store/define'
@@ -213,10 +214,15 @@ const buildConnectionUrl = (config: StoriumConfig): string => {
  * is the same object (single connection), but callers should use `tx` to
  * stay consistent with the PostgreSQL/MySQL transaction pattern where `tx`
  * is a distinct scoped handle.
+ *
+ * `opts.isolationLevel` is plumbed to Drizzle's transaction config on
+ * PostgreSQL/MySQL. SQLite (better-sqlite3) has no isolation-level knob — it's
+ * already serialized — so the option is ignored on the manual BEGIN/COMMIT path.
  */
 const createWithTransaction = (db: any, dialect: Dialect) => {
   if (dialect === 'sqlite') {
-    return async <T>(fn: (tx: any) => Promise<T>): Promise<T> => {
+    return async <T>(fn: (tx: any) => Promise<T>, _opts?: TransactionOptions): Promise<T> => {
+      // SQLite is inherently serializable; `_opts.isolationLevel` does not apply.
       db.run(sql`BEGIN`)
       try {
         const result = await fn(db)
@@ -233,8 +239,12 @@ const createWithTransaction = (db: any, dialect: Dialect) => {
     }
   }
 
-  return async <T>(fn: (tx: any) => Promise<T>): Promise<T> => {
-    return db.transaction(fn)
+  return async <T>(fn: (tx: any) => Promise<T>, opts?: TransactionOptions): Promise<T> => {
+    // Drizzle accepts a per-transaction config on PostgreSQL/MySQL; pass it only
+    // when an isolation level is requested so the default path is untouched.
+    return opts?.isolationLevel
+      ? db.transaction(fn, { isolationLevel: opts.isolationLevel })
+      : db.transaction(fn)
   }
 }
 

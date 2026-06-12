@@ -100,5 +100,20 @@ for (const dialect of getTestDialects()) {
       const found = await users.findById(user.id)
       expect(found.name).toBe('TxAfter')
     })
+
+    /* QA-10416 */ it('[QA-10416] commits with an explicit isolation level', async () => {
+      // On PostgreSQL/MySQL the level is plumbed to Drizzle's transaction config;
+      // on memory it's a no-op. Either way the transaction must commit normally.
+      await ctx.storium.transaction(
+        async (tx) => {
+          await users.create({ email: 'tx_iso@test.com', name: 'Isolated' }, { tx })
+        },
+        { isolationLevel: 'serializable' }
+      )
+
+      const found = await users.findOne({ email: 'tx_iso@test.com' })
+      expect(found).not.toBeNull()
+      expect(found.name).toBe('Isolated')
+    })
   })
 }

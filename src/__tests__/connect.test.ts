@@ -165,6 +165,20 @@ describe('transaction', () => {
       expect(found).toBeNull()
     }
   })
+
+  /* QA-10415 */ it('[QA-10415] accepts an isolationLevel and ignores it on SQLite/memory (no-op, still commits)', async () => {
+    // SQLite is inherently serializable, so the option is a no-op here; the
+    // transaction must still commit normally. (PG/MySQL plumbing is covered by
+    // the integration suite.)
+    const result = await db.transaction(
+      async (tx: any) => items.create({ label: 'Isolated' }, { tx }),
+      { isolationLevel: 'serializable' }
+    )
+
+    const found = await items.findById(result.id)
+    expect(found).not.toBeNull()
+    expect(found.label).toBe('Isolated')
+  })
 })
 
 describe('disconnect', () => {

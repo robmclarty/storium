@@ -637,6 +637,27 @@ export type FromDrizzleOptions = {
   dialect?: Exclude<Dialect, 'memory'>
 }
 
+/**
+ * SQL transaction isolation level. The four standard levels, matching Drizzle's
+ * PostgreSQL/MySQL transaction config. SQLite/`memory` has no isolation-level
+ * knob (it's effectively serializable), so the level is ignored there.
+ */
+export type IsolationLevel =
+  | 'read uncommitted'
+  | 'read committed'
+  | 'repeatable read'
+  | 'serializable'
+
+/** Options for `db.transaction(fn, opts?)`. */
+export type TransactionOptions = {
+  /**
+   * Isolation level for the transaction. Applied on PostgreSQL/MySQL; **ignored
+   * on SQLite/`memory`**, which is inherently serializable (better-sqlite3 runs
+   * a single serialized connection).
+   */
+  isolationLevel?: IsolationLevel
+}
+
 /** The Storium instance returned by `connect()` or `fromDrizzle()`. */
 export type StoriumInstance<D extends Dialect = Dialect> = {
   /**
@@ -693,8 +714,14 @@ export type StoriumInstance<D extends Dialect = Dialect> = {
    * Scoped transaction helper (pre-bound to db). The `tx` handle is the
    * dialect's Drizzle database/transaction object — pass it as `opts.tx` to
    * any store method to enlist it in the transaction.
+   *
+   * `opts.isolationLevel` sets the transaction isolation level on
+   * PostgreSQL/MySQL; it's ignored on SQLite/`memory` (inherently serializable).
    */
-  transaction: <T>(fn: (tx: DrizzleDatabase<D>) => Promise<T>) => Promise<T>
+  transaction: <T>(
+    fn: (tx: DrizzleDatabase<D>) => Promise<T>,
+    opts?: TransactionOptions
+  ) => Promise<T>
   /** Close the database connection pool. */
   disconnect: () => Promise<void>
 }
