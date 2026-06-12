@@ -261,10 +261,14 @@ export const buildSchemaSet = (
   const zodSchemas = buildZodSchemas(drizzleTable, annotations, access, assertions)
   const jsonSchemas = buildJsonSchemas(drizzleTable, annotations, access)
 
+  // Schemas are built from runtime column introspection, so their element
+  // types are `unknown` here. The concrete row/insert types are recovered as
+  // `SchemaSet<TTable>` at the store boundary (createRepository), where the
+  // table type is known. This cast bridges the dynamic builder to the typed shape.
   return {
     selectSchema: createRuntimeSchema(zodSchemas.selectSchema, jsonSchemas.selectSchema),
     createSchema: createRuntimeSchema(zodSchemas.createSchema, jsonSchemas.createSchema),
     updateSchema: createRuntimeSchema(zodSchemas.updateSchema, jsonSchemas.updateSchema),
     fullSchema:   createRuntimeSchema(zodSchemas.fullSchema, jsonSchemas.fullSchema),
-  }
+  } as SchemaSet
 }
