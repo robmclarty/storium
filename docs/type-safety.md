@@ -2,7 +2,7 @@
 
 Storium wraps Drizzle ORM tables with validation, access control, and CRUD operations. This document explains what is statically typed, what remains `any`, and why.
 
-The type system was substantially tightened so that custom-query signatures, CRUD row types, dialect-aware `ctx`, soft-delete methods, and `StoreConfig` column keys all flow through end to end. The guarantees below are locked in by `expectTypeOf` tests in `src/store/__tests__/typed-store.test.ts`, enforced by `npm run typecheck`.
+The type system was substantially tightened so that custom-query signatures, CRUD row types, dialect-aware `ctx`, soft-delete methods, `StoreConfig` column keys, and hidden-column projection all flow through end to end. The guarantees below are locked in by `expectTypeOf` tests in `src/store/__tests__/typed-store.test.ts`, enforced by `npm run typecheck`.
 
 ## What's typed
 
@@ -98,13 +98,37 @@ defineStore(usersTable, { columns: { email: { required: true } } })   // ✅
 defineStore(usersTable, { columns: { emial: { required: true } } })   // ❌ 'emial' is not a column
 ```
 
+### 5. Hidden columns are omitted from public row types
+
+`hidden: true` strips a column from SELECT results at runtime; the public store row types now omit it too. The `hidden: true` literal is captured by a `const` config type parameter on `defineStore` / `db.defineStore` (`HiddenKeys`), and those columns are `Omit`ted from the row returned by every public method (`find`, `findOne`, `create`, `update`, `restore`, …):
+
+```typescript
+const users = db.defineStore(usersTable, { columns: { password: { hidden: true } } })
+
+const row = await users.findOne({ email })
+row!.email      // string
+row!.password   // ❌ compile error — Property 'password' does not exist on Omit<…, "password">
+```
+
+Two deliberate boundaries:
+
+- **Inputs keep hidden columns.** `hidden: true` implies writable, so `create()`/`update()` still accept `password` — only the returned rows strip it.
+- **`ctx` CRUD keeps the full row.** Inside custom queries the row type still includes hidden columns, because the `includeHidden: true` escape hatch lives on `PrepOptions` (the `ctx` surface), not the public `QueryOptions`. This is the place that legitimately needs the hash — e.g. authentication.
+
+```typescript
+defineStore(usersTable, { columns: { password: { hidden: true } } }).queries({
+  authenticate: (ctx) => async (email: string, pw: string) => {
+    const row = await ctx.findOne({ email }, { includeHidden: true })
+    return row && verify(pw, row.password)   // ✅ ctx row still types `password`
+  },
+})
+```
+
+> **Limitation.** Only `columns.<col>.hidden: true` is captured. A column hidden via table-level access overrides is still stripped at runtime but not reflected in the type.
+
 ## Intentional `any` — and why
 
 A handful of `any`s remain on purpose. They fall into two buckets: deliberate looseness at composition boundaries, and Drizzle internals that aren't publicly typed.
-
-### Public row types still include hidden columns
-
-`hidden: true` strips a column from SELECT results at runtime, but the public row type still lists it. Excluding hidden columns from the static row type needs the per-column `hidden` *literals* captured as types and `Omit`ted from the row — deferred (it multiplies type complexity and collides with the `includeHidden` escape hatch, which returns the full row). So `findOne()` may still type a `password` field the runtime actually strips. Treat hidden columns as "present in the type, absent at runtime" for now.
 
 ### Standalone (bare `Ctx`) query files
 
@@ -132,7 +156,6 @@ Dynamic property access on result rows using a runtime PK column name, since the
 
 ## Remaining future work
 
-- **Hidden-column projection** — `Omit` hidden columns from public row types (needs literal `hidden` capture; tension with `includeHidden`).
 - **Typed mixin results** — derive the join row shape (`InferRow<TTable> & prefixed related columns`) for `belongsTo`/`hasMany`/`hasOne`/`withMembers`.
 
-Both are best done while pre-1.0 breaking changes are still free, but after the core type chain (delivered here) has settled.
+Best done while pre-1.0 breaking changes are still free, but after the core type chain (delivered here) has settled. (Hidden-column projection — [§5 above](#5-hidden-columns-are-omitted-from-public-row-types) — is now done.)
