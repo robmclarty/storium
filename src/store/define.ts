@@ -36,6 +36,7 @@ import type {
   QueriesConfig,
   RepositoryContext,
   InferTableDialect,
+  HiddenKeys,
   TableAccess,
   TableDef,
   StoriumMeta,
@@ -61,6 +62,7 @@ export type StoreDefinition<
   TTable extends Table = Table,
   TQueries extends QueriesConfig = {},
   TSoftDelete extends boolean = false,
+  THidden extends string = never,
 > = {
   readonly __storeDefinition: true
   tableDef: TTable
@@ -71,6 +73,13 @@ export type StoreDefinition<
    * soft-delete methods (`restore`, `forceDestroy`, …) on the live store.
    */
   softDelete: TSoftDelete
+  /**
+   * The columns marked `hidden: true` in the config, as a string-literal union
+   * carrier (the runtime value is the hidden column-name array). `InferStore`
+   * reads this so `register()`'d stores omit hidden columns from their public
+   * row types, matching `db.defineStore()`.
+   */
+  hiddenColumns: THidden[]
   /** The Drizzle table object with storium metadata attached (for schemaCollector / drizzle-kit / mixins). */
   table: TTable & { storium: StoriumMeta }
   /** The table name (for schemaCollector). */
@@ -91,7 +100,7 @@ export type StoreDefinition<
     TFns extends Record<string, (ctx: RepositoryContext<InferTableDialect<TTable>, TTable, TSoftDelete>) => (...args: any[]) => any>
   >(
     fns: TFns
-  ) => StoreDefinition<TTable, TQueries & TFns, TSoftDelete>
+  ) => StoreDefinition<TTable, TQueries & TFns, TSoftDelete, THidden>
 }
 
 /**
@@ -298,12 +307,13 @@ const makeStoreDefinition = <
   TTable extends Table = Table,
   TQueries extends QueriesConfig = {},
   TSoftDelete extends boolean = false,
+  THidden extends string = never,
 >(
   drizzleTable: TTable,
   config: StoreConfig,
   queryFns: TQueries,
   assertions: AssertionRegistry = {}
-): StoreDefinition<TTable, TQueries, TSoftDelete> => {
+): StoreDefinition<TTable, TQueries, TSoftDelete, THidden> => {
   // Attach storium metadata if not already present
   if (!hasMeta(drizzleTable)) {
     attachStoriumMeta(drizzleTable, config, assertions)
@@ -316,14 +326,17 @@ const makeStoreDefinition = <
     // Runtime boolean from the attached metadata; typed as the captured literal
     // so the overloaded `defineStore` return types stay precise.
     softDelete: ((drizzleTable as any).storium.softDelete === true) as TSoftDelete,
+    // Runtime list of hidden column names from the attached metadata; typed as
+    // the captured `THidden` literal union so `InferStore` can `Omit` them.
+    hiddenColumns: ((drizzleTable as any).storium.access.hidden ?? []) as THidden[],
     table: drizzleTable as TTable & { storium: StoriumMeta },
     name: (drizzleTable as any).storium.name,
-    // The chained call threads TSoftDelete and merges queries at runtime. Its
-    // static return is cast to `any` because this non-generic lambda can't carry
-    // the per-call `TFns`; consumers get the precise `TQueries & TFns` type from
-    // StoreDefinition's `queries` signature, which annotates this field.
+    // The chained call threads TSoftDelete/THidden and merges queries at runtime.
+    // Its static return is cast to `any` because this non-generic lambda can't
+    // carry the per-call `TFns`; consumers get the precise `TQueries & TFns` type
+    // from StoreDefinition's `queries` signature, which annotates this field.
     queries: (newQueries: any): any =>
-      makeStoreDefinition<TTable, TQueries, TSoftDelete>(
+      makeStoreDefinition<TTable, TQueries, TSoftDelete, THidden>(
         drizzleTable,
         config,
         { ...queryFns, ...newQueries },
@@ -357,17 +370,20 @@ const makeStoreDefinition = <
  * // With soft delete — `register()`'d store exposes restore(), forceDestroy(), …
  * const userStore = defineStore(usersTable, { softDelete: true })
  *
+ * // With hidden columns — `register()`'d store omits them from row types
+ * const userStore = defineStore(usersTable, { columns: { password: { hidden: true } } })
+ *
  * // Without annotations
  * const bareStore = defineStore(usersTable)
  */
-export function defineStore<TTable extends Table<any>>(
+export function defineStore<TTable extends Table<any>, const TConfig extends StoreConfig<TTable> & { softDelete: true }>(
   drizzleTable: TTable,
-  config: StoreConfig<TTable> & { softDelete: true }
-): StoreDefinition<TTable, {}, true>
-export function defineStore<TTable extends Table<any>>(
+  config: TConfig
+): StoreDefinition<TTable, {}, true, HiddenKeys<TConfig>>
+export function defineStore<TTable extends Table<any>, const TConfig extends StoreConfig<TTable> = StoreConfig<TTable>>(
   drizzleTable: TTable,
-  config?: StoreConfig<TTable>
-): StoreDefinition<TTable, {}, false>
+  config?: TConfig
+): StoreDefinition<TTable, {}, false, HiddenKeys<TConfig>>
 
 export function defineStore(drizzleTable: any, config: StoreConfig = {}) {
   if (!isTable(drizzleTable)) {

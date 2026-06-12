@@ -1,6 +1,6 @@
 import { describe, it, expectTypeOf } from 'vitest'
 import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core'
-import { pgTable, uuid, varchar, integer as pgInteger, timestamp, type PgDatabase } from 'drizzle-orm/pg-core'
+import { pgTable, uuid, varchar, text as pgText, integer as pgInteger, timestamp, type PgDatabase } from 'drizzle-orm/pg-core'
 import { defineStore } from '../define'
 import type { InferStore, StoriumInstance, Promisable } from '../../types'
 
@@ -31,6 +31,14 @@ const pgSdUsers = pgTable('pg_sd_users', {
   id: uuid('id').primaryKey().defaultRandom(),
   email: varchar('email', { length: 255 }).notNull(),
   deletedAt: timestamp('deleted_at'),
+})
+
+// A table with a column to hide. Used to verify that `hidden: true` omits the
+// column from public row types (but not from inputs, and not from ctx CRUD).
+const pgSecretUsers = pgTable('pg_secret_users', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  email: varchar('email', { length: 255 }).notNull(),
+  password: pgText('password').notNull(),
 })
 
 describe('Store<TTable> type inference', () => {
@@ -279,5 +287,77 @@ describe('soft-delete method visibility', () => {
         return null
       },
     })
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Hidden-column projection. `hidden: true` strips a column from SELECT results
+// at runtime; the public row types now omit it too (via `PublicRow` /
+// `HiddenKeys`). The `hidden: true` literal is captured by a `const` config type
+// parameter on defineStore / db.defineStore. Inputs keep hidden columns (hidden
+// implies writable); ctx CRUD keeps the full row (the `includeHidden` escape
+// hatch lives there). QA-IDs start at 10407 to avoid colliding with the typed-
+// mixin work (QA-10403..10406) on its own branch.
+// ---------------------------------------------------------------------------
+describe('hidden-column projection', () => {
+  /* QA-10407 */ it('[QA-10407] register() path: hidden columns are omitted from public row types', () => {
+    const def = defineStore(pgSecretUsers, { columns: { password: { hidden: true } } })
+    type SecretStore = InferStore<typeof def>
+
+    type FoundRow = NonNullable<Awaited<ReturnType<SecretStore['findOne']>>>
+    expectTypeOf<FoundRow>().toHaveProperty('email')
+    expectTypeOf<FoundRow>().not.toHaveProperty('password')
+
+    // Write methods that return a row are projected too.
+    type CreatedRow = Awaited<ReturnType<SecretStore['create']>>
+    expectTypeOf<CreatedRow>().not.toHaveProperty('password')
+
+    // @ts-expect-error - password is hidden, absent from the projected row type
+    type _NoPw = CreatedRow['password']
+  })
+
+  /* QA-10408 */ it('[QA-10408] inputs still accept hidden columns (hidden implies writable)', () => {
+    const def = defineStore(pgSecretUsers, { columns: { password: { hidden: true } } })
+    type SecretStore = InferStore<typeof def>
+
+    // create()'s input keeps the hidden column — only the returned row strips it.
+    expectTypeOf<Parameters<SecretStore['create']>[0]>().toHaveProperty('password')
+  })
+
+  /* QA-10409 */ it('[QA-10409] simple path: db.defineStore omits hidden columns from row types', () => {
+    const _check = (db: StoriumInstance<'postgresql'>) => {
+      const u = db.defineStore(pgSecretUsers, { columns: { password: { hidden: true } } })
+      void (async () => {
+        const row = await u.findById('1')
+        if (!row) return
+        expectTypeOf(row).toHaveProperty('email')
+        // @ts-expect-error - password is hidden at the type level
+        void row.password
+      })
+    }
+    void _check
+  })
+
+  /* QA-10410 */ it('[QA-10410] ctx CRUD keeps the full row (includeHidden escape hatch lives here)', () => {
+    defineStore(pgSecretUsers, { columns: { password: { hidden: true } } }).queries({
+      auth: (ctx) => async (email: string) => {
+        // ctx is the internal surface: the row type still includes hidden columns,
+        // and `includeHidden: true` actually returns them at runtime.
+        const row = await ctx.findOne({ email }, { includeHidden: true })
+        if (!row) return null
+        expectTypeOf(row).toHaveProperty('password')
+        return row
+      },
+    })
+  })
+
+  /* QA-10411 */ it('[QA-10411] stores with no hidden columns are unaffected (THidden = never)', () => {
+    const def = defineStore(pgUsers)
+    type PlainStore = InferStore<typeof def>
+    type Row = NonNullable<Awaited<ReturnType<PlainStore['findOne']>>>
+
+    // Full row preserved — Omit<…, never> is a no-op.
+    expectTypeOf<Row>().toHaveProperty('email')
+    expectTypeOf<Row>().toHaveProperty('age')
   })
 })

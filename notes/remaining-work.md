@@ -20,8 +20,8 @@ the first thing to read before picking up an item.
   - PR 4 (sweeps) — `41165c2` merge
 - **Not pushed:** `main` is ~15 commits ahead of `origin/main`. **CI has never
   run** — `.github/workflows/ci.yml` only executes once pushed to GitHub.
-- **Open branch:** `pr5-typed-mixins` (item #2 below) is done off `main` but not
-  merged — it's waiting on the same first-green-CI gate as everything else.
+- **Merged work (pending the first green CI):** items #2 and #3 are merged into
+  `main` from `pr5-typed-mixins` / `pr6-hidden-projection`.
 - **Local gate is green:** `npm test` exits 0 (335 unit tests,
   `exactOptionalPropertyTypes` on) and `npm run typecheck:examples` is clean.
 - **Merged local branches** `pr3-ci-hardening` / `pr4-sweeps` still exist — safe
@@ -44,8 +44,8 @@ the first thing to read before picking up an item.
 | # | Item | Source | Priority | Status |
 |---|---|---|---|---|
 | 1 | Push + first green CI run | PR 3 follow-through | **P0 — immediate** | ⬜ not started |
-| 2 | Typed mixin results (4d) | plan PR 2 §4d | P1 | ✅ done (`pr5-typed-mixins`) |
-| 3 | Hidden-column projection (4c) | plan PR 2 §4c | P1 (high value / high complexity) | ⬜ not started |
+| 2 | Typed mixin results (4d) | plan PR 2 §4d | P1 | ✅ done (`pr5-typed-mixins`, merged) |
+| 3 | Hidden-column projection (4c) | plan PR 2 §4c | P1 (high value / high complexity) | ✅ done (`pr6-hidden-projection`, merged) |
 | 4 | Optional `logger` in `StoriumConfig` | plan PR 4 / report | P2 | ⬜ deferred |
 | 5 | Configurable transaction isolation levels | report Part 2 (med/low) | P3 | ⬜ not started |
 | 6 | Release workflow (tag-triggered publish) | plan PR 3 §5a | P3 (revisit at 1.0) | ⬜ deferred |
@@ -111,33 +111,45 @@ clean (`examples/relations/` still typechecks). `docs/type-safety.md` updated
 
 ## 3. Hidden-column projection (plan PR 2 §4c) — **P1**
 
-**Status:** ⬜ not started. *Highest-value correctness item, but the hardest.*
+**Status:** ✅ done on branch `pr6-hidden-projection` (impl commit `2192d9f`).
+Not yet merged into `main` (waiting on item #1's first green CI run, like the
+other unpushed work).
 
-**Why:** this is the one genuine **type lie** left: `hidden: true` strips a
-column from SELECT results at runtime, but the public row type still includes it
-(e.g. `findOne()` types a `password` field the runtime removes). Everything else
-remaining is looseness, not incorrectness.
+**What shipped:** the one genuine type lie is fixed — public store methods now
+`Omit` `hidden: true` columns from their returned rows.
+- New `HiddenKeys<TConfig>` (in `types.ts`) extracts the `hidden: true` column
+  literals from a **`const`-captured** config; `PublicRow<TTable, THidden> =
+  Omit<InferSelectModel<TTable>, THidden>` is used by `DefaultCRUD` /
+  `SoftDeleteCRUD` for every row-returning method. `THidden` defaults to `never`
+  (Omit no-op), so non-hidden stores are unchanged.
+- Threaded `THidden` through `Store`, `StoreDefinition` (+ a runtime
+  `hiddenColumns` carrier field) and `InferStore`, so the `register()` and
+  `db.defineStore()` paths agree.
 
-**Approach (from the plan):** capture per-column `hidden: true` as *literal*
-types from config, then `Omit` those keys from public row types. Apply the
-`Omit` to **public store methods only**.
+**How the known tensions resolved:**
+- *Literal capture:* a `const TConfig` type param on `defineStore` /
+  `db.defineStore` captures `hidden: true` **and** preserves the existing
+  column-key typo check (the excess-property check still fires — verified).
+  Required relaxing `conflictTarget` to `readonly string[]` (the one small
+  breaking change).
+- *`includeHidden` collision:* smaller than feared — `includeHidden` lives only
+  on `PrepOptions` (the `ctx` surface), not the public `QueryOptions`. So the
+  `Omit` applies cleanly to public methods, and **ctx CRUD is intentionally left
+  at the full row** (no conditional-return overloads needed).
+- *Inputs:* not omitted — `hidden` implies writable, so `create`/`update` still
+  accept hidden columns; only outputs strip them.
 
-**Known tensions (why it was deferred):**
-- Requires literal `TConfig` capture — the overload approach in PR 2
-  deliberately avoided this to dodge boolean-literal widening and
-  `conflictTarget: string[]` ↔ `readonly` friction. Re-introducing literal
-  capture (or `const` type params) brings those back.
-- Collides with the `includeHidden` escape hatch, which returns the **full**
-  row — the `Omit` must not apply on that path.
-- The plan itself hedges: "pre-1.0 simplicity has value too."
+**Risk check (passed):** error messages stay readable —
+`Property 'password' does not exist on type 'Omit<{ … }, "password">'`.
 
-**Acceptance:** public methods omit `hidden` columns from their row types;
-`includeHidden: true` still yields the full row; `@ts-expect-error` test proving
-a hidden field is absent from the default projection; remove the "hidden-column
-projection remains deferred" note from `docs/type-safety.md`.
+**Verification:** `npm test` green (340 unit tests — added QA-10407..QA-10411 in
+`typed-store.test.ts`); `npm run typecheck:examples` clean (the pg/sqlite/mysql
+examples hide `password_hash` and only read it via the ctx/`includeHidden`
+path). `docs/type-safety.md` updated (new §5; the deferred note removed).
 
-**Risk:** type complexity + error-message readability (plan risk #3: readable
-errors > maximal inference). If it makes errors unreadable, stop and reconsider.
+**Known limitation (documented):** only `columns.<col>.hidden: true` is
+captured — a column hidden via table-level access overrides is still stripped at
+runtime but not reflected in the type.
 
 ---
 
@@ -210,7 +222,6 @@ in case anything needs re-pushing from the original branch.
 ## Recommended order
 
 1. **Push and get CI green (#1)** — establishes a real signal before any new work.
-2. ~~**Typed mixin results (#2)**~~ — ✅ done (`pr5-typed-mixins`).
-3. **Hidden-column projection (#3)** — the real correctness win; tackle while
-   pre-1.0 breaking changes are still free, but timebox the generics complexity.
+2. ~~**Typed mixin results (#2)**~~ — ✅ done (`pr5-typed-mixins`, merged).
+3. ~~**Hidden-column projection (#3)**~~ — ✅ done (`pr6-hidden-projection`, merged).
 4. Then the P2/P3 polish (#4–#7) as appetite allows.
