@@ -35,6 +35,7 @@ import type {
   StoreConfig,
   QueriesConfig,
   RepositoryContext,
+  InferTableDialect,
   TableAccess,
   TableDef,
   StoriumMeta,
@@ -64,10 +65,21 @@ export type StoreDefinition<TTable extends Table = Table, TQueries extends Queri
   table: TTable & { storium: StoriumMeta }
   /** The table name (for schemaCollector). */
   name: string
-  /** Chain method: add custom query functions with full ctx inference. */
-  queries: <TKeys extends string>(
-    fns: Record<TKeys, (ctx: RepositoryContext) => (...args: any[]) => any>
-  ) => StoreDefinition<TTable, TQueries & Record<TKeys, (ctx: RepositoryContext) => (...args: any[]) => any>>
+  /**
+   * Chain method: add custom query functions with full ctx inference.
+   *
+   * Infers the entire function record (`TFns`) — not just its keys — so each
+   * query's parameter list and return type survive onto the live store after
+   * `register()`. `ctx` is typed `RepositoryContext<InferTableDialect<TTable>, TTable>`:
+   * the dialect is inferred from the table flavor (a `pgTable` pins
+   * `'postgresql'`), giving a concrete `ctx.drizzle` and typed CRUD even though
+   * the store definition is inert.
+   */
+  queries: <
+    TFns extends Record<string, (ctx: RepositoryContext<InferTableDialect<TTable>, TTable>) => (...args: any[]) => any>
+  >(
+    fns: TFns
+  ) => StoreDefinition<TTable, TQueries & TFns>
 }
 
 /**

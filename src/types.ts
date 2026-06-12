@@ -8,9 +8,9 @@
 
 import type { SQL, Table, InferSelectModel, InferInsertModel } from 'drizzle-orm'
 import type { ZodType, z as ZodNamespace } from 'zod'
-import type { PgDatabase } from 'drizzle-orm/pg-core'
-import type { MySqlDatabase } from 'drizzle-orm/mysql-core'
-import type { BaseSQLiteDatabase } from 'drizzle-orm/sqlite-core'
+import type { PgDatabase, PgTable } from 'drizzle-orm/pg-core'
+import type { MySqlDatabase, MySqlTable } from 'drizzle-orm/mysql-core'
+import type { BaseSQLiteDatabase, SQLiteTable } from 'drizzle-orm/sqlite-core'
 
 // ---------------------------------------------------------------- Dialect --
 
@@ -45,6 +45,25 @@ export type InferDialect<DB> =
   DB extends PgDatabase<any, any, any> ? 'postgresql' :
   DB extends MySqlDatabase<any, any, any, any> ? 'mysql' :
   DB extends BaseSQLiteDatabase<any, any, any, any> ? 'sqlite' :
+  Dialect
+
+/**
+ * Infer the Storium dialect from a Drizzle *table* type. A `pgTable` can only
+ * run against a PostgreSQL connection, so the table flavor pins the dialect.
+ *
+ * Used by the multi-file `defineStore().queries()` pattern, where the store
+ * definition is inert (no connection yet) — the table type is the only dialect
+ * signal available, and it's enough to give custom queries a concrete
+ * `ctx.drizzle` and typed CRUD. When `TTable` is the base `Table`, falls back
+ * to the full `Dialect` union (which resolves `ctx.drizzle` to `any`).
+ *
+ * Note: SQLite tables resolve to `'sqlite' | 'memory'` — both map to the same
+ * Drizzle database class, so `ctx.drizzle` is `BaseSQLiteDatabase` either way.
+ */
+export type InferTableDialect<TTable extends Table> =
+  TTable extends PgTable ? 'postgresql' :
+  TTable extends MySqlTable ? 'mysql' :
+  TTable extends SQLiteTable ? 'sqlite' | 'memory' :
   Dialect
 
 // --------------------------------------------------------- Drizzle Column --
@@ -225,12 +244,21 @@ export type RuntimeSchema<T = any> = {
   zod: ZodType<T>
 }
 
-/** The full set of runtime schemas derived from a table definition. */
-export type SchemaSet = {
-  selectSchema: RuntimeSchema
-  createSchema: RuntimeSchema
-  updateSchema: RuntimeSchema
-  fullSchema: RuntimeSchema
+/**
+ * The full set of runtime schemas derived from a table definition.
+ *
+ * Generic over `TTable` — when a specific Drizzle table type is provided,
+ * `validate()`/`tryValidate()` return the inferred row/insert types instead of
+ * `any`. When `TTable` is the base `Table` (default), falls back to `any`.
+ *
+ * These types are approximate: Zod transforms applied via column annotations
+ * can change the validated shape. They are a strong default, not a guarantee.
+ */
+export type SchemaSet<TTable extends Table = Table> = {
+  selectSchema: RuntimeSchema<InferRow<TTable>>
+  createSchema: RuntimeSchema<InferInput<TTable>>
+  updateSchema: RuntimeSchema<Partial<InferInput<TTable>>>
+  fullSchema: RuntimeSchema<InferRow<TTable>>
 }
 
 // ------------------------------------------------------------ StoriumMeta --
@@ -317,8 +345,11 @@ export type QueryOptions<TTable = any> = {
 /**
  * Extended options with escape hatches for the prep pipeline.
  * Available inside custom queries via `ctx` methods. The public Store API uses `QueryOptions`.
+ *
+ * Generic over `TTable` so the `where` callback (inherited from `QueryOptions`)
+ * receives the typed table inside ctx CRUD calls. Defaults to `any`.
  */
-export type PrepOptions = QueryOptions & {
+export type PrepOptions<TTable = any> = QueryOptions<TTable> & {
   /** Skip the entire prep pipeline and pass input through unprocessed. Default: false. */
   skipPrep?: boolean
   /** Enforce required fields. Default: true for create, false for update. */
@@ -354,8 +385,13 @@ export type RepositoryContext<D extends Dialect = Dialect, TTable extends Table 
   zod: typeof ZodNamespace
   /** The active dialect. */
   dialect: D
-  /** The Drizzle table object with `.storium` metadata. */
-  table: TableDef
+  /**
+   * The Drizzle table object with `.storium` metadata.
+   * When `TTable` is a specific table, exposes typed columns (`ctx.table.email`).
+   * When `TTable` is the base `Table` (e.g. a standalone `Ctx`-typed query file),
+   * falls back to `TableDef` so dynamic column access stays ergonomic.
+   */
+  table: Table extends TTable ? TableDef : TTable & { storium: StoriumMeta }
   /** Pre-built column map for select() (excludes hidden columns). */
   selectColumns: Record<string, any>
   /** Full column map including hidden columns. */
@@ -363,10 +399,10 @@ export type RepositoryContext<D extends Dialect = Dialect, TTable extends Table 
   /** Primary key column name(s). String for single PK, array for composite. */
   primaryKey: string | string[]
   /** Runtime schemas. */
-  schemas: SchemaSet
+  schemas: SchemaSet<TTable>
   /** The filter → transform → validate pipeline. */
-  prep: (input: Record<string, any>, opts?: PrepOptions) => Promise<Record<string, any>>
-} & DefaultCRUD<TTable, PrepOptions>
+  prep: (input: Record<string, any>, opts?: PrepOptions<TTable>) => Promise<Record<string, any>>
+} & DefaultCRUD<TTable, PrepOptions<TTable>>
 
 /**
  * Shorthand for `RepositoryContext` — the context object passed to custom
@@ -429,7 +465,7 @@ type DefaultCRUD<TTable extends Table = Table, TOpts = QueryOptions<TTable>> = {
 export type Store<TTable extends Table = Table, TQueries extends QueriesConfig = {}> = DefaultCRUD<TTable> & {
   /** The table name this store operates on. */
   name: string
-  schemas: SchemaSet
+  schemas: SchemaSet<TTable>
 } & {
   [K in keyof TQueries]: TQueries[K] extends (ctx: any) => infer R ? R : never
 }
@@ -567,16 +603,22 @@ export type StoriumInstance<D extends Dialect = Dialect> = {
     drizzleTable: TTable,
     config?: StoreConfig
   ) => Store<TTable> & {
-    queries: <TKeys extends string>(
-      queryFns: Record<TKeys, (ctx: RepositoryContext<D, TTable>) => (...args: any[]) => any>
-    ) => Store<TTable, Record<TKeys, (ctx: RepositoryContext<D, TTable>) => (...args: any[]) => any>>
+    queries: <
+      TFns extends Record<string, (ctx: RepositoryContext<D, TTable>) => (...args: any[]) => any>
+    >(
+      queryFns: TFns
+    ) => Store<TTable, TFns>
   }
   /** Materialize StoreDefinitions into live stores with CRUD + queries. */
   register: <T extends Record<string, any>>(
     storeDefs: T
   ) => { [K in keyof T]: InferStore<T[K]> }
-  /** Scoped transaction helper (pre-bound to db). */
-  transaction: <T>(fn: (tx: any) => Promise<T>) => Promise<T>
+  /**
+   * Scoped transaction helper (pre-bound to db). The `tx` handle is the
+   * dialect's Drizzle database/transaction object — pass it as `opts.tx` to
+   * any store method to enlist it in the transaction.
+   */
+  transaction: <T>(fn: (tx: DrizzleDatabase<D>) => Promise<T>) => Promise<T>
   /** Close the database connection pool. */
   disconnect: () => Promise<void>
 }
@@ -584,4 +626,4 @@ export type StoriumInstance<D extends Dialect = Dialect> = {
 /**
  * A value or a Promise of it. Matches the prep pipeline's Stage 0 (Promise resolution).
  */
-export type Promisable<T> = T | Promise<any>
+export type Promisable<T> = T | Promise<T>
