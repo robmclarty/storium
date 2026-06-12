@@ -4,6 +4,17 @@ All notable changes to Storium are documented here.
 
 This project uses [Semantic Versioning](https://semver.org/). Pre-1.0 releases may include breaking changes in minor versions.
 
+## 0.15.1
+
+Production-readiness hardening (plan PRs 3 + 4).
+
+- Add GitHub Actions CI (`.github/workflows/ci.yml`): lint, typecheck (+ examples), unit matrix on Node 20.x/22.x, and Docker-backed integration tests
+- Migrate import failures are now fatal — the schema collector and seed runner's store discovery throw `ConfigError` instead of warn-and-continue, so a typo'd schema file can no longer silently produce an incomplete migration
+- `CONTRIBUTING.md` documents the `npm rebuild better-sqlite3` fix for the `NODE_MODULE_VERSION` mismatch when switching Node versions (linked from README)
+- Add `"sideEffects": false` to `package.json` as a tree-shaking hint for bundlers
+- Enable `exactOptionalPropertyTypes`; `StoriumMeta.conflictTarget` is now `string[] | undefined`
+- Refresh docs: rewrite AGENTS.md Project Structure to the real layout, update `docs/type-safety.md` to the post-PR1/PR2 reality, and document the MySQL no-RETURNING update-then-select race in `docs/api-reference.md`
+
 ## 0.15.0
 
 Production-readiness type-safety pass (plan PRs 1 + 2). Pre-1.0: public type signatures changed where it improves the API.
