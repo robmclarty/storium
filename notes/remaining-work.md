@@ -12,24 +12,28 @@ the first thing to read before picking up an item.
 
 ## Current state (snapshot)
 
-- **Version:** `0.15.1` (bumped post-merge; `main` @ `0ad9843`).
+- **Version:** `0.15.2` (`main` @ `683cabe`, pushed to `origin/main`).
 - **Branch state:** all 4 production-readiness PRs are merged into `main`:
   - PR 1 (type pass-through) — `f52f7ab` merge
   - PR 2 (design generics) — `a49d538` merge
   - PR 3 (CI + runtime hardening) — `a42de35` merge
   - PR 4 (sweeps) — `41165c2` merge
-- **Not pushed:** `main` is ~15 commits ahead of `origin/main`. **CI has never
-  run** — `.github/workflows/ci.yml` only executes once pushed to GitHub.
-- **Merged work (pending the first green CI):** items #2, #3, #4, and #5 are
-  merged into `main` (`pr5-typed-mixins` / `pr6-hidden-projection` /
-  `pr7-logger` / `pr8-tx-isolation`). #2–#4 are fully locally verified; **#5's
-  PG/MySQL isolation path still needs the CI Docker integration job** (couldn't
-  run testcontainers locally — its memory path and types are verified).
-- **Local gate is green:** `npm test` exits 0 (348 unit tests,
-  `exactOptionalPropertyTypes` on) and `npm run typecheck:examples` is clean.
-- **Merged feature branches** `pr3-ci-hardening` / `pr4-sweeps` / `pr5-typed-mixins`
-  / `pr6-hidden-projection` / `pr7-logger` / `pr8-tx-isolation` are all merged
-  into `main` and safe to delete (item #7, after the push).
+- **Pushed + CI green:** `main` is up to date with `origin/main`. CI has run
+  green on a real runner — first on the `v0.15.2` push (run `27393242387`,
+  all 5 jobs ✓ incl. Integration/Docker), then again on the Node 24 bump
+  (GitHub PR #1, run `27396255745`, all 6 jobs ✓).
+- **CI now runs on Node 24:** `actions/checkout` / `actions/setup-node` bumped
+  to `@v5` (Node 24 runtime), pinned job runtimes moved 20.x → 24.x, and the
+  unit matrix covers `[20.x, 22.x, 24.x]`. The Node 20 action-deprecation
+  warning is resolved.
+- **All functional items done:** items #2–#5 are merged and CI-verified — #5's
+  PG/MySQL isolation path is now confirmed by the green Integration/Docker job
+  (it could not be run locally; Docker was unavailable).
+- **Local gate is green:** `npm test` exits 0 (`exactOptionalPropertyTypes` on)
+  and `npm run typecheck:examples` is clean.
+- **Merged feature branches deleted** (item #7): `pr1-restore-type-passthrough`
+  through `pr8-tx-isolation` removed locally. `fable-upgrades` (merged, but
+  outside this effort) intentionally kept.
 
 ### What's already done (so we don't re-open it)
 - `.queries()` signature preservation, table→dialect ctx inference, soft-delete
@@ -47,13 +51,13 @@ the first thing to read before picking up an item.
 
 | # | Item | Source | Priority | Status |
 |---|---|---|---|---|
-| 1 | Push + first green CI run | PR 3 follow-through | **P0 — immediate** | ⬜ not started |
+| 1 | Push + first green CI run | PR 3 follow-through | **P0 — immediate** | ✅ done (pushed; CI green, runs `27393242387` + `27396255745`) |
 | 2 | Typed mixin results (4d) | plan PR 2 §4d | P1 | ✅ done (`pr5-typed-mixins`, merged) |
 | 3 | Hidden-column projection (4c) | plan PR 2 §4c | P1 (high value / high complexity) | ✅ done (`pr6-hidden-projection`, merged) |
 | 4 | Optional `logger` in `StoriumConfig` | plan PR 4 / report | P2 | ✅ done (`pr7-logger`, merged) |
-| 5 | Configurable transaction isolation levels | report Part 2 (med/low) | P3 | 🟡 merged (`pr8-tx-isolation`); PG/MySQL pending CI |
-| 6 | Release workflow (tag-triggered publish) | plan PR 3 §5a | P3 (revisit at 1.0) | ⬜ deferred |
-| 7 | Delete merged local branches | housekeeping | P3 | ⬜ not started |
+| 5 | Configurable transaction isolation levels | report Part 2 (med/low) | P3 | ✅ done (`pr8-tx-isolation`, merged); PG/MySQL CI-verified |
+| 6 | Release workflow (tag-triggered publish) | plan PR 3 §5a | P3 (revisit at 1.0) | ⏸️ deferred |
+| 7 | Delete merged local branches | housekeeping | P3 | ✅ done (`pr1`–`pr8` deleted; `fable-upgrades` kept) |
 
 Legend: ⬜ not started · 🟡 doing · ✅ done · ⏸️ deferred
 
@@ -61,10 +65,20 @@ Legend: ⬜ not started · 🟡 doing · ✅ done · ⏸️ deferred
 
 ## 1. Push + first green CI run — **P0**
 
-**Status:** ⬜ not started.
+**Status:** ✅ done. `main` is pushed to `origin/main` (@ `683cabe`). CI has run
+green on a real runner twice:
+- **`v0.15.2` push** — run `27393242387`, all 5 jobs ✓ (Lint, Typecheck,
+  Unit 20.x/22.x, Integration/Docker). The Node 20 action-deprecation warning
+  surfaced here.
+- **Node 24 bump (PR #1)** — run `27396255745`, all 6 jobs ✓ (adds Unit 24.x),
+  deprecation warning resolved.
 
-**Why:** PR 3's entire value is unrealized until CI runs on a real runner.
-Nothing here has been validated on GitHub — only locally.
+The integration job started real Postgres + MySQL via testcontainers and passed
+— this is what validated item #5's PG/MySQL isolation path. No runner-only
+fallout. The "CI has never run" caveat is removed.
+
+**Why (historical):** PR 3's entire value was unrealized until CI ran on a real
+runner. Nothing had been validated on GitHub — only locally.
 
 **What to watch on the first run (CI-only risk surface):**
 - **typecheck job** — the `npm ci → tsc → build → per-example npm install →
@@ -180,10 +194,11 @@ non-test `src/` is the `errors.ts:20` docstring example. AGENTS.md's
 
 ## 5. Configurable transaction isolation levels (report Part 2) — **P3**
 
-**Status:** 🟡 merged into `main` (`Merge PR 8`, impl commit `871129a`);
-**PG/MySQL behavior still pending CI verification** (Docker unavailable locally —
-see caveat below). The local + type-level surface is verified; flip to ✅ once
-the integration job is green.
+**Status:** ✅ done — merged into `main` (`Merge PR 8`, impl commit `871129a`).
+**PG/MySQL behavior is now CI-verified:** the Integration (Docker) job ran the
+isolation suite against real Postgres + MySQL on a runner and passed (CI runs
+`27393242387` / `27396255745`). The earlier "pending CI" caveat (Docker
+unavailable locally) is resolved.
 
 **What shipped:** `db.transaction(fn, { isolationLevel })` plumbs the level to
 Drizzle's per-transaction config on PostgreSQL/MySQL.
@@ -199,13 +214,12 @@ Drizzle's per-transaction config on PostgreSQL/MySQL.
 - ✅ Locally verified: `npm test` (QA-10415 — memory accepts `isolationLevel`
   and still commits); memory integration path (QA-10416, 6/6 via
   `TEST_DIALECTS=memory`); typecheck + build + `typecheck:examples` clean.
-- ⏳ **CI-only:** the PG/MySQL isolation plumbing runs through the integration
-  suite (QA-10416 across dialects) but **could not be run locally** — Docker is
-  unavailable in this environment, so testcontainers can't start Postgres/MySQL.
-  The code is a thin pass-through to Drizzle's documented `transaction(fn,
-  { isolationLevel })` API (verified against the installed `drizzle-orm` type
-  defs: `PgTransactionConfig` / `MySqlTransactionConfig`). **Flip this to ✅ once
-  the integration job goes green** (folds into item #1's first CI run).
+- ✅ **CI-verified:** the PG/MySQL isolation plumbing ran through the integration
+  suite (QA-10416 across dialects) on a real runner — the Integration (Docker)
+  job started Postgres + MySQL via testcontainers and passed (CI runs
+  `27393242387` / `27396255745`). The code is a thin pass-through to Drizzle's
+  documented `transaction(fn, { isolationLevel })` API
+  (`PgTransactionConfig` / `MySqlTransactionConfig`).
 
 **Docs:** AGENTS.md "Transactions (dialect differences)" and
 `docs/api-reference.md` updated.
@@ -228,21 +242,25 @@ passing first.
 
 ## 7. Housekeeping — delete merged local branches — **P3**
 
-**Status:** ⬜ not started.
-
-These feature branches are all merged into `main` and can be deleted after the
-push (item 1), in case anything needs re-pushing from the original branch:
+**Status:** ✅ done. All eight merged PR branches were deleted locally:
 
 ```
-git branch -d pr3-ci-hardening pr4-sweeps pr5-typed-mixins \
+git branch -d pr1-restore-type-passthrough pr2-design-generics \
+              pr3-ci-hardening pr4-sweeps pr5-typed-mixins \
               pr6-hidden-projection pr7-logger pr8-tx-isolation
 ```
+
+`fable-upgrades` is also merged into `main` but was **intentionally kept** —
+it's outside this production-readiness effort. Delete it separately if it's
+no longer needed.
 
 ---
 
 ## Recommended order
 
-1. **Push and get CI green (#1)** — establishes a real signal before any new work.
+1. ~~**Push and get CI green (#1)**~~ — ✅ done (pushed; CI green on Node 24).
 2. ~~**Typed mixin results (#2)**~~ — ✅ done (`pr5-typed-mixins`, merged).
 3. ~~**Hidden-column projection (#3)**~~ — ✅ done (`pr6-hidden-projection`, merged).
-4. Then the P2/P3 polish (#4–#7) as appetite allows.
+4. ~~**P2/P3 polish (#4, #5, #7)**~~ — ✅ done (logger, tx isolation, branch cleanup).
+
+**Only remaining item:** #6 (release workflow) — intentionally deferred to 1.0.
