@@ -58,4 +58,18 @@ describe('seed runner', () => {
     expect(result.count).toBe(0)
     expect(result.message).toContain('No seed files')
   })
+
+  /* QA-10402 */ it('[QA-10402] throws (fatal) when a discovered schema file fails to import', async () => {
+    const fixturesDir = path.resolve(__dirname, 'fixtures')
+
+    // A store/schema file that cannot be imported must abort the seed run
+    // rather than silently seeding against an incomplete set of stores.
+    await expect(
+      seed(db, {
+        dialect: 'memory',
+        schema: [path.join(fixturesDir, 'broken/*.table.ts')],
+        seeds: path.join(fixturesDir, 'seeds'),
+      })
+    ).rejects.toThrow(/Failed to import/)
+  })
 })

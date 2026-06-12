@@ -22,6 +22,7 @@ import { glob } from 'glob'
 import { isStoreDefinition } from '../store/define'
 import { loadConfig } from './config'
 import { isTable, getTableName } from 'drizzle-orm/table'
+import { ConfigError } from '../errors'
 import type { StoriumInstance, StoriumConfig, Dialect } from '../types'
 
 // --------------------------------------------------------------- Types --
@@ -111,8 +112,11 @@ const importAndCollect = async <T>(
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err)
-      console.warn(
-        `[storium] Warning: Failed to import '${filePath}': ${message}`
+      // Fail hard: a store or schema file that cannot be imported (typo, syntax
+      // error, bad import) would otherwise be silently excluded from discovery,
+      // leaving seeds to run against an incomplete set of stores.
+      throw new ConfigError(
+        `Failed to import '${filePath}': ${message}`
       )
     }
   }

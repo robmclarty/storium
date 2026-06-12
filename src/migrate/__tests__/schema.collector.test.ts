@@ -45,4 +45,12 @@ describe('collectSchemas', () => {
     const widgetEntries = Object.keys(schemas).filter(k => k === 'widgets')
     expect(widgetEntries).toHaveLength(1)
   })
+
+  /* QA-10401 */ it('[QA-10401] throws (fatal) when a schema file fails to import', async () => {
+    // A schema file that cannot be imported must abort collection rather than
+    // silently producing an incomplete migration.
+    await expect(
+      collectSchemas(path.join(fixturesDir, 'broken/*.table.ts'))
+    ).rejects.toThrow(/Failed to import schema file/)
+  })
 })

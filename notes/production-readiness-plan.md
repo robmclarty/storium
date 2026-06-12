@@ -314,7 +314,61 @@ changes are free, but after the core chain is solid.
 
 ---
 
-## PR 3 — CI + runtime hardening (Phase 5)
+## PR 3 — CI + runtime hardening (Phase 5) — ✅ DONE
+
+**Status:** Implemented and green. Commit `30c58f7` on branch `pr3-ci-hardening`
+(off `main`). `npm test` passes end-to-end (typecheck + lint + build + 335 unit
+tests across 27 files, exit 0 — the two new tests are QA-10401/QA-10402) and
+`npm run typecheck:examples` is clean. The CI YAML validates clean under
+`actionlint`. **Next up: PR 4** (sweeps), branched off this branch.
+
+**5a — done, with refinements.** `.github/workflows/ci.yml` runs on push/PR to
+`main` with four jobs exactly as scoped: **lint** (`npm run lint`), **typecheck**
+(`tsc -p tsconfig.check.json --noEmit` + `typecheck:examples`), **unit** (matrix
+Node 20.x/22.x, `npm run build` + `npm run test:run`), **integration**
+(ubuntu-latest, `npm run test:integration` — testcontainers against the running
+Docker daemon). Refinements discovered during implementation:
+  - **Examples need a built `dist` *and* per-example install** to typecheck. Each
+    example depends on `storium` via `file:../..` (npm symlinks it), so its
+    `import 'storium'` resolves to the package's `exports` → `./dist/*`; and
+    `drizzle-orm`/`zod` resolve by parent-directory traversal up to the **root**
+    `node_modules` (examples are nested in the repo). So the typecheck job does:
+    `npm ci` → `npx tsc -p tsconfig.check.json` → `npm run build` →
+    `npm install` in each `examples/*/` → `npm run typecheck:examples`.
+  - Used the existing **`test:run`** (`vitest run`) and **`test:integration`**
+    (`TEST_DIALECTS=memory,postgresql,mysql vitest run -c
+    vitest.integration.config.ts`) scripts rather than re-spelling the vitest
+    invocation, so CI tracks the package scripts.
+  - Added `permissions: contents: read` and a `concurrency` group with
+    `cancel-in-progress` (cheap hardening). Release/publish workflow skipped, as
+    the plan permits (manual `npm run release` until 1.0).
+
+**5b — done.** Chose a new **`CONTRIBUTING.md`** (over the user-facing README
+body) for the dev-environment notes, including the `npm rebuild better-sqlite3`
+fix for the `NODE_MODULE_VERSION` mismatch when switching Node versions; the
+README's new "Contributing" section links to it.
+
+**5c — done as written; line numbers confirmed.** Both warn-and-continue sites
+were the *discovery/collection* import helpers, exactly at the cited lines:
+`importAndCollect`'s catch in `src/migrate/seed.ts:112-117` and the collect loop
+in `src/migrate/collector.ts:88-93`. Both now `throw new ConfigError(...)`
+(from `src/errors.ts`) — a typo'd config file is a configuration problem, and
+`ConfigError` is more precise than a bare `Error`. Pre-1.0: fatal, no opt-out
+flag. The seed *runner*'s own per-file try/catch (`seed.ts:~234`) already failed
+loudly (returns `{ success: false }`) and was left unchanged.
+  - **Tests:** added **QA-10401** (`schema.collector.test.ts`) and **QA-10402**
+    (`seed.test.ts`), each asserting `.rejects.toThrow(/Failed to import/)`,
+    backed by a new fixture `fixtures/broken/bad.table.ts` that throws at import
+    time. The fixture lives under a dedicated `broken/` dir so the existing
+    `entities/*` globs never pick it up, and is covered by knip's existing
+    `fixtures/**` entry pattern. Non-vacuous: the old warn-and-continue path
+    *resolved* instead of rejecting, so both tests fail without the source change.
+  - Naming note for reviewers: the collector's test file is
+    `src/migrate/__tests__/schema.collector.test.ts` (source is `collector.ts`).
+
+---
+
+### Original plan (for reference)
 
 ### 5a. GitHub Actions
 
