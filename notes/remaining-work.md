@@ -20,6 +20,8 @@ the first thing to read before picking up an item.
   - PR 4 (sweeps) — `41165c2` merge
 - **Not pushed:** `main` is ~15 commits ahead of `origin/main`. **CI has never
   run** — `.github/workflows/ci.yml` only executes once pushed to GitHub.
+- **Open branch:** `pr5-typed-mixins` (item #2 below) is done off `main` but not
+  merged — it's waiting on the same first-green-CI gate as everything else.
 - **Local gate is green:** `npm test` exits 0 (335 unit tests,
   `exactOptionalPropertyTypes` on) and `npm run typecheck:examples` is clean.
 - **Merged local branches** `pr3-ci-hardening` / `pr4-sweeps` still exist — safe
@@ -42,7 +44,7 @@ the first thing to read before picking up an item.
 | # | Item | Source | Priority | Status |
 |---|---|---|---|---|
 | 1 | Push + first green CI run | PR 3 follow-through | **P0 — immediate** | ⬜ not started |
-| 2 | Typed mixin results (4d) | plan PR 2 §4d | P1 | ⬜ not started |
+| 2 | Typed mixin results (4d) | plan PR 2 §4d | P1 | ✅ done (`pr5-typed-mixins`) |
 | 3 | Hidden-column projection (4c) | plan PR 2 §4c | P1 (high value / high complexity) | ⬜ not started |
 | 4 | Optional `logger` in `StoriumConfig` | plan PR 4 / report | P2 | ⬜ deferred |
 | 5 | Configurable transaction isolation levels | report Part 2 (med/low) | P3 | ⬜ not started |
@@ -80,30 +82,30 @@ runner-only fallout. Then the tracker's "CI has never run" caveat can be removed
 
 ## 2. Typed mixin results (plan PR 2 §4d) — **P1**
 
-**Status:** ⬜ not started. *Recommended first substantive item — self-contained,
-doesn't build on anything else.*
+**Status:** ✅ done on branch `pr5-typed-mixins` (impl commit `4f33263`). Not yet
+merged into `main` (waiting on item #1's first green CI run, same as the other
+unpushed work).
 
-**Why:** `belongsTo` / `hasMany` / `hasOne` / `withMembers` type their method
-*names* via template literals but return `(id) => Promise<any>`. The join row
-shape is recoverable from the related table type + alias literal.
+**What shipped:** `belongsTo` / `hasMany` / `hasOne` / `withMembers` now return a
+typed join row instead of `(id) => Promise<any>`.
+- New `src/mixins/relation-types.ts` — `RowOf` / `SelectedRow` / `PrefixedRow`.
+  `RowOf<T> = T extends Table ? InferSelectModel<T> : Record<string, unknown>`,
+  so the mixins stay **unconstrained** (no `extends Table`): the existing
+  `as unknown as TableDef` call sites in the runtime tests keep compiling, while
+  real `defineStore(...).table` args get precise rows.
+- `select` is captured as a `const` tuple, narrowing the result to the chosen
+  columns; omitting it yields the full related row.
+- `belongsTo` prefixes related columns by alias (`${alias}_${col}`) and
+  intersects an open index signature for the parent's inlined columns (the
+  parent table type isn't visible to the mixin — `ctx` stays `any` internally,
+  as intended).
+- `withMembers`' `addMember` / `getMembers` return the join row; the rest keep
+  their scalar/void result.
 
-**Where:** `src/mixins/belongsTo.ts:49` and `:101` (the `Promise<any>` in the
-`findWith${Capitalize<A>}` mapped type); same pattern in `hasMany.ts`,
-`hasOne.ts`, `withMembers.ts`.
-
-**Approach (from the plan):** with the related table's type + alias available,
-type the result as a mapped type that prefixes the related columns by alias —
-roughly `InferRow<TTable> & { [K in keyof RelatedCols as `${A}_${K}`]: ... }`.
-Pre-1.0, breaking changes are free.
-
-**Acceptance:** mixin methods return a typed join row (not `Promise<any>`);
-`expectTypeOf` coverage added to `typed-store.test.ts` (or a mixin-specific type
-test); examples in `examples/relations/` still typecheck; update the "typed
-mixin results remain deferred" note in `docs/type-safety.md`.
-
-**Risk:** adds a generics surface to the mixins; keep `ctx: any` internally
-(circular-import avoidance between `types.ts` and the mixin modules is
-intentional — see `docs/type-safety.md`).
+**Verification:** `npm test` green (now 339 unit tests — added QA-10403..QA-10406
+in `src/mixins/__tests__/typed-mixins.test.ts`); `npm run typecheck:examples`
+clean (`examples/relations/` still typechecks). `docs/type-safety.md` updated
+(new §5; the deferred note removed).
 
 ---
 
@@ -208,7 +210,7 @@ in case anything needs re-pushing from the original branch.
 ## Recommended order
 
 1. **Push and get CI green (#1)** — establishes a real signal before any new work.
-2. **Typed mixin results (#2)** — self-contained; a clean standalone PR.
+2. ~~**Typed mixin results (#2)**~~ — ✅ done (`pr5-typed-mixins`).
 3. **Hidden-column projection (#3)** — the real correctness win; tackle while
    pre-1.0 breaking changes are still free, but timebox the generics complexity.
 4. Then the P2/P3 polish (#4–#7) as appetite allows.
