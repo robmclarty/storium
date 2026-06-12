@@ -19,6 +19,7 @@
 
 import { eq, and, asc, desc, isNull, type SQL, type Column } from 'drizzle-orm'
 import type { TableDef, OrderBySpec } from '../types'
+import type { SelectedRow } from './relation-types'
 import { StoreError } from '../errors'
 
 // -------------------------------------------------- Shared Relation Helpers --
@@ -28,7 +29,7 @@ import { StoreError } from '../errors'
  */
 export function buildRelatedSelect(
   relatedTable: TableDef,
-  columns: string[]
+  columns: readonly string[]
 ): Record<string, Column> {
   const selectObj: Record<string, Column> = {}
   for (const col of columns) {
@@ -70,7 +71,7 @@ export function buildRelatedWhere(
  */
 export function prepareRelatedMixin(
   relatedTableDef: TableDef,
-  options: { alias: string; select?: string[] }
+  options: { alias: string; select?: readonly string[] | undefined }
 ) {
   const alias = options.alias
   const methodName = `find${alias.charAt(0).toUpperCase()}${alias.slice(1)}For`
@@ -83,27 +84,39 @@ export function prepareRelatedMixin(
 
 // ------------------------------------------------------------ hasMany --
 
-type HasManyOptions<A extends string = string> = {
+type HasManyOptions<A extends string, S extends readonly string[] | undefined> = {
   /** The alias for the related collection (used in the method name: find{Alias}For). */
   alias: A
   /** Which columns to select from the related table. If omitted, uses all selectable columns. */
-  select?: string[]
+  select?: S
+}
+
+/** The `find{Alias}For` method shape produced by `hasMany`. */
+type HasManyQuery<TRelated, A extends string, S extends readonly string[] | undefined> = {
+  [K in `find${Capitalize<A>}For`]: (ctx: any) => (id: string | number, opts?: any) => Promise<SelectedRow<TRelated, S>[]>
 }
 
 /**
  * Generate a "has many" query for a related table.
  *
- * @param relatedTableDef - The TableDef of the related entity
+ * @param relatedTableDef - The related entity's table (a `defineStore(...).table` or a `TableDef`)
  * @param foreignKey - The column on the related table referencing the parent entity's PK
  * @param options - Alias and optional column selection
  * @returns A custom query function to spread into queries
  */
-export const hasMany = <A extends string>(
-  relatedTableDef: TableDef,
+export const hasMany = <
+  TRelated,
+  A extends string,
+  const S extends readonly string[] | undefined = undefined,
+>(
+  relatedTableDef: TRelated,
   foreignKey: string,
-  options: HasManyOptions<A>
-): { [K in `find${Capitalize<A>}For`]: (ctx: any) => (id: string | number, opts?: any) => Promise<any[]> } => {
-  const { relatedTable, methodName, columns: relatedColumns } = prepareRelatedMixin(relatedTableDef, options)
+  options: HasManyOptions<A, S>
+): HasManyQuery<TRelated, A, S> => {
+  const { relatedTable, methodName, columns: relatedColumns } = prepareRelatedMixin(
+    relatedTableDef as unknown as TableDef,
+    options
+  )
 
   return {
     /**
@@ -138,5 +151,5 @@ export const hasMany = <A extends string>(
         )
       }
     },
-  } as { [K in `find${Capitalize<A>}For`]: (ctx: any) => (id: string | number, opts?: any) => Promise<any[]> }
+  } as HasManyQuery<TRelated, A, S>
 }
