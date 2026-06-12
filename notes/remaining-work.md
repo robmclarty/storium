@@ -20,6 +20,11 @@ the first thing to read before picking up an item.
   - PR 4 (sweeps) — `41165c2` merge
 - **Not pushed:** `main` is ~15 commits ahead of `origin/main`. **CI has never
   run** — `.github/workflows/ci.yml` only executes once pushed to GitHub.
+- **Open branches (off `main`, unmerged, waiting on the first green CI):**
+  `pr5-typed-mixins` (#2), `pr6-hidden-projection` (#3), `pr7-logger` (#4), and
+  `pr8-tx-isolation` (#5, this branch). Each flips only its own tracker row.
+  #2–#4 are fully locally verified; **#5's PG/MySQL path needs the CI Docker
+  integration job** (can't run testcontainers locally).
 - **Local gate is green:** `npm test` exits 0 (335 unit tests,
   `exactOptionalPropertyTypes` on) and `npm run typecheck:examples` is clean.
 - **Merged local branches** `pr3-ci-hardening` / `pr4-sweeps` still exist — safe
@@ -45,7 +50,7 @@ the first thing to read before picking up an item.
 | 2 | Typed mixin results (4d) | plan PR 2 §4d | P1 | ⬜ not started |
 | 3 | Hidden-column projection (4c) | plan PR 2 §4c | P1 (high value / high complexity) | ⬜ not started |
 | 4 | Optional `logger` in `StoriumConfig` | plan PR 4 / report | P2 | ⬜ deferred |
-| 5 | Configurable transaction isolation levels | report Part 2 (med/low) | P3 | ⬜ not started |
+| 5 | Configurable transaction isolation levels | report Part 2 (med/low) | P3 | 🟡 impl (`pr8-tx-isolation`); PG/MySQL pending CI |
 | 6 | Release workflow (tag-triggered publish) | plan PR 3 §5a | P3 (revisit at 1.0) | ⬜ deferred |
 | 7 | Delete merged local branches | housekeeping | P3 | ⬜ not started |
 
@@ -166,18 +171,34 @@ custom logger receives the messages.
 
 ## 5. Configurable transaction isolation levels (report Part 2) — **P3**
 
-**Status:** ⬜ not started. Never scoped into a PR.
+**Status:** 🟡 implemented on branch `pr8-tx-isolation` (impl commit `871129a`);
+**PG/MySQL behavior pending CI verification** (Docker unavailable locally — see
+caveat below). Not merged into `main`.
 
-**Why:** the report flags that transaction isolation levels aren't configurable.
-Drizzle supports per-transaction isolation config on Postgres/MySQL.
+**What shipped:** `db.transaction(fn, { isolationLevel })` plumbs the level to
+Drizzle's per-transaction config on PostgreSQL/MySQL.
+- New `IsolationLevel` (`'read uncommitted' | 'read committed' | 'repeatable
+  read' | 'serializable'`) and `TransactionOptions` types on the public API.
+- `createWithTransaction` passes `{ isolationLevel }` to `db.transaction()` only
+  when requested; the default path is untouched.
+- **SQLite/`memory`:** the option is a **no-op** (not an error) — better-sqlite3
+  runs a single serialized connection, so it's inherently serializable. Chose
+  no-op over erroring so the same code stays portable across dialects.
 
-**Where:** the `transaction()` wrapper (`src/connect.ts`) and SQLite's manual
-`BEGIN/COMMIT/ROLLBACK` path. SQLite has no isolation-level knob, so this is a
-Postgres/MySQL-only option that must no-op (or error clearly) on SQLite/memory.
+**Verification:**
+- ✅ Locally verified: `npm test` (QA-10415 — memory accepts `isolationLevel`
+  and still commits); memory integration path (QA-10416, 6/6 via
+  `TEST_DIALECTS=memory`); typecheck + build + `typecheck:examples` clean.
+- ⏳ **CI-only:** the PG/MySQL isolation plumbing runs through the integration
+  suite (QA-10416 across dialects) but **could not be run locally** — Docker is
+  unavailable in this environment, so testcontainers can't start Postgres/MySQL.
+  The code is a thin pass-through to Drizzle's documented `transaction(fn,
+  { isolationLevel })` API (verified against the installed `drizzle-orm` type
+  defs: `PgTransactionConfig` / `MySqlTransactionConfig`). **Flip this to ✅ once
+  the integration job goes green** (folds into item #1's first CI run).
 
-**Acceptance:** `db.transaction(fn, { isolationLevel })` (or similar) plumbs the
-level to Drizzle on PG/MySQL; documented dialect differences; integration test
-on at least Postgres.
+**Docs:** AGENTS.md "Transactions (dialect differences)" and
+`docs/api-reference.md` updated.
 
 ---
 
