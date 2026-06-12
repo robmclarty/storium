@@ -483,6 +483,12 @@ const router = t.router({
 })
 ```
 
+## Contributing
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for local setup, the test suite, and
+environment gotchas (including the `npm rebuild better-sqlite3` fix for
+`NODE_MODULE_VERSION` mismatches when switching Node versions).
+
 ## License
 
 MIT

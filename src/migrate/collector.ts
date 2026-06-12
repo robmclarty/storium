@@ -20,6 +20,7 @@
 import { glob } from 'glob'
 import { hasMeta } from '../store/define'
 import { isTable, getTableName } from 'drizzle-orm/table'
+import { ConfigError } from '../errors'
 
 // --------------------------------------------------------------- Types --
 
@@ -87,8 +88,11 @@ export const collectSchemas = async (
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err)
-      console.warn(
-        `[storium] Warning: Failed to import schema file '${filePath}': ${message}`
+      // Fail hard: a schema file that cannot be imported (typo, syntax error,
+      // bad import) would otherwise silently produce an incomplete migration —
+      // the worst failure mode the migration tooling has.
+      throw new ConfigError(
+        `Failed to import schema file '${filePath}': ${message}`
       )
     }
   }
