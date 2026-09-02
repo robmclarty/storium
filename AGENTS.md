@@ -100,8 +100,17 @@ storium.connect({
   pool: { min: 2, max: 10 },
   seeds: './seeds',
   logger: customLogger,  // optional Logger ({ log, warn, error }); defaults to console
+  driver: { ssl: { rejectUnauthorized: false } },  // passed through to pg.Pool / mysql2.createPool / better-sqlite3
 })
 ```
+
+`driver` (optional) is spread into the driver's pool/client constructor —
+`pg.PoolConfig`, `mysql2.PoolOptions`, or `better-sqlite3.Options` by dialect.
+It is the escape hatch for TLS, timeouts, `application_name`, `verbose`, and
+anything else storium doesn't model. Storium's own keys win: the URL comes only
+from `url` / `dbCredentials` (a `connectionString` / `uri` in `driver` throws
+`ConfigError`), and `pool.min` / `pool.max` override the same keys in `driver`.
+Untyped (`Record<string, unknown>`) because the drivers are optional peers.
 
 `logger` (optional) sinks storium's own diagnostics — the `defineStore`
 re-config warning and the seed runner's progress/error lines. Defaults to

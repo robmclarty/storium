@@ -483,6 +483,33 @@ const router = t.router({
 })
 ```
 
+### Driver
+
+Anything the underlying driver accepts that storium doesn't model — TLS,
+timeouts, `application_name`, better-sqlite3's `verbose` — goes through
+`driver`, which is spread into the pool/client constructor. You keep
+`connect()`; you don't have to build the pool yourself.
+
+```typescript
+const db = storium.connect({
+  dialect: 'postgresql',
+  url: process.env.DATABASE_URL,
+  pool: { max: 10 },
+  driver: {
+    ssl: { ca: fs.readFileSync('rds-global-bundle.pem', 'utf8') },
+    application_name: 'api',
+    connectionTimeoutMillis: 5_000,
+  },
+})
+```
+
+Two things stay storium's: the connection URL comes only from `url` /
+`dbCredentials` (a `connectionString` / `uri` inside `driver` is a
+`ConfigError`, not a silent override), and `pool.min` / `pool.max` win over the
+same keys given in `driver`. The option is untyped because the drivers are
+optional peers; add `satisfies Partial<PoolConfig>` at the call site if you want
+checking.
+
 ## Contributing
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for local setup, the test suite, and

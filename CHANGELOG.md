@@ -4,6 +4,11 @@ All notable changes to Storium are documented here.
 
 This project uses [Semantic Versioning](https://semver.org/). Pre-1.0 releases may include breaking changes in minor versions.
 
+## Unreleased
+
+- **Driver passthrough** — `StoriumConfig.driver` is spread into the underlying driver's pool/client constructor (`pg.PoolConfig` / `mysql2.PoolOptions` / `better-sqlite3.Options`), so TLS, timeouts, `application_name` and the like no longer require dropping to `fromDrizzle()` with a hand-built pool. Storium's own keys win: the URL comes only from `url` / `dbCredentials` (a `connectionString` / `uri` in `driver` is a `ConfigError`), and `pool.min` / `pool.max` override the same keys in `driver`
+- Fix (pg): `pool.min` / `pool.max` are now only set when given, instead of being passed as explicit `undefined` — previously harmless, but it would have clobbered a `driver`-supplied `min` / `max`
+
 ## 0.15.2
 
 Type-safety and ergonomics follow-ups (post-readiness PRs 5–8).
