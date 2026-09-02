@@ -4,10 +4,14 @@ All notable changes to Storium are documented here.
 
 This project uses [Semantic Versioning](https://semver.org/). Pre-1.0 releases may include breaking changes in minor versions.
 
-## Unreleased
+## 0.15.3
+
+Driver passthrough on `connect()` (PRs #3 + #4).
 
 - **Driver passthrough** — `StoriumConfig.driverOptions` is spread into the underlying driver's pool/client constructor (`pg.PoolConfig` / `mysql2.PoolOptions` / `better-sqlite3.Options`), so TLS, timeouts, `application_name` and the like no longer require dropping to `fromDrizzle()` with a hand-built pool. Storium's own keys win: the URL comes only from `url` / `dbCredentials` (a `connectionString` / `uri` in `driverOptions` is a `ConfigError`), and `pool.min` / `pool.max` override the same keys in `driverOptions`. Named `driverOptions` rather than `driver` because drizzle-kit reserves `driver` in the shared config file and rejects any other value
 - Fix (pg): `pool.min` / `pool.max` are now only set when given, instead of being passed as explicit `undefined` — previously harmless, but it would have clobbered a `driverOptions`-supplied `min` / `max`
+- CI: unit matrix now runs on Node 20.x / 22.x / 24.x (`actions/checkout` and `actions/setup-node` bumped to v5)
+- CI: tag-triggered release automation — pushing `vX.Y.Z` runs `publish.yaml` (full gate + integration, then `npm publish --provenance` via npm Trusted Publishing, paused for approval in the `npm-publish` environment) and `release.yaml` (GitHub Release with notes from this changelog section). The manual `npm run release` script is retired; `/version` now creates and pushes the tag
 
 ## 0.15.2
 
