@@ -181,6 +181,122 @@ describe('transaction', () => {
   })
 })
 
+describe('driver options', () => {
+  // pg.Pool and mysql2.createPool both defer connecting until first use, so a
+  // config-level assertion needs no database: construct, inspect what the driver
+  // stored, disconnect. `db.drizzle.$client` is the pool drizzle was handed; its
+  // `options` (pg-pool) and `pool.config` (mysql2) are stable internals rather
+  // than public types, hence the reads through `unknown`. Port 1 is never
+  // dialed.
+  const PG_URL = 'postgresql://storium:storium@127.0.0.1:1/storium'
+  const MYSQL_URL = 'mysql://storium:storium@127.0.0.1:1/storium'
+
+  const pgOptions = (db: { drizzle: unknown }) =>
+    (db.drizzle as { $client: { options: Record<string, unknown> } }).$client.options
+
+  const mysqlPoolConfig = (db: { drizzle: unknown }) =>
+    (db.drizzle as {
+      $client: { pool: { config: { connectionConfig: Record<string, unknown>; waitForConnections: boolean } } }
+    }).$client.pool.config
+
+  /* QA-10417 */ it('[QA-10417] pg: spreads driver options into pg.Pool alongside the URL', async () => {
+    const db = storium.connect({
+      dialect: 'postgresql',
+      url: PG_URL,
+      driver: { ssl: { rejectUnauthorized: false }, application_name: 'storium-test' },
+    })
+    const options = pgOptions(db)
+    expect(options.connectionString).toBe(PG_URL)
+    expect(options.ssl).toEqual({ rejectUnauthorized: false })
+    expect(options.application_name).toBe('storium-test')
+    await db.disconnect()
+  })
+
+  /* QA-10418 */ it('[QA-10418] pg: pool.min / pool.max win over the same keys in driver', async () => {
+    const db = storium.connect({
+      dialect: 'postgresql',
+      url: PG_URL,
+      pool: { min: 1, max: 3 },
+      driver: { min: 50, max: 99 },
+    })
+    expect(pgOptions(db).min).toBe(1)
+    expect(pgOptions(db).max).toBe(3)
+    await db.disconnect()
+  })
+
+  /* QA-10419 */ it('[QA-10419] pg: a driver-supplied max survives when pool is not given', async () => {
+    // Guards the conditional spread: the old code passed `max: undefined`
+    // explicitly, which would have overwritten this 7 and let pg-pool fall back
+    // to its default of 10.
+    const db = storium.connect({ dialect: 'postgresql', url: PG_URL, driver: { max: 7 } })
+    expect(pgOptions(db).max).toBe(7)
+    await db.disconnect()
+  })
+
+  /* QA-10420 */ it('[QA-10420] pg: rejects driver.connectionString and URL components with ConfigError', () => {
+    expect(() => storium.connect({
+      dialect: 'postgresql',
+      url: PG_URL,
+      driver: { connectionString: 'postgresql://elsewhere/other' },
+    })).toThrow(ConfigError)
+    expect(() => storium.connect({
+      dialect: 'postgresql',
+      url: PG_URL,
+      driver: { database: 'other' },
+    })).toThrow(ConfigError)
+  })
+
+  /* QA-10421 */ it('[QA-10421] mysql: spreads driver options into mysql2.createPool alongside the URL', async () => {
+    const db = storium.connect({
+      dialect: 'mysql',
+      url: MYSQL_URL,
+      driver: { ssl: { rejectUnauthorized: false }, waitForConnections: false },
+    })
+    const config = mysqlPoolConfig(db)
+    expect(config.connectionConfig.ssl).toEqual({ rejectUnauthorized: false })
+    expect(config.connectionConfig.host).toBe('127.0.0.1')
+    expect(config.connectionConfig.database).toBe('storium')
+    expect(config.waitForConnections).toBe(false)
+    await db.disconnect()
+  })
+
+  /* QA-10422 */ it('[QA-10422] mysql: rejects driver.uri and URL components with ConfigError', () => {
+    expect(() => storium.connect({
+      dialect: 'mysql',
+      url: MYSQL_URL,
+      driver: { uri: 'mysql://elsewhere/other' },
+    })).toThrow(ConfigError)
+    // The case that motivates reserving components: mysql2 lets a discrete
+    // `host` win over the one parsed from `uri`, so this would otherwise connect
+    // somewhere other than the database the config names.
+    expect(() => storium.connect({
+      dialect: 'mysql',
+      url: MYSQL_URL,
+      driver: { host: 'elsewhere' },
+    })).toThrow(ConfigError)
+  })
+
+  /* QA-10423 */ it('[QA-10423] sqlite/memory: passes driver options to better-sqlite3', async () => {
+    const statements: string[] = []
+    const db = storium.connect({
+      dialect: 'memory',
+      driver: { verbose: (statement: string) => { statements.push(statement) } },
+    })
+    db.drizzle.run(sql`SELECT 1`)
+    expect(statements.some((statement) => statement.includes('SELECT 1'))).toBe(true)
+    await db.disconnect()
+  })
+
+  /* QA-10424 */ it('[QA-10424] omitting driver leaves the pool exactly as before', async () => {
+    const db = storium.connect({ dialect: 'postgresql', url: PG_URL, pool: { max: 4 } })
+    const options = pgOptions(db)
+    expect(options.connectionString).toBe(PG_URL)
+    expect(options.max).toBe(4)
+    expect(options.ssl).toBeUndefined()
+    await db.disconnect()
+  })
+})
+
 describe('disconnect', () => {
   /* QA-10017 */ it('[QA-10017] is idempotent', async () => {
     const db = storium.connect({ dialect: 'memory' })

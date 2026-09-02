@@ -16,7 +16,7 @@ Exhaustive list of everything exported from `storium` and `storium/migrate`.
 
 | Export | Description |
 |--------|-------------|
-| `storium.connect(config)` | Create a `StoriumInstance` from a `StoriumConfig` (dialect, URL, assertions, pool). |
+| `storium.connect(config)` | Create a `StoriumInstance` from a `StoriumConfig` (dialect, URL, assertions, pool, driver passthrough). |
 | `storium.fromDrizzle(drizzleDb, opts?)` | Create a `StoriumInstance` from an existing Drizzle database instance; dialect is auto-detected. |
 
 ### Schema & Store
