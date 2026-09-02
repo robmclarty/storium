@@ -1,0 +1,70 @@
+name: Release
+
+# Turns a pushed vX.Y.Z tag into a GitHub Release, with notes pulled from the
+# matching CHANGELOG.md section. This is intentionally separate from publish.yaml
+# so its `contents: write` never shares a job with `id-token: write` - the npm
+# credential surface (there is none: OIDC) and the release-authoring surface stay
+# in different jobs with least privilege each.
+
+on:
+  push:
+    tags: ['v[0-9]*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing tag to create a release for (e.g. v0.15.3)
+        required: true
+        type: string
+
+permissions:
+  # Only the scope needed to create a GitHub Release; no id-token, no npm token.
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Resolve tag and extract changelog notes
+        id: notes
+        # Tag values reach the shell via env, never interpolated into the script,
+        # so a crafted tag name can't inject commands.
+        env:
+          INPUT_TAG: ${{ inputs.tag }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          TAG="${INPUT_TAG:-$REF_NAME}"
+          # CHANGELOG headings are bare and unprefixed (`## 0.15.3`); the tag
+          # carries a leading `v`, so strip it to match.
+          VERSION="${TAG#v}"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          NOTES_FILE="$(mktemp)"
+          # Print the lines between `## <version>` and the next `## ` heading.
+          awk -v ver="$VERSION" '
+            $0 ~ "^## " ver "([ ]|$)" {found=1; next}
+            found && /^## / {exit}
+            found {print}
+          ' CHANGELOG.md > "$NOTES_FILE"
+          if [ -s "$NOTES_FILE" ]; then
+            echo "notes_file=$NOTES_FILE" >> "$GITHUB_OUTPUT"
+            echo "has_notes=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_notes=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.notes.outputs.tag }}
+          HAS_NOTES: ${{ steps.notes.outputs.has_notes }}
+          NOTES_FILE: ${{ steps.notes.outputs.notes_file }}
+        run: |
+          if [ "$HAS_NOTES" = "true" ]; then
+            gh release create "$TAG" --title "$TAG" \
+              --notes-file "$NOTES_FILE" --verify-tag
+          else
+            # Fall back to auto-generated notes if the tag isn't in CHANGELOG.md.
+            gh release create "$TAG" --title "$TAG" \
+              --generate-notes --verify-tag
+          fi

@@ -44,7 +44,10 @@ storium/
 │   ├── dialects.ts             # Dialect matrix helpers (TEST_DIALECTS)
 │   └── integration/            # testcontainers integration suite (postgres + mysql) — run via vitest.integration.config.ts
 ├── docs/                       # Long-form docs (type-safety, custom-queries, relationships, migrations, validation, ...)
-├── .github/workflows/ci.yml    # CI — lint, typecheck (+ examples), unit (Node 20.x/22.x), integration (Docker)
+├── .github/workflows/
+│   ├── ci.yml                  # CI — lint, typecheck (+ examples), unit (Node 20.x/22.x/24.x), integration (Docker)
+│   ├── release.yaml            # vX.Y.Z tag → GitHub Release, notes from the matching CHANGELOG section
+│   └── publish.yaml            # vX.Y.Z tag → full gate + integration, then npm publish --provenance (Trusted Publishing, npm-publish env)
 ├── CONTRIBUTING.md             # Dev setup, test suite, the better-sqlite3 rebuild note
 ├── tsup.config.ts              # Build config
 ├── vitest.config.ts            # Unit test config — src/**/__tests__/**/*.test.ts

@@ -75,7 +75,6 @@
     "test:integration": "TEST_DIALECTS=memory,postgresql,mysql vitest run --config vitest.integration.config.ts",
     "coverage": "vitest run --coverage",
     "test:examples": "for dir in examples/*/; do echo \"--- $dir ---\" && (cd \"$dir\" && npm install --silent && npm start) || exit 1; done",
-    "release": "npm publish --access public",
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
