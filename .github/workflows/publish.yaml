@@ -1,0 +1,98 @@
+name: Publish
+
+# Publishes storium to npm with provenance when a vX.Y.Z tag is pushed. Auth is
+# npm Trusted Publishing (OIDC): no token exists anywhere - the registry trusts
+# this exact workflow's identity, minted per run, so there is no secret to leak
+# or rotate and no 2FA bypass. Provenance links the published tarball to this
+# commit and workflow run, verifiable on npmjs.com and via `npm audit
+# signatures`.
+#
+# One-time setup outside the repo (both are required for the first run):
+#   - npmjs.com: package storium -> Settings -> Trusted Publisher ->
+#     GitHub Actions, repository robmclarty/storium, workflow filename
+#     publish.yaml, environment npm-publish.
+#   - GitHub: repo Settings -> Environments -> npm-publish, with a required
+#     reviewer (yourself). The run pauses there until a maintainer approves -
+#     the CI equivalent of the local MFA prompt this replaces.
+#
+# release.yaml (the GitHub Release for the same tag) stays a separate workflow
+# so its `contents: write` never shares a job with `id-token: write`.
+
+on:
+  push:
+    tags: ['v[0-9]*']
+  # Manual re-run hatch: a tag is immutable, so a publish that failed for a
+  # reason outside the tree (auth, registry) can be retried from the Actions tab
+  # - the tarball contents are identical, and npm refuses an already-published
+  # version. The version guard below re-checks that HEAD still matches the tag.
+  workflow_dispatch:
+
+permissions:
+  contents: read # checkout only
+  id-token: write # OIDC identity for npm trusted publishing + provenance
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: npm-publish # required-reviewer gate: the human approval step
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # Fail fast when the tag and package.json disagree - a mistagged push
+      # would otherwise publish a version whose tag points at the wrong code.
+      # On workflow_dispatch (the manual re-run hatch) there is no pushed tag:
+      # instead require that v<version> exists on origin and points at HEAD, so
+      # a retry can only republish exactly what the tag froze.
+      - name: Verify tag matches package.json version
+        run: |
+          version="v$(node -p "require('./package.json').version")"
+          if [ "$GITHUB_EVENT_NAME" = "push" ]; then
+            if [ "$GITHUB_REF_NAME" != "$version" ]; then
+              echo "::error::pushed tag $GITHUB_REF_NAME does not match package.json version $version"
+              exit 1
+            fi
+          else
+            if ! git fetch --force --depth=1 origin "refs/tags/$version:refs/tags/$version"; then
+              echo "::error::tag $version not found on origin"
+              exit 1
+            fi
+            if [ "$(git rev-parse "$version^{}")" != "$(git rev-parse HEAD)" ]; then
+              echo "::error::tag $version does not point at HEAD"
+              exit 1
+            fi
+          fi
+
+      # No registry-url here: setup-node would write an .npmrc keyed to a
+      # NODE_AUTH_TOKEN env var, which shadows the tokenless OIDC flow.
+      - name: Install Node
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: 24
+          cache: npm
+
+      # Trusted Publishing needs npm >= 11.5.1; pin the major to be sure.
+      - name: Update npm
+        run: npm install -g npm@11
+
+      # `npm ci` compiles better-sqlite3 against this Node version, so no
+      # NODE_MODULE_VERSION mismatch (see CONTRIBUTING.md).
+      - name: Install dependencies
+        run: npm ci
+
+      # The full gate (typecheck, lint, build, unit), then the slow suite -
+      # testcontainers against real PostgreSQL and MySQL on ubuntu-latest's
+      # Docker daemon. A release must be green on both. The examples typecheck
+      # is CI's job on main; a tag points at a commit CI has already run.
+      - name: Check
+        run: npm test
+
+      - name: Integration tests
+        run: npm run test:integration
+
+      # prepublishOnly (npm run build) reruns the build as a safety net inside
+      # npm publish. --provenance is redundant under trusted publishing but
+      # documents intent and fails closed if the OIDC identity is ever absent.
+      - name: Publish with provenance
+        run: npm publish --provenance --access public

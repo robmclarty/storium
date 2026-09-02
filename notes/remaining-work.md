@@ -56,7 +56,7 @@ the first thing to read before picking up an item.
 | 3 | Hidden-column projection (4c) | plan PR 2 §4c | P1 (high value / high complexity) | ✅ done (`pr6-hidden-projection`, merged) |
 | 4 | Optional `logger` in `StoriumConfig` | plan PR 4 / report | P2 | ✅ done (`pr7-logger`, merged) |
 | 5 | Configurable transaction isolation levels | report Part 2 (med/low) | P3 | ✅ done (`pr8-tx-isolation`, merged); PG/MySQL CI-verified |
-| 6 | Release workflow (tag-triggered publish) | plan PR 3 §5a | P3 (revisit at 1.0) | ⏸️ deferred |
+| 6 | Release workflow (tag-triggered publish) | plan PR 3 §5a | P3 | ✅ done (`publish-workflows`, 2026-09-02) |
 | 7 | Delete merged local branches | housekeeping | P3 | ✅ done (`pr1`–`pr8` deleted; `fable-upgrades` kept) |
 
 Legend: ⬜ not started · 🟡 doing · ✅ done · ⏸️ deferred
@@ -228,8 +228,19 @@ Drizzle's per-transaction config on PostgreSQL/MySQL.
 
 ## 6. Release workflow automation (plan PR 3 §5a) — **P3, revisit at 1.0**
 
-**Status:** ⏸️ deferred. Manual `npm run release` is acceptable pre-1.0 (plan
-explicitly permits this).
+**Status:** ✅ done (2026-09-02). Two tag-triggered workflows, same design as
+plumbbob / checkride / fascicle:
+- `.github/workflows/publish.yaml` — verifies the tag matches `package.json`,
+  runs `npm test` + `npm run test:integration`, then
+  `npm publish --provenance --access public` via npm Trusted Publishing (OIDC,
+  no token). Runs in the `npm-publish` GitHub Environment behind a
+  required-reviewer approval.
+- `.github/workflows/release.yaml` — creates the GitHub Release for the tag with
+  notes extracted from the matching `## X.Y.Z` CHANGELOG section.
+
+The manual `npm run release` script is retired. `/version` now creates and
+pushes the annotated tag. One-time setup outside the repo (npmjs.com Trusted
+Publisher + the `npm-publish` environment) is documented in CONTRIBUTING.md.
 
 **Why/Approach:** a tag-triggered GitHub Actions job that builds and
 `npm publish`es on version tags, replacing the manual flow. Gate on the CI jobs
@@ -263,4 +274,4 @@ no longer needed.
 3. ~~**Hidden-column projection (#3)**~~ — ✅ done (`pr6-hidden-projection`, merged).
 4. ~~**P2/P3 polish (#4, #5, #7)**~~ — ✅ done (logger, tx isolation, branch cleanup).
 
-**Only remaining item:** #6 (release workflow) — intentionally deferred to 1.0.
+**All items done.** #6 (release workflow) landed 2026-09-02 as `release.yaml` + `publish.yaml`.

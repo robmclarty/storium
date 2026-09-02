@@ -82,8 +82,41 @@ Then re-run `npm run test:run`.
 
 - **lint** — `npm run lint`
 - **typecheck** — `tsc -p tsconfig.check.json --noEmit` + `typecheck:examples`
-- **unit** — matrix on Node 20.x / 22.x: `npm run build` + unit tests
+- **unit** — matrix on Node 20.x / 22.x / 24.x: `npm run build` + unit tests
 - **integration** — Docker-backed `vitest.integration.config.ts`
 
-Publishing to npm is still manual (`npm run release`); revisit automating it at
-1.0.
+## Release ritual
+
+Releases are tagged `vX.Y.Z`; the root `package.json` version is the source of
+truth. With Claude Code, `/version <major|minor|patch>` performs steps 1–4 and
+pushes the tag; pushing `main` itself stays yours.
+
+1. Start from a clean tree on `main`, up to date with `origin/main`, with
+   `npm test` green.
+2. Bump the version with `npm version <type> --no-git-tag-version` — it rewrites
+   `package.json` and both top-level `version` fields in `package-lock.json`
+   (semver — pre-1.0, breaking changes take a minor bump).
+3. Turn the `## Unreleased` section of `CHANGELOG.md` into `## X.Y.Z` (or add
+   one), summarizing every commit since the last `vX.Y.Z` commit.
+4. Commit as `vX.Y.Z`, tag (annotated) `vX.Y.Z`, push the commit and the tag.
+5. The tag push triggers two independent workflows, kept separate so the npm
+   credential surface and the release-authoring surface never share a job:
+   - [.github/workflows/publish.yaml](./.github/workflows/publish.yaml):
+     `npm test` + `npm run test:integration`, then `npm publish --provenance` —
+     every published tarball is provenance-attested to its commit. Auth is npm
+     **Trusted Publishing** (OIDC): no token exists anywhere, so there is
+     nothing to leak, rotate, or bypass 2FA with. The job runs in the
+     `npm-publish` GitHub Environment and **pauses for a required-reviewer
+     approval** — the CI equivalent of the old local MFA prompt. Approve it
+     from the run page (or the repo's Environments tab) to release.
+   - [.github/workflows/release.yaml](./.github/workflows/release.yaml):
+     creates the GitHub Release for the tag, with notes pulled from the
+     matching `CHANGELOG.md` section.
+
+   One-time setup, both required for the first run: **npmjs.com** — package
+   settings → Trusted Publisher → GitHub Actions, repository
+   `robmclarty/storium`, workflow filename `publish.yaml`, environment
+   `npm-publish`; **GitHub** — repo Settings → Environments → `npm-publish`
+   with a required reviewer (yourself).
+6. Approve the paused `publish` run, then smoke-test the published package
+   (`npm view storium@latest version`).
