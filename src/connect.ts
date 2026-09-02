@@ -62,6 +62,32 @@ const resolveUrl = (config: StoriumConfig): string | undefined =>
   config.url ?? config.dbCredentials?.url
 
 /**
+ * `driverOptions` may not carry the connection URL or any of its components.
+ * Either outcome of allowing it is bad, and the two drivers pick opposite ones:
+ * pg lets the parsed `connectionString` win, so a `driverOptions.host` is
+ * silently ignored; mysql2 lets a discrete `host` win over the one parsed from
+ * `uri`, so a `driverOptions.host` silently connects somewhere other than the
+ * database the config names. Failing at `connect()` is the only behavior that
+ * is not a surprise later, and reserving the same set for both dialects keeps
+ * the contract portable: the URL is `url` / `dbCredentials`' job, everything
+ * else is yours.
+ */
+const URL_COMPONENT_KEYS = ['host', 'port', 'user', 'password', 'database'] as const
+
+const assertDriverOptionsDoNotSetUrl = (
+  driverOptions: Record<string, unknown> | undefined,
+  urlKey: string
+): void => {
+  if (driverOptions === undefined) return
+  const offending = [urlKey, ...URL_COMPONENT_KEYS].find((key) => key in driverOptions)
+  if (offending !== undefined) {
+    throw new ConfigError(
+      `\`driverOptions.${offending}\` is not allowed: the connection URL and its parts come from \`url\` / \`dbCredentials\`, not \`driverOptions\`. Remove it from \`driverOptions\`.`
+    )
+  }
+}
+
+/**
  * Create a Drizzle database instance from a connection config.
  * Lazily loads the appropriate driver based on dialect.
  *
@@ -74,36 +100,11 @@ const resolveUrl = (config: StoriumConfig): string | undefined =>
  *
  * Anything else the driver accepts (TLS, timeouts, `application_name`, mysql2's
  * `waitForConnections` / `queueLimit`, better-sqlite3's `verbose`) goes through
- * `config.driver`, spread into the constructor call **first** so that the keys
- * storium owns — the URL and the `pool` mapping — win on collision. The URL and
- * its components are rejected outright rather than overridden: see
- * `assertDriverDoesNotSetUrl`.
+ * `config.driverOptions`, spread into the constructor call **first** so that the
+ * keys storium owns — the URL and the `pool` mapping — win on collision. The URL
+ * and its components are rejected outright rather than overridden: see
+ * `assertDriverOptionsDoNotSetUrl`.
  */
-/**
- * `driver` may not carry the connection URL or any of its components. Either
- * outcome of allowing it is bad, and the two drivers pick opposite ones: pg lets
- * the parsed `connectionString` win, so a `driver.host` is silently ignored;
- * mysql2 lets a discrete `host` win over the one parsed from `uri`, so a
- * `driver.host` silently connects somewhere other than the database the config
- * names. Failing at `connect()` is the only behavior that is not a surprise
- * later, and reserving the same set for both dialects keeps the contract
- * portable: the URL is `url` / `dbCredentials`' job, everything else is yours.
- */
-const URL_COMPONENT_KEYS = ['host', 'port', 'user', 'password', 'database'] as const
-
-const assertDriverDoesNotSetUrl = (
-  driver: Record<string, unknown> | undefined,
-  urlKey: string
-): void => {
-  if (driver === undefined) return
-  const offending = [urlKey, ...URL_COMPONENT_KEYS].find((key) => key in driver)
-  if (offending !== undefined) {
-    throw new ConfigError(
-      `\`driver.${offending}\` is not allowed: the connection URL and its parts come from \`url\` / \`dbCredentials\`, not \`driver\`. Remove it from \`driver\`.`
-    )
-  }
-}
-
 const createDrizzleInstance = (config: StoriumConfig): { db: any; teardown: () => Promise<void> } => {
   const dialect = resolveDialect(config.dialect)
   const url = dialect === 'sqlite' && config.dialect === 'memory'
@@ -122,9 +123,9 @@ const createDrizzleInstance = (config: StoriumConfig): { db: any; teardown: () =
         }
         throw e
       }
-      assertDriverDoesNotSetUrl(config.driver, 'connectionString')
+      assertDriverOptionsDoNotSetUrl(config.driverOptions, 'connectionString')
       const pool = new Pool({
-        ...config.driver,
+        ...config.driverOptions,
         connectionString: url,
         ...(config.pool?.min !== undefined && { min: config.pool.min }),
         ...(config.pool?.max !== undefined && { max: config.pool.max }),
@@ -148,9 +149,9 @@ const createDrizzleInstance = (config: StoriumConfig): { db: any; teardown: () =
         }
         throw e
       }
-      assertDriverDoesNotSetUrl(config.driver, 'uri')
+      assertDriverOptionsDoNotSetUrl(config.driverOptions, 'uri')
       const pool = mysql.createPool({
-        ...config.driver,
+        ...config.driverOptions,
         uri: url,
         ...(config.pool?.max !== undefined && { connectionLimit: config.pool.max }),
       })
@@ -173,7 +174,7 @@ const createDrizzleInstance = (config: StoriumConfig): { db: any; teardown: () =
         }
         throw e
       }
-      const sqlite = new Database(url === ':memory:' ? ':memory:' : url, config.driver ?? {})
+      const sqlite = new Database(url === ':memory:' ? ':memory:' : url, config.driverOptions ?? {})
       const db = drizzle(sqlite)
 
       return {

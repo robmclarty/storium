@@ -6,8 +6,8 @@ This project uses [Semantic Versioning](https://semver.org/). Pre-1.0 releases m
 
 ## Unreleased
 
-- **Driver passthrough** — `StoriumConfig.driver` is spread into the underlying driver's pool/client constructor (`pg.PoolConfig` / `mysql2.PoolOptions` / `better-sqlite3.Options`), so TLS, timeouts, `application_name` and the like no longer require dropping to `fromDrizzle()` with a hand-built pool. Storium's own keys win: the URL comes only from `url` / `dbCredentials` (a `connectionString` / `uri` in `driver` is a `ConfigError`), and `pool.min` / `pool.max` override the same keys in `driver`
-- Fix (pg): `pool.min` / `pool.max` are now only set when given, instead of being passed as explicit `undefined` — previously harmless, but it would have clobbered a `driver`-supplied `min` / `max`
+- **Driver passthrough** — `StoriumConfig.driverOptions` is spread into the underlying driver's pool/client constructor (`pg.PoolConfig` / `mysql2.PoolOptions` / `better-sqlite3.Options`), so TLS, timeouts, `application_name` and the like no longer require dropping to `fromDrizzle()` with a hand-built pool. Storium's own keys win: the URL comes only from `url` / `dbCredentials` (a `connectionString` / `uri` in `driverOptions` is a `ConfigError`), and `pool.min` / `pool.max` override the same keys in `driverOptions`. Named `driverOptions` rather than `driver` because drizzle-kit reserves `driver` in the shared config file and rejects any other value
+- Fix (pg): `pool.min` / `pool.max` are now only set when given, instead of being passed as explicit `undefined` — previously harmless, but it would have clobbered a `driverOptions`-supplied `min` / `max`
 
 ## 0.15.2
 
