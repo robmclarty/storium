@@ -683,7 +683,9 @@ export type StoriumConfig<D extends Dialect = Dialect> = {
    * Options passed straight through to the underlying driver's pool/client
    * constructor — `pg.PoolConfig`, `mysql2.PoolOptions`, or
    * `better-sqlite3.Options`, depending on `dialect`. Drizzle-kit ignores this.
-   * Storium-specific.
+   * Storium-specific. Deliberately not called `driver`: drizzle-kit reserves
+   * that key in the shared config file for its own driver enum and rejects any
+   * other value, which would break `generate` and `push`.
    *
    * This is the escape hatch for everything storium doesn't model itself: TLS
    * (`ssl`), timeouts, `application_name`, `verbose`, and so on — without giving
@@ -695,9 +697,9 @@ export type StoriumConfig<D extends Dialect = Dialect> = {
    *
    * Untyped on purpose: the drivers are optional peer dependencies, so their
    * option types cannot appear in storium's public types. Type it at the call
-   * site if you want checking — `driver: { ssl } satisfies Partial<PoolConfig>`.
+   * site if you want checking — `driverOptions: { ssl } satisfies Partial<PoolConfig>`.
    */
-  driver?: Record<string, unknown>
+  driverOptions?: Record<string, unknown>
 }
 
 /**

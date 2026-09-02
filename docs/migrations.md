@@ -42,7 +42,9 @@ drizzle-kit reads `dialect`, `dbCredentials`, `schema`, and `out`. It silently i
 | `seeds` | Storium | Directory for seed files (default: `./seeds`) |
 | `assertions` | Storium | Custom assertion functions for validation |
 | `pool` | Storium | Connection pool options (`{ min, max }`) |
-| `driver` | Storium | Options passed straight through to the driver's pool/client constructor (`pg.PoolConfig`, `mysql2.PoolOptions`, `better-sqlite3.Options`) — TLS, timeouts, etc. |
+| `driverOptions` | Storium | Options passed straight through to the driver's pool/client constructor (`pg.PoolConfig`, `mysql2.PoolOptions`, `better-sqlite3.Options`) — TLS, timeouts, etc. |
+
+`driver` is **not** a storium key. drizzle-kit reserves it for its own driver enum (`aws-data-api`, `d1-http`, `expo`, `pglite`, `durable-sqlite`) and rejects any other value when `generate` / `push` hand it the config file — which is why the passthrough is called `driverOptions`.
 
 ## Table Files
 
