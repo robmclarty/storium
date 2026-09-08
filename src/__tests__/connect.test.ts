@@ -418,6 +418,40 @@ describe('password function', () => {
     expect(options.password).toBeUndefined()
     await db.disconnect()
   })
+
+  // The component branch cannot carry a second password source or the DSN's
+  // query parameters, so a `url` supplying either beside a function is an
+  // ambiguity refused synchronously at connect() (D4). These configs never dial.
+  /* QA-10431 */ it('[QA-10431] pg: a url carrying a password beside a function throws ConfigError naming both sources', () => {
+    const config: StoriumConfig = {
+      dialect: 'postgresql',
+      url: 'postgresql://app:secret@127.0.0.1:5432/appdb',
+      password: async () => 'token',
+    }
+    expect(() => storium.connect(config)).toThrow(ConfigError)
+    expect(() => storium.connect(config)).toThrow(/`url` already carries a password/)
+  })
+
+  /* QA-10432 */ it('[QA-10432] pg: a url with a query string beside a function throws ConfigError naming the params and driverOptions', () => {
+    const config: StoriumConfig = {
+      dialect: 'postgresql',
+      url: 'postgresql://app@127.0.0.1:5432/appdb?sslmode=require',
+      password: async () => 'token',
+    }
+    expect(() => storium.connect(config)).toThrow(ConfigError)
+    expect(() => storium.connect(config)).toThrow(/sslmode/)
+    expect(() => storium.connect(config)).toThrow(/driverOptions/)
+  })
+
+  /* QA-10436 */ it('[QA-10436] pg: driverOptions.password throws ConfigError pointing at the top-level password key (D13)', () => {
+    const config: StoriumConfig = {
+      dialect: 'postgresql',
+      url: 'postgresql://app@127.0.0.1:5432/appdb',
+      driverOptions: { password: 'x' },
+    }
+    expect(() => storium.connect(config)).toThrow(ConfigError)
+    expect(() => storium.connect(config)).toThrow(/Set `password` on the config itself/)
+  })
 })
 
 describe('disconnect', () => {

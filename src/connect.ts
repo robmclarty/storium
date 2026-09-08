@@ -91,8 +91,15 @@ const assertDriverOptionsDoNotSetUrl = (
   if (driverOptions === undefined) return
   const offending = [urlKey, ...URL_COMPONENT_KEYS].find((key) => key in driverOptions)
   if (offending !== undefined) {
+    // `password` is the first key a rotating-credential user reaches for, and the
+    // base message sends them back to the dead end that produced the issue, so
+    // point at the top-level key where a function actually goes (D13).
+    const passwordHint =
+      offending === 'password'
+        ? ' Set `password` on the config itself instead; on postgresql it may be a function resolved per connection.'
+        : ''
     throw new ConfigError(
-      `\`driverOptions.${offending}\` is not allowed: the connection URL and its parts come from \`url\` / \`dbCredentials\`, not \`driverOptions\`. Remove it from \`driverOptions\`.`
+      `\`driverOptions.${offending}\` is not allowed: the connection URL and its parts come from \`url\` / \`dbCredentials\`, not \`driverOptions\`. Remove it from \`driverOptions\`.${passwordHint}`
     )
   }
 }
@@ -301,6 +308,21 @@ const resolvePgTarget = (config: StoriumConfig): PgTarget => {
   }
 
   const parsed = new URL(url)
+  // The component pool cannot carry a second password source or the DSN's query
+  // parameters (`sslmode`, `application_name`, …), so a `url` that supplies
+  // either beside a function password is an ambiguity refused at connect(), the
+  // same rule `assertDriverOptionsDoNotSetUrl` already applies (D4).
+  if (parsed.password !== '') {
+    throw new ConfigError(
+      '`password` is a function but `url` already carries a password: one source only. Remove the password from the URL, or remove the function.'
+    )
+  }
+  if (parsed.search !== '') {
+    const names = [...parsed.searchParams.keys()].join(', ')
+    throw new ConfigError(
+      `\`password\` is a function, so the pg pool is built from host/port/user/database instead of a connection string, and the URL's query parameters (${names}) would be dropped. Move them into \`driverOptions\` (for example \`?sslmode=require\` becomes \`driverOptions: { ssl: ... }\`) and remove them from the URL.`
+    )
+  }
   const host = parsed.hostname.replace(/^\[|\]$/g, '') // strip IPv6 brackets
   const database = decodeURIComponent(parsed.pathname.slice(1))
   if (!host || !database) {
