@@ -322,6 +322,102 @@ describe('password function', () => {
     }
     expect(() => storium.connect(config)).toThrow(ConfigError)
   })
+
+  // On the function branch the pg pool is built from discrete components with no
+  // connectionString (D2), so pg never merges a parsed DSN over the explicit
+  // config and the function survives. pg.Pool stores its constructor options on
+  // `$client.options` and defers connecting until first use, so these configs
+  // never dial — the ports are never reached. (A local `pgOptions` keeps the
+  // frozen `driverOptions` block untouched, C4.)
+  const pgOptions = (db: { drizzle: unknown }) =>
+    (db.drizzle as { $client: { options: Record<string, unknown> } }).$client.options
+
+  /* QA-10427 */ it('[QA-10427] pg: components + a function build a component pool — no connectionString, password by reference', async () => {
+    const fn = async () => 'token'
+    const db = storium.connect({
+      dialect: 'postgresql',
+      host: '127.0.0.1',
+      port: 5432,
+      user: 'app',
+      database: 'appdb',
+      password: fn,
+    })
+    const options = pgOptions(db)
+    expect(options.connectionString).toBeUndefined()
+    expect(options.host).toBe('127.0.0.1')
+    expect(options.port).toBe(5432)
+    expect(options.user).toBe('app')
+    expect(options.database).toBe('appdb')
+    expect(options.password).toBe(fn)
+    await db.disconnect()
+  })
+
+  /* QA-10428 */ it('[QA-10428] pg: a url with an encoded user and explicit port is parsed into decoded components, function survives', async () => {
+    const fn = async () => 'token'
+    const db = storium.connect({
+      dialect: 'postgresql',
+      url: 'postgresql://app%40corp@127.0.0.1:5432/appdb',
+      password: fn,
+    })
+    const options = pgOptions(db)
+    expect(options.connectionString).toBeUndefined()
+    expect(options.host).toBe('127.0.0.1')
+    expect(options.port).toBe(5432)
+    expect(options.user).toBe('app@corp')
+    expect(options.database).toBe('appdb')
+    expect(options.password).toBe(fn)
+    await db.disconnect()
+  })
+
+  /* QA-10429 */ it('[QA-10429] pg: a url without a port passes no port (D9) and unbrackets an IPv6 host', async () => {
+    const fn = async () => 'token'
+    const db = storium.connect({
+      dialect: 'postgresql',
+      url: 'postgresql://app@[::1]/appdb',
+      password: fn,
+    })
+    const options = pgOptions(db)
+    expect(options.port).toBeUndefined()
+    expect(options.host).toBe('::1')
+    expect(options.database).toBe('appdb')
+    expect(options.password).toBe(fn)
+    await db.disconnect()
+  })
+
+  /* QA-10430 */ it('[QA-10430] pg: the function branch keeps driverOptions.ssl and lets pool.min/max win over driverOptions', async () => {
+    const fn = async () => 'token'
+    const db = storium.connect({
+      dialect: 'postgresql',
+      host: '127.0.0.1',
+      port: 5432,
+      user: 'app',
+      database: 'appdb',
+      password: fn,
+      pool: { min: 1, max: 3 },
+      driverOptions: { ssl: { rejectUnauthorized: false }, min: 50, max: 99 },
+    })
+    const options = pgOptions(db)
+    expect(options.ssl).toEqual({ rejectUnauthorized: false })
+    expect(options.min).toBe(1)
+    expect(options.max).toBe(3)
+    expect(options.password).toBe(fn)
+    await db.disconnect()
+  })
+
+  /* QA-10433 */ it('[QA-10433] pg: a string password with components still yields a connectionString and no options.password (D6)', async () => {
+    const db = storium.connect({
+      dialect: 'postgresql',
+      host: '127.0.0.1',
+      port: 5432,
+      user: 'app',
+      database: 'appdb',
+      password: 's3cr3t/@',
+    })
+    const options = pgOptions(db)
+    expect(options.connectionString).toBe('postgresql://app:s3cr3t%2F%40@127.0.0.1:5432/appdb')
+    expect(options.password).toBeUndefined()
+    await db.disconnect()
+  })
 })
 
 describe('disconnect', () => {

@@ -62,6 +62,16 @@ const resolveUrl = (config: StoriumConfig): string | undefined =>
   config.url ?? config.dbCredentials?.url
 
 /**
+ * The connection URL storium hands the driver: a caller-supplied `url` /
+ * `dbCredentials.url`, else one built from discrete host/port/user/database.
+ * Computed lazily per dialect branch so the function-password branch (which
+ * builds the pg pool from components, never a URL) never calls
+ * `buildConnectionUrl` with a function it cannot encode.
+ */
+const resolveConnectionUrl = (config: StoriumConfig): string =>
+  resolveUrl(config) ?? buildConnectionUrl(config)
+
+/**
  * `driverOptions` may not carry the connection URL or any of its components.
  * Either outcome of allowing it is bad, and the two drivers pick opposite ones:
  * pg lets the parsed `connectionString` win, so a `driverOptions.host` is
@@ -127,9 +137,6 @@ const assertPasswordFnSupported = (
 const createDrizzleInstance = (config: StoriumConfig): { db: any; teardown: () => Promise<void> } => {
   const dialect = resolveDialect(config.dialect)
   assertPasswordFnSupported(config, dialect)
-  const url = dialect === 'sqlite' && config.dialect === 'memory'
-    ? ':memory:'
-    : resolveUrl(config) ?? buildConnectionUrl(config)
 
   switch (dialect) {
     case 'postgresql': {
@@ -144,12 +151,7 @@ const createDrizzleInstance = (config: StoriumConfig): { db: any; teardown: () =
         throw e
       }
       assertDriverOptionsDoNotSetUrl(config.driverOptions, 'connectionString')
-      const pool = new Pool({
-        ...config.driverOptions,
-        connectionString: url,
-        ...(config.pool?.min !== undefined && { min: config.pool.min }),
-        ...(config.pool?.max !== undefined && { max: config.pool.max }),
-      })
+      const pool = buildPgPool(Pool, config)
       const db = drizzle(pool)
 
       return {
@@ -172,7 +174,7 @@ const createDrizzleInstance = (config: StoriumConfig): { db: any; teardown: () =
       assertDriverOptionsDoNotSetUrl(config.driverOptions, 'uri')
       const pool = mysql.createPool({
         ...config.driverOptions,
-        uri: url,
+        uri: resolveConnectionUrl(config),
         ...(config.pool?.max !== undefined && { connectionLimit: config.pool.max }),
       })
       const db = drizzle(pool)
@@ -194,6 +196,7 @@ const createDrizzleInstance = (config: StoriumConfig): { db: any; teardown: () =
         }
         throw e
       }
+      const url = config.dialect === 'memory' ? ':memory:' : resolveConnectionUrl(config)
       const sqlite = new Database(url === ':memory:' ? ':memory:' : url, config.driverOptions ?? {})
       const db = drizzle(sqlite)
 
@@ -257,6 +260,84 @@ const buildConnectionUrl = (config: StoriumConfig): string => {
     default:
       throw new ConfigError(`Cannot build URL for dialect: ${dialect}`)
   }
+}
+
+/**
+ * The discrete pg connection target used on the function-password branch, where
+ * the pool is built from components rather than a `connectionString` (D2).
+ */
+type PgTarget = { host: string; port?: number; user?: string; database: string }
+
+/**
+ * Resolve `host`/`port`/`user`/`database` for the pg function-password branch.
+ *
+ * When components are given they win, using the same `inline ?? dbCredentials`
+ * precedence as `buildConnectionUrl`. When a `url` is given it is parsed with
+ * Node's built-in WHATWG `URL` — no `pg-connection-string` import (C1) — which
+ * percent-encodes the username and pathname and brackets IPv6 hosts, so both are
+ * decoded and the brackets stripped, mirroring `pg-connection-string` (D3). A
+ * missing port passes no `port`, letting pg default (D9). A missing host or
+ * database is the same `ConfigError` `buildConnectionUrl` throws.
+ */
+const resolvePgTarget = (config: StoriumConfig): PgTarget => {
+  const url = resolveUrl(config)
+
+  if (url === undefined) {
+    const host = config.host ?? config.dbCredentials?.host
+    const database = config.database ?? config.dbCredentials?.database
+    if (!host || !database) {
+      throw new ConfigError(
+        'Either `url` or `host` + `database` must be provided in connection config'
+      )
+    }
+    const port = config.port ?? config.dbCredentials?.port
+    const user = config.user ?? config.dbCredentials?.user
+    return {
+      host,
+      ...(port !== undefined && { port }),
+      ...(user !== undefined && { user }),
+      database,
+    }
+  }
+
+  const parsed = new URL(url)
+  const host = parsed.hostname.replace(/^\[|\]$/g, '') // strip IPv6 brackets
+  const database = decodeURIComponent(parsed.pathname.slice(1))
+  if (!host || !database) {
+    throw new ConfigError(
+      'Either `url` or `host` + `database` must be provided in connection config'
+    )
+  }
+  return {
+    host,
+    ...(parsed.port !== '' && { port: Number(parsed.port) }),
+    ...(parsed.username !== '' && { user: decodeURIComponent(parsed.username) }),
+    database,
+  }
+}
+
+/**
+ * Build the pg pool. A function `password` is resolved once per connection, but
+ * only if pg never merges a parsed DSN over the explicit config — so the pool is
+ * built from discrete host/port/user/database components with no
+ * `connectionString`, and the function is handed to pg untouched (D2, D5). Even a
+ * passwordless DSN parses to `password: ""` and would clobber it. A string or
+ * absent password keeps the `connectionString` path byte-for-byte (D6): the DSN
+ * carries query parameters (`sslmode`, …) the component path cannot.
+ *
+ * `driverOptions` is spread first so storium's keys win; `pool.min` / `pool.max`
+ * win last over any `min` / `max` a caller put in `driverOptions`.
+ */
+const buildPgPool = (Pool: any, config: StoriumConfig): any => {
+  const poolMinMax = {
+    ...(config.pool?.min !== undefined && { min: config.pool.min }),
+    ...(config.pool?.max !== undefined && { max: config.pool.max }),
+  }
+  const password = config.password ?? config.dbCredentials?.password
+
+  return typeof password === 'function'
+    ? new Pool({ ...config.driverOptions, ...resolvePgTarget(config), password, ...poolMinMax })
+    : new Pool({ ...config.driverOptions, connectionString: resolveConnectionUrl(config), ...poolMinMax })
 }
 
 // ------------------------------------------------ Transaction Helper --
