@@ -3,6 +3,7 @@ import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core'
 import { pgTable, uuid, varchar, text as pgText, integer as pgInteger, timestamp, type PgDatabase } from 'drizzle-orm/pg-core'
 import { defineStore } from '../define'
 import type { InferStore, StoriumInstance, Promisable } from '../../types'
+import type { StoriumConfig, PasswordFn } from 'storium'
 
 const usersTable = sqliteTable('users', {
   id: text('id').primaryKey(),
@@ -359,5 +360,34 @@ describe('hidden-column projection', () => {
     // Full row preserved — Omit<…, never> is a no-op.
     expectTypeOf<Row>().toHaveProperty('email')
     expectTypeOf<Row>().toHaveProperty('age')
+  })
+})
+
+// ---------------------------------------------------------------------------
+// StoriumConfig.password: a string, or on postgresql a per-connection
+// PasswordFn. The conditional is keyed on the dialect literal, so a literal
+// non-pg dialect refuses a function at compile time. Under the full `Dialect`
+// union (`satisfies StoriumConfig` with no type argument) it distributes to
+// `string | PasswordFn`, which is why connect()'s runtime ConfigError stays.
+// ---------------------------------------------------------------------------
+describe('StoriumConfig password type', () => {
+  /* QA-10437 */ it('[QA-10437] postgresql accepts a PasswordFn, exported from the barrel', () => {
+    expectTypeOf<PasswordFn>().toEqualTypeOf<() => string | Promise<string>>()
+
+    const pg = { dialect: 'postgresql', host: 'h', database: 'd', password: async () => 'x' } satisfies StoriumConfig
+    expectTypeOf(pg.password).toEqualTypeOf<() => Promise<string>>()
+
+    expectTypeOf<StoriumConfig<'postgresql'>['password']>().toEqualTypeOf<string | PasswordFn | undefined>()
+    // The union distributes: a shared drizzle-kit config file still type-checks with a function.
+    expectTypeOf<StoriumConfig['password']>().toEqualTypeOf<string | PasswordFn | undefined>()
+  })
+
+  /* QA-10438 */ it('[QA-10438] a literal non-postgresql dialect refuses a PasswordFn at compile time', () => {
+    expectTypeOf<StoriumConfig<'mysql'>['password']>().toEqualTypeOf<string | undefined>()
+    expectTypeOf<StoriumConfig<'memory'>['password']>().toEqualTypeOf<string | undefined>()
+
+    void ({ dialect: 'mysql', host: 'h', database: 'd', password: 'x' } satisfies StoriumConfig<'mysql'>)
+    // @ts-expect-error - mysql2 has no per-connection password hook; only a string is allowed
+    void ({ dialect: 'mysql', host: 'h', database: 'd', password: async () => 'x' } satisfies StoriumConfig<'mysql'>)
   })
 })

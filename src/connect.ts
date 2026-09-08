@@ -217,6 +217,10 @@ const buildConnectionUrl = (config: StoriumConfig): string => {
   const password = config.password ?? config.dbCredentials?.password
   const dialect = config.dialect
 
+  if (typeof password === 'function') {
+    throw new ConfigError('`password` is a function and cannot be encoded into a connection URL.')
+  }
+
   if (!host || !database) {
     throw new ConfigError(
       'Either `url` or `host` + `database` must be provided in connection config'

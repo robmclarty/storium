@@ -55,6 +55,7 @@ export type {
   // Dialect & config
   Dialect,
   StoriumConfig,
+  PasswordFn,
   FromDrizzleOptions,
   StoriumInstance,
   Logger,

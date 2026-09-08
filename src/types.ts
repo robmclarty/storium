@@ -644,6 +644,13 @@ export type Logger = {
   error: (...args: any[]) => void
 }
 
+/**
+ * A per-connection password source. pg calls it every time the pool opens a new
+ * connection, so short-lived tokens (RDS IAM, Cloud SQL IAM, Vault) stay fresh.
+ * postgresql only: a function here is a ConfigError on mysql / sqlite / memory.
+ */
+export type PasswordFn = () => string | Promise<string>
+
 export type StoriumConfig<D extends Dialect = Dialect> = {
   dialect: D
   /** Connection URL (storium inline style). */
@@ -652,7 +659,8 @@ export type StoriumConfig<D extends Dialect = Dialect> = {
   port?: number
   database?: string
   user?: string
-  password?: string
+  /** A static password, or on postgresql a per-connection `PasswordFn`. */
+  password?: D extends 'postgresql' ? string | PasswordFn : string
   /** Drizzle-kit style connection credentials. */
   dbCredentials?: {
     url?: string
