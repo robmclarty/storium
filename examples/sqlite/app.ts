@@ -15,7 +15,7 @@
  * Compare with the postgres/ example to see dialect differences side by side.
  * SQLite has no setup requirements — just `better-sqlite3` and a file path.
  *
- * Run: npm start
+ * Run: pnpm start
  */
 
 import { existsSync, unlinkSync } from 'node:fs'

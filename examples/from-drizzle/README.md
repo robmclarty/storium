@@ -13,8 +13,8 @@ Shows how to bring your own existing Drizzle instance using `storium.fromDrizzle
 ## Install and run
 
 ```bash
-npm install
-npm start
+pnpm install
+pnpm start
 ```
 
 Uses libsql (Turso-compatible SQLite) with a local file database. No external server required.

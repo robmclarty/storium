@@ -40,7 +40,7 @@ find . -path '*/node_modules' -prune -o -name '*.test.ts' -print -o -name '*.spe
 Run the trace CLI to look up test metadata:
 
 ```bash
-npx tsx .claude/tools/qa/cli.ts trace <QA-NNNNN>
+pnpm exec tsx .claude/tools/qa/cli.ts trace <QA-NNNNN>
 ```
 
 This shows: name, suite, file, line, type, status, covered files, and sibling tests.
@@ -50,7 +50,7 @@ This shows: name, suite, file, line, type, status, covered files, and sibling te
 Run the registry verifier:
 
 ```bash
-npx tsx .claude/tools/qa/cli.ts verify
+pnpm exec tsx .claude/tools/qa/cli.ts verify
 ```
 
 This checks every registered test still exists at its recorded path and prints active/missing/stale counts. For missing tests, suggest whether to remove from registry or investigate.

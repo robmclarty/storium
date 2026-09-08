@@ -33,8 +33,8 @@ postgresql/
 ## Install and run
 
 ```bash
-npm install
-npm start
+pnpm install
+pnpm start
 ```
 
 A temporary PostgreSQL container is created on startup and destroyed on exit. No manual database setup required.

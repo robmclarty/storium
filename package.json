@@ -61,21 +61,21 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit -p tsconfig.check.json",
-    "typecheck:examples": "fail=0; for dir in examples/*/; do echo \"--- $dir ---\" && (cd \"$dir\" && npx tsc --noEmit 2>&1) || fail=1; done; exit $fail",
-    "lint": "npm run lint:code && npm run lint:fallow && npm run lint:deps && npm run lint:sg && npm run lint:knip",
+    "typecheck:examples": "fail=0; for dir in examples/*/; do echo \"--- $dir ---\" && (cd \"$dir\" && pnpm exec tsc --noEmit 2>&1) || fail=1; done; exit $fail",
+    "lint": "pnpm run lint:code && pnpm run lint:fallow && pnpm run lint:deps && pnpm run lint:sg && pnpm run lint:knip",
     "lint:fallow": "fallow --fail-on-issues",
-    "lint:code": "node --import tsx/esm ./node_modules/.bin/oxlint .",
-    "lint:code:fix": "node --import tsx/esm ./node_modules/.bin/oxlint . --fix",
+    "lint:code": "node --import tsx/esm ./node_modules/oxlint/bin/oxlint .",
+    "lint:code:fix": "node --import tsx/esm ./node_modules/oxlint/bin/oxlint . --fix",
     "lint:deps": "depcruise --output-type err --no-config --ts-pre-compilation-deps src/",
     "lint:sg": "sg scan --config .ast-grep/sgconfig.yml",
     "lint:knip": "knip",
-    "test": "npm run typecheck && npm run lint && npm run build && npm run test:unit",
+    "test": "pnpm run typecheck && pnpm run lint && pnpm run build && pnpm run test:unit",
     "test:unit": "vitest",
     "test:run": "vitest run",
     "test:integration": "TEST_DIALECTS=memory,postgresql,mysql vitest run --config vitest.integration.config.ts",
     "coverage": "vitest run --coverage",
-    "test:examples": "for dir in examples/*/; do echo \"--- $dir ---\" && (cd \"$dir\" && npm install --silent && npm start) || exit 1; done",
-    "prepublishOnly": "npm run build"
+    "test:examples": "for dir in examples/*/; do echo \"--- $dir ---\" && (cd \"$dir\" && pnpm start) || exit 1; done",
+    "prepublishOnly": "pnpm run build"
   },
   "dependencies": {
     "glob": "13.0.6"
@@ -131,5 +131,6 @@
   },
   "engines": {
     "node": ">=20"
-  }
+  },
+  "packageManager": "pnpm@11.1.2+sha512.415a1cc25974731e75455c1468371be74c5aa5fb7621b50d4056d222451609f11412f23fd602e6169f1e060466641f798597e1be961a10688836a67b16569499"
 }

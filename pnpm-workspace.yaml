@@ -1,0 +1,20 @@
+# Each example is a workspace package that depends on storium via `workspace:*`,
+# so one `pnpm install` at the root wires them all up and `node_modules/storium`
+# inside an example is a symlink to this repo (what npm's `file:../..` gave us).
+packages:
+  - 'examples/*'
+
+# pnpm 11 refuses to run a dependency's install scripts until each one has been
+# reviewed here. `true` runs the script, `false` skips it.
+allowBuilds:
+  better-sqlite3: true   # native addon: prebuild-install fetches or compiles the binary
+  esbuild: true          # picks the platform binary that tsup, tsx and vitest run on
+  '@ast-grep/cli': true  # picks the platform binary behind `sg`
+  fallow: true           # picks the platform binary
+  cpu-features: false    # optional ssh2 accelerator (testcontainers), needs node-gyp
+  ssh2: false            # optional native bindings, ssh2 falls back to pure JS
+  protobufjs: false      # postinstall only regenerates artifacts already in the tarball
+
+# Carried over from the old .npmrc (pnpm 11 reads settings from this file).
+saveExact: true
+engineStrict: true

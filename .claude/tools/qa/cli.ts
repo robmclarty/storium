@@ -561,7 +561,7 @@ function cmdTrace(flags: ParsedFlags): void {
 // ------------------------------------------------------------------- Usage --
 
 function printUsage(): void {
-  console.log(`Usage: npx tsx .claude/tools/qa/cli.ts <command> [args] [flags]
+  console.log(`Usage: pnpm exec tsx .claude/tools/qa/cli.ts <command> [args] [flags]
 
 Commands:
   trace <QA-ID|file>                         Trace test↔source dependencies

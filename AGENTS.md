@@ -45,10 +45,11 @@ storium/
 │   └── integration/            # testcontainers integration suite (postgres + mysql) — run via vitest.integration.config.ts
 ├── docs/                       # Long-form docs (type-safety, custom-queries, relationships, migrations, validation, ...)
 ├── .github/workflows/
-│   ├── ci.yml                  # CI — lint, typecheck (+ examples), unit (Node 20.x/22.x/24.x), integration (Docker)
+│   ├── ci.yml                  # CI — lint, typecheck (+ examples), unit (Node 22.x/24.x), integration (Docker)
 │   ├── release.yaml            # vX.Y.Z tag → GitHub Release, notes from the matching CHANGELOG section
-│   └── publish.yaml            # vX.Y.Z tag → full gate + integration, then npm publish --provenance (Trusted Publishing, npm-publish env)
+│   └── publish.yaml            # vX.Y.Z tag → full gate + integration, then pnpm publish --provenance (Trusted Publishing, npm-publish env)
 ├── CONTRIBUTING.md             # Dev setup, test suite, the better-sqlite3 rebuild note
+├── pnpm-workspace.yaml         # pnpm settings: examples/* as workspace packages, allowBuilds for native deps
 ├── tsup.config.ts              # Build config
 ├── vitest.config.ts            # Unit test config — src/**/__tests__/**/*.test.ts
 └── vitest.integration.config.ts # Integration test config — test/integration/**/*.test.ts
@@ -79,6 +80,7 @@ import { generate, migrate, push, status, seed, defineSeed, collectSchemas } fro
 `'postgresql'` | `'mysql'` | `'sqlite'` | `'memory'` (memory = SQLite `:memory:`)
 
 ### Dependencies
+- Package manager: **pnpm** (exact version pinned in `package.json` `packageManager`; `corepack enable` once). Examples are workspace packages, so one root `pnpm install` covers everything.
 - Peer: `drizzle-orm` (>=0.44), `drizzle-kit` (>=0.31), `zod` (>=4.0)
 - Peer (optional): `pg`, `mysql2`, `better-sqlite3` (install one for your dialect)
 - Runtime: `glob`
@@ -376,7 +378,7 @@ project/
 
 ## Example conventions
 - Single `app.ts` — everything in one runnable file
-- `package.json`: `"start": "tsx app.ts"`, `storium: "file:../.."`, `tsx` in devDeps
+- `package.json`: `"start": "tsx app.ts"`, `storium: "workspace:*"`, `tsx` in devDeps
 - In-memory examples: `dialect: 'memory'`, `db.drizzle.run(sql\`CREATE TABLE...\`)`
 - Multi-file pattern: `Drizzle table → defineStore().queries() → storium.connect → db.register → use stores`
 - Simple pattern: `storium.connect → db.defineStore(drizzleTable, config) → use store`

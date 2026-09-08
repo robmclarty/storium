@@ -12,8 +12,8 @@ Demonstrates ephemeral in-memory SQLite databases — useful for prototyping, te
 ## Install and run
 
 ```bash
-npm install
-npm start
+pnpm install
+pnpm start
 ```
 
 No external database required. Each connection creates a fully isolated in-memory SQLite database.

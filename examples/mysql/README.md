@@ -33,8 +33,8 @@ mysql/
 ## Install and run
 
 ```bash
-npm install
-npm start
+pnpm install
+pnpm start
 ```
 
 A temporary MySQL container is created on startup and destroyed on exit. No manual database setup required.

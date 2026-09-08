@@ -18,13 +18,13 @@ Capture a deterministic codebase health snapshot. Runs all external analysis too
 1. Run the snapshot pipeline:
 
 ```bash
-npx tsx .claude/tools/qa/snapshot.ts $ARGUMENTS
+pnpm exec tsx .claude/tools/qa/snapshot.ts $ARGUMENTS
 ```
 
 2. Show the snapshot summary:
 
 ```bash
-npx tsx .claude/tools/qa/cli.ts snapshot show
+pnpm exec tsx .claude/tools/qa/cli.ts snapshot show
 ```
 
 3. Print the summary to the user. If `--coverage` was used, also mention coverage stats.

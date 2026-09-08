@@ -17,6 +17,7 @@
     "examples/*/node_modules/**"
   ],
   "ignoreDependencies": [
+    "@ast-grep/cli",
     "better-sqlite3",
     "pg",
     "mysql2",

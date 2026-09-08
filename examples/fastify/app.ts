@@ -11,7 +11,7 @@
  *
  * This example uses SQLite for zero-setup convenience.
  *
- * Run: npm start
+ * Run: pnpm start
  */
 
 import { existsSync, unlinkSync, rmSync } from 'node:fs'

@@ -11,7 +11,7 @@
  * No config files, no migrations, no external database — just connect
  * with `dialect: 'memory'` and start building.
  *
- * Run: npm start
+ * Run: pnpm start
  */
 
 import { storium } from 'storium'

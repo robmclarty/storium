@@ -9,7 +9,7 @@
  *   - ref(): FK resolution by filter (no manual ID tracking)
  *   - Full migration lifecycle: generate → migrate → seed
  *
- * Run: npm start
+ * Run: pnpm start
  */
 
 import { existsSync, unlinkSync, rmSync } from 'node:fs'

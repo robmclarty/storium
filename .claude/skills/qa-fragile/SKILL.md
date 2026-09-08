@@ -41,7 +41,7 @@ Also boost files that are hotspots (fallow's `isHotspot` flag) or have pattern v
 5. For each file, check test coverage status:
 
 ```bash
-npx tsx .claude/tools/qa/cli.ts trace <file-path>
+pnpm exec tsx .claude/tools/qa/cli.ts trace <file-path>
 ```
 
 6. For each file, provide LLM analysis:
@@ -50,7 +50,7 @@ npx tsx .claude/tools/qa/cli.ts trace <file-path>
    - **Concrete fix plan:** Specific refactoring steps, what tests to add, what to split
 
 7. Update learnings with fragility insights via CLI:
-   - New insight: `npx tsx .claude/tools/qa/cli.ts learnings add --category risk --insight "<text>" --context "<text>"`
-   - Confirm existing: `npx tsx .claude/tools/qa/cli.ts learnings confirm <ID>`
+   - New insight: `pnpm exec tsx .claude/tools/qa/cli.ts learnings add --category risk --insight "<text>" --context "<text>"`
+   - Confirm existing: `pnpm exec tsx .claude/tools/qa/cli.ts learnings confirm <ID>`
 
 8. Print the ranked list with narratives to the terminal.

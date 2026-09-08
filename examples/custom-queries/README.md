@@ -15,8 +15,8 @@ Demonstrates how to extend stores with domain-specific operations using the `(ct
 ## Install and run
 
 ```bash
-npm install
-npm start
+pnpm install
+pnpm start
 ```
 
 Uses an in-memory SQLite database — no external database required.

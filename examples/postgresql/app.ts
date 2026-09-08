@@ -16,7 +16,7 @@
  * custom-queries/ example first — they run in-memory with zero setup.
  *
  * Requirements: Docker (for the temporary database)
- * Run: npm start
+ * Run: pnpm start
  */
 
 import { ValidationError } from 'storium'

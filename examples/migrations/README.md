@@ -6,7 +6,7 @@ Full migration lifecycle: generate, status, migrate, and seed ��� both pro
 
 - `storium.config.ts` auto-discovery and loading
 - Programmatic workflow: `generate()`, `status()`, `migrate()`, `seed()`
-- Equivalent CLI commands: `npx storium generate`, `npx storium migrate`, etc.
+- Equivalent CLI commands: `pnpm exec storium generate`, `pnpm exec storium migrate`, etc.
 - Store auto-discovery in seeds (custom queries available in seed functions)
 - Multi-file organization with separate table and store files
 
@@ -24,17 +24,17 @@ migrations/
 ## Install and run
 
 ```bash
-npm install
-npm start
+pnpm install
+pnpm start
 ```
 
 Runs the full lifecycle programmatically. You can also use the CLI:
 
 ```bash
-npx storium generate   # Diff schemas, create SQL migration
-npx storium status     # Show migration state
-npx storium migrate    # Apply pending migrations
-npx storium seed       # Run seed files
+pnpm exec storium generate   # Diff schemas, create SQL migration
+pnpm exec storium status     # Show migration state
+pnpm exec storium migrate    # Apply pending migrations
+pnpm exec storium seed       # Run seed files
 ```
 
 Uses a file-based SQLite database (created and cleaned up automatically).

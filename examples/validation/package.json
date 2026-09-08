@@ -10,7 +10,7 @@
     "tsx": "4.21.0"
   },
   "dependencies": {
-    "storium": "file:../..",
+    "storium": "workspace:*",
     "better-sqlite3": "^12.6.2"
   }
 }

@@ -9,7 +9,7 @@
     "migrate": "storium migrate"
   },
   "dependencies": {
-    "storium": "file:../..",
+    "storium": "workspace:*",
     "pg": "^8.13.0"
   },
   "devDependencies": {

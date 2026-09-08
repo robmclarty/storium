@@ -27,8 +27,8 @@ relations/
 ## Install and run
 
 ```bash
-npm install
-npm start
+pnpm install
+pnpm start
 ```
 
 Uses a file-based SQLite database (created and cleaned up automatically).

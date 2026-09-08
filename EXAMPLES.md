@@ -1,7 +1,8 @@
 # Examples
 
-Each example is a self-contained project you can run with `npm start` from its
-directory. Install dependencies first with `npm install`.
+Each example is a pnpm workspace package you can run with `pnpm start` from its
+directory. Run `pnpm install` and `pnpm run build` at the repo root first: the
+examples resolve `storium` from `dist/`.
 
 ## [basic](examples/basic)
 

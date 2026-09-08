@@ -4,10 +4,10 @@ Claude Code skills backed by a TypeScript layer that orchestrates external analy
 
 ## Installation
 
-The toolkit requires Node.js and npm. All tools are listed as devDependencies in `package.json` and installed with:
+The toolkit requires Node.js and pnpm. All tools are listed as devDependencies in `package.json` and installed with:
 
 ```bash
-npm install
+pnpm install
 ```
 
 The QA skills and tooling live entirely within the project:
@@ -21,12 +21,12 @@ The QA skills and tooling live entirely within the project:
 No global installs are required. The CLI entry point is:
 
 ```bash
-npx tsx .claude/tools/qa/cli.ts <command> [args] [flags]
+pnpm exec tsx .claude/tools/qa/cli.ts <command> [args] [flags]
 ```
 
 ## 3rd Party Tools
 
-The toolkit orchestrates these external tools. All are installed as devDependencies via `npm install` — no separate installation needed.
+The toolkit orchestrates these external tools. All are installed as devDependencies via `pnpm install` — no separate installation needed.
 
 | Tool | Package | What it does |
 |------|---------|-------------|
@@ -38,7 +38,7 @@ The toolkit orchestrates these external tools. All are installed as devDependenc
 | [tsx](https://tsx.is/) | `tsx` | TypeScript execution (runs the QA tooling itself) |
 | TypeScript | `typescript` | `tsc --noEmit` type checking |
 
-**How npx works:** When a skill runs `npx sg scan ...` or `fallow health ...`, npm looks for the binary in the local `node_modules/.bin/` first. If the package is installed locally (via `npm install`), it runs instantly with no download. If it's not installed, npx downloads it to a temporary cache, runs it, and discards it — this is slower but works without any setup. Since all tools are in `devDependencies`, `npm install` ensures they're always local and fast.
+**How `pnpm exec` works:** When a skill runs `pnpm exec sg scan ...` or `fallow health ...`, pnpm runs the binary from the local `node_modules/.bin/`. Unlike `npx`, it never downloads a package on the fly: a missing tool fails loudly instead of silently pulling an arbitrary version. Since all tools are in `devDependencies`, `pnpm install` ensures they're always present.
 
 **git** is also required (for churn and authorship stats) but is assumed to be available on any development machine.
 
@@ -61,36 +61,36 @@ The QA CLI provides direct access to data queries that skills use internally. Us
 
 ```bash
 # Trace a test or source file
-npx tsx .claude/tools/qa/cli.ts trace QA-10386
-npx tsx .claude/tools/qa/cli.ts trace src/core/prep.ts
+pnpm exec tsx .claude/tools/qa/cli.ts trace QA-10386
+pnpm exec tsx .claude/tools/qa/cli.ts trace src/core/prep.ts
 
 # List tests (with filters)
-npx tsx .claude/tools/qa/cli.ts tests list --status active --type unit
+pnpm exec tsx .claude/tools/qa/cli.ts tests list --status active --type unit
 
 # Find source files with no covering tests
-npx tsx .claude/tools/qa/cli.ts tests coverage-gaps --domain core
+pnpm exec tsx .claude/tools/qa/cli.ts tests coverage-gaps --domain core
 
 # Verify test registry integrity
-npx tsx .claude/tools/qa/cli.ts verify
+pnpm exec tsx .claude/tools/qa/cli.ts verify
 
 # Show snapshot summary
-npx tsx .claude/tools/qa/cli.ts snapshot show
-npx tsx .claude/tools/qa/cli.ts snapshot diff
+pnpm exec tsx .claude/tools/qa/cli.ts snapshot show
+pnpm exec tsx .claude/tools/qa/cli.ts snapshot diff
 
 # JSON output (any command)
-npx tsx .claude/tools/qa/cli.ts trace QA-10386 --json
+pnpm exec tsx .claude/tools/qa/cli.ts trace QA-10386 --json
 ```
 
 ### Learnings Management
 
 ```bash
-npx tsx .claude/tools/qa/cli.ts learnings list [--category C] [--confidence L]
-npx tsx .claude/tools/qa/cli.ts learnings add --category <C> --insight "<text>" [--confidence L] [--context "<text>"]
-npx tsx .claude/tools/qa/cli.ts learnings confirm <ID> [--confidence L] [--context "<text>"]
-npx tsx .claude/tools/qa/cli.ts learnings update <ID> [--insight T] [--category C] [--confidence L] [--context T]
-npx tsx .claude/tools/qa/cli.ts learnings supersede <ID> --insight "<text>" [--category C]
-npx tsx .claude/tools/qa/cli.ts learnings remove <ID>
-npx tsx .claude/tools/qa/cli.ts learnings merge <ID1> <ID2> [...] --insight "<text>" [--category C]
+pnpm exec tsx .claude/tools/qa/cli.ts learnings list [--category C] [--confidence L]
+pnpm exec tsx .claude/tools/qa/cli.ts learnings add --category <C> --insight "<text>" [--confidence L] [--context "<text>"]
+pnpm exec tsx .claude/tools/qa/cli.ts learnings confirm <ID> [--confidence L] [--context "<text>"]
+pnpm exec tsx .claude/tools/qa/cli.ts learnings update <ID> [--insight T] [--category C] [--confidence L] [--context T]
+pnpm exec tsx .claude/tools/qa/cli.ts learnings supersede <ID> --insight "<text>" [--category C]
+pnpm exec tsx .claude/tools/qa/cli.ts learnings remove <ID>
+pnpm exec tsx .claude/tools/qa/cli.ts learnings merge <ID1> <ID2> [...] --insight "<text>" [--category C]
 ```
 
 ## Data Files

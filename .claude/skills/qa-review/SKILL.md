@@ -39,10 +39,10 @@ If `--file <path>`: use that single file.
 fallow audit --base <ref> --format json --quiet
 
 # Anti-pattern check on changed files
-npx sg scan <space-separated changed files> --json 2>/dev/null
+pnpm exec sg scan <space-separated changed files> --json 2>/dev/null
 
 # Check if changes created new circular deps
-npx depcruise --output-type json --no-config --ts-pre-compilation-deps --reaches <changed-files> src/ 2>/dev/null
+pnpm exec depcruise --output-type json --no-config --ts-pre-compilation-deps --reaches <changed-files> src/ 2>/dev/null
 ```
 
 3. Read `.health/snapshots/latest.json` for baseline context (if it exists). For each changed file, note:
@@ -52,7 +52,7 @@ npx depcruise --output-type json --no-config --ts-pre-compilation-deps --reaches
    - What was its coverage?
 
 4. Check learnings for domain-specific gotchas relevant to changed files:
-   `npx tsx .claude/tools/qa/cli.ts learnings list --category risk`
+   `pnpm exec tsx .claude/tools/qa/cli.ts learnings list --category risk`
 
 5. Read the actual diff:
 

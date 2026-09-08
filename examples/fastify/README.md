@@ -26,8 +26,8 @@ fastify/
 ## Install and run
 
 ```bash
-npm install
-npm start
+pnpm install
+pnpm start
 ```
 
 Uses an in-memory SQLite database. The example starts a Fastify server, exercises all endpoints, then shuts down.

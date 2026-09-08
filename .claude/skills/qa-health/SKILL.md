@@ -45,7 +45,7 @@ Avg cyclomatic: {avg_cyclomatic}
 4. If `--trend` was passed, show the previous snapshot for comparison:
 
 ```bash
-npx tsx .claude/tools/qa/cli.ts snapshot show
+pnpm exec tsx .claude/tools/qa/cli.ts snapshot show
 ```
 
 Compare key metrics and show deltas with arrows (up/down).

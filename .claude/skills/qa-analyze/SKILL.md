@@ -22,19 +22,19 @@ Ensure `.health/snapshots/latest.json` exists. If not, tell the user:
 1. Read the current snapshot summary:
 
 ```bash
-npx tsx .claude/tools/qa/cli.ts snapshot show
+pnpm exec tsx .claude/tools/qa/cli.ts snapshot show
 ```
 
 2. Compare against the previous snapshot:
 
 ```bash
-npx tsx .claude/tools/qa/cli.ts snapshot diff
+pnpm exec tsx .claude/tools/qa/cli.ts snapshot diff
 ```
 
 3. Read accumulated learnings:
 
 ```bash
-npx tsx .claude/tools/qa/cli.ts learnings list
+pnpm exec tsx .claude/tools/qa/cli.ts learnings list
 ```
 
 4. For deeper context, read the full snapshot JSON:
@@ -59,15 +59,15 @@ cat .health/snapshots/latest.json
 
 7. Update learnings using CLI commands. For each insight discovered:
    - New insight, nothing similar:
-     `npx tsx .claude/tools/qa/cli.ts learnings add --category <C> --insight "<text>" [--context "<text>"]`
+     `pnpm exec tsx .claude/tools/qa/cli.ts learnings add --category <C> --insight "<text>" [--context "<text>"]`
    - Confirms existing:
-     `npx tsx .claude/tools/qa/cli.ts learnings confirm <ID> [--confidence <level>] [--context "<text>"]`
+     `pnpm exec tsx .claude/tools/qa/cli.ts learnings confirm <ID> [--confidence <level>] [--context "<text>"]`
    - Contradicts existing:
-     `npx tsx .claude/tools/qa/cli.ts learnings supersede <ID> --insight "<text>" [--category <C>]`
+     `pnpm exec tsx .claude/tools/qa/cli.ts learnings supersede <ID> --insight "<text>" [--category <C>]`
    - Refines existing:
-     `npx tsx .claude/tools/qa/cli.ts learnings update <ID> --insight "<text>" [--context "<text>"]`
+     `pnpm exec tsx .claude/tools/qa/cli.ts learnings update <ID> --insight "<text>" [--context "<text>"]`
    - Compact related learnings:
-     `npx tsx .claude/tools/qa/cli.ts learnings merge <ID1> <ID2> --insight "<text>"`
+     `pnpm exec tsx .claude/tools/qa/cli.ts learnings merge <ID1> <ID2> --insight "<text>"`
 
 8. Print the full report to the terminal.
 

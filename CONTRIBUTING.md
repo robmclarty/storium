@@ -5,37 +5,45 @@ the test suite, and a couple of environment gotchas.
 
 ## Prerequisites
 
-- **Node.js >= 20** (the CI matrix runs 20.x and 22.x)
-- **npm** — the project uses npm, not pnpm or yarn
+- **Node.js >= 22.13** — what pnpm 11 needs to run (the CI matrix runs 22.x and
+  24.x; the published package still declares `node >= 20`)
+- **pnpm** — the exact version is pinned in `package.json` (`packageManager`);
+  run `corepack enable` once and every `pnpm` call uses it
 - **Docker** — only needed to run the integration suite (testcontainers spins up
   real PostgreSQL and MySQL containers)
 
 ## Setup
 
 ```bash
-npm ci
-npm run build
+corepack enable   # once per machine
+pnpm install
+pnpm run build
 ```
+
+`pnpm install` also wires up the examples: every `examples/*` directory is a
+pnpm workspace package that depends on `storium` via `workspace:*`, a symlink
+to this repo that resolves the library from `dist/`. Build first, then
+`pnpm start` inside any example.
 
 ## Common tasks
 
 | Command | What it does |
 |---|---|
-| `npm run build` | Bundle ESM + CJS + types with tsup |
-| `npm run typecheck` | `tsc --noEmit -p tsconfig.check.json` (includes test files) |
-| `npm run typecheck:examples` | Typecheck every example in `examples/*` |
-| `npm run lint` | oxlint + fallow + dependency-cruiser + ast-grep + knip |
-| `npm run test:run` | Run the unit suite once (vitest) |
-| `npm run test:unit` | Run the unit suite in watch mode |
-| `npm run test:integration` | Run the Docker-backed integration suite |
-| `npm test` | typecheck + lint + build + unit (the full gate) |
+| `pnpm run build` | Bundle ESM + CJS + types with tsup |
+| `pnpm run typecheck` | `tsc --noEmit -p tsconfig.check.json` (includes test files) |
+| `pnpm run typecheck:examples` | Typecheck every example in `examples/*` |
+| `pnpm run lint` | oxlint + fallow + dependency-cruiser + ast-grep + knip |
+| `pnpm run test:run` | Run the unit suite once (vitest) |
+| `pnpm run test:unit` | Run the unit suite in watch mode |
+| `pnpm run test:integration` | Run the Docker-backed integration suite |
+| `pnpm test` | typecheck + lint + build + unit (the full gate) |
 
 ## Testing
 
 ### Unit tests
 
 ```bash
-npm run test:run
+pnpm run test:run
 ```
 
 Unit tests live in `src/**/__tests__/**/*.test.ts` and run against the in-memory
@@ -44,7 +52,7 @@ SQLite dialect, so they need no external services.
 ### Integration tests
 
 ```bash
-npm run test:integration
+pnpm run test:integration
 ```
 
 These use [testcontainers](https://testcontainers.com/) to start real PostgreSQL
@@ -71,18 +79,18 @@ This is purely an environment mismatch, not a code problem. Rebuild the addon
 against your current Node.js:
 
 ```bash
-npm rebuild better-sqlite3
+pnpm rebuild better-sqlite3
 ```
 
-Then re-run `npm run test:run`.
+Then re-run `pnpm run test:run`.
 
 ## Continuous integration
 
 `.github/workflows/ci.yml` runs on every push and pull request to `main`:
 
-- **lint** — `npm run lint`
+- **lint** — `pnpm run lint`
 - **typecheck** — `tsc -p tsconfig.check.json --noEmit` + `typecheck:examples`
-- **unit** — matrix on Node 20.x / 22.x / 24.x: `npm run build` + unit tests
+- **unit** — matrix on Node 22.x / 24.x: `pnpm run build` + unit tests
 - **integration** — Docker-backed `vitest.integration.config.ts`
 
 ## Release ritual
@@ -92,17 +100,16 @@ truth. With Claude Code, `/version <major|minor|patch>` performs steps 1–4 and
 pushes the tag; pushing `main` itself stays yours.
 
 1. Start from a clean tree on `main`, up to date with `origin/main`, with
-   `npm test` green.
-2. Bump the version with `npm version <type> --no-git-tag-version` — it rewrites
-   `package.json` and both top-level `version` fields in `package-lock.json`
-   (semver — pre-1.0, breaking changes take a minor bump).
+   `pnpm test` green.
+2. Bump the version with `pnpm version <type> --no-git-tag-version` — it rewrites
+   `package.json` (semver — pre-1.0, breaking changes take a minor bump).
 3. Turn the `## Unreleased` section of `CHANGELOG.md` into `## X.Y.Z` (or add
    one), summarizing every commit since the last `vX.Y.Z` commit.
 4. Commit as `vX.Y.Z`, tag (annotated) `vX.Y.Z`, push the commit and the tag.
 5. The tag push triggers two independent workflows, kept separate so the npm
    credential surface and the release-authoring surface never share a job:
    - [.github/workflows/publish.yaml](./.github/workflows/publish.yaml):
-     `npm test` + `npm run test:integration`, then `npm publish --provenance` —
+     `pnpm test` + `pnpm run test:integration`, then `pnpm publish --provenance` —
      every published tarball is provenance-attested to its commit. Auth is npm
      **Trusted Publishing** (OIDC): no token exists anywhere, so there is
      nothing to leak, rotate, or bypass 2FA with. The job runs in the

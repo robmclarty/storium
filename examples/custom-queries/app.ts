@@ -14,7 +14,7 @@
  * defaults, so even if you override `create`, ctx.create still refers
  * to the built-in version.
  *
- * Run: npm start
+ * Run: pnpm start
  */
 
 import { storium, defineStore } from 'storium'

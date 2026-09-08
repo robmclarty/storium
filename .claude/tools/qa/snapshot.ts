@@ -375,11 +375,11 @@ function runFallowDupes(): FallowDupesOutput {
 }
 
 function runDepcruise(): any | null {
-  return execJSON<any>('npx depcruise --output-type json --no-config --ts-pre-compilation-deps src/')
+  return execJSON<any>('pnpm exec depcruise --output-type json --no-config --ts-pre-compilation-deps src/')
 }
 
 function runAstGrep(): AstGrepMatch[] | null {
-  const raw = execJSON<any[]>('npx sg scan --json')
+  const raw = execJSON<any[]>('pnpm exec sg scan --json')
   if (!raw || !Array.isArray(raw)) return null
   return raw.map(m => ({
     path: m.file ?? m.path ?? '',
@@ -390,7 +390,7 @@ function runAstGrep(): AstGrepMatch[] | null {
 }
 
 function runTscErrors(): Record<string, number> {
-  const result = exec('npx tsc --noEmit 2>&1')
+  const result = exec('pnpm exec tsc --noEmit 2>&1')
   const errors: Record<string, number> = {}
   for (const line of result.stdout.split('\n')) {
     const match = line.match(/^(.+?)\(\d+,\d+\): error TS\d+:/)
@@ -443,18 +443,18 @@ function runGitStats(): Record<string, { commits: number; authors: number; lastM
 }
 
 function runKnip(): any | null {
-  return execJSON<any>('npx knip --reporter json')
+  return execJSON<any>('pnpm exec knip --reporter json')
 }
 
 function runCoverage(): Record<string, { lines: number; branches: number }> | null {
   // Check if coverage provider is available before running
   if (!fileExists(`${process.cwd()}/node_modules/@vitest/coverage-istanbul/package.json`)) {
     console.warn('  ⚠ @vitest/coverage-istanbul not installed — skipping coverage collection.')
-    console.warn('    Install it: npm install -D @vitest/coverage-istanbul')
+    console.warn('    Install it: pnpm add -D @vitest/coverage-istanbul')
     return null
   }
 
-  const result = exec('npx vitest run --coverage --reporter=json', { timeout: 300_000 })
+  const result = exec('pnpm exec vitest run --coverage --reporter=json', { timeout: 300_000 })
   if (result.exitCode !== 0) {
     console.warn('  ⚠ vitest coverage exited with code', result.exitCode)
     return null

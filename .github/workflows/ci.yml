@@ -14,43 +14,42 @@ concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# pnpm/action-setup reads the pinned version from package.json#packageManager.
+# It must run before setup-node so `cache: pnpm` can find the binary.
 jobs:
   lint:
     name: Lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v5
         with:
           node-version: 24.x
-          cache: npm
-      - run: npm ci
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
       - name: Lint (oxlint + fallow + dependency-cruiser + ast-grep + knip)
-        run: npm run lint
+        run: pnpm run lint
 
   typecheck:
     name: Typecheck
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v5
         with:
           node-version: 24.x
-          cache: npm
-      - run: npm ci
+          cache: pnpm
+      # The examples are workspace packages, so this installs them too.
+      - run: pnpm install --frozen-lockfile
       - name: Typecheck source (includes test files)
-        run: npx tsc -p tsconfig.check.json --noEmit
+        run: pnpm exec tsc -p tsconfig.check.json --noEmit
       # Examples resolve `storium` from `dist`, so build before typechecking them.
       - name: Build
-        run: npm run build
-      - name: Install example dependencies
-        run: |
-          for dir in examples/*/; do
-            echo "--- installing $dir ---"
-            (cd "$dir" && npm install --no-audit --no-fund)
-          done
+        run: pnpm run build
       - name: Typecheck examples
-        run: npm run typecheck:examples
+        run: pnpm run typecheck:examples
 
   unit:
     name: Unit (Node ${{ matrix.node }})
@@ -58,32 +57,37 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: [20.x, 22.x, 24.x]
+        # pnpm 11 needs Node >= 22.13, so Node 20 (EOL April 2026) is not in
+        # the matrix even though package.json#engines still admits it.
+        node: [22.x, 24.x]
     steps:
       - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v5
         with:
           node-version: ${{ matrix.node }}
-          cache: npm
-      # `npm ci` compiles better-sqlite3 against this Node version, so no
+          cache: pnpm
+      # `pnpm install` compiles better-sqlite3 against this Node version (its
+      # build script is allowed in pnpm-workspace.yaml), so no
       # NODE_MODULE_VERSION mismatch (see CONTRIBUTING.md).
-      - run: npm ci
+      - run: pnpm install --frozen-lockfile
       - name: Build
-        run: npm run build
+        run: pnpm run build
       - name: Unit tests
-        run: npm run test:run
+        run: pnpm run test:run
 
   integration:
     name: Integration (Docker)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v5
         with:
           node-version: 24.x
-          cache: npm
-      - run: npm ci
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
       # ubuntu-latest ships a running Docker daemon, which testcontainers uses
       # to start real PostgreSQL and MySQL instances.
       - name: Integration tests (testcontainers)
-        run: npm run test:integration
+        run: pnpm run test:integration

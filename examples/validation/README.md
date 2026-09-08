@@ -17,8 +17,8 @@ A comprehensive walkthrough of Storium's validation pipeline, showing every stag
 ## Install and run
 
 ```bash
-npm install
-npm start
+pnpm install
+pnpm start
 ```
 
 Uses an in-memory SQLite database — no external database required.

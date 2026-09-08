@@ -10,13 +10,13 @@
  * This example uses SQLite for zero-setup convenience.
  * The same workflow applies to PostgreSQL and MySQL.
  *
- * Run: npm start
+ * Run: pnpm start
  *
  * CLI equivalents (see package.json scripts):
- *   npm run generate    →  npx storium generate
- *   npm run migrate     →  npx storium migrate
- *   npm run seed        →  npx storium seed
- *   npm run status      →  npx storium status
+ *   pnpm generate       →  pnpm exec storium generate
+ *   pnpm migrate        →  pnpm exec storium migrate
+ *   pnpm seed           →  pnpm exec storium seed
+ *   pnpm status         →  pnpm exec storium status
  */
 
 import { existsSync, unlinkSync, rmSync } from 'node:fs'

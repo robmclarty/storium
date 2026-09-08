@@ -14,8 +14,8 @@ The simplest path to a working Storium store. Covers core CRUD operations, colum
 ## Install and run
 
 ```bash
-npm install
-npm start
+pnpm install
+pnpm start
 ```
 
 Uses an in-memory SQLite database — no external database required.

@@ -16,7 +16,7 @@
  * side by side. MySQL stores arrays and jsonb as native JSON columns.
  *
  * Requirements: Docker (for the temporary database)
- * Run: npm start
+ * Run: pnpm start
  */
 
 import { ValidationError } from 'storium'

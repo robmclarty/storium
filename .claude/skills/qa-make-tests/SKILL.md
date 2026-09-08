@@ -21,7 +21,7 @@ cat <file-path>
 2. Check for existing test coverage and metrics:
 
 ```bash
-npx tsx .claude/tools/qa/cli.ts trace <file-path>
+pnpm exec tsx .claude/tools/qa/cli.ts trace <file-path>
 ```
 
 3. Run fallow on the specific file for current complexity data:
@@ -47,7 +47,7 @@ Filter to the target file's entry.
 6. Assign test IDs by calling the registry:
 
 ```bash
-npx tsx -e "
+pnpm exec tsx -e "
   import { assignNextId } from './.claude/tools/qa/registry.js';
   const id = assignNextId('.health/test-registry.json', {
     name: '<test-name>',
@@ -67,7 +67,7 @@ npx tsx -e "
 8. Run the new tests to verify they pass:
 
 ```bash
-npx vitest run <test-file-path>
+pnpm exec vitest run <test-file-path>
 ```
 
 9. Print a summary: how many tests generated, which functions covered, test IDs assigned.

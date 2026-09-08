@@ -3,7 +3,7 @@ name: version
 description: Bump storium's version (major, minor, or patch), turn the CHANGELOG's Unreleased section into the release entry summarizing every commit since the last release, commit as vX.Y.Z, and create plus push an annotated tag. The tag triggers the publish (npm, Trusted Publishing) and release (GitHub Release) workflows, so the tag is the release.
 argument-hint: "[major|minor|patch]"
 disable-model-invocation: true
-allowed-tools: Read, Edit, Bash(git status*), Bash(git fetch origin main*), Bash(git rev-list*), Bash(git log*), Bash(git add *), Bash(git commit *), Bash(git tag *), Bash(git push origin v*), Bash(git restore *), Bash(node -e *), Bash(node -p *), Bash(npm version *), Bash(npm test*), Bash(cat *), Bash(sed -n *)
+allowed-tools: Read, Edit, Bash(git status*), Bash(git fetch origin main*), Bash(git rev-list*), Bash(git log*), Bash(git add *), Bash(git commit *), Bash(git tag *), Bash(git push origin v*), Bash(git restore *), Bash(node -e *), Bash(node -p *), Bash(pnpm version *), Bash(pnpm test*), Bash(cat *), Bash(sed -n *)
 ---
 
 # version
@@ -14,14 +14,14 @@ it in two top-level fields), the changelog lives at `CHANGELOG.md`, and releases
 are tagged `vX.Y.Z`.
 
 Pushing the tag is the release. It triggers `.github/workflows/publish.yaml`
-(gate, then `npm publish --provenance` via Trusted Publishing, paused at the
+(gate, then `pnpm publish --provenance` via Trusted Publishing, paused at the
 `npm-publish` approval gate) and `.github/workflows/release.yaml` (GitHub
 Release with the changelog section as notes). A red tag is the expensive
 failure: it parks Publish at its approval gate and leaves a stray GitHub
 Release, and the fix is forward-only. Verify before tagging.
 
 The deterministic work — clean-tree check, semver math, the version rewrite —
-is done with `npm version` and `git`, never by hand. The model's job is to
+is done with `pnpm version` and `git`, never by hand. The model's job is to
 summarize commits into release prose and run the git steps.
 
 ## Arguments
@@ -72,11 +72,10 @@ flag, nothing at all) is a usage error: tell the user the valid forms and stop.
 6. **Bump the version** (never do the arithmetic yourself):
 
    ```bash
-   npm version <type> --no-git-tag-version
+   pnpm version <type> --no-git-tag-version
    ```
 
-   This rewrites `package.json` and both top-level `version` fields in
-   `package-lock.json` in one step, and prints `vNEW`. Call the number `NEW`.
+   This rewrites `package.json`, and prints `vNEW`. Call the number `NEW`.
    Tell the user: "Bumping version from OLD to NEW".
 
 7. **Draft the changelog entry** in the existing format — a bare `## X.Y.Z`
@@ -116,16 +115,16 @@ flag, nothing at all) is a usage error: tell the user the valid forms and stop.
    above the current top `## ` entry, keeping the single `# Changelog` heading
    at the very top. Leave no empty `## Unreleased` shell behind.
 
-9. **Verify before staging:** `npm test` — typecheck, lint, build, unit. If it
+9. **Verify before staging:** `pnpm test` — typecheck, lint, build, unit. If it
    exits 0, continue. If it fails, roll back so the user can fix and re-invoke —
-   `git restore package.json package-lock.json CHANGELOG.md` — show the failing
+   `git restore package.json CHANGELOG.md` — show the failing
    output, and stop.
 
 10. **Stage exactly those three files and commit.** The commit message is
     literally the tag, no body:
 
     ```bash
-    git add package.json package-lock.json CHANGELOG.md
+    git add package.json CHANGELOG.md
     git status --short
     git commit -m "vX.Y.Z"
     ```
@@ -164,7 +163,7 @@ flag, nothing at all) is a usage error: tell the user the valid forms and stop.
 
 ## Edge cases
 
-- **`npm test` fails in step 9.** It is not the release's fault, but it is the
+- **`pnpm test` fails in step 9.** It is not the release's fault, but it is the
   release's problem: tag over it and the recovery is forward-only. The roll-back
   leaves the tree clean; the user fixes and re-invokes.
 - **An `## Unreleased` section is present.** It is folded into the new release

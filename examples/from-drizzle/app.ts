@@ -10,7 +10,7 @@
  * rewrite, or when you need full control over column types, defaults,
  * and constraints using Drizzle's native API.
  *
- * Run: npm start
+ * Run: pnpm start
  */
 
 import { createClient } from '@libsql/client'

@@ -9,7 +9,7 @@
     "migrate": "storium migrate"
   },
   "dependencies": {
-    "storium": "file:../..",
+    "storium": "workspace:*",
     "better-sqlite3": "^12.0.0"
   },
   "devDependencies": {
