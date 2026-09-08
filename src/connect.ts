@@ -88,6 +88,25 @@ const assertDriverOptionsDoNotSetUrl = (
 }
 
 /**
+ * A function `password` is honoured only on postgresql, where pg resolves it once
+ * per connection (D1). Every other driver takes a static string — mysql2's
+ * `password` is a string, better-sqlite3 has none — so a function here is a
+ * ConfigError at connect() rather than a value silently stringified into a DSN or
+ * a failure surfaced minutes later on the first checkout.
+ */
+const assertPasswordFnSupported = (
+  config: StoriumConfig,
+  dialect: Exclude<Dialect, 'memory'>
+): void => {
+  const password = config.password ?? config.dbCredentials?.password
+  if (typeof password === 'function' && dialect !== 'postgresql') {
+    throw new ConfigError(
+      `\`password\` as a function is only supported on the postgresql dialect, where pg resolves it once per connection. The '${config.dialect}' driver takes a string and has no per-connection hook. Resolve the credential yourself and pass a string, or use fromDrizzle() with a pool you manage.`
+    )
+  }
+}
+
+/**
  * Create a Drizzle database instance from a connection config.
  * Lazily loads the appropriate driver based on dialect.
  *
@@ -107,6 +126,7 @@ const assertDriverOptionsDoNotSetUrl = (
  */
 const createDrizzleInstance = (config: StoriumConfig): { db: any; teardown: () => Promise<void> } => {
   const dialect = resolveDialect(config.dialect)
+  assertPasswordFnSupported(config, dialect)
   const url = dialect === 'sqlite' && config.dialect === 'memory'
     ? ':memory:'
     : resolveUrl(config) ?? buildConnectionUrl(config)

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll } from 'vitest'
-import { storium } from 'storium'
+import { storium, type StoriumConfig } from 'storium'
 import { sql } from 'drizzle-orm'
 import { drizzle } from 'drizzle-orm/better-sqlite3'
 import Database from 'better-sqlite3'
@@ -294,6 +294,33 @@ describe('driverOptions', () => {
     expect(options.max).toBe(4)
     expect(options.ssl).toBeUndefined()
     await db.disconnect()
+  })
+})
+
+describe('password function', () => {
+  // A function `password` is postgresql-only (D1): pg resolves it once per
+  // connection, every other driver takes a static string. The refusal is a
+  // synchronous ConfigError at connect(), thrown before any driver loads or any
+  // pool opens, so these configs never dial. The union `StoriumConfig` shape is
+  // what D12's conditional type lets through at compile time (a literal non-pg
+  // dialect is refused by the type instead), which is why the runtime guard has
+  // to stay load-bearing for exactly this shape.
+  /* QA-10425 */ it('[QA-10425] mysql: a function password throws ConfigError synchronously, naming postgresql', () => {
+    const config: StoriumConfig = {
+      dialect: 'mysql',
+      url: 'mysql://storium@127.0.0.1:1/storium',
+      password: async () => 'token',
+    }
+    expect(() => storium.connect(config)).toThrow(ConfigError)
+    expect(() => storium.connect(config)).toThrow(/postgresql/)
+  })
+
+  /* QA-10426 */ it('[QA-10426] memory: a function password throws ConfigError synchronously', () => {
+    const config: StoriumConfig = {
+      dialect: 'memory',
+      password: async () => 'token',
+    }
+    expect(() => storium.connect(config)).toThrow(ConfigError)
   })
 })
 
