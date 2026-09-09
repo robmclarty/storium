@@ -12,7 +12,7 @@ Full migration lifecycle: generate, status, migrate, and seed ��� both pro
 
 ## Project structure
 
-```
+```text
 migrations/
   entities/tasks/task.table.ts   Drizzle table definition
   entities/tasks/task.store.ts   Store with custom queries

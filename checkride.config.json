@@ -1,0 +1,85 @@
+{
+  "$schema": "./node_modules/checkride/schema/checkride.config.schema.json",
+  "note": "Waves: 10 = cheap static checks, 20 = analysis + prose, 30 = build, 40 = checks that read dist/, test runs alone after the waves. Gaps left for later inserts.",
+  "checks": {
+    "types": {
+      "use": "tsc",
+      "args": ["exec", "tsc", "--noEmit", "-p", "tsconfig.check.json"],
+      "description": "TypeScript (source + tests, tsconfig.check.json)",
+      "note": "tsconfig.json is the build config (emits dist, excludes tests); tsconfig.check.json is the no-emit gate that includes them. The adapter default `tsc --build` would emit.",
+      "order": 10
+    },
+    "lint": {
+      "use": "oxlint",
+      "args": ["exec", "oxlint", "--format=json"],
+      "fixArgs": ["exec", "oxlint", "--fix"],
+      "description": "Oxlint",
+      "note": "No --type-aware: oxlint-tsgolint is not installed (add it and restore the flag to opt in). oxlint.config.ts is discovered natively on Node >= 22.18, so the old `node --import tsx/esm` launcher is gone.",
+      "order": 10
+    },
+    "struct": {
+      "use": "ast-grep",
+      "note": "Rules live in .ast-grep/rules/, wired through the root sgconfig.yml (the adapter's detect file). Both rules are severity: warning, so ast-grep exits 0 on matches; raise them to error to gate.",
+      "order": 10
+    },
+    "links": {
+      "use": "links",
+      "exclude": [".plumbbob", ".worktrees", ".health", "superpowers"],
+      "note": "Names, not paths: local/generated markdown that is not the repo's docs surface (plumbbob build logs, worktree checkouts, QA snapshots, docs/superpowers). notes/ and .claude/skills/ are tracked prose and stay in the walk. The trial run was green even without excludes.",
+      "order": 10
+    },
+    "deps": {
+      "command": "pnpm",
+      "args": ["exec", "depcruise", "--output-type", "err", "--no-config", "--ts-pre-compilation-deps", "src/"],
+      "description": "dependency-cruiser: no circular/orphan violations in src/",
+      "note": "No checkride adapter for dependency-cruiser; same invocation the old lint:deps script ran.",
+      "order": 10
+    },
+
+    "dead": { "use": "fallow", "order": 20 },
+    "dupes": { "use": "fallow", "order": 20 },
+    "health": { "use": "fallow", "order": 20 },
+    "docs": { "use": "markdownlint-cli2", "order": 20 },
+    "spell": { "use": "cspell", "order": 20 },
+
+    "build": { "use": "build", "order": 30 },
+
+    "typecheck-examples": {
+      "command": "pnpm",
+      "args": ["run", "typecheck:examples"],
+      "description": "Typecheck examples/* against dist",
+      "note": "Examples resolve storium from dist/ through the workspace link, so this must follow the build wave.",
+      "order": 40
+    },
+    "publint": { "use": "publint", "order": 40 },
+    "attw": {
+      "use": "attw",
+      "profile": "node16",
+      "description": "Are the types wrong? (node16 + bundler resolutions)",
+      "note": "node16 profile ignores node10 resolution only: ./migrate has no node10-resolvable path (no typesVersions) and the top-level types field is the ESM .d.ts beside a CJS main. Engines is node >= 20 and every supported TS resolution reads `exports`. If attw is green without the profile, delete it.",
+      "order": 40
+    },
+    "pack": { "use": "pack", "order": 40 },
+    "smoke": {
+      "use": "smoke",
+      "note": "Imports `storium` and `storium/migrate` under both import and require. migrate pulls the drizzle-orm migrators (devDeps present); drizzle-kit is only shelled out to at call time.",
+      "order": 40
+    },
+
+    "test": {
+      "use": "vitest",
+      "note": "Adapter default: vitest run --coverage (istanbul per vitest.config.ts, writes the gitignored coverage/) plus a JSON report in .check/test.json. single: vitest saturates the cores.",
+      "order": "single"
+    },
+
+    "integration": {
+      "command": "pnpm",
+      "args": ["run", "test:integration"],
+      "description": "Integration suite (testcontainers: memory, postgresql, mysql; needs Docker)",
+      "note": "Opt-in: reach it with --all, --include integration, or --only integration (CI). Goes through the npm script because checkride has no env field and the suite needs TEST_DIALECTS. 1800s cap: image pulls on a cold runner.",
+      "optIn": true,
+      "timeout": 1800,
+      "order": "single"
+    }
+  }
+}

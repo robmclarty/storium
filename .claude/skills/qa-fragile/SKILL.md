@@ -26,31 +26,31 @@ Ensure `.health/snapshots/latest.json` exists. If not:
 cat .health/snapshots/latest.json
 ```
 
-2. Filter to source files. If `--domain` is set, filter to that domain.
+1. Filter to source files. If `--domain` is set, filter to that domain.
 
-3. Sort files by fragility score (deterministic — no LLM):
+2. Sort files by fragility score (deterministic — no LLM):
 
-```
+```text
 fragilityScore = commits6mo * (complexityDensity || 0.01) / ((lineCoverage || 1) / 100)
 ```
 
 Also boost files that are hotspots (fallow's `isHotspot` flag) or have pattern violations.
 
-4. Take the top N (default 20).
+1. Take the top N (default 20).
 
-5. For each file, check test coverage status:
+2. For each file, check test coverage status:
 
 ```bash
 pnpm exec tsx .claude/tools/qa/cli.ts trace <file-path>
 ```
 
-6. For each file, provide LLM analysis:
+1. For each file, provide LLM analysis:
    - **Why it's fragile:** Explain the specific combination of factors
    - **What the risk is:** What could go wrong if this file breaks
    - **Concrete fix plan:** Specific refactoring steps, what tests to add, what to split
 
-7. Update learnings with fragility insights via CLI:
+2. Update learnings with fragility insights via CLI:
    - New insight: `pnpm exec tsx .claude/tools/qa/cli.ts learnings add --category risk --insight "<text>" --context "<text>"`
    - Confirm existing: `pnpm exec tsx .claude/tools/qa/cli.ts learnings confirm <ID>`
 
-8. Print the ranked list with narratives to the terminal.
+3. Print the ranked list with narratives to the terminal.

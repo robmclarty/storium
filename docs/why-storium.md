@@ -103,7 +103,7 @@ manually maintaining schema parity across Drizzle and Zod is paid forever.
 The solo dev case is nice-to-have. The team case is where Storium shifts from
 convenience to infrastructure.
 
-### The problem at scale isn't boilerplate — it's drift.
+### The problem at scale isn't boilerplate — it's drift
 
 On a team with many engineers and many tables, patterns diverge quickly.
 One engineer puts validation in middleware. Another puts it in a Zod schema.

@@ -4,7 +4,7 @@ Lightweight, database-agnostic storage abstraction built on Drizzle ORM and Zod.
 
 ## Project Structure
 
-```
+```text
 storium/
 ├── bin/
 │   └── storium.ts              # CLI entry point (generate, migrate, push, seed, status)
@@ -45,10 +45,16 @@ storium/
 │   └── integration/            # testcontainers integration suite (postgres + mysql) — run via vitest.integration.config.ts
 ├── docs/                       # Long-form docs (type-safety, custom-queries, relationships, migrations, validation, ...)
 ├── .github/workflows/
-│   ├── ci.yml                  # CI — lint, typecheck (+ examples), unit (Node 22.x/24.x), integration (Docker)
+│   ├── ci.yml                  # CI — `checkride --strict` (Node 22.x/24.x) + integration (Docker)
 │   ├── release.yaml            # vX.Y.Z tag → GitHub Release, notes from the matching CHANGELOG section
-│   └── publish.yaml            # vX.Y.Z tag → full gate + integration, then pnpm publish --provenance (Trusted Publishing, npm-publish env)
+│   └── publish.yaml            # vX.Y.Z tag → full check + integration via checkride, then pnpm publish --provenance (Trusted Publishing, npm-publish env)
 ├── CONTRIBUTING.md             # Dev setup, test suite, the better-sqlite3 rebuild note
+├── checkride.config.json       # The check gate — every slot and how it is wired (`pnpm check`)
+├── sgconfig.yml                # ast-grep config (root) — points at .ast-grep/rules/ (the `struct` check)
+├── .markdownlint-cli2.jsonc    # markdownlint config (the `docs` check)
+├── cspell.json                 # cspell config (the `spell` check)
+├── scripts/
+│   └── fix-dts-type-exports.mjs # Post-build: re-qualify type-only exports in dist decls (dts bundler drops `type`)
 ├── pnpm-workspace.yaml         # pnpm settings: examples/* as workspace packages, allowBuilds for native deps
 ├── tsup.config.ts              # Build config
 ├── vitest.config.ts            # Unit test config — src/**/__tests__/**/*.test.ts
@@ -77,15 +83,18 @@ import { generate, migrate, push, status, seed, defineSeed, collectSchemas } fro
 ## Key Patterns
 
 ### Dialects
+
 `'postgresql'` | `'mysql'` | `'sqlite'` | `'memory'` (memory = SQLite `:memory:`)
 
 ### Dependencies
+
 - Package manager: **pnpm** (exact version pinned in `package.json` `packageManager`; `corepack enable` once). Examples are workspace packages, so one root `pnpm install` covers everything.
 - Peer: `drizzle-orm` (>=0.44), `drizzle-kit` (>=0.31), `zod` (>=4.0)
 - Peer (optional): `pg`, `mysql2`, `better-sqlite3` (install one for your dialect)
 - Runtime: `glob`
 
 ### StoriumInstance<D> (returned by connect() / fromDrizzle())
+
 ```typescript
 db.drizzle           // Typed Drizzle instance — DrizzleDatabase<D>
 db.zod               // Zod namespace (convenience accessor)
@@ -97,6 +106,7 @@ db.disconnect()      // Close connection / pool
 ```
 
 ### StoriumConfig (single config object)
+
 ```typescript
 storium.connect({
   dialect: 'postgresql',
@@ -135,6 +145,7 @@ function on `mysql` / `sqlite` / `memory` is a `ConfigError`. This means
 rotating-credential setups no longer need `fromDrizzle()` with a hand-built pool.
 
 ### fromDrizzle (auto-detects dialect)
+
 ```typescript
 import { drizzle } from 'drizzle-orm/node-postgres'
 const myDrizzle = drizzle(myPool)
@@ -143,6 +154,7 @@ const db = storium.fromDrizzle(myDrizzle, { assertions: {} })
 ```
 
 ### defineStore (primary entry point)
+
 ```typescript
 import { pgTable, uuid, varchar, text, timestamp } from 'drizzle-orm/pg-core'
 import { defineStore } from 'storium'
@@ -177,6 +189,7 @@ Returns a `StoreDefinition` (inert DTO). The DTO surfaces `.table`, `.name`,
 and `.queryFns` so `schemaCollector` can detect store files for migrations.
 
 ### ColumnAnnotation (storium-specific metadata)
+
 ```typescript
 type ColumnAnnotation = {
   readonly?: boolean    // Exclude from write operations
@@ -188,6 +201,7 @@ type ColumnAnnotation = {
 ```
 
 ### StoreConfig (defineStore second argument)
+
 ```typescript
 type StoreConfig = {
   columns?: Record<string, ColumnAnnotation>
@@ -197,6 +211,7 @@ type StoreConfig = {
 ```
 
 ### db.defineStore() — simple path (live store, no register)
+
 ```typescript
 const db = storium.connect(config)
 const users = db.defineStore(usersTable, { columns: { email: { required: true } } })
@@ -205,6 +220,7 @@ await users.findById('123')
 ```
 
 ### db.register() — multi-file pattern
+
 ```typescript
 const db = storium.connect(config)
 const { users, articles } = db.register({ users: userStore, articles: articleStore })
@@ -212,6 +228,7 @@ await users.findById('123')
 ```
 
 ### Custom query context (ctx)
+
 ```typescript
 ctx.drizzle         // DrizzleDatabase<D> — typed when dialect is known
 ctx.zod             // Zod namespace (convenience accessor)
@@ -225,7 +242,9 @@ ctx.find/findOne/findById/findByIdIn/create/createMany/update/upsert/destroy/des
 ```
 
 ### Default store methods
+
 Every store (from `db.defineStore()` or `db.register()`) exposes:
+
 ```typescript
 store.name                           // Table name (string)
 store.schemas                        // { createSchema, updateSchema, selectSchema, fullSchema }
@@ -250,7 +269,9 @@ store.destroyAll(filters, opts?)
 ```
 
 ### Query opts
+
 `QueryOptions<TTable>` is generic — `where` callback receives the typed table for column autocomplete.
+
 ```typescript
 {
   tx?: any                           // Transaction handle
@@ -263,6 +284,7 @@ store.destroyAll(filters, opts?)
 ```
 
 `PrepOptions` extends `QueryOptions` with internal escape hatches (available in custom queries via `ctx`):
+
 ```typescript
 {
   skipPrep?: boolean                 // Bypass prep pipeline
@@ -273,6 +295,7 @@ store.destroyAll(filters, opts?)
 ```
 
 ### where callback
+
 ```typescript
 import { gt, like, and, isNull } from 'drizzle-orm'
 await users.find({ status: 'active' }, { where: (t) => gt(t.age, 18) })
@@ -280,6 +303,7 @@ await users.findAll({ where: (t) => isNull(t.deletedAt) })
 ```
 
 ### softDelete
+
 ```typescript
 // User defines deletedAt in their Drizzle table:
 const users = pgTable('users', {
@@ -292,6 +316,7 @@ const userStore = defineStore(users, { softDelete: true })
 ```
 
 ### belongsTo / hasMany / hasOne / withMembers
+
 ```typescript
 import { belongsTo, hasMany, hasOne, withMembers } from 'storium'
 
@@ -308,7 +333,9 @@ Note: Related tables passed to mixins must have `.storium` metadata (go through 
 Relationship mixins auto-filter soft-deleted related rows when the related table has `softDelete: true`.
 
 ### withMembers transaction support
+
 All `withMembers` methods accept an optional `opts` parameter with `tx` for transaction support:
+
 ```typescript
 await teams.addMember(teamId, userId, {}, { tx })
 await teams.removeMember(teamId, userId, { tx })
@@ -318,6 +345,7 @@ await teams.getMemberCount(teamId, { tx })
 ```
 
 ### withPagination
+
 ```typescript
 import { withPagination } from 'storium'
 const paginatedUsers = withPagination(users, { pageSize: 10 })
@@ -325,6 +353,7 @@ await paginatedUsers.paginate({ status: 'active' }, { page: 2, pageSize: 25 })
 ```
 
 ### Table creation (dialect differences)
+
 ```typescript
 // SQLite / memory
 db.drizzle.run(sql`CREATE TABLE ...`)
@@ -334,6 +363,7 @@ await db.drizzle.execute(sql`CREATE TABLE ...`)
 ```
 
 ### Transactions (dialect differences)
+
 - PostgreSQL/MySQL: uses Drizzle's native `db.transaction()` — fully async
 - SQLite: manual `BEGIN/COMMIT/ROLLBACK` (better-sqlite3 rejects async async callbacks)
 - Both: `db.transaction(async (tx) => { ... })` — same API
@@ -343,6 +373,7 @@ await db.drizzle.execute(sql`CREATE TABLE ...`)
   SQLite/`memory`** (inherently serializable).
 
 ### Seeds
+
 ```typescript
 import { defineSeed } from 'storium/migrate'
 export default defineSeed(async ({ drizzle }) => {
@@ -351,6 +382,7 @@ export default defineSeed(async ({ drizzle }) => {
 ```
 
 ### Config file (drizzle.config.ts)
+
 ```typescript
 import type { StoriumConfig } from 'storium'
 export default {
@@ -363,11 +395,13 @@ export default {
 ```
 
 ### Schema files (for migrations)
+
 Export `StoreDefinition` (from `defineStore()`) or raw Drizzle tables.
 `schemaCollector` detects both patterns for drizzle-kit compatibility.
 
 ### Recommended app structure (folder-per-store)
-```
+
+```text
 project/
 ├── drizzle.config.ts
 ├── database.ts                    # connect + register all stores
@@ -383,10 +417,12 @@ project/
 ```
 
 ## Design philosophy
+
 - **Pre-1.0: API design is the priority.** There are no users yet. Breaking changes are welcome if they produce a better API. Do not justify design decisions with "this matches current behavior" — evaluate on merit.
 - **Drizzle is Drizzle.** Users define tables with native Drizzle syntax. Storium adds validation, access control, CRUD, and schemas on top — it doesn't replace Drizzle's column DSL.
 
 ## Example conventions
+
 - Single `app.ts` — everything in one runnable file
 - `package.json`: `"start": "tsx app.ts"`, `storium: "workspace:*"`, `tsx` in devDeps
 - In-memory examples: `dialect: 'memory'`, `db.drizzle.run(sql\`CREATE TABLE...\`)`
@@ -394,3 +430,49 @@ project/
 - Simple pattern: `storium.connect → db.defineStore(drizzleTable, config) → use store`
 - Console output: `=== Section name ===` headers matching style of existing examples
 - Always `await db.disconnect()` at end
+
+<!-- checkride:begin hash=v1f22a98eb5436b100 -->
+
+## Checkride: the definition of done
+
+`pnpm check` is the single source of truth for "done". Exit 0 means the work is
+complete; any other exit code means it is not. Never claim a task is finished while
+`pnpm check` is red.
+
+When it fails:
+
+1. Read `.check/summary.json` to see which check failed.
+2. Read that check's raw output (`.check/<slot>.json` or `.check/<slot>.stdout.txt`).
+3. Fix the root cause, then re-run.
+
+`pnpm exec checkride triage` runs this procedure in full and reads `.check/` for you
+(`/checkride:check` and `/checkride-check` are the same thing as a skill).
+
+Tight feedback loops: `pnpm check --bail`, `pnpm check --only types,lint`, and
+`pnpm check --changed`.
+
+If a stop-gate hook is configured (`.claude/settings.json` or `.cursor/hooks.json`),
+it runs the check when a turn ends — so while iterating, prefer the narrow commands
+above rather than running the full check yourself every loop. Read the gate's verdict
+rather than assuming it covered everything: a repo can narrow the gate with `gate` in
+`checkride.config.json`, and a narrowed one names its narrowing (`only …`, `without …`,
+`affected-only`) in every verdict. That green is not the "done" defined above; run
+`pnpm check` in full before you claim the work is finished.
+
+### Baseline
+
+If `checkride.baseline.json` is present, checkride grandfathers the diagnostics it
+lists: a slot is green as long as only baselined findings remain, while a genuinely
+new diagnostic still fails it. Fixing a baselined finding prunes it from the file —
+the ratchet, so the baseline only ever shrinks. Never add to the baseline to make a
+check pass; fix the finding.
+
+### Module boundaries
+
+The `struct` check runs whatever ast-grep rules `sgconfig.yml` points at
+(`rules/` by default). Those files are this repo's boundary convention —
+read them rather than assuming one.
+
+Active checks in this repo: types, lint, struct, links, deps, dead, dupes, health, docs, spell, build, publint, attw, pack, smoke, typecheck-examples, test.
+
+<!-- checkride:end -->

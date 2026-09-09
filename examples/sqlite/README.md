@@ -15,7 +15,7 @@ Full SQLite lifecycle with a file-based database, migrations, seeds, and dialect
 
 ## Project structure
 
-```
+```text
 sqlite/
   entities/users/    user.table.ts, user.store.ts, user.queries.ts
   entities/posts/    post.table.ts, post.store.ts, post.queries.ts

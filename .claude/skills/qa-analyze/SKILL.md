@@ -25,25 +25,25 @@ Ensure `.health/snapshots/latest.json` exists. If not, tell the user:
 pnpm exec tsx .claude/tools/qa/cli.ts snapshot show
 ```
 
-2. Compare against the previous snapshot:
+1. Compare against the previous snapshot:
 
 ```bash
 pnpm exec tsx .claude/tools/qa/cli.ts snapshot diff
 ```
 
-3. Read accumulated learnings:
+1. Read accumulated learnings:
 
 ```bash
 pnpm exec tsx .claude/tools/qa/cli.ts learnings list
 ```
 
-4. For deeper context, read the full snapshot JSON:
+1. For deeper context, read the full snapshot JSON:
 
 ```bash
 cat .health/snapshots/latest.json
 ```
 
-5. Produce a structured analysis covering:
+1. Produce a structured analysis covering:
 
    **Health Trend:** Is the codebase getting better or worse? Which domains are improving, which are regressing? Use snapshot diffs and historical comparisons.
 
@@ -55,9 +55,9 @@ cat .health/snapshots/latest.json
 
    **Progress Tracking:** What improved since the last analysis? Was a previous recommendation addressed?
 
-6. If `--focus <domain>` was passed, narrow the analysis to files in that domain only.
+2. If `--focus <domain>` was passed, narrow the analysis to files in that domain only.
 
-7. Update learnings using CLI commands. For each insight discovered:
+3. Update learnings using CLI commands. For each insight discovered:
    - New insight, nothing similar:
      `pnpm exec tsx .claude/tools/qa/cli.ts learnings add --category <C> --insight "<text>" [--context "<text>"]`
    - Confirms existing:
@@ -69,9 +69,9 @@ cat .health/snapshots/latest.json
    - Compact related learnings:
      `pnpm exec tsx .claude/tools/qa/cli.ts learnings merge <ID1> <ID2> --insight "<text>"`
 
-8. Print the full report to the terminal.
+4. Print the full report to the terminal.
 
-9. Write the full analysis report to `.health/reports/analysis.md`.
+5. Write the full analysis report to `.health/reports/analysis.md`.
 
 ## Output Tone
 

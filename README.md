@@ -162,7 +162,7 @@ The Quick Start uses `db.defineStore()` — the simplest path. But as a project 
 
 The pattern looks like this:
 
-```
+```text
 entities/
 └── users/
     ├── user.table.ts     <- Drizzle table definition (drives migrations)

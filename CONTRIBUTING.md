@@ -29,21 +29,33 @@ to this repo that resolves the library from `dist/`. Build first, then
 
 | Command | What it does |
 |---|---|
+| `pnpm check` | The full gate — every check, in [checkride](https://www.npmjs.com/package/checkride)'s waves |
+| `pnpm check --only <slot>` | Run one check (e.g. `types`, `lint`, `test`, `docs`) |
+| `pnpm check --bail` | Stop at the first failing check |
+| `pnpm check:all` | The full gate plus opt-in checks, including `integration` (needs Docker) |
+| `pnpm check:fix` | Apply every fixer (oxlint `--fix`, fallow fix, markdownlint `--fix`) |
+| `pnpm doctor` | Verify the environment and each check's status (read-only) |
+| `pnpm test` | Run the unit suite once (`vitest run`) |
+| `pnpm test:watch` | Run the unit suite in watch mode |
+| `pnpm run test:integration` | Run the Docker-backed integration suite directly |
 | `pnpm run build` | Bundle ESM + CJS + types with tsup |
-| `pnpm run typecheck` | `tsc --noEmit -p tsconfig.check.json` (includes test files) |
-| `pnpm run typecheck:examples` | Typecheck every example in `examples/*` |
-| `pnpm run lint` | oxlint + fallow + dependency-cruiser + ast-grep + knip |
-| `pnpm run test:run` | Run the unit suite once (vitest) |
-| `pnpm run test:unit` | Run the unit suite in watch mode |
-| `pnpm run test:integration` | Run the Docker-backed integration suite |
-| `pnpm test` | typecheck + lint + build + unit (the full gate) |
+
+### The check gate
+
+`pnpm check` is the single definition of "done": exit 0 means the work is
+complete, any other exit code means it is not. When a check fails, read
+`.check/summary.json` to see which one, then `.check/<slot>.json` (or
+`.check/<slot>.stdout.txt` / `.stderr.txt`) for the details, and fix the root
+cause. `checkride.config.json` is the list of checks and how each one is wired.
+The `.check/` report is gitignored.
 
 ## Testing
 
 ### Unit tests
 
 ```bash
-pnpm run test:run
+pnpm test              # vitest run — the unit suite once
+pnpm check --only test # the same suite, through the gate (with coverage)
 ```
 
 Unit tests live in `src/**/__tests__/**/*.test.ts` and run against the in-memory
@@ -52,7 +64,8 @@ SQLite dialect, so they need no external services.
 ### Integration tests
 
 ```bash
-pnpm run test:integration
+pnpm check --only integration   # through the gate (opt-in check)
+pnpm run test:integration       # or the script directly
 ```
 
 These use [testcontainers](https://testcontainers.com/) to start real PostgreSQL
@@ -69,7 +82,7 @@ TEST_DIALECTS=memory vitest run --config vitest.integration.config.ts
 version. If you switch Node versions (e.g. via `nvm`) after installing
 dependencies, the unit suite will fail at import time with an error like:
 
-```
+```text
 Error: The module '.../better_sqlite3.node' was compiled against a different
 Node.js version using NODE_MODULE_VERSION 127. This version of Node.js requires
 NODE_MODULE_VERSION 137. Please try re-compiling or re-installing the module.
@@ -82,16 +95,19 @@ against your current Node.js:
 pnpm rebuild better-sqlite3
 ```
 
-Then re-run `pnpm run test:run`.
+Then re-run `pnpm test`.
 
 ## Continuous integration
 
 `.github/workflows/ci.yml` runs on every push and pull request to `main`:
 
-- **lint** — `pnpm run lint`
-- **typecheck** — `tsc -p tsconfig.check.json --noEmit` + `typecheck:examples`
-- **unit** — matrix on Node 22.x / 24.x: `pnpm run build` + unit tests
-- **integration** — Docker-backed `vitest.integration.config.ts`
+- **check** — matrix on Node 22.x / 24.x: `checkride --strict` (the full gate —
+  types, lint, struct, links, deps, dead, dupes, health, docs, spell, build,
+  examples typecheck, publint, attw, pack, smoke, unit tests)
+- **integration** — Docker-backed `checkride --strict --only integration`
+
+A failing run uploads the `.check/` report as an artifact and prints the failing
+slots' output inline.
 
 ## Release ritual
 
@@ -100,7 +116,7 @@ truth. With Claude Code, `/version <major|minor|patch>` performs steps 1–4 and
 pushes the tag; pushing `main` itself stays yours.
 
 1. Start from a clean tree on `main`, up to date with `origin/main`, with
-   `pnpm test` green.
+   `pnpm check` green.
 2. Bump the version with `pnpm version <type> --no-git-tag-version` — it rewrites
    `package.json` (semver — pre-1.0, breaking changes take a minor bump).
 3. Turn the `## Unreleased` section of `CHANGELOG.md` into `## X.Y.Z` (or add
@@ -109,7 +125,8 @@ pushes the tag; pushing `main` itself stays yours.
 5. The tag push triggers two independent workflows, kept separate so the npm
    credential surface and the release-authoring surface never share a job:
    - [.github/workflows/publish.yaml](./.github/workflows/publish.yaml):
-     `pnpm test` + `pnpm run test:integration`, then `pnpm publish --provenance` —
+     `checkride --strict` + `checkride --strict --only integration`, then
+     `pnpm publish --provenance` —
      every published tarball is provenance-attested to its commit. Auth is npm
      **Trusted Publishing** (OIDC): no token exists anywhere, so there is
      nothing to leak, rotate, or bypass 2FA with. The job runs in the

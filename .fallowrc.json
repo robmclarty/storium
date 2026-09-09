@@ -1,4 +1,5 @@
 {
+  "$schema": "./node_modules/fallow/schema.json",
   "entry": [
     "bin/**/*.ts",
     "src/migrate/index.ts",
@@ -17,7 +18,9 @@
     "examples/*/node_modules/**"
   ],
   "ignoreDependencies": [
+    "@arethetypeswrong/cli",
     "@ast-grep/cli",
+    "publint",
     "better-sqlite3",
     "pg",
     "mysql2",
@@ -45,6 +48,7 @@
   "health": {
     "maxCyclomatic": 25,
     "maxCognitive": 25,
+    "maxCrap": 650,
     "ignore": [
       "examples/**"
     ]

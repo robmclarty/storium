@@ -15,7 +15,7 @@ Full MySQL lifecycle with a real database via Docker, migrations, seeds, and dia
 
 ## Project structure
 
-```
+```text
 mysql/
   entities/users/    user.table.ts, user.store.ts, user.queries.ts
   entities/posts/    post.table.ts, post.store.ts, post.queries.ts

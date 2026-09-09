@@ -14,7 +14,7 @@ A REST API using Fastify with auto-generated JSON Schema validation from Storium
 
 ## Project structure
 
-```
+```text
 fastify/
   entities/tasks/task.table.ts   Drizzle table definition
   routes/tasks.ts                REST route handlers
