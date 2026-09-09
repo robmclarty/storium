@@ -36,6 +36,7 @@ drizzle-kit reads `dialect`, `dbCredentials`, `schema`, and `out`. It silently i
 | `dialect` | Both | `'postgresql'`, `'mysql'`, `'sqlite'`, or `'memory'` |
 | `dbCredentials` | Both | `{ url }` or `{ host, port, database, user, password }` |
 | `url` | Storium | Shorthand for `dbCredentials.url` |
+| `password` | Storium | A string, or on postgresql a per-connection function (`PasswordFn`) resolved per pool connection. Keep `dbCredentials.password` a string — drizzle-kit validates it as one when it loads this file. |
 | `schema` | Both | Glob pattern(s) for table files (Drizzle table exports) |
 | `stores` | Storium | Glob pattern(s) for store files (defineStore exports) — used by seed runner |
 | `out` | Both | Directory for generated migration SQL files (default: `./migrations`) |

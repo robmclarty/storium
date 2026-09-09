@@ -659,7 +659,24 @@ export type StoriumConfig<D extends Dialect = Dialect> = {
   port?: number
   database?: string
   user?: string
-  /** A static password, or on postgresql a per-connection `PasswordFn`. */
+  /**
+   * A static password, or on postgresql a per-connection `PasswordFn` (see
+   * `PasswordFn`) that pg resolves every time the pool opens a new connection —
+   * the hook rotating credentials (RDS IAM, Cloud SQL IAM, Vault) rely on. A
+   * function is postgresql only: on mysql / sqlite / memory it is a `ConfigError`.
+   *
+   * On the function branch storium builds the pg pool from
+   * `host`/`port`/`user`/`database` (parsed from `url` when that is what was
+   * given) with no `connectionString`, so pg never merges a DSN over the
+   * function. A `url` supplied beside a function must therefore not itself carry
+   * a password or a query string: either is a `ConfigError` at `connect()`,
+   * because the component-built pool can carry neither a second password nor DSN
+   * query parameters (`sslmode`, …) — move those into `driverOptions`.
+   *
+   * The function is handed to pg untouched, so a non-string return is not caught
+   * at `connect()`; it surfaces as the first connection's
+   * `TypeError('Password must be a string')` from pg.
+   */
   password?: D extends 'postgresql' ? string | PasswordFn : string
   /** Drizzle-kit style connection credentials. */
   dbCredentials?: {
@@ -702,6 +719,11 @@ export type StoriumConfig<D extends Dialect = Dialect> = {
    * `dbCredentials` (passing the driver's URL key here — `connectionString`,
    * `uri` — is a `ConfigError`, not a silent override), and `pool`, whose
    * `min`/`max` win over the same keys given here.
+   *
+   * pg merges the parsed `connectionString` over these options, so any key a
+   * DSN can carry (`ssl`, `password`, `host`, …) is won by the DSN; storium
+   * rejects the URL components for that reason. Strip `ssl*` query params from
+   * your DSN if you set `ssl` here.
    *
    * Untyped on purpose: the drivers are optional peer dependencies, so their
    * option types cannot appear in storium's public types. Type it at the call

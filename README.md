@@ -511,6 +511,30 @@ are optional peers; add `satisfies Partial<PoolConfig>` at the call site if you
 want checking. It is not called `driver` because drizzle-kit reserves that key
 in the shared config file for its own driver enum.
 
+Why the URL components are rejected: pg merges the parsed `connectionString`
+over these options, so any key a DSN can carry (`ssl`, `password`, `host`, …) is
+won by the DSN. Strip `ssl*` query params from your DSN if you set `ssl` here.
+
+**Rotating credentials (postgresql).** `password` may be a function on the
+`postgresql` dialect — pg resolves it every time the pool opens a new
+connection, so short-lived tokens (RDS IAM, Cloud SQL IAM, Vault) stay fresh:
+
+```typescript
+const signer = new RDS.Signer({ region, hostname, port, username })
+
+const db = storium.connect({
+  dialect: 'postgresql',
+  url: 'postgres://app@db.example.internal:5432/app', // no password in the URL
+  password: async () => signer.getAuthToken(),        // minted per connection (RDS IAM tokens live ~15 min)
+  driverOptions: { ssl: { ca: fs.readFileSync('rds-global-bundle.pem', 'utf8') } },
+})
+```
+
+When `password` is a function, storium builds the pool from the URL's
+components, so `ssl` and any other DSN query parameters go in `driverOptions`,
+not the URL, and the function is handed to pg untouched. A function password on
+any other dialect is a `ConfigError`.
+
 ## Contributing
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for local setup, the test suite, and

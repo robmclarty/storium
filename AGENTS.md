@@ -124,6 +124,16 @@ re-config warning and the seed runner's progress/error lines. Defaults to
 `console`; resolved and exposed as `db.logger`. Pass a custom `Logger` to
 silence or redirect them.
 
+`password` (optional) is a string, or on **postgresql** a per-connection
+function (`PasswordFn`, `() => string | Promise<string>`) that pg resolves each
+time the pool opens a connection — the hook for rotating credentials (RDS IAM,
+Cloud SQL IAM, Vault). On the function branch storium builds the pool from
+`host`/`port`/`user`/`database` (parsed from `url`) instead of a
+`connectionString`, so a `url` beside a function must carry no password and no
+query params (`ConfigError` otherwise; put `ssl` etc. in `driverOptions`). A
+function on `mysql` / `sqlite` / `memory` is a `ConfigError`. This means
+rotating-credential setups no longer need `fromDrizzle()` with a hand-built pool.
+
 ### fromDrizzle (auto-detects dialect)
 ```typescript
 import { drizzle } from 'drizzle-orm/node-postgres'

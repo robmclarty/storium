@@ -200,6 +200,7 @@ Each schema variant (`createSchema`, `updateSchema`, `selectSchema`, `fullSchema
 |------|-------------|
 | `Dialect` | `'postgresql' \| 'mysql' \| 'sqlite' \| 'memory'` |
 | `StoriumConfig<D>` | Configuration for `storium.connect()` — accepts storium inline shape or drizzle-kit config shape. Generic `D` preserves the literal dialect type. |
+| `PasswordFn` | `() => string \| Promise<string>` — a per-connection password source for `StoriumConfig.password`. postgresql only; pg resolves it each time the pool opens a connection (RDS IAM, Cloud SQL IAM, Vault). A function on any other dialect is a `ConfigError`. |
 | `FromDrizzleOptions` | Options for `storium.fromDrizzle()` — currently just `{ assertions? }`. |
 | `StoriumInstance<D>` | The instance returned by `connect` or `fromDrizzle`. When `D` is a specific dialect, `db.drizzle` resolves to the concrete Drizzle class. |
 
