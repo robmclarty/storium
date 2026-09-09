@@ -4,10 +4,13 @@ All notable changes to Storium are documented here.
 
 This project uses [Semantic Versioning](https://semver.org/). Pre-1.0 releases may include breaking changes in minor versions.
 
-## Unreleased
+## 0.15.4
+
+Per-connection password functions on `connect()` (postgresql).
 
 - **Password function** — `StoriumConfig.password` accepts `() => string | Promise<string>` (`PasswordFn`) on the `postgresql` dialect, resolved by pg per pooled connection so rotating credentials (RDS IAM, Cloud SQL IAM, Vault) stay fresh without dropping to `fromDrizzle()`. On the function branch storium builds the pool from `host`/`port`/`user`/`database` (parsed from `url`) with no `connectionString`, so pg can't clobber the function; a `url` that carries a password or query params beside a function, and a function password on any non-postgresql dialect, are each a `ConfigError` at `connect()`. `dbCredentials.password` stays a string (drizzle-kit validates it as one)
 - Docs: the `driverOptions` docblock and README now state that pg merges the parsed `connectionString` over `driverOptions`, so any key a DSN carries (`ssl`, `password`, `host`, …) is won by the DSN — the reason storium rejects the URL components there
+- Build: repo migrated from npm to **pnpm** (`corepack enable` once; one root `pnpm install` covers everything); examples are now workspace packages. Contributors should use `pnpm`, not `npm`
 
 ## 0.15.3
 
