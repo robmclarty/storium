@@ -4,7 +4,9 @@ All notable changes to Storium are documented here.
 
 This project uses [Semantic Versioning](https://semver.org/). Pre-1.0 releases may include breaking changes in minor versions.
 
-## Unreleased
+## 0.15.5
+
+Correct the published type-only export declarations; the check gate moves to checkride.
 
 - Fix (types): the bundled declarations now mark type-only exports with `type` (`export type { … }`). tsup's dts bundler had emitted them as plain value exports, so a consumer with `verbatimModuleSyntax` writing `import { StoriumConfig } from 'storium'` (a value import of a type) would compile but crash at runtime. A post-build step (`scripts/fix-dts-type-exports.mjs`) re-qualifies them; the runtime API is unchanged
 - Build: the check gate moved to **checkride** — one config (`checkride.config.json`), one command (`pnpm check`), one `.check/` report. `pnpm test` is now plain `vitest run` (no more watch-mode landmine); `pnpm check --only <slot>` runs a single check and `pnpm check:fix` applies every fixer. fallow bumped to 3 (fills the `dead`/`dupes`/`health` checks) and knip retired; `docs` (markdownlint) and `spell` (cspell) checks added; a publish bundle (publint, attw, pack, smoke) now guards the tarball. CI collapsed to a `check` matrix (Node 22.x/24.x) + one Docker `integration` job
