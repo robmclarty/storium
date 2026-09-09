@@ -17,48 +17,14 @@ concurrency:
 # pnpm/action-setup reads the pinned version from package.json#packageManager.
 # It must run before setup-node so `cache: pnpm` can find the binary.
 jobs:
-  lint:
-    name: Lint
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-      - uses: pnpm/action-setup@v6
-      - uses: actions/setup-node@v5
-        with:
-          node-version: 24.x
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - name: Lint (oxlint + fallow + dependency-cruiser + ast-grep + knip)
-        run: pnpm run lint
-
-  typecheck:
-    name: Typecheck
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-      - uses: pnpm/action-setup@v6
-      - uses: actions/setup-node@v5
-        with:
-          node-version: 24.x
-          cache: pnpm
-      # The examples are workspace packages, so this installs them too.
-      - run: pnpm install --frozen-lockfile
-      - name: Typecheck source (includes test files)
-        run: pnpm exec tsc -p tsconfig.check.json --noEmit
-      # Examples resolve `storium` from `dist`, so build before typechecking them.
-      - name: Build
-        run: pnpm run build
-      - name: Typecheck examples
-        run: pnpm run typecheck:examples
-
-  unit:
-    name: Unit (Node ${{ matrix.node }})
+  check:
+    name: Check (Node ${{ matrix.node }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        # pnpm 11 needs Node >= 22.13, so Node 20 (EOL April 2026) is not in
-        # the matrix even though package.json#engines still admits it.
+        # pnpm 11 needs Node >= 22.13 and checkride >= 22.18, so Node 20 is not
+        # in the matrix even though package.json#engines still admits it.
         node: [22.x, 24.x]
     steps:
       - uses: actions/checkout@v5
@@ -67,14 +33,42 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
           cache: pnpm
-      # `pnpm install` compiles better-sqlite3 against this Node version (its
-      # build script is allowed in pnpm-workspace.yaml), so no
-      # NODE_MODULE_VERSION mismatch (see CONTRIBUTING.md).
+      # Installs the examples too (workspace packages) and compiles
+      # better-sqlite3 against this Node (see CONTRIBUTING.md).
       - run: pnpm install --frozen-lockfile
-      - name: Build
-        run: pnpm run build
-      - name: Unit tests
-        run: pnpm run test:run
+      # The whole gate — types, lint, struct, links, deps, dead, dupes, health,
+      # docs, spell, build, examples typecheck, publint, attw, pack, smoke, unit
+      # tests — in checkride's waves. --strict: zero checks running is exit 2,
+      # never a silent pass.
+      - name: Check
+        run: pnpm exec checkride --strict
+      # A failing slot prints only its status line; the output that says *what*
+      # broke lives in .check/, which a hosted runner discards. JSON slots
+      # (lint, struct, dead, dupes, health, attw, pack, smoke, links) write
+      # <slot>.json; text slots write <slot>.stdout.txt / .stderr.txt.
+      - name: Failing check output
+        if: failure()
+        run: |
+          [ -d .check ] || exit 0
+          failed=$(node -e '
+            const s = require("./.check/summary.json");
+            console.log(s.checks.filter(c => c.ok === false).map(c => c.name).join(" "));
+          ' 2>/dev/null) || failed=""
+          echo "failing slots: ${failed:-<none recorded>}"
+          for slot in $failed; do
+            for f in ".check/$slot.json" ".check/$slot.stdout.txt" ".check/$slot.stderr.txt"; do
+              [ -s "$f" ] || continue
+              echo "::group::$f"; head -c 65536 "$f"; echo "::endgroup::"
+            done
+          done
+      - name: Upload check report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: check-node${{ matrix.node }}
+          path: .check/
+          retention-days: 14
+          if-no-files-found: ignore
 
   integration:
     name: Integration (Docker)
@@ -88,6 +82,30 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       # ubuntu-latest ships a running Docker daemon, which testcontainers uses
-      # to start real PostgreSQL and MySQL instances.
+      # to start real PostgreSQL and MySQL instances. --only selects the opt-in
+      # integration check on its own.
       - name: Integration tests (testcontainers)
-        run: pnpm run test:integration
+        run: pnpm exec checkride --strict --only integration
+      - name: Failing check output
+        if: failure()
+        run: |
+          [ -d .check ] || exit 0
+          failed=$(node -e '
+            const s = require("./.check/summary.json");
+            console.log(s.checks.filter(c => c.ok === false).map(c => c.name).join(" "));
+          ' 2>/dev/null) || failed=""
+          echo "failing slots: ${failed:-<none recorded>}"
+          for slot in $failed; do
+            for f in ".check/$slot.json" ".check/$slot.stdout.txt" ".check/$slot.stderr.txt"; do
+              [ -s "$f" ] || continue
+              echo "::group::$f"; head -c 65536 "$f"; echo "::endgroup::"
+            done
+          done
+      - name: Upload check report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: check-integration
+          path: .check/
+          retention-days: 14
+          if-no-files-found: ignore

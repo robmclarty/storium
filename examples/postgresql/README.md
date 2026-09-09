@@ -15,7 +15,7 @@ Full PostgreSQL lifecycle with a real database via Docker, migrations, seeds, an
 
 ## Project structure
 
-```
+```text
 postgresql/
   entities/users/    user.table.ts, user.store.ts, user.queries.ts
   entities/posts/    post.table.ts, post.store.ts, post.queries.ts

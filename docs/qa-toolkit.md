@@ -12,7 +12,7 @@ pnpm install
 
 The QA skills and tooling live entirely within the project:
 
-```
+```text
 .claude/tools/qa/     # TypeScript modules (snapshot, registry, CLI, utils)
 .claude/skills/qa-*/  # Claude Code slash commands
 .health/             # Persistent state (snapshots, registry, learnings, reports)
@@ -108,27 +108,31 @@ All persistent state lives in `.health/`:
 ## Typical Workflows
 
 **Weekly QA review:**
-```
+
+```text
 /qa-snapshot
 /qa-analyze
 /qa-fragile --top 10
 ```
 
 **Before pushing:**
-```
+
+```text
 /qa-review --staged
 /qa-health --trend
 ```
 
 **Improving test coverage:**
-```
+
+```text
 /qa-fragile --domain core
 /qa-make-tests src/core/prep.ts
 /qa-test-id verify
 ```
 
 **Investigating a file:**
-```
+
+```text
 /qa-trace src/core/createRepository.ts
 /qa-trace QA-10042
 ```

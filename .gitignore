@@ -32,6 +32,9 @@ dist/
 build/
 coverage/
 
+# checkride report
+.check/
+
 # QA toolkit (regenerable)
 .health/snapshots/
 .health/reports/

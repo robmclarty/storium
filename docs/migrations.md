@@ -144,7 +144,7 @@ graph TD
 
 Seed files live in the `seeds` directory (configurable via `seeds` in config). They're executed in alphabetical filename order, so use numbered prefixes:
 
-```
+```text
 seeds/
 ├── 001_users.ts
 ├── 002_posts.ts

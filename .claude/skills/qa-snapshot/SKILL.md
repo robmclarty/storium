@@ -21,12 +21,12 @@ Capture a deterministic codebase health snapshot. Runs all external analysis too
 pnpm exec tsx .claude/tools/qa/snapshot.ts $ARGUMENTS
 ```
 
-2. Show the snapshot summary:
+1. Show the snapshot summary:
 
 ```bash
 pnpm exec tsx .claude/tools/qa/cli.ts snapshot show
 ```
 
-3. Print the summary to the user. If `--coverage` was used, also mention coverage stats.
+1. Print the summary to the user. If `--coverage` was used, also mention coverage stats.
 
-4. Point the user to generated reports in `.health/reports/` for details.
+2. Point the user to generated reports in `.health/reports/` for details.

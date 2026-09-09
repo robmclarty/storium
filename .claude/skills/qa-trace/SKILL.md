@@ -18,13 +18,13 @@ Map tests to the files they cover, or files to the tests that cover them.
 pnpm exec tsx .claude/tools/qa/cli.ts trace $ARGUMENTS
 ```
 
-2. Review the output:
+1. Review the output:
    - For a **test ID** (`QA-NNNNN`): shows test metadata, covered source files with metrics, and sibling tests covering the same files.
    - For a **source file**: shows file metrics from the latest snapshot and all tests that cover it.
 
-3. Identify coverage gaps — which functions or areas have no covering tests.
+2. Identify coverage gaps — which functions or areas have no covering tests.
 
-4. If new tracing insights are found, record them via CLI:
+3. If new tracing insights are found, record them via CLI:
    `pnpm exec tsx .claude/tools/qa/cli.ts learnings add --category observation --insight "<text>"`
 
-5. Print results to terminal.
+4. Print results to terminal.

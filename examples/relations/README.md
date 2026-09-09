@@ -13,7 +13,7 @@ Demonstrates relationship mixins: `belongsTo`, `withMembers`, and custom JOIN qu
 
 ## Project structure
 
-```
+```text
 relations/
   entities/authors/    author.table.ts, author.store.ts
   entities/posts/      post.table.ts, post.store.ts

@@ -83,15 +83,17 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # The full gate (typecheck, lint, build, unit), then the slow suite -
+      # The full gate - checkride's default run (types, lint, struct, links,
+      # deps, dead, dupes, health, docs, spell, build, examples typecheck,
+      # publint, attw, pack, smoke, unit tests) - then the slow suite:
       # testcontainers against real PostgreSQL and MySQL on ubuntu-latest's
-      # Docker daemon. A release must be green on both. The examples typecheck
-      # is CI's job on main; a tag points at a commit CI has already run.
+      # Docker daemon. A release must be green on both. --strict: zero checks
+      # running is exit 2, never a silent pass.
       - name: Check
-        run: pnpm test
+        run: pnpm exec checkride --strict
 
       - name: Integration tests
-        run: pnpm run test:integration
+        run: pnpm exec checkride --strict --only integration
 
       # prepublishOnly (pnpm run build) reruns the build as a safety net inside
       # pnpm publish. --provenance is redundant under trusted publishing but

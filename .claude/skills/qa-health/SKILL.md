@@ -20,7 +20,7 @@ Quick health check — runs `fallow --score` and prints the letter grade and key
 fallow --format json --quiet --score
 ```
 
-2. Parse the JSON output and extract:
+1. Parse the JSON output and extract:
    - `health_score.score` (0-100)
    - `health_score.grade` (A-F)
    - `vital_signs.dead_file_pct`
@@ -31,9 +31,9 @@ fallow --format json --quiet --score
    - `check.summary` (issue counts)
    - `dupes.stats` (duplication percentage)
 
-3. Print a concise summary:
+2. Print a concise summary:
 
-```
+```text
 Health Score: {score}/100 ({grade})
 Maintainability: {maintainability_avg}
 Dead code: {dead_export_pct}% exports, {dead_file_pct}% files
@@ -42,7 +42,7 @@ Circular deps: {circular_dep_count}
 Avg cyclomatic: {avg_cyclomatic}
 ```
 
-4. If `--trend` was passed, show the previous snapshot for comparison:
+1. If `--trend` was passed, show the previous snapshot for comparison:
 
 ```bash
 pnpm exec tsx .claude/tools/qa/cli.ts snapshot show
@@ -50,4 +50,4 @@ pnpm exec tsx .claude/tools/qa/cli.ts snapshot show
 
 Compare key metrics and show deltas with arrows (up/down).
 
-5. If `--trend` was passed but no snapshot exists, tell the user to run `/qa-snapshot` first to enable trending.
+1. If `--trend` was passed but no snapshot exists, tell the user to run `/qa-snapshot` first to enable trending.

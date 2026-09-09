@@ -3,7 +3,7 @@ name: version
 description: Bump storium's version (major, minor, or patch), turn the CHANGELOG's Unreleased section into the release entry summarizing every commit since the last release, commit as vX.Y.Z, and create plus push an annotated tag. The tag triggers the publish (npm, Trusted Publishing) and release (GitHub Release) workflows, so the tag is the release.
 argument-hint: "[major|minor|patch]"
 disable-model-invocation: true
-allowed-tools: Read, Edit, Bash(git status*), Bash(git fetch origin main*), Bash(git rev-list*), Bash(git log*), Bash(git add *), Bash(git commit *), Bash(git tag *), Bash(git push origin v*), Bash(git restore *), Bash(node -e *), Bash(node -p *), Bash(pnpm version *), Bash(pnpm test*), Bash(cat *), Bash(sed -n *)
+allowed-tools: Read, Edit, Bash(git status*), Bash(git fetch origin main*), Bash(git rev-list*), Bash(git log*), Bash(git add *), Bash(git commit *), Bash(git tag *), Bash(git push origin v*), Bash(git restore *), Bash(node -e *), Bash(node -p *), Bash(pnpm version *), Bash(pnpm check*), Bash(cat *), Bash(sed -n *)
 ---
 
 # version
@@ -96,7 +96,7 @@ flag, nothing at all) is a usage error: tell the user the valid forms and stop.
    land one feature into one bullet); one line per bullet; write for a reader
    who did not follow the work; leave out commits with no user-facing effect
    (tracker updates, branch housekeeping). `release.yaml` extracts everything
-   between this heading and the next `## `, so the entry is also the GitHub
+   between this heading and the next `##`, so the entry is also the GitHub
    Release notes.
 
    **If `CHANGELOG.md` already carries an `## Unreleased` section**, that is
@@ -112,10 +112,10 @@ flag, nothing at all) is a usage error: tell the user the valid forms and stop.
 8. **Apply to `CHANGELOG.md`.** When the top section is `## Unreleased`, replace
    it: its heading becomes `## X.Y.Z` and its body becomes step 7's draft.
    Otherwise insert the new section immediately below the intro paragraphs and
-   above the current top `## ` entry, keeping the single `# Changelog` heading
+   above the current top `##` entry, keeping the single `# Changelog` heading
    at the very top. Leave no empty `## Unreleased` shell behind.
 
-9. **Verify before staging:** `pnpm test` — typecheck, lint, build, unit. If it
+9. **Verify before staging:** `pnpm check` — the full gate (checkride). If it
    exits 0, continue. If it fails, roll back so the user can fix and re-invoke —
    `git restore package.json CHANGELOG.md` — show the failing
    output, and stop.
@@ -163,7 +163,7 @@ flag, nothing at all) is a usage error: tell the user the valid forms and stop.
 
 ## Edge cases
 
-- **`pnpm test` fails in step 9.** It is not the release's fault, but it is the
+- **`pnpm check` fails in step 9.** It is not the release's fault, but it is the
   release's problem: tag over it and the recovery is forward-only. The roll-back
   leaves the tree clean; the user fixes and re-invokes.
 - **An `## Unreleased` section is present.** It is folded into the new release

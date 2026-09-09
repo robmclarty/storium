@@ -21,18 +21,20 @@ Fast, focused review of your recent changes. Tells you specifically what's wrong
 1. Determine the diff scope:
 
 If `--staged`:
+
 ```bash
 git diff --cached --name-only
 ```
 
 If `--base <ref>` (or default `main`):
+
 ```bash
 git diff --name-only <ref>...HEAD
 ```
 
 If `--file <path>`: use that single file.
 
-2. Run scoped analysis on changed files only:
+1. Run scoped analysis on changed files only:
 
 ```bash
 # Complexity and dead code on changed files
@@ -45,16 +47,16 @@ pnpm exec sg scan <space-separated changed files> --json 2>/dev/null
 pnpm exec depcruise --output-type json --no-config --ts-pre-compilation-deps --reaches <changed-files> src/ 2>/dev/null
 ```
 
-3. Read `.health/snapshots/latest.json` for baseline context (if it exists). For each changed file, note:
+1. Read `.health/snapshots/latest.json` for baseline context (if it exists). For each changed file, note:
    - Was it already a hotspot?
    - What was its maintainability score before?
    - Did it have existing pattern violations?
    - What was its coverage?
 
-4. Check learnings for domain-specific gotchas relevant to changed files:
+2. Check learnings for domain-specific gotchas relevant to changed files:
    `pnpm exec tsx .claude/tools/qa/cli.ts learnings list --category risk`
 
-5. Read the actual diff:
+3. Read the actual diff:
 
 ```bash
 git diff <ref>...HEAD -- <changed-files>
@@ -62,7 +64,7 @@ git diff <ref>...HEAD -- <changed-files>
 
 Or for `--staged`: `git diff --cached -- <changed-files>`
 
-6. Produce a review with these sections:
+1. Produce a review with these sections:
 
    **Verdict:** `pass` | `needs-attention` | `problems-found`
 
@@ -76,7 +78,7 @@ Or for `--staged`: `git diff --cached -- <changed-files>`
 
    **Positive Feedback:** "Good: you removed unused imports that fallow had flagged."
 
-7. Print the review to the terminal.
+2. Print the review to the terminal.
 
 ## What This Skill Does NOT Do
 

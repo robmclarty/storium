@@ -22,18 +22,18 @@ Scan all test files, find tests without QA IDs, assign the next sequential ID, p
 find . -path '*/node_modules' -prune -o -name '*.test.ts' -print -o -name '*.spec.ts' -print
 ```
 
-2. For each test file, parse `it()` and `test()` blocks. A test is already annotated if **any** of these are true:
+1. For each test file, parse `it()` and `test()` blocks. A test is already annotated if **any** of these are true:
    - The test name contains `[QA-NNNNN]` (e.g., `it('[QA-10000] does something', ...`)
    - A `/* QA-NNNNN */` comment appears on the same line or the line above
 
-3. For each un-annotated test:
+2. For each un-annotated test:
    - Assign the next ID from the registry
    - Prefix the test name: `'[QA-NNNNN] original name'`
    - Update `.health/test-registry.json`
 
    The `[QA-NNNNN]` prefix in the test name is the **only required annotation**. The `/* QA-NNNNN */` comment is optional — do not add it unless the test already has one.
 
-4. Print how many tests were assigned IDs.
+3. Print how many tests were assigned IDs.
 
 ### lookup <QA-NNNNN>
 
