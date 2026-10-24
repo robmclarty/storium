@@ -89,7 +89,8 @@ import { generate, migrate, push, status, seed, defineSeed, collectSchemas } fro
 ### Dependencies
 
 - Package manager: **pnpm** (exact version pinned in `package.json` `packageManager`; `corepack enable` once). Examples are workspace packages, so one root `pnpm install` covers everything.
-- Peer: `drizzle-orm` (>=0.44), `drizzle-kit` (>=0.31), `zod` (>=4.0)
+- Supply-chain guards in `pnpm-workspace.yaml`: `minimumReleaseAge` (pnpm won't resolve a version under 7 days old — pick the newest version that is at least a week old) and `trustPolicy: no-downgrade` (install fails on a release with weaker provenance than its predecessors). Don't bypass either to land a fresh release; wait it out.
+- Peer: `drizzle-orm` (>=0.45.2), `drizzle-kit` (>=0.31), `zod` (>=4.6.6) — floors are security fixes, not API needs
 - Peer (optional): `pg`, `mysql2`, `better-sqlite3` (install one for your dialect)
 - Runtime: `glob`
 

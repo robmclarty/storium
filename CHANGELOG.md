@@ -4,6 +4,12 @@ All notable changes to Storium are documented here.
 
 This project uses [Semantic Versioning](https://semver.org/). Pre-1.0 releases may include breaking changes in minor versions.
 
+## Unreleased
+
+- Breaking (pre-1.0): peer floors raised to `drizzle-orm >=0.45.2` (GHSA-gpj5-g38j-94v9 — SQL injection through `sql.identifier()` / `.as()` with untrusted input; storium itself calls neither, but custom queries on `ctx.drizzle` can) and `zod >=4.6.6` (GHSA-mrhx-c7xc-m3w5 — memory exhaustion validating oversized constrained collections, the shape of input storium's generated schemas see)
+- Build: security updates across the dev toolchain — vitest 4.1.12 (critical UI-server file read/exec), vite 7.3.7 via a pnpm override, mysql2 3.24.6, drizzle-kit 0.31.11, tsx 4.23.15, cspell 10.4.0, markdownlint-cli2 0.23.3; the mysql/postgresql examples move to testcontainers 11 and the fastify example to fastify ^5.12.7. `pnpm audit` goes from 66 advisories to 18 (all dev/example-only, none in storium's runtime tree)
+- Build: supply-chain hardening in `pnpm-workspace.yaml` — `minimumReleaseAge: 10080` (pnpm won't resolve a version under 7 days old) and `trustPolicy: no-downgrade` (fails on a release with weaker provenance than its predecessors, checked for versions under 30 days old)
+
 ## 0.15.5
 
 Correct the published type-only export declarations; the check gate moves to checkride.

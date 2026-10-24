@@ -13,8 +13,8 @@
     "pg": "^8.13.0"
   },
   "devDependencies": {
-    "tsx": "4.21.0",
-    "@testcontainers/postgresql": "^10.18.0",
-    "testcontainers": "^10.18.0"
+    "tsx": "4.23.15",
+    "@testcontainers/postgresql": "^11.14.0",
+    "testcontainers": "^11.14.0"
   }
 }

@@ -18,3 +18,25 @@ allowBuilds:
 # Carried over from the old .npmrc (pnpm 11 reads settings from this file).
 saveExact: true
 engineStrict: true
+
+# Supply-chain cooldown: never resolve a version published less than 7 days ago
+# (in minutes). Hijacked-maintainer releases (axios, keyv/cacheable, SAP CAP)
+# were pulled within hours, so a week-old version has survived the window where
+# those get caught. Pinned here so CI and every machine share it.
+minimumReleaseAge: 10080
+
+# Fail the install when a version was published with weaker trust evidence
+# (e.g. no provenance) than earlier versions of the same package — the
+# signature of a release pushed from a stolen token instead of CI. Only versions
+# under 30 days old (in minutes) are checked: past that, a hijacked release has
+# long since been caught, and older history has legitimate manual publishes
+# (chokidar 4.0.2/4.0.3, Dec 2024) that would otherwise trip it forever.
+trustPolicy: no-downgrade
+trustPolicyIgnoreAfter: 43200
+
+overrides:
+  # vitest 4 accepts vite 6–8 and pnpm keeps the locked 7.3.6 even under a
+  # `^7.3.7` override, so this pins exactly; 7.3.7 fixes GHSA-587h-7wmj-h5pm
+  # and friends. The selector only matches pre-fix versions, so this goes inert
+  # once vitest moves to vite 8.
+  'vite@<7.3.7': 7.3.7
